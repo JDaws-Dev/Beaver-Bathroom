@@ -9,6 +9,17 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Background Art and Floor Details (a2h.1.5)
+- Changed floor from plain stripes to checkered tile pattern
+- Used `repeating-conic-gradient` for alternating tile colors (#c4b89a, #d8cdb5)
+- Added grout lines via `::before` with thin dark repeating gradients
+- Added baseboard via `::after` at floor bottom (wood brown gradient)
+- Inset shadow at top of floor for depth
+- Wall background: gradient from light beige to darker, horizontal line texture
+- Added "🦫 KEEP IT CLEAN!" wall sign in Buc-ee's green
+- CSS Technique: `repeating-conic-gradient(from 0deg at 50% 50%, ...)` for checkered pattern
+- Files: beaver.html CSS lines 71-72, 96-99, HTML line 255
+
 ### Customer Character Improvements (a2h.1.3)
 - Added CSS art body to customers: torso + animated legs
 - Kept emoji as "head" for variety, added shirt for torso
@@ -32,14 +43,6 @@ This file maintains context between autonomous iterations.
 - Pattern: combine `inset box-shadow` + outer `box-shadow` for depth
 - Pattern: gradients (3-stop 180deg) for 3D button look
 - Files: beaver.html CSS lines 11-175 (various sections)
-
-### Beaver Mascot Integration (a2h.1.2)
-- Added CSS art beaver face in HUD area (48x48px)
-- Pure CSS character: ears, eyes with pupils, nose, mouth, teeth, cheeks
-- 4 mood states: idle (eyes look around), happy (squint + bounce), excited (big smile + fast bounce), worried (wide eyes + shake), sad (droopy)
-- `setBeaverMood(mood, duration)` function triggers expression changes
-- Events: happy on stall clean, excited on combo/save, sad on rating loss, worried during rush hour
-- Files: beaver.html - CSS lines 30-65, HTML lines 206-220, JS line 372 (setBeaverMood)
 
 ---
 
@@ -82,6 +85,7 @@ Patterns, gotchas, and decisions that affect future work:
 - Depth: combine `box-shadow` (outer) + `inset box-shadow` (inner)
 - 3D lights: `radial-gradient(circle at 30% 30%,...)` for sphere highlight
 - Cartooniness: larger `border-radius`, bold borders, warm brown palette (#5d4037, #3e2723, #8d6e63)
+- Checkered tiles: `repeating-conic-gradient(from 0deg at 50% 50%,...)` with `background-size` for tile size
 
 ### Testing
 
@@ -93,6 +97,14 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Beaver Mascot Integration (a2h.1.2)
+- Added CSS art beaver face in HUD area (48x48px)
+- Pure CSS character: ears, eyes with pupils, nose, mouth, teeth, cheeks
+- 4 mood states: idle (eyes look around), happy (squint + bounce), excited (big smile + fast bounce), worried (wide eyes + shake), sad (droopy)
+- `setBeaverMood(mood, duration)` function triggers expression changes
+- Events: happy on stall clean, excited on combo/save, sad on rating loss, worried during rush hour
+- Files: beaver.html - CSS lines 30-65, HTML lines 206-220, JS line 372 (setBeaverMood)
 
 ### Stall Visual Overhaul (a2h.1.1)
 - Replaced plain stall rectangles with cartoony wood-grain design

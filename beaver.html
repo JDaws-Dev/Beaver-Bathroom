@@ -68,7 +68,8 @@ body{font-family:system-ui,sans-serif;background:#2d1f0f;color:#eee;overflow:hid
 #dirty-count{color:#fdd835;font-size:0.9em}
 #play-area{flex:1;position:relative;overflow:hidden;min-height:300px}
 #play-area.shake{animation:screen-shake 0.3s}
-#bathroom{position:absolute;inset:0;background:#e8e0d0;display:flex;flex-direction:column}
+#bathroom{position:absolute;inset:0;background:linear-gradient(180deg,#f5f0e6 0%,#ebe4d6 30%,#e0d8c8 100%);display:flex;flex-direction:column}
+#bathroom::before{content:'';position:absolute;top:0;left:0;right:0;height:50%;background:repeating-linear-gradient(0deg,transparent 0px,transparent 15px,rgba(200,190,170,0.3) 15px,rgba(200,190,170,0.3) 16px);pointer-events:none;z-index:0}
 #stalls-row{display:flex;justify-content:center;gap:8px;padding:12px 10px;background:linear-gradient(180deg,#7d5a44 0%,#5d4037 50%,#4e342e 100%);border-bottom:5px solid #3e2723;box-shadow:inset 0 2px 8px rgba(0,0,0,0.3),0 4px 8px rgba(0,0,0,0.2)}
 .stall{width:62px;display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:transform 0.15s ease-out}
 .stall:hover{transform:scale(1.08) translateY(-2px)}
@@ -92,7 +93,10 @@ body{font-family:system-ui,sans-serif;background:#2d1f0f;color:#eee;overflow:hid
 .stall.dirty .stall-body{background:linear-gradient(180deg,#fff8e1 0%,#ffe0b2 100%);animation:shake 0.15s infinite}
 .stall.cleaning .stall-light{background:radial-gradient(circle at 30% 30%,#64b5f6,#1565c0);box-shadow:0 0 14px #1e88e5,inset 0 2px 4px rgba(255,255,255,0.4)}
 .stall.cleaning .stall-body{background:linear-gradient(180deg,#e3f2fd 0%,#bbdefb 100%)}
-#floor-area{flex:1;position:relative;background:repeating-linear-gradient(90deg,#d4c8b0 0px,#d4c8b0 38px,#c8bc9f 38px,#c8bc9f 40px)}
+#floor-area{flex:1;position:relative;background:repeating-conic-gradient(from 0deg at 50% 50%,#c4b89a 0deg 90deg,#d8cdb5 90deg 180deg,#c4b89a 180deg 270deg,#d8cdb5 270deg 360deg);background-size:40px 40px;box-shadow:inset 0 40px 60px -20px rgba(0,0,0,0.15)}
+#floor-area::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08) 39px,rgba(0,0,0,0.08) 41px),repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08) 39px,rgba(0,0,0,0.08) 41px);pointer-events:none}
+#floor-area::after{content:'';position:absolute;bottom:0;left:0;right:0;height:8px;background:linear-gradient(180deg,#5d4037 0%,#3e2723 100%);box-shadow:inset 0 2px 0 rgba(255,255,255,0.1),0 -2px 4px rgba(0,0,0,0.2)}
+#wall-sign{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#4a8c4a 0%,#3d7a3d 50%,#2e6b2e 100%);color:#fff;padding:6px 16px;border-radius:6px;font-size:0.7em;font-weight:bold;letter-spacing:1px;border:3px solid #2a5a2a;box-shadow:0 3px 8px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.2);z-index:5;text-shadow:0 1px 2px rgba(0,0,0,0.4)}
 #sinks-area{position:absolute;bottom:0;left:50%;transform:translateX(-50%);display:flex;gap:12px;padding:8px 15px;background:linear-gradient(#5a4a38,#4a3a28);border-radius:10px 10px 0 0;border:2px solid #6a5a48;border-bottom:none}
 .sink{width:48px;height:42px;background:linear-gradient(#e8e8e8,#c0c0c0);border:3px solid #888;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:transform 0.1s}
 .sink:hover{transform:scale(1.1)}
@@ -248,6 +252,7 @@ body{font-family:system-ui,sans-serif;background:#2d1f0f;color:#eee;overflow:hid
       <div id="bathroom">
         <div id="stalls-row"></div>
         <div id="floor-area">
+          <div id="wall-sign">🦫 KEEP IT CLEAN!</div>
           <div id="exit-door">🚪</div>
           <div id="towels"><div>📄</div><div>TOWELS</div></div>
           <div id="sinks-area"></div>
