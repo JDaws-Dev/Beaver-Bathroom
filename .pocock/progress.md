@@ -9,17 +9,24 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
-### Landing Page Redesign (re0)
-- Goal: cleaner, less cluttered title screen with optional tutorial
-- Removed: inline instructions box, large gender selection buttons
-- Added: compact gender toggle (🚹/🚺 as small buttons), defaults to female
-- Big "PLAY" button - no longer disabled, always ready to click
-- "How to Play" link opens modal overlay with tutorial content
-- Modal: dark overlay, card with header/close button, tutorial items, "Got it!" button
-- CSS changes: lines 30-49 (gender-toggle, btn-play, btn-help, modal, tutorial styles)
-- HTML: lines 294-340 (title-card, tutorial-modal)
-- JS: lines 2064-2079 (gender-opt handlers, modal open/close/click-outside)
-- `selectedGender` now defaults to 'female' instead of null
+### Cleaning Completion Celebration (a2h.5.2)
+- Goal: make stall cleaning completion feel amazing
+- New CSS animations:
+  - stall-celebrate: bouncy scale animation (1 → 1.08 → 0.96 → 1.04 → 0.98 → 1)
+  - stall-success-flash: green inset glow pulse on .stall-body
+  - door-swing: physics-based door swing with overshoot (rotateY easing)
+  - sparkle-burst: radial particle effect with CSS vars for direction
+- New .stall.celebrate class triggers all three animations
+- New spawnSparkles(x, y, count) function - radial sparkle particle effect
+  - Uses CSS custom properties (--tx, --ty) for direction
+  - Randomized size and timing
+- Enhanced playStallClean() sound - layered arpeggio + high freq shimmer
+  - Base: C5-E5-G5-C6 arpeggio (523-659-784-1047 Hz)
+  - Overlay: sparkle shimmer (2093-2349-2637 Hz)
+- Beaver now gets 'excited' for ALL clean completions (not just VIP/combo)
+- Applied celebration to: completeTask(), save moments, auto-clean powerup
+- CSS: lines 262-271 (new animations and classes)
+- JS: spawnSparkles() ~700, completeTask() ~1799, save handling ~1268
 
 ### Click/Tap Feedback Polish (a2h.5.1)
 - Added immediate visual feedback to all clickable elements
