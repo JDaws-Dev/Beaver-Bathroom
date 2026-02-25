@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  base: '/Beaver-Bathroom/',
+  // Use root path for Vercel, subdirectory for GitHub Pages
+  base: process.env.VERCEL ? '/' : '/Beaver-Bathroom/',
 });
