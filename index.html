@@ -1874,19 +1874,9 @@ function updatePeople(dt) {
           updateStallDOM(p.target);
         }
         else if (stall.state === 'dirty') {
-          const ratingLoss = p.vip ? 0.8 : 0.4; // VIP = 2x rating impact
-          game.rating = clamp(game.rating - ratingLoss, 0, 5);
-          game.stats.dirty++;
-          const hadCombo = game.combo;
-          game.combo = 0;
-          showComboBreak(hadCombo);
-          playBad();
-          screenShake();
-          setBeaverMood('sad', 1500);
-          p.thought = pick(THOUGHTS.disgusted);
-          p.thoughtTimer = 2000;
-          const msg = p.vip ? '⭐ VIP DISGUSTED! -' + ratingLoss.toFixed(1) + '⭐' : '-0.4⭐ GROSS!';
-          floatMessage(msg, p.x, p.y - 30, 'bad');
+          // Start grace period - player has 200ms to finish cleaning
+          p.gracePending = true;
+          p.graceTimer = 200;
         }
 
         stall.doorOpen = true;
@@ -1899,6 +1889,60 @@ function updatePeople(dt) {
     else if (p.phase === 'entering') {
       p.enterTimer -= dt;
       p.y -= speed * 0.6;
+
+      // Grace period handling - check if stall was cleaned in time
+      if (p.gracePending) {
+        const stall = game.stalls[p.target];
+        if (stall.state === 'empty' || stall.state === 'cleaning') {
+          // Cleaned in time (or actively cleaning)! Award save bonus
+          p.gracePending = false;
+          game.stats.saves++;
+          game.score += 50;
+          floatMessage('JUST IN TIME! +50', p.x, p.y - 30, 'save');
+          playStallClean();
+          setBeaverMood('excited', 1200);
+          // Complete cleaning instantly if still in progress
+          if (stall.state === 'cleaning') {
+            stall.state = 'empty';
+            stall.tasks = [];
+            if (game.activeStall === p.target) {
+              game.activeStall = -1;
+              game.activeTask = -1;
+              hideTaskPanel();
+            }
+          }
+          const stallEl = $('stalls-row').children[p.target];
+          if (stallEl) {
+            stallEl.classList.remove('celebrate');
+            void stallEl.offsetWidth;
+            stallEl.classList.add('celebrate');
+            setTimeout(() => stallEl.classList.remove('celebrate'), 650);
+            const rect = stallEl.getBoundingClientRect();
+            const playRect = $('play-area').getBoundingClientRect();
+            spawnSparkles(rect.left - playRect.left + rect.width/2, rect.top - playRect.top + 40, 12);
+          }
+          updateStallDOM(p.target);
+        } else {
+          p.graceTimer -= dt;
+          if (p.graceTimer <= 0) {
+            // Grace period expired, stall still dirty - apply penalty
+            p.gracePending = false;
+            const ratingLoss = p.vip ? 0.8 : 0.4;
+            game.rating = clamp(game.rating - ratingLoss, 0, 5);
+            game.stats.dirty++;
+            const hadCombo = game.combo;
+            game.combo = 0;
+            showComboBreak(hadCombo);
+            playBad();
+            screenShake();
+            setBeaverMood('sad', 1500);
+            p.thought = pick(THOUGHTS.disgusted);
+            p.thoughtTimer = 2000;
+            const msg = p.vip ? '⭐ VIP DISGUSTED! -' + ratingLoss.toFixed(1) + '⭐' : '-0.4⭐ GROSS!';
+            floatMessage(msg, p.x, p.y - 30, 'bad');
+          }
+        }
+      }
 
       if (p.enterTimer <= 0) {
         const stall = game.stalls[p.target];

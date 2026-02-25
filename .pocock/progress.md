@@ -9,6 +9,15 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Grace Period Before Dirty Stall Penalty (tct)
+- Goal: add 200ms grace period when customer enters dirty stall, reduce frustration
+- When customer reaches dirty stall in toStall phase, sets `p.gracePending = true` and `p.graceTimer = 200`
+- In entering phase, checks each frame: if stall is empty/cleaning → award "JUST IN TIME" save
+- If grace timer expires and stall still dirty → apply normal penalty
+- Also handles 'cleaning' state: if player started cleaning during grace, instant completion + save
+- Logic added to lines 1893-1944 in entering phase handler
+- Files: index.html (toStall line 1876-1880, entering lines 1893-1944)
+
 ### Improve SAVED Message Clarity (424)
 - Goal: change unclear "SAVED!" message to something more descriptive
 - Changed: "SAVED! +50" → "JUST IN TIME! +50" (line 1849)
@@ -26,13 +35,6 @@ This file maintains context between autonomous iterations.
 - JS: `highScore` variable loaded on init (line 836), `updateHighScoreDisplay()` (line 2830)
 - gameOver() checks for new record, saves to localStorage, updates display (line 2768-2780)
 - Files: index.html (CSS, HTML, JS changes)
-
-### Slow Down Shift 1 for New Players (f1f)
-- Goal: reduce spawn rate 30% on first shift to let players learn
-- Fix: increased spawnMin 3000→4300, spawnMax 4500→6400 (line 682)
-- Math: 30% slower rate = 43% longer intervals (1/0.7 ≈ 1.43x)
-- Other shifts unchanged - only affects Shift 1
-- Files: index.html (CONFIG.shifts[0] line 682)
 
 ---
 
@@ -87,6 +89,13 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Slow Down Shift 1 for New Players (f1f)
+- Goal: reduce spawn rate 30% on first shift to let players learn
+- Fix: increased spawnMin 3000→4300, spawnMax 4500→6400 (line 682)
+- Math: 30% slower rate = 43% longer intervals (1/0.7 ≈ 1.43x)
+- Other shifts unchanged - only affects Shift 1
+- Files: index.html (CONFIG.shifts[0] line 682)
 
 ### Auto-show Tutorial on First Play (2uk)
 - Goal: show tutorial automatically on first visit, don't make players hunt for it
