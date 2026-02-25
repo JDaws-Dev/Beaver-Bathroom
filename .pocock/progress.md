@@ -9,12 +9,20 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
-### Bug Fix: Customers Leaving When Stalls Available (jl4)
-- Root cause: patience was draining during ALL phases except inStall/washing/exit
-- This included 'enter', 'toStall', 'entering' phases while customer was walking to stall
-- Fix: patience ONLY drains during 'findStall' phase when NO empty stalls exist
-- JS line 1025: simplified shouldDrainPatience check
-- Now customers only get impatient when they literally cannot find an empty stall
+### Combo Streak Bonuses (a2h.2.5)
+- Milestones at 3x, 5x, 10x combos with escalating rewards
+- CONFIG.comboMilestones: array of {level, speedBoost, rating, points, msg}
+  - 3x: "🔥 ON FIRE!" - 3s speed boost, +50 pts
+  - 5x: "⚡ UNSTOPPABLE!" - 4s speed boost, +0.1 rating, +100 pts
+  - 10x: "🌟 LEGENDARY!" - 5s speed boost, +0.3 rating, +250 pts
+- game.comboBoost: remaining duration of speed boost (30% faster cleaning)
+- game.lastMilestone: prevents re-triggering same milestone
+- Visual: banner with animation, legendary gets gold styling
+- Sound: escalating fanfares (3/4/5 note chords)
+- Combo break: softer "COMBO LOST!" message at 3+ streaks
+- CSS: lines 261-269 (milestone banner, break message, animations)
+- HTML: lines 367-368 (combo-milestone, combo-break divs)
+- JS: checkComboMilestone() ~693, showComboBreak() ~731, playComboMilestone/Break() ~557
 
 ### Upgrade System Between Shifts (a2h.2.4)
 - New "Beaver Supply Shop" screen between shifts
@@ -31,20 +39,6 @@ This file maintains context between autonomous iterations.
 - Helper functions: getUpgradeCost(), getUpgradeEffect(), calculateCoins()
 - Integration: getEffectiveTaskTime(), getEffectivePatience() apply bonuses
 - Flow: result-screen → upgrade-screen → next shift
-
-### Title Screen Redesign (a2h.6)
-- Complete redesign with card/sign metaphor - brown wood-grain card with gold border
-- Beaver mascot integrated into title logo with bobbing animation
-- Title text with glowing text-shadow effect, split "Beaver's / Bathroom Blitz"
-- Tagline and subtitle with styled typography
-- Instructions section: green Buc-ee's themed panel with "How to Play" title
-- Each instruction is flexbox with icon + text for clean alignment
-- Gender buttons: 120px wide with large emoji icons, gold glow on selection
-- Clock In button: pulsing glow animation + shine effect when enabled
-- Mobile responsive breakpoint updates for smaller screens
-- CSS: lines 13-55 (title screen styles, animations)
-- HTML: lines 242-289 (title-card structure with beaver mascot)
-- Animations: title-beaver-bob, gender-selected, start-pulse, start-shine
 
 ---
 
@@ -99,6 +93,20 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Title Screen Redesign (a2h.6)
+- Complete redesign with card/sign metaphor - brown wood-grain card with gold border
+- Beaver mascot integrated into title logo with bobbing animation
+- Title text with glowing text-shadow effect, split "Beaver's / Bathroom Blitz"
+- Tagline and subtitle with styled typography
+- Instructions section: green Buc-ee's themed panel with "How to Play" title
+- Each instruction is flexbox with icon + text for clean alignment
+- Gender buttons: 120px wide with large emoji icons, gold glow on selection
+- Clock In button: pulsing glow animation + shine effect when enabled
+- Mobile responsive breakpoint updates for smaller screens
+- CSS: lines 13-55 (title screen styles, animations)
+- HTML: lines 242-289 (title-card structure with beaver mascot)
+- Animations: title-beaver-bob, gender-selected, start-pulse, start-shine
 
 ### Health Inspector Events (a2h.2.3)
 - 25% chance per shift (after first shift) for inspector visit

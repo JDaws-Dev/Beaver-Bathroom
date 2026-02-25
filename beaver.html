@@ -258,6 +258,15 @@ body{font-family:system-ui,sans-serif;background:#2d1f0f;color:#eee;overflow:hid
 @keyframes screen-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
 @keyframes confetti{0%{transform:translateY(0) rotate(0deg) scale(1);opacity:1}100%{transform:translateY(-80px) rotate(360deg) scale(0);opacity:0}}
 .confetti{position:absolute;font-size:1.4em;animation:confetti 0.7s forwards;pointer-events:none;z-index:200}
+#combo-milestone{position:absolute;top:30%;left:50%;transform:translate(-50%,-50%) scale(0);background:linear-gradient(180deg,rgba(245,166,35,0.95),rgba(230,130,0,0.95));color:#fff;padding:12px 25px;border-radius:12px;font-size:1.5em;font-weight:bold;z-index:150;border:3px solid #f5a623;box-shadow:0 0 30px rgba(245,166,35,0.6);text-shadow:0 2px 4px rgba(0,0,0,0.4);pointer-events:none}
+#combo-milestone.show{animation:milestone-pop 1.5s forwards}
+#combo-milestone.legendary{background:linear-gradient(180deg,rgba(255,215,0,0.95),rgba(255,165,0,0.95));border-color:#ffd700;box-shadow:0 0 40px rgba(255,215,0,0.8)}
+@keyframes milestone-pop{0%{transform:translate(-50%,-50%) scale(0);opacity:0}15%{transform:translate(-50%,-50%) scale(1.2);opacity:1}25%{transform:translate(-50%,-50%) scale(1)}80%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(-50%,-50%) scale(0.8);opacity:0}}
+@keyframes combo-flash{0%{background:rgba(245,166,35,0)}50%{background:rgba(245,166,35,0.15)}100%{background:rgba(245,166,35,0)}}
+.combo-flash{animation:combo-flash 0.4s}
+#combo-break{position:absolute;top:40%;left:50%;transform:translate(-50%,-50%) scale(0);color:#ff9800;font-size:1.1em;font-weight:bold;z-index:140;text-shadow:0 2px 4px rgba(0,0,0,0.5);pointer-events:none;opacity:0}
+#combo-break.show{animation:combo-break-pop 0.8s forwards}
+@keyframes combo-break-pop{0%{transform:translate(-50%,-50%) scale(0);opacity:0}20%{transform:translate(-50%,-50%) scale(1.1);opacity:1}40%{transform:translate(-50%,-50%) scale(0.95)}60%{transform:translate(-50%,-50%) scale(1);opacity:0.8}100%{transform:translate(-50%,-50%) translateY(-20px);opacity:0}}
 @keyframes rush-warning{0%,100%{opacity:1}50%{opacity:0.5}}
 #rush-warning{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(213,0,0,0.9);color:#fff;padding:15px 30px;border-radius:10px;font-size:1.3em;font-weight:bold;display:none;z-index:100;animation:rush-warning 0.3s infinite}
 #inspector-warning{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(180deg,rgba(33,150,243,0.95),rgba(25,118,210,0.95));color:#fff;padding:15px 30px;border-radius:10px;font-size:1.3em;font-weight:bold;display:none;z-index:100;animation:rush-warning 0.3s infinite;border:3px solid #1565c0;box-shadow:0 0 20px rgba(33,150,243,0.5)}
@@ -355,6 +364,8 @@ body{font-family:system-ui,sans-serif;background:#2d1f0f;color:#eee;overflow:hid
       </div>
       <div id="rush-warning">🚌 TOUR BUS ARRIVING! 🚌</div>
       <div id="inspector-warning">🔍 HEALTH INSPECTOR! 🔍</div>
+      <div id="combo-milestone"></div>
+      <div id="combo-break">COMBO LOST!</div>
       <div id="task-panel">
         <h3 id="task-title">Stall #1</h3>
         <div class="hint">Click rapidly to clean faster!</div>
@@ -419,6 +430,12 @@ const CONFIG = {
   inspectorChance: 0.25,  // Chance of inspector visit per shift
   inspectorPenalty: 0.5,  // Rating loss per dirty stall
   inspectorBonus: 100,    // Points for clean inspection
+  // Combo milestones: [combo level, speed boost duration (ms), rating recovery, bonus points]
+  comboMilestones: [
+    { level: 3, speedBoost: 3000, rating: 0, points: 50, msg: '🔥 ON FIRE!' },
+    { level: 5, speedBoost: 4000, rating: 0.1, points: 100, msg: '⚡ UNSTOPPABLE!' },
+    { level: 10, speedBoost: 5000, rating: 0.3, points: 250, msg: '🌟 LEGENDARY!' },
+  ],
 };
 
 const UPGRADES = [
@@ -545,6 +562,23 @@ function playInspectorGood() { [784, 988, 1175, 1319].forEach((f,i) => setTimeou
 function playWin() {
   [523,659,784,1047].forEach((f,i) => setTimeout(() => playSound(f, 0.15), i*120));
 }
+// Combo milestone sounds - escalating intensity
+function playComboMilestone(level) {
+  if (level >= 10) {
+    // Legendary: grand fanfare
+    [523, 659, 784, 1047, 1319].forEach((f, i) => setTimeout(() => playSound(f, 0.2, 'sine', 0.3), i * 60));
+  } else if (level >= 5) {
+    // Unstoppable: power chord
+    [392, 523, 659, 784].forEach((f, i) => setTimeout(() => playSound(f, 0.15, 'sine', 0.25), i * 70));
+  } else {
+    // On fire: quick hit
+    [523, 659, 784].forEach((f, i) => setTimeout(() => playSound(f, 0.1, 'sine', 0.2), i * 60));
+  }
+}
+function playComboBreak() {
+  playSound(400, 0.15, 'triangle', 0.15);
+  setTimeout(() => playSound(300, 0.2, 'triangle', 0.1), 100);
+}
 
 // Beaver mascot expressions
 let beaverTimeout = null;
@@ -598,6 +632,8 @@ function init() {
     inspectorWarning: 0,      // Warning countdown before inspector enters
     coins: 0,                 // Currency for upgrades
     upgrades: {speed: 0, patience: 0, automop: 0, supplies: 0},
+    comboBoost: 0,            // Remaining duration of combo speed boost
+    lastMilestone: 0,         // Last milestone level achieved (to avoid re-triggering)
   };
 }
 
@@ -612,7 +648,10 @@ function getShiftConfig() {
 function getEffectiveTaskTime() {
   // Speed upgrade reduces task time
   const speedBonus = getUpgradeEffect('speed');
-  return CONFIG.baseTaskTime * (1 - speedBonus);
+  let time = CONFIG.baseTaskTime * (1 - speedBonus);
+  // Combo milestone speed boost (30% faster)
+  if (game.comboBoost > 0) time *= 0.7;
+  return time;
 }
 
 function getEffectivePatience() {
@@ -648,6 +687,57 @@ function floatMessage(text, x, y, type = 'good') {
   el.style.top = y + 'px';
   $('play-area').appendChild(el);
   setTimeout(() => el.remove(), 1000);
+}
+
+function checkComboMilestone() {
+  // Find highest milestone we've reached
+  const milestones = CONFIG.comboMilestones;
+  for (let i = milestones.length - 1; i >= 0; i--) {
+    const m = milestones[i];
+    if (game.combo >= m.level && game.lastMilestone < m.level) {
+      // Reached a new milestone!
+      game.lastMilestone = m.level;
+
+      // Rewards
+      if (m.speedBoost > 0) game.comboBoost = m.speedBoost;
+      if (m.rating > 0) game.rating = clamp(game.rating + m.rating, 0, 5);
+      if (m.points > 0) game.score += m.points;
+
+      // Visual feedback
+      const banner = $('combo-milestone');
+      banner.textContent = m.msg;
+      banner.classList.remove('show', 'legendary');
+      void banner.offsetWidth; // Force reflow
+      banner.classList.add('show');
+      if (m.level >= 10) banner.classList.add('legendary');
+      setTimeout(() => banner.classList.remove('show', 'legendary'), 1500);
+
+      // Screen flash
+      $('play-area').classList.add('combo-flash');
+      setTimeout(() => $('play-area').classList.remove('combo-flash'), 400);
+
+      // Sound
+      playComboMilestone(m.level);
+
+      // Extra confetti for big milestones
+      const confettiCount = m.level >= 10 ? 25 : (m.level >= 5 ? 18 : 12);
+      spawnConfetti(400, 150, confettiCount);
+
+      break; // Only trigger one milestone at a time
+    }
+  }
+}
+
+function showComboBreak(hadCombo) {
+  if (hadCombo >= 3) {
+    const breakMsg = $('combo-break');
+    breakMsg.classList.remove('show');
+    void breakMsg.offsetWidth;
+    breakMsg.classList.add('show');
+    setTimeout(() => breakMsg.classList.remove('show'), 800);
+    playComboBreak();
+  }
+  game.lastMilestone = 0; // Reset milestone tracking
 }
 
 function buildStalls() {
@@ -758,7 +848,8 @@ function updateHUD() {
   $('score').textContent = Math.floor(game.score);
 
   const comboMult = 1 + game.combo * 0.5;
-  $('combo').textContent = game.combo > 0 ? `x${comboMult.toFixed(1)}` : 'x1';
+  const boostIcon = game.comboBoost > 0 ? '⚡' : '';
+  $('combo').textContent = game.combo > 0 ? `${boostIcon}x${comboMult.toFixed(1)}` : 'x1';
   $('combo').style.color = game.combo >= 5 ? '#ff5722' : (game.combo >= 3 ? '#f5a623' : '#fff');
   $('combo').style.fontSize = game.combo >= 3 ? '1.3em' : '1.1em';
 
@@ -969,6 +1060,7 @@ function update(dt) {
 
   if (game.effects.speed > 0) game.effects.speed -= dt;
   if (game.effects.slow > 0) game.effects.slow -= dt;
+  if (game.comboBoost > 0) game.comboBoost -= dt;
 
   if (game.rating <= 0) {
     gameOver();
@@ -1063,7 +1155,9 @@ function updatePeople(dt) {
         const ratingLoss = p.vip ? 0.6 : 0.3; // VIP = 2x rating impact
         game.rating = clamp(game.rating - ratingLoss, 0, 5);
         game.stats.abandoned++;
+        const hadCombo = game.combo;
         game.combo = 0;
+        showComboBreak(hadCombo);
         playBad();
         screenShake();
         setBeaverMood('sad', 1500);
@@ -1141,7 +1235,9 @@ function updatePeople(dt) {
           const ratingLoss = p.vip ? 0.8 : 0.4; // VIP = 2x rating impact
           game.rating = clamp(game.rating - ratingLoss, 0, 5);
           game.stats.dirty++;
+          const hadCombo = game.combo;
           game.combo = 0;
+          showComboBreak(hadCombo);
           playBad();
           screenShake();
           setBeaverMood('sad', 1500);
@@ -1624,6 +1720,7 @@ function completeTask() {
     stall.wasVip = false; // Reset for next customer
     game.combo++;
     if (game.combo > game.maxCombo) game.maxCombo = game.combo;
+    checkComboMilestone();
 
     const comboMult = 1 + game.combo * 0.5;
     const vipMult = wasVip ? 2 : 1; // VIP stalls give 2x score!
