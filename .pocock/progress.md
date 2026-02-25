@@ -9,6 +9,16 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Sink Dirty Indicator in HUD (uh9)
+- Goal: show dirty sink count in HUD so players don't forget them
+- Added `#sinks-hud` element after dirty stall count in HUD
+- Hidden by default (`style="display:none"`), only shows when sinks are dirty
+- Uses 🚿 emoji + count for visual recognition
+- Color escalation: blue (#64b5f6) normally, red (#e53935) when ALL sinks dirty
+- Added `#dirty-sinks` CSS style (line 107)
+- updateHUD() now calculates dirty sinks and toggles visibility (lines 1430-1439)
+- Files: index.html (CSS line 107, HTML line 569, JS lines 1430-1439)
+
 ### Interactive Tutorial with Guided Clicks (e02)
 - Goal: guided first-time tutorial that highlights elements and prompts clicks
 - localStorage key: `beaverInteractiveTutorial` - tracks completion
@@ -29,15 +39,6 @@ This file maintains context between autonomous iterations.
 - Touch targets: min-height 48px (exceeds 44px guideline)
 - Change is purely CSS, no JS modifications
 - Files: index.html (CSS lines 441-442 in 420px media query)
-
-### Grace Period Before Dirty Stall Penalty (tct)
-- Goal: add 200ms grace period when customer enters dirty stall, reduce frustration
-- When customer reaches dirty stall in toStall phase, sets `p.gracePending = true` and `p.graceTimer = 200`
-- In entering phase, checks each frame: if stall is empty/cleaning → award "JUST IN TIME" save
-- If grace timer expires and stall still dirty → apply normal penalty
-- Also handles 'cleaning' state: if player started cleaning during grace, instant completion + save
-- Logic added to lines 1893-1944 in entering phase handler
-- Files: index.html (toStall line 1876-1880, entering lines 1893-1944)
 
 ---
 
@@ -92,6 +93,15 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Grace Period Before Dirty Stall Penalty (tct)
+- Goal: add 200ms grace period when customer enters dirty stall, reduce frustration
+- When customer reaches dirty stall in toStall phase, sets `p.gracePending = true` and `p.graceTimer = 200`
+- In entering phase, checks each frame: if stall is empty/cleaning → award "JUST IN TIME" save
+- If grace timer expires and stall still dirty → apply normal penalty
+- Also handles 'cleaning' state: if player started cleaning during grace, instant completion + save
+- Logic added to lines 1893-1944 in entering phase handler
+- Files: index.html (toStall line 1876-1880, entering lines 1893-1944)
 
 ### Improve SAVED Message Clarity (424)
 - Goal: change unclear "SAVED!" message to something more descriptive
