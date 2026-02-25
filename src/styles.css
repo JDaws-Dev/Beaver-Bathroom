@@ -298,8 +298,8 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .intro-stat{display:flex;align-items:center;gap:6px;background:linear-gradient(180deg,rgba(0,0,0,0.2),rgba(0,0,0,0.35));padding:8px 12px;border-radius:8px;font-size:0.9em;border:2px solid #5d4037}
 .intro-stat-icon{font-size:1.1em}
 #shift-start-btn{margin-top:5px}
-.bucky-tip{display:flex;align-items:flex-start;gap:10px;background:linear-gradient(180deg,rgba(45,74,30,0.6),rgba(26,51,16,0.7));border:2px solid #4a7c32;border-radius:10px;padding:10px 14px;margin-bottom:16px;text-align:left}
-.bucky-tip-icon{font-size:1.5em;flex-shrink:0}
+.bucky-tip{display:flex;align-items:center;gap:12px;background:linear-gradient(180deg,rgba(45,74,30,0.6),rgba(26,51,16,0.7));border:2px solid #4a7c32;border-radius:10px;padding:10px 14px;margin-bottom:16px;text-align:left}
+.bucky-tip-icon{font-size:1.5em;flex-shrink:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center}
 .bucky-tip-content{flex:1}
 .bucky-tip-label{font-size:0.7em;color:#8bc34a;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;font-weight:bold}
 .bucky-tip-text{font-size:0.85em;color:#e8f5e9;line-height:1.4}
