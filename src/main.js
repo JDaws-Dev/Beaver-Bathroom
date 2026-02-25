@@ -155,7 +155,7 @@ const BUCKY_TIPS = [
   ],
   // Shift 3 (Tour Bus) tips - volume handling
   [
-    "Use your powerups wisely - ⚡ Speed and ✨ Auto-clean are lifesavers!",
+    "Use your items wisely - ⚡ Speed Boost and ✨ Insta-Clean are lifesavers!",
     "When it gets busy, prioritize VIPs and urgent customers.",
     "Watch for puddles on the floor - click 'em to mop 'em up!",
   ],
@@ -167,8 +167,8 @@ const BUCKY_TIPS = [
   ],
   // Shift 5 (Festival Weekend) tips - endurance
   [
-    "Almost there! Spend coins on upgrades between shifts.",
-    "Speed Scrub upgrade makes a HUGE difference late game.",
+    "Almost there! Spend coins on perks between shifts.",
+    "Quick Scrub perk makes a HUGE difference late game.",
     "Rush hour is chaos - stay calm and keep clicking!",
   ],
   // Shift 6 (Championship) tips - final push
@@ -205,46 +205,74 @@ const CONFIG = {
   ],
 };
 
-const UPGRADES = [
+// PERKS: Passive permanent upgrades (always active)
+const PERKS = [
   {
-    id: 'speed',
-    name: 'Speed Scrub',
-    icon: '⚡',
-    desc: 'Clean tasks complete faster',
+    id: 'scrub',
+    name: 'Quick Scrub',
+    icon: '🧹',
+    desc: 'Clean 12% faster per level',
     maxLevel: 5,
     baseCost: 50,
-    costScale: 1.8,  // Each level costs 1.8x more
+    costScale: 1.8,
     effect: 0.12,    // 12% faster per level
   },
   {
     id: 'patience',
     name: 'Patience Plus',
     icon: '🕐',
-    desc: 'Customers wait longer',
+    desc: 'Customers wait 15% longer',
     maxLevel: 5,
     baseCost: 60,
     costScale: 1.7,
     effect: 0.15,    // 15% more patience per level
   },
   {
-    id: 'automop',
-    name: 'Auto-Mop',
-    icon: '🤖',
-    desc: 'Tasks auto-complete sometimes',
+    id: 'autoassist',
+    name: 'Auto-Assist',
+    icon: '🎯',
+    desc: '8% chance tasks auto-complete',
     maxLevel: 3,
     baseCost: 100,
     costScale: 2.0,
-    effect: 0.08,    // 8% chance per level to auto-complete
+    effect: 0.08,    // 8% chance per level
+  },
+];
+
+// ITEMS: Consumable powerups (upgrade to enhance them)
+const ITEMS = [
+  {
+    id: 'speed',
+    name: 'Speed Boost',
+    icon: '⚡',
+    desc: '+3s duration per level',
+    maxLevel: 3,
+    baseCost: 40,
+    costScale: 1.6,
+    baseDuration: 12000,  // 12s base
+    bonusDuration: 3000,  // +3s per level
   },
   {
-    id: 'supplies',
-    name: 'Better Supplies',
-    icon: '📦',
-    desc: '+1 of each power-up per shift',
+    id: 'slow',
+    name: 'Slow-Mo',
+    icon: '🐢',
+    desc: '+3s duration per level',
     maxLevel: 3,
-    baseCost: 80,
-    costScale: 2.2,
-    effect: 1,       // +1 power-up per level
+    baseCost: 40,
+    costScale: 1.6,
+    baseDuration: 12000,
+    bonusDuration: 3000,
+  },
+  {
+    id: 'auto',
+    name: 'Insta-Clean',
+    icon: '✨',
+    desc: '+1 per shift',
+    maxLevel: 3,
+    baseCost: 60,
+    costScale: 1.8,
+    baseCount: 0,   // Start with 0
+    bonusCount: 1,  // +1 per level
   },
 ];
 
@@ -595,7 +623,7 @@ const BEAVER_TIPS = {
   dirtyStall: "Click dirty stalls to clean!",
   taskMash: "Mash the buttons faster!",
   dirtySink: "Don't forget the sinks!",
-  powerupReady: "Use your powerups! (⚡🐢✨)",
+  powerupReady: "Use your items! (⚡🐢✨)",
   comboStart: "Keep cleaning for combos!",
   lowTime: "Hurry! Time's running out!",
   vipCustomer: "VIP customer! Clean fast for 2x bonus!",
@@ -675,7 +703,8 @@ function init() {
     inspectorTimer: 0,        // Countdown until inspector appears
     inspectorWarning: 0,      // Warning countdown before inspector enters
     coins: 0,                 // Currency for upgrades
-    upgrades: {speed: 0, patience: 0, automop: 0, supplies: 0},
+    perks: {scrub: 0, patience: 0, autoassist: 0},  // Passive perks
+    items: {speed: 0, slow: 0, auto: 0},            // Item upgrades
     comboBoost: 0,            // Remaining duration of combo speed boost
     lastMilestone: 0,         // Last milestone level achieved (to avoid re-triggering)
   };
@@ -690,18 +719,40 @@ function getShiftConfig() {
 }
 
 function getEffectiveTaskTime() {
-  // Speed upgrade reduces task time
-  const speedBonus = getUpgradeEffect('speed');
-  let time = CONFIG.baseTaskTime * (1 - speedBonus);
+  // Quick Scrub perk reduces task time
+  const scrubBonus = getPerkEffect('scrub');
+  let time = CONFIG.baseTaskTime * (1 - scrubBonus);
   // Combo milestone speed boost (30% faster)
   if (game.comboBoost > 0) time *= 0.7;
   return time;
 }
 
 function getEffectivePatience() {
-  // Patience upgrade increases customer patience
-  const patienceBonus = getUpgradeEffect('patience');
+  // Patience perk increases customer patience
+  const patienceBonus = getPerkEffect('patience');
   return CONFIG.patience * (1 + patienceBonus);
+}
+
+function getPerkEffect(perkId) {
+  const perk = PERKS.find(p => p.id === perkId);
+  if (!perk) return 0;
+  return perk.effect * game.perks[perkId];
+}
+
+function getItemDuration(itemId) {
+  const item = ITEMS.find(i => i.id === itemId);
+  if (!item || !item.baseDuration) return 12000;
+  return item.baseDuration + (item.bonusDuration * game.items[itemId]);
+}
+
+function getItemCount(itemId) {
+  const item = ITEMS.find(i => i.id === itemId);
+  if (!item) return 0;
+  if (item.baseCount !== undefined) {
+    return item.baseCount + (item.bonusCount * game.items[itemId]);
+  }
+  // Speed and Slow always start with 1
+  return 1;
 }
 
 function showScreen(id) {
@@ -1007,12 +1058,11 @@ function startShift() {
   game.puddles = [];
   document.querySelectorAll('.puddle').forEach(el => el.remove());
 
-  // Apply supplies upgrade bonus to starting powerups
-  const suppliesBonus = game.upgrades.supplies;
+  // Set starting item counts based on item upgrades
   game.powerups = {
-    speed: 1 + suppliesBonus,
-    slow: 1 + suppliesBonus,
-    auto: 0 + suppliesBonus
+    speed: 1,  // Always start with 1 Speed Boost
+    slow: 1,   // Always start with 1 Slow-Mo
+    auto: getItemCount('auto')  // Based on Insta-Clean upgrade level
   };
 
   // Maybe trigger inspector visit (not on first shift)
@@ -1639,11 +1689,11 @@ function customerLeaves(stallIdx) {
     stall.tasks.push({...TASKS[1], done: false});
   }
 
-  // Auto-mop upgrade: chance to auto-complete some tasks
-  const automopChance = getUpgradeEffect('automop');
-  if (automopChance > 0) {
+  // Auto-Assist perk: chance to auto-complete some tasks
+  const autoAssistChance = getPerkEffect('autoassist');
+  if (autoAssistChance > 0) {
     stall.tasks.forEach(task => {
-      if (!task.done && Math.random() < automopChance) {
+      if (!task.done && Math.random() < autoAssistChance) {
         task.done = true;
       }
     });
@@ -2186,7 +2236,7 @@ $('pow-speed').addEventListener('click', () => {
   el.classList.remove('clicked'); void el.offsetWidth; el.classList.add('clicked');
   if (game.powerups.speed > 0 && game.effects.speed <= 0) {
     game.powerups.speed--;
-    game.effects.speed = 12000;
+    game.effects.speed = getItemDuration('speed');
     playClick();
     floatMessage('⚡ SPEED BOOST!', 400, 200, 'combo');
   }
@@ -2197,7 +2247,7 @@ $('pow-slow').addEventListener('click', () => {
   el.classList.remove('clicked'); void el.offsetWidth; el.classList.add('clicked');
   if (game.powerups.slow > 0 && game.effects.slow <= 0) {
     game.powerups.slow--;
-    game.effects.slow = 12000;
+    game.effects.slow = getItemDuration('slow');
     playClick();
     floatMessage('🐢 SLOW MODE!', 400, 200, 'combo');
   }
@@ -2243,12 +2293,6 @@ function getUpgradeCost(upgrade, level) {
   return Math.floor(upgrade.baseCost * Math.pow(upgrade.costScale, level));
 }
 
-function getUpgradeEffect(upgradeId) {
-  const upgrade = UPGRADES.find(u => u.id === upgradeId);
-  if (!upgrade) return 0;
-  return upgrade.effect * game.upgrades[upgradeId];
-}
-
 function calculateCoins(score, grade) {
   // Base coins from score
   let coins = Math.floor(score / 10);
@@ -2263,24 +2307,34 @@ function renderUpgradeShop() {
   grid.innerHTML = '';
   $('coins').textContent = game.coins;
 
-  UPGRADES.forEach(upgrade => {
-    const level = game.upgrades[upgrade.id];
-    const maxed = level >= upgrade.maxLevel;
-    const cost = getUpgradeCost(upgrade, level);
+  // Section: PERKS (passive upgrades)
+  const perksSection = document.createElement('div');
+  perksSection.className = 'upgrade-section';
+  perksSection.innerHTML = '<h3 class="section-title">🛡️ PERKS <span class="section-hint">(always active)</span></h3>';
+  grid.appendChild(perksSection);
+
+  const perksRow = document.createElement('div');
+  perksRow.className = 'cards-row';
+  grid.appendChild(perksRow);
+
+  PERKS.forEach(perk => {
+    const level = game.perks[perk.id];
+    const maxed = level >= perk.maxLevel;
+    const cost = getUpgradeCost(perk, level);
     const canAfford = game.coins >= cost;
 
     const card = document.createElement('div');
     card.className = 'upgrade-card' + (maxed ? ' maxed' : '');
     card.innerHTML = `
-      <div class="upgrade-icon">${upgrade.icon}</div>
-      <div class="upgrade-name">${upgrade.name}</div>
-      <div class="upgrade-desc">${upgrade.desc}</div>
+      <div class="upgrade-icon">${perk.icon}</div>
+      <div class="upgrade-name">${perk.name}</div>
+      <div class="upgrade-desc">${perk.desc}</div>
       <div class="upgrade-level">
-        <span class="current">Lv.${level}</span>/<span class="max">${upgrade.maxLevel}</span>
+        <span class="current">Lv.${level}</span>/<span class="max">${perk.maxLevel}</span>
       </div>
       ${maxed
         ? '<div class="upgrade-maxed">✓ MAXED</div>'
-        : `<button class="upgrade-cost ${canAfford ? '' : 'cant-afford'}" data-id="${upgrade.id}">
+        : `<button class="upgrade-cost ${canAfford ? '' : 'cant-afford'}" data-type="perk" data-id="${perk.id}">
             🪙 ${cost}
           </button>`
       }
@@ -2288,25 +2342,93 @@ function renderUpgradeShop() {
 
     if (!maxed) {
       const btn = card.querySelector('.upgrade-cost');
-      btn.addEventListener('click', () => purchaseUpgrade(upgrade.id));
+      btn.addEventListener('click', () => purchasePerk(perk.id));
     }
 
-    grid.appendChild(card);
+    perksRow.appendChild(card);
+  });
+
+  // Section: ITEMS (consumable upgrades)
+  const itemsSection = document.createElement('div');
+  itemsSection.className = 'upgrade-section';
+  itemsSection.innerHTML = '<h3 class="section-title">🎒 ITEMS <span class="section-hint">(use during play)</span></h3>';
+  grid.appendChild(itemsSection);
+
+  const itemsRow = document.createElement('div');
+  itemsRow.className = 'cards-row';
+  grid.appendChild(itemsRow);
+
+  ITEMS.forEach(item => {
+    const level = game.items[item.id];
+    const maxed = level >= item.maxLevel;
+    const cost = getUpgradeCost(item, level);
+    const canAfford = game.coins >= cost;
+
+    // Show current effect
+    let currentEffect = '';
+    if (item.baseDuration) {
+      const dur = (item.baseDuration + item.bonusDuration * level) / 1000;
+      currentEffect = `${dur}s`;
+    } else if (item.baseCount !== undefined) {
+      const count = item.baseCount + item.bonusCount * level;
+      currentEffect = `${count}/shift`;
+    }
+
+    const card = document.createElement('div');
+    card.className = 'upgrade-card item-card' + (maxed ? ' maxed' : '');
+    card.innerHTML = `
+      <div class="upgrade-icon">${item.icon}</div>
+      <div class="upgrade-name">${item.name}</div>
+      <div class="upgrade-desc">${item.desc}</div>
+      <div class="upgrade-level">
+        <span class="current">Lv.${level}</span>/<span class="max">${item.maxLevel}</span>
+        ${currentEffect ? `<span class="effect-preview">(${currentEffect})</span>` : ''}
+      </div>
+      ${maxed
+        ? '<div class="upgrade-maxed">✓ MAXED</div>'
+        : `<button class="upgrade-cost ${canAfford ? '' : 'cant-afford'}" data-type="item" data-id="${item.id}">
+            🪙 ${cost}
+          </button>`
+      }
+    `;
+
+    if (!maxed) {
+      const btn = card.querySelector('.upgrade-cost');
+      btn.addEventListener('click', () => purchaseItem(item.id));
+    }
+
+    itemsRow.appendChild(card);
   });
 }
 
-function purchaseUpgrade(upgradeId) {
-  const upgrade = UPGRADES.find(u => u.id === upgradeId);
-  if (!upgrade) return;
+function purchasePerk(perkId) {
+  const perk = PERKS.find(p => p.id === perkId);
+  if (!perk) return;
 
-  const level = game.upgrades[upgradeId];
-  if (level >= upgrade.maxLevel) return;
+  const level = game.perks[perkId];
+  if (level >= perk.maxLevel) return;
 
-  const cost = getUpgradeCost(upgrade, level);
+  const cost = getUpgradeCost(perk, level);
   if (game.coins < cost) return;
 
   game.coins -= cost;
-  game.upgrades[upgradeId]++;
+  game.perks[perkId]++;
+  playTaskComplete();
+  renderUpgradeShop();
+}
+
+function purchaseItem(itemId) {
+  const item = ITEMS.find(i => i.id === itemId);
+  if (!item) return;
+
+  const level = game.items[itemId];
+  if (level >= item.maxLevel) return;
+
+  const cost = getUpgradeCost(item, level);
+  if (game.coins < cost) return;
+
+  game.coins -= cost;
+  game.items[itemId]++;
   playTaskComplete();
   renderUpgradeShop();
 }

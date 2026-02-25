@@ -9,14 +9,25 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Simplify and Unify Upgrade/Powerup System (lxh)
+- Goal: fix confusing dual-system (upgrades + powerups) with icon overlap (⚡ used twice)
+- Solution: Option A from issue - PERKS (passive) + ITEMS (consumables) with clear separation
+- Changed UPGRADES array → PERKS + ITEMS arrays
+- PERKS (always active): 🧹 Quick Scrub (was ⚡ Speed Scrub), 🕐 Patience Plus, 🎯 Auto-Assist
+- ITEMS (consumables): ⚡ Speed Boost, 🐢 Slow-Mo, ✨ Insta-Clean - upgrades enhance duration/count
+- Removed confusing "Better Supplies" upgrade that gave powerups
+- game.upgrades → game.perks + game.items
+- getUpgradeEffect() → getPerkEffect(), added getItemDuration(), getItemCount()
+- Shop UI now shows two sections: 🛡️ PERKS, 🎒 ITEMS with clear section headers
+- Item cards show current effect (e.g., "12s", "0/shift") that scales with level
+- Files: src/main.js (~90 lines changed), src/styles.css (~10 lines)
+
 ### Remove Blocking Tutorial System (etg)
 - Goal: remove buggy interactive tutorial that blocked gameplay
 - Decision: kept "How to Play" modal (non-blocking), removed interactive overlay
 - Why: game teaches itself, Shift 1 is slow (4300-6400ms spawns), Bucky tips provide guidance
 - Removed: tutorial-overlay HTML, 18 lines of tutorial CSS, ~150 lines of tutorial JS
 - Removed: TUTORIAL_STEPS array, tutorialActive/tutorialStep/tutorialHighlight state
-- Removed: startInteractiveTutorial, showTutorialStep, advanceTutorial, endTutorial functions
-- Removed: tutorial-skip and tutorial-next event listeners
 - Kept: tutorial-modal (How to Play), beaverTutorialSeen localStorage, Bucky tips system
 - Files: index.html (~10 lines), src/styles.css (~18 lines), src/main.js (~150 lines)
 
@@ -28,18 +39,7 @@ This file maintains context between autonomous iterations.
 - 8 tips defined in BEAVER_TIPS object for different gameplay moments
 - localStorage: tracks each tip shown with `beaverTip_<tipKey>` keys
 - Only shows on first shift (game.shift === 0) and each tip only once
-- Triggers: dirty stall, task panel open, dirty sink, powerup available, combo start, VIP customer, inspector warning, low time (15s)
-- Files: index.html (CSS lines 104-108, 386, 430; HTML line 571; JS lines 1134-1169; triggers scattered)
-
-### Sink Dirty Indicator in HUD (uh9)
-- Goal: show dirty sink count in HUD so players don't forget them
-- Added `#sinks-hud` element after dirty stall count in HUD
-- Hidden by default (`style="display:none"`), only shows when sinks are dirty
-- Uses 🚿 emoji + count for visual recognition
-- Color escalation: blue (#64b5f6) normally, red (#e53935) when ALL sinks dirty
-- Added `#dirty-sinks` CSS style (line 107)
-- updateHUD() now calculates dirty sinks and toggles visibility (lines 1430-1439)
-- Files: index.html (CSS line 107, HTML line 569, JS lines 1430-1439)
+- Files: index.html (CSS lines 104-108, 386, 430; HTML line 571; JS lines 1134-1169)
 
 ---
 
