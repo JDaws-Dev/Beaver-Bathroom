@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Beaver's Bathroom Blitz</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,sans-serif;background:#2d1f0f;color:#eee;overflow:hidden;height:100vh;display:flex;justify-content:center;align-items:center;user-select:none}
+#game-container{width:100%;max-width:800px;height:100vh;max-height:900px;display:flex;flex-direction:column;position:relative}
+.screen{display:none;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;position:absolute;inset:0;padding:20px;text-align:center}
+.screen.active{display:flex}
+#title-screen{background:linear-gradient(180deg,#3d2814,#2d4a1e);gap:15px}
+#title-screen h1{font-size:2em;color:#f5a623;text-shadow:2px 2px #000}
+#title-screen p{color:#fdd835;font-style:italic}
+.instructions{background:#006b3f;border:2px solid #fff;border-radius:8px;padding:12px;font-size:0.85em;text-align:left;max-width:350px}
+.instructions li{list-style:none;margin:4px 0}
+.gender-select{display:flex;gap:15px;margin:10px 0}
+.gender-btn{padding:15px 25px;border:3px solid #f5a623;border-radius:10px;background:#3d2814;color:#fff;font-size:1.1em;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;transition:all 0.2s}
+.gender-btn:hover{transform:scale(1.05);background:#5d3814}
+.gender-btn.selected{background:#f5a623;color:#000;border-color:#fff}
+.gender-btn .icon{font-size:2em}
+.btn{padding:12px 30px;border:none;border-radius:8px;font-size:1.1em;font-weight:bold;cursor:pointer;background:#d4380d;color:#fff;transition:transform 0.1s}
+.btn:hover{transform:scale(1.03)}
+.btn:active{transform:scale(0.98)}
+.btn:disabled{opacity:0.5;cursor:not-allowed}
+#game-screen{align-items:stretch;justify-content:flex-start}
+#hud{display:flex;justify-content:space-around;padding:10px 8px;background:linear-gradient(#3d2814,#2d1f0f);border-bottom:3px solid #f5a623}
+.hud-item{text-align:center}
+.hud-item .label{font-size:0.65em;opacity:0.8;text-transform:uppercase;color:#f5a623}
+.hud-item .value{font-size:1.1em;font-weight:bold}
+#dirty-count{color:#fdd835;font-size:0.9em}
+#play-area{flex:1;position:relative;overflow:hidden;min-height:300px}
+#play-area.shake{animation:screen-shake 0.3s}
+#bathroom{position:absolute;inset:0;background:#e8e0d0;display:flex;flex-direction:column}
+#stalls-row{display:flex;justify-content:center;gap:6px;padding:10px 8px;background:linear-gradient(#6a5a48,#5a4a38);border-bottom:4px solid #4a3a28}
+.stall{width:58px;display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:transform 0.1s}
+.stall:hover{transform:scale(1.05)}
+.stall:active{transform:scale(0.98)}
+.stall-light{width:14px;height:14px;border-radius:50%;margin-bottom:4px;border:2px solid #333;transition:all 0.3s}
+.stall-body{width:52px;height:70px;background:#f5f0e8;border:3px solid #8b7355;border-radius:6px 6px 0 0;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+.stall-door{position:absolute;inset:0;background:linear-gradient(90deg,#c9b896,#e0d4bc,#c9b896);border:2px solid #8b7355;transform-origin:left;transition:transform 0.4s ease-out;z-index:5}
+.stall-door::after{content:'';position:absolute;right:8px;top:50%;transform:translateY(-50%);width:6px;height:20px;background:#8b7355;border-radius:3px}
+.stall-door.open{transform:rotateY(-100deg)}
+.stall-icon{font-size:1.4em;z-index:1}
+.stall-label{font-size:0.55em;font-weight:bold;z-index:1;margin-top:2px}
+.stall-bar{position:absolute;bottom:0;left:0;height:6px;background:linear-gradient(90deg,#1e88e5,#42a5f5);z-index:6;transition:width 0.05s;border-radius:0 3px 3px 0}
+.stall-num{font-size:0.6em;opacity:0.7;margin-top:2px;font-weight:bold}
+.stall.empty .stall-light{background:#43a047;box-shadow:0 0 10px #43a047}
+.stall.empty .stall-body{background:#e8f5e9}
+.stall.occupied .stall-light{background:#e53935;box-shadow:0 0 10px #e53935}
+.stall.occupied .stall-body{background:#fff8f8}
+.stall.dirty .stall-light{background:#fdd835;box-shadow:0 0 14px #fdd835;animation:blink 0.4s infinite alternate}
+.stall.dirty .stall-body{background:#fff3e0;animation:shake 0.15s infinite}
+.stall.cleaning .stall-light{background:#1e88e5;box-shadow:0 0 12px #1e88e5}
+.stall.cleaning .stall-body{background:#e3f2fd}
+#floor-area{flex:1;position:relative;background:repeating-linear-gradient(90deg,#d4c8b0 0px,#d4c8b0 38px,#c8bc9f 38px,#c8bc9f 40px)}
+#sinks-area{position:absolute;bottom:0;left:50%;transform:translateX(-50%);display:flex;gap:12px;padding:8px 15px;background:linear-gradient(#5a4a38,#4a3a28);border-radius:10px 10px 0 0;border:2px solid #6a5a48;border-bottom:none}
+.sink{width:48px;height:42px;background:linear-gradient(#e8e8e8,#c0c0c0);border:3px solid #888;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:transform 0.1s}
+.sink:hover{transform:scale(1.1)}
+.sink:active{transform:scale(0.95)}
+.sink-bowl{width:30px;height:12px;background:#fff;border:2px solid #999;border-radius:0 0 10px 10px}
+.sink.dirty .sink-bowl{background:#ffcc80;animation:pulse-dirty 0.5s infinite alternate}
+.sink.cleaning .sink-bowl{background:#81d4fa}
+.sink-label{font-size:0.45em;color:#333;font-weight:bold;margin-top:2px}
+#exit-door{position:absolute;bottom:0;right:10px;width:55px;height:75px;background:linear-gradient(#5a4a3a,#3a2a1a);border:3px solid #2a1a0a;border-bottom:none;border-radius:8px 8px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:1.4em}
+#exit-door::after{content:'EXIT';font-size:0.35em;color:#aaa;margin-top:2px}
+#towels{position:absolute;bottom:0;left:10px;width:50px;height:60px;background:linear-gradient(#a67c52,#8b6342);border:3px solid #6d4c2a;border-bottom:none;border-radius:6px 6px 0 0;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:0.7em;transition:transform 0.1s}
+#towels:hover{transform:scale(1.08)}
+#towels:active{transform:scale(0.95)}
+#towels.low{animation:pulse-danger 0.5s infinite alternate}
+.person{position:absolute;font-size:1.8em;z-index:10;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.4));transition:opacity 0.15s}
+.person.walking{animation:walk 0.2s infinite}
+.person.entering{opacity:0;transform:scale(0.5)}
+.person .patience-bar{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);width:28px;height:6px;background:#333;border-radius:4px;overflow:hidden;border:1px solid #222}
+.person .patience-fill{height:100%;transition:width 0.1s,background 0.3s}
+.person .thought{position:absolute;top:-30px;left:50%;transform:translateX(-50%);background:#fff;padding:3px 6px;border-radius:10px;font-size:0.5em;white-space:nowrap;opacity:0;transition:opacity 0.2s;box-shadow:0 2px 5px rgba(0,0,0,0.3)}
+.person .thought::after{content:'';position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#fff}
+.person.impatient .thought{opacity:1}
+.person.urgent{animation:walk 0.12s infinite}
+#task-panel{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(45,31,15,0.95);padding:12px 18px;border-radius:12px;border:3px solid #f5a623;display:none;z-index:50;box-shadow:0 4px 20px rgba(0,0,0,0.5)}
+#task-panel.show{display:block;animation:pop-in 0.15s ease-out}
+#task-panel h3{font-size:0.9em;color:#f5a623;margin-bottom:8px}
+#task-panel .hint{font-size:0.65em;color:#aaa;margin-bottom:8px}
+#task-buttons{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.task-btn{padding:10px 16px;background:#4a3a28;border:2px solid #6a5a48;border-radius:8px;color:#fff;font-size:0.85em;cursor:pointer;transition:all 0.1s;position:relative;overflow:hidden}
+.task-btn:hover{background:#5a4a38;transform:scale(1.05)}
+.task-btn:active{transform:scale(0.95)}
+.task-btn.done{background:#43a047;border-color:#2e7d32;opacity:0.7}
+.task-btn.active{border-color:#f5a623;box-shadow:0 0 15px #f5a623}
+.task-btn .progress{position:absolute;bottom:0;left:0;height:4px;background:#f5a623;transition:width 0.05s}
+#powerups{display:flex;gap:8px;padding:10px;background:linear-gradient(#2d1f0f,#3d2814);border-top:3px solid #f5a623;justify-content:center}
+.powerup{padding:8px 12px;background:#4a3a28;border:2px solid #6a5a48;border-radius:8px;color:#fff;font-size:0.7em;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all 0.15s}
+.powerup:hover{background:#5a4a38;transform:scale(1.05)}
+.powerup:active{transform:scale(0.95)}
+.powerup.disabled{opacity:0.3;pointer-events:none}
+.powerup.active-effect{border-color:#f5a623;box-shadow:0 0 10px #f5a623;animation:glow 0.5s infinite alternate}
+.powerup .count{background:#d4380d;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-weight:bold}
+.float-msg{position:absolute;font-weight:bold;font-size:1.2em;animation:float-up 1s forwards;z-index:100;text-shadow:0 2px 4px #000;pointer-events:none}
+.float-msg.good{color:#43a047}
+.float-msg.bad{color:#e53935}
+.float-msg.combo{color:#f5a623;font-size:1.5em}
+.float-msg.save{color:#2196f3;font-size:1.3em}
+#result-screen,#gameover-screen{background:linear-gradient(180deg,#3d2814,#2d1f0f);gap:15px}
+#result-screen h2,#gameover-screen h2{font-size:1.6em;color:#f5a623}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:280px}
+.stat{background:#4a3a28;padding:12px;border-radius:8px;text-align:center;border:2px solid #6a5a48}
+.stat .num{font-size:1.4em;font-weight:bold;color:#f5a623}
+.stat .lbl{font-size:0.65em;opacity:0.8}
+.grade{font-size:1.4em;padding:10px 25px;border-radius:8px;font-weight:bold}
+.grade.S{background:#f5a62344;color:#f5a623;border:2px solid #f5a623}
+.grade.A{background:#43a04744;color:#43a047;border:2px solid #43a047}
+.grade.B{background:#1e88e544;color:#1e88e5;border:2px solid #1e88e5}
+.grade.C{background:#fb8c0044;color:#fb8c00;border:2px solid #fb8c00}
+.grade.F{background:#e5393544;color:#e53935;border:2px solid #e53935}
+.pick-row{display:flex;gap:12px}
+.pick-item{padding:12px 18px;background:#4a3a28;border:2px solid #6a5a48;border-radius:8px;cursor:pointer;text-align:center;transition:all 0.15s}
+.pick-item:hover{border-color:#f5a623;transform:scale(1.05)}
+.pick-item .icon{font-size:1.5em}
+.pick-item .name{font-size:0.75em;margin-top:4px;font-weight:bold}
+.pick-item .desc{font-size:0.55em;opacity:0.7;margin-top:2px}
+@keyframes blink{from{box-shadow:0 0 8px #fdd835}to{box-shadow:0 0 20px #fdd835}}
+@keyframes shake{0%,100%{transform:translateX(0)}50%{transform:translateX(-3px)}}
+@keyframes walk{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-5px) rotate(4deg)}}
+@keyframes float-up{0%{opacity:1;transform:translateY(0) scale(1)}40%{opacity:1;transform:translateY(-25px) scale(1.2)}100%{opacity:0;transform:translateY(-60px) scale(0.8)}}
+@keyframes pop-in{from{opacity:0;transform:translateX(-50%) scale(0.8)}to{opacity:1;transform:translateX(-50%) scale(1)}}
+@keyframes pulse{from{box-shadow:0 0 8px #1e88e5}to{box-shadow:0 0 16px #1e88e5}}
+@keyframes glow{from{box-shadow:0 0 8px #f5a623}to{box-shadow:0 0 18px #f5a623}}
+@keyframes pulse-dirty{from{background:#ffcc80}to{background:#ffb74d}}
+@keyframes pulse-danger{from{background:#c62828}to{background:#e53935}}
+@keyframes screen-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+@keyframes confetti{0%{transform:translateY(0) rotate(0deg) scale(1);opacity:1}100%{transform:translateY(-80px) rotate(360deg) scale(0);opacity:0}}
+.confetti{position:absolute;font-size:1.4em;animation:confetti 0.7s forwards;pointer-events:none;z-index:200}
+@keyframes rush-warning{0%,100%{opacity:1}50%{opacity:0.5}}
+#rush-warning{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(213,0,0,0.9);color:#fff;padding:15px 30px;border-radius:10px;font-size:1.3em;font-weight:bold;display:none;z-index:100;animation:rush-warning 0.3s infinite}
+@media(max-width:500px){.stall{width:48px}.stall-body{width:44px;height:60px}.person{font-size:1.4em}.gender-btn{padding:10px 15px}}
+</style>
+</head>
+<body>
+<div id="game-container">
+  <div id="title-screen" class="screen active">
+    <h1>🦫 Beaver's Bathroom Blitz</h1>
+    <p>"Dam Good Restrooms - Since 1982"</p>
+    <p style="font-size:0.7em;opacity:0.7;margin-top:-10px">🛣️ The Legendary Texas Pit Stop Experience</p>
+    <div class="instructions">
+      <li>🚗 Road-trippers need to GO! Keep stalls spotless!</li>
+      <li>🚽 Click dirty stalls, then MASH to clean faster!</li>
+      <li>🚿 Scrub those sinks - travelers notice everything!</li>
+      <li>📄 Keep towels stocked - it's the beaver way!</li>
+      <li>⭐ Protect the lodge's 5-star reputation!</li>
+    </div>
+    <p style="margin-top:10px;font-size:0.9em">Choose your restroom:</p>
+    <div class="gender-select">
+      <button class="gender-btn" data-gender="male">
+        <span class="icon">🚹</span>
+        <span>Men's</span>
+      </button>
+      <button class="gender-btn" data-gender="female">
+        <span class="icon">🚺</span>
+        <span>Women's</span>
+      </button>
+    </div>
+    <button class="btn" id="start-btn" disabled>Clock In!</button>
+  </div>
+
+  <div id="game-screen" class="screen">
+    <div id="hud">
+      <div class="hud-item"><div class="label">Rating</div><div class="value" id="rating">⭐⭐⭐⭐⭐</div></div>
+      <div class="hud-item"><div class="label">Score</div><div class="value" id="score">0</div></div>
+      <div class="hud-item"><div class="label">Combo</div><div class="value" id="combo">x1</div></div>
+      <div class="hud-item"><div class="label">Dirty</div><div class="value" id="dirty-count">0</div></div>
+      <div class="hud-item"><div class="label">Time</div><div class="value" id="timer">1:00</div></div>
+    </div>
+    <div id="play-area">
+      <div id="bathroom">
+        <div id="stalls-row"></div>
+        <div id="floor-area">
+          <div id="exit-door">🚪</div>
+          <div id="towels"><div>📄</div><div>TOWELS</div></div>
+          <div id="sinks-area"></div>
+        </div>
+      </div>
+      <div id="rush-warning">🚌 TOUR BUS ARRIVING! 🚌</div>
+      <div id="task-panel">
+        <h3 id="task-title">Stall #1</h3>
+        <div class="hint">Click rapidly to clean faster!</div>
+        <div id="task-buttons"></div>
+      </div>
+    </div>
+    <div id="powerups">
+      <div class="powerup disabled" id="pow-speed">⚡ Speed <span class="count" id="cnt-speed">0</span></div>
+      <div class="powerup disabled" id="pow-slow">🐢 Slow <span class="count" id="cnt-slow">0</span></div>
+      <div class="powerup disabled" id="pow-auto">✨ Auto <span class="count" id="cnt-auto">0</span></div>
+    </div>
+  </div>
+
+  <div id="result-screen" class="screen">
+    <h2 id="result-title">Shift Complete!</h2>
+    <div id="result-rating"></div>
+    <div class="stats-grid" id="result-stats"></div>
+    <div class="grade" id="result-grade">S</div>
+    <p id="result-comment"></p>
+    <div id="pick-section" style="display:none">
+      <p style="font-size:0.85em;opacity:0.8;margin-bottom:10px">Choose a power-up:</p>
+      <div class="pick-row" id="pick-row"></div>
+    </div>
+    <button class="btn" id="next-btn">Next Shift</button>
+  </div>
+
+  <div id="gameover-screen" class="screen">
+    <div style="font-size:2.5em" id="go-icon">🚽</div>
+    <h2 id="go-title">Game Over</h2>
+    <p id="go-msg"></p>
+    <div style="font-size:2.2em;color:#f5a623" id="go-score">0</div>
+    <div class="stats-grid" id="go-stats"></div>
+    <button class="btn" id="retry-btn">Try Again</button>
+  </div>
+</div>
+
+<script>
+const CONFIG = {
+  shifts: [
+    {stalls:5, sinks:2, spawnMin:3000, spawnMax:4500, occMin:2000, occMax:4000, duration:60},
+    {stalls:6, sinks:2, spawnMin:2500, spawnMax:4000, occMin:1800, occMax:3500, duration:65},
+    {stalls:7, sinks:3, spawnMin:2200, spawnMax:3500, occMin:1600, occMax:3200, duration:70},
+    {stalls:8, sinks:3, spawnMin:1800, spawnMax:3000, occMin:1400, occMax:2800, duration:75},
+    {stalls:9, sinks:3, spawnMin:1500, spawnMax:2500, occMin:1200, occMax:2500, duration:80},
+    {stalls:10, sinks:4, spawnMin:1200, spawnMax:2000, occMin:1000, occMax:2200, duration:90},
+  ],
+  patience: 10000,
+  walkSpeed: 120,
+  baseTaskTime: 500,   // Base time per task
+  clickBoost: 80,      // Each click reduces time by this much
+  sinkCleanTime: 400,
+  rushChance: 0.15,    // Chance of rush hour per shift
+};
+
+const TASKS = [
+  {id:'plunge', icon:'🪠', label:'Plunge', chance:0.3},
+  {id:'wipe', icon:'🧽', label:'Scrub', chance:0.75},
+  {id:'mop', icon:'🧹', label:'Mop', chance:0.45},
+  {id:'tp', icon:'🧻', label:'Restock', chance:0.4},
+];
+
+const THOUGHTS = {
+  impatient: ['Hurry up!', 'Come ON!', '😤', 'Ugh...', '🙄', 'NEED TO GO!'],
+  desperate: ['EMERGENCY! 🚨', 'HURRY!!!', '😱', 'CAN\'T WAIT!', '💀'],
+  happy: ['Ahh! 😌', 'Nice & clean!', '✨', 'Perfect!', '👍'],
+  disgusted: ['Gross! 🤢', 'Ewww!', 'Nasty...', '😖', 'Really?!'],
+};
+
+const CUSTOMERS_MALE = ['👨','👴','👦','🧔','👨‍🦰','👨‍🦱','👨‍🦳','👱‍♂️','🧑‍🦰','👨‍🦲'];
+const CUSTOMERS_FEMALE = ['👩','👵','👧','👩‍🦰','👩‍🦱','👩‍🦳','👱‍♀️','👩‍🦲','🧑‍🦱','👩‍🔧'];
+
+const CLEAN_MESSAGES = [
+  'Sparkling! ✨', 'Spotless!', 'Dam good!', 'Fresh!', 'Pristine!',
+  'Squeaky clean!', 'Like new!', 'Beaver-approved!', 'Road-trip ready!',
+  'Rest stop royalty!', 'Lodge quality!', 'Tail-slapping clean!'
+];
+
+const GAME_OVER_MESSAGES = [
+  'Pack your plunger and hit the road...',
+  'The lodge manager wants a word...',
+  'Your beaver badge has been revoked!',
+  'Time to find a new dam job...',
+  'The health inspector shut you down!',
+];
+
+const WIN_MESSAGES = [
+  'You\'re the pride of the pit stop!',
+  'Travelers sing songs of your clean stalls!',
+  'You\'ve earned your beaver badge! 🦫',
+  'The cleanest restrooms this side of Texas!',
+  'Legend of the Lodge!',
+];
+
+let game = {};
+let selectedGender = null;
+
+// Audio
+let audioCtx = null;
+function initAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+
+function playSound(freq, duration, type = 'sine', volume = 0.25) {
+  if (!audioCtx) return;
+  try {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.frequency.value = freq;
+    osc.type = type;
+    gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  } catch(e) {}
+}
+
+function playClick() { playSound(500, 0.05, 'square', 0.15); }
+function playTaskComplete() { playSound(700, 0.08); setTimeout(() => playSound(900, 0.1), 60); }
+function playStallClean() {
+  playSound(523, 0.1);
+  setTimeout(() => playSound(659, 0.1), 80);
+  setTimeout(() => playSound(784, 0.12), 160);
+  setTimeout(() => playSound(1047, 0.2), 250);
+}
+function playBad() { playSound(200, 0.25, 'sawtooth', 0.2); }
+function playUrgent() { playSound(800, 0.08, 'square', 0.1); setTimeout(() => playSound(600, 0.08, 'square', 0.1), 100); }
+function playRush() { for(let i=0;i<3;i++) setTimeout(() => playSound(1000, 0.1, 'square', 0.2), i*100); }
+function playWin() {
+  [523,659,784,1047].forEach((f,i) => setTimeout(() => playSound(f, 0.15), i*120));
+}
+
+function $(id) { return document.getElementById(id); }
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function rnd(min, max) { return min + Math.random() * (max - min); }
+function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+function screenShake() {
+  $('play-area').classList.add('shake');
+  setTimeout(() => $('play-area').classList.remove('shake'), 300);
+}
+
+function init() {
+  game = {
+    shift: 0,
+    score: 0,
+    rating: 5,
+    combo: 0,
+    maxCombo: 0,
+    time: 0,
+    running: false,
+    stalls: [],
+    sinks: [],
+    people: [],
+    towels: 10,
+    powerups: {speed: 1, slow: 1, auto: 0},
+    effects: {speed: 0, slow: 0},
+    spawnTimer: 0,
+    activeStall: -1,
+    activeTask: -1,
+    taskProgress: 0,
+    stats: {cleaned: 0, served: 0, dirty: 0, abandoned: 0, saves: 0},
+    personId: 0,
+    gender: selectedGender,
+    rushMode: false,
+    rushTimer: 0,
+    lastUrgentBeep: 0,
+  };
+}
+
+function getCustomers() {
+  return game.gender === 'male' ? CUSTOMERS_MALE : CUSTOMERS_FEMALE;
+}
+
+function getShiftConfig() {
+  return CONFIG.shifts[Math.min(game.shift, CONFIG.shifts.length - 1)];
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+
+function spawnConfetti(x, y, count = 8) {
+  const emojis = ['✨','⭐','💫','🌟','🎉'];
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti';
+    el.textContent = pick(emojis);
+    el.style.left = (x + rnd(-30, 30)) + 'px';
+    el.style.top = y + 'px';
+    el.style.animationDelay = (i * 0.04) + 's';
+    $('play-area').appendChild(el);
+    setTimeout(() => el.remove(), 800);
+  }
+}
+
+function floatMessage(text, x, y, type = 'good') {
+  const el = document.createElement('div');
+  el.className = 'float-msg ' + type;
+  el.textContent = text;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  $('play-area').appendChild(el);
+  setTimeout(() => el.remove(), 1000);
+}
+
+function buildStalls() {
+  const row = $('stalls-row');
+  row.innerHTML = '';
+  const cfg = getShiftConfig();
+  game.stalls = [];
+
+  for (let i = 0; i < cfg.stalls; i++) {
+    game.stalls.push({
+      state: 'empty',
+      timer: 0,
+      tasks: [],
+      customer: '',
+      doorOpen: false
+    });
+
+    const el = document.createElement('div');
+    el.className = 'stall empty';
+    el.dataset.index = i;
+    el.innerHTML = `
+      <div class="stall-light"></div>
+      <div class="stall-body">
+        <div class="stall-icon">🚽</div>
+        <div class="stall-label"></div>
+        <div class="stall-bar" style="width:0"></div>
+        <div class="stall-door"></div>
+      </div>
+      <div class="stall-num">${i+1}</div>
+    `;
+    el.addEventListener('click', () => clickStall(i));
+    row.appendChild(el);
+  }
+}
+
+function buildSinks() {
+  const container = $('sinks-area');
+  container.innerHTML = '';
+  const cfg = getShiftConfig();
+  game.sinks = [];
+
+  for (let i = 0; i < cfg.sinks; i++) {
+    game.sinks.push({dirty: false, cleaning: false, progress: 0});
+
+    const el = document.createElement('div');
+    el.className = 'sink';
+    el.dataset.index = i;
+    el.innerHTML = `<div class="sink-bowl"></div><div class="sink-label">SINK</div>`;
+    el.addEventListener('click', () => clickSink(i));
+    container.appendChild(el);
+  }
+}
+
+function updateStallDOM(i) {
+  const stall = game.stalls[i];
+  const el = $('stalls-row').children[i];
+  if (!el) return;
+
+  el.className = 'stall ' + stall.state;
+  el.querySelector('.stall-door').classList.toggle('open', stall.doorOpen);
+
+  const icon = el.querySelector('.stall-icon');
+  const label = el.querySelector('.stall-label');
+  const bar = el.querySelector('.stall-bar');
+
+  if (stall.state === 'occupied') {
+    icon.textContent = '🚽';
+    label.textContent = '';
+  } else if (stall.state === 'dirty') {
+    icon.textContent = '💩';
+    label.textContent = 'DIRTY';
+  } else if (stall.state === 'cleaning') {
+    icon.textContent = '🧹';
+    label.textContent = '';
+    const total = stall.tasks.length;
+    const done = stall.tasks.filter(t => t.done).length;
+    const currentProg = game.activeTask >= 0 ? (game.taskProgress / CONFIG.baseTaskTime) : 0;
+    const progress = ((done + currentProg) / total) * 100;
+    bar.style.width = Math.min(100, progress) + '%';
+  } else {
+    icon.textContent = '🚽';
+    label.textContent = '';
+    bar.style.width = '0';
+  }
+}
+
+function updateSinkDOM(i) {
+  const sink = game.sinks[i];
+  const el = $('sinks-area').children[i];
+  if (!el) return;
+  el.classList.toggle('dirty', sink.dirty);
+  el.classList.toggle('cleaning', sink.cleaning);
+}
+
+function getDirtyCount() {
+  return game.stalls.filter(s => s.state === 'dirty').length;
+}
+
+function updateHUD() {
+  let stars = '';
+  for (let i = 0; i < 5; i++) {
+    stars += game.rating >= i + 0.75 ? '⭐' : (game.rating >= i + 0.25 ? '🌟' : '☆');
+  }
+  $('rating').textContent = stars;
+  $('rating').style.animation = game.rating <= 1 ? 'blink 0.3s infinite' : '';
+
+  $('score').textContent = Math.floor(game.score);
+
+  const comboMult = 1 + game.combo * 0.5;
+  $('combo').textContent = game.combo > 0 ? `x${comboMult.toFixed(1)}` : 'x1';
+  $('combo').style.color = game.combo >= 5 ? '#ff5722' : (game.combo >= 3 ? '#f5a623' : '#fff');
+  $('combo').style.fontSize = game.combo >= 3 ? '1.3em' : '1.1em';
+
+  const dirtyCount = getDirtyCount();
+  $('dirty-count').textContent = dirtyCount > 0 ? `⚠️ ${dirtyCount}` : '✓';
+  $('dirty-count').style.color = dirtyCount > 2 ? '#e53935' : (dirtyCount > 0 ? '#fdd835' : '#43a047');
+
+  const sec = Math.max(0, Math.ceil(game.time));
+  $('timer').textContent = `${Math.floor(sec/60)}:${(sec%60).toString().padStart(2,'0')}`;
+  $('timer').style.color = sec <= 10 ? '#e53935' : (sec <= 20 ? '#fdd835' : '#43a047');
+  $('timer').style.animation = sec <= 10 ? 'blink 0.5s infinite' : '';
+
+  // Urgent beeping when time is low
+  if (sec <= 10 && sec > 0 && game.running) {
+    const now = Date.now();
+    if (now - game.lastUrgentBeep > 1000) {
+      playUrgent();
+      game.lastUrgentBeep = now;
+    }
+  }
+
+  $('cnt-speed').textContent = game.powerups.speed;
+  $('cnt-slow').textContent = game.powerups.slow;
+  $('cnt-auto').textContent = game.powerups.auto;
+
+  $('pow-speed').classList.toggle('disabled', game.powerups.speed <= 0 && game.effects.speed <= 0);
+  $('pow-slow').classList.toggle('disabled', game.powerups.slow <= 0 && game.effects.slow <= 0);
+  $('pow-auto').classList.toggle('disabled', game.powerups.auto <= 0);
+  $('pow-speed').classList.toggle('active-effect', game.effects.speed > 0);
+  $('pow-slow').classList.toggle('active-effect', game.effects.slow > 0);
+
+  $('towels').style.background = game.towels <= 2 ? '#c62828' : '#a67c52';
+  $('towels').classList.toggle('low', game.towels <= 2);
+  $('towels').children[0].textContent = game.towels > 5 ? '📄📄📄' : (game.towels > 2 ? '📄📄' : (game.towels > 0 ? '📄' : '❌'));
+}
+
+function startShift() {
+  const cfg = getShiftConfig();
+  game.time = cfg.duration;
+  game.spawnTimer = rnd(300, 800);
+  game.people = [];
+  game.stats = {cleaned: 0, served: 0, dirty: 0, abandoned: 0, saves: 0};
+  game.activeStall = -1;
+  game.activeTask = -1;
+  game.taskProgress = 0;
+  game.towels = 10;
+  game.rushMode = false;
+  game.rushTimer = 0;
+
+  // Maybe trigger rush hour
+  if (Math.random() < CONFIG.rushChance && game.shift > 0) {
+    game.rushTimer = rnd(15000, 30000); // Rush starts after 15-30 seconds
+  }
+
+  buildStalls();
+  buildSinks();
+  hideTaskPanel();
+  updateHUD();
+  showScreen('game-screen');
+  $('rush-warning').style.display = 'none';
+
+  game.running = true;
+  game.lastTime = performance.now();
+  requestAnimationFrame(gameLoop);
+}
+
+function gameLoop(now) {
+  if (!game.running) return;
+
+  const dt = Math.min(now - game.lastTime, 100);
+  game.lastTime = now;
+
+  update(dt);
+  updateHUD();
+  renderPeople();
+
+  requestAnimationFrame(gameLoop);
+}
+
+function update(dt) {
+  const cfg = getShiftConfig();
+
+  game.time -= dt / 1000;
+  if (game.time <= 0) {
+    endShift();
+    return;
+  }
+
+  // Rush hour logic
+  if (game.rushTimer > 0) {
+    game.rushTimer -= dt;
+    if (game.rushTimer <= 0 && !game.rushMode) {
+      game.rushMode = true;
+      game.rushDuration = 8000;
+      $('rush-warning').style.display = 'block';
+      playRush();
+      screenShake();
+    }
+  }
+  if (game.rushMode) {
+    game.rushDuration -= dt;
+    if (game.rushDuration <= 0) {
+      game.rushMode = false;
+      $('rush-warning').style.display = 'none';
+    }
+  }
+
+  // Spawn customers
+  game.spawnTimer -= dt;
+  if (game.spawnTimer <= 0) {
+    spawnCustomer();
+    let interval = rnd(cfg.spawnMin, cfg.spawnMax);
+    if (game.effects.slow > 0) interval *= 2;
+    if (game.rushMode) interval *= 0.3; // Much faster during rush
+    game.spawnTimer = interval;
+  }
+
+  // Update stalls
+  for (let i = 0; i < game.stalls.length; i++) {
+    const stall = game.stalls[i];
+
+    if (stall.state === 'occupied') {
+      stall.timer -= dt;
+      if (stall.timer <= 0) {
+        customerLeaves(i);
+      }
+    }
+
+    if (stall.doorOpen && stall.state !== 'occupied' && stall.state !== 'dirty') {
+      stall.doorOpen = false;
+      updateStallDOM(i);
+    }
+  }
+
+  // Update active cleaning (auto-progress, but clicking is faster!)
+  if (game.activeStall >= 0 && game.activeTask >= 0) {
+    const speed = game.effects.speed > 0 ? 2 : 1;
+    game.taskProgress += dt * 0.3 * speed; // Slow auto-progress
+
+    if (game.taskProgress >= CONFIG.baseTaskTime) {
+      completeTask();
+    }
+    updateStallDOM(game.activeStall);
+    updateTaskPanel();
+  }
+
+  // Update sinks
+  for (let i = 0; i < game.sinks.length; i++) {
+    const sink = game.sinks[i];
+    if (sink.cleaning) {
+      sink.progress += dt;
+      if (sink.progress >= CONFIG.sinkCleanTime) {
+        sink.cleaning = false;
+        sink.dirty = false;
+        sink.progress = 0;
+        game.score += 25;
+        playTaskComplete();
+        floatMessage('+25', 400, 350, 'good');
+      }
+      updateSinkDOM(i);
+    }
+  }
+
+  updatePeople(dt);
+
+  if (game.effects.speed > 0) game.effects.speed -= dt;
+  if (game.effects.slow > 0) game.effects.slow -= dt;
+
+  if (game.rating <= 0) {
+    gameOver();
+  }
+}
+
+function spawnCustomer() {
+  if (game.people.filter(p => p.phase !== 'exit').length >= 12) return;
+
+  const floor = $('floor-area');
+  const rect = floor.getBoundingClientRect();
+  const exitDoor = $('exit-door').getBoundingClientRect();
+
+  const isUrgent = Math.random() < 0.2; // 20% chance of urgent customer
+
+  game.people.push({
+    id: ++game.personId,
+    icon: pick(getCustomers()),
+    x: exitDoor.left - rect.left + 15,
+    y: exitDoor.top - rect.top + 20,
+    phase: 'enter',
+    target: -1,
+    patience: isUrgent ? CONFIG.patience * 0.6 : CONFIG.patience,
+    maxPatience: isUrgent ? CONFIG.patience * 0.6 : CONFIG.patience,
+    urgent: isUrgent,
+    thought: '',
+    thoughtTimer: 0,
+  });
+}
+
+function updatePeople(dt) {
+  const cfg = getShiftConfig();
+  const floor = $('floor-area');
+  const floorRect = floor.getBoundingClientRect();
+  const baseSpeed = CONFIG.walkSpeed * (dt / 1000);
+
+  for (let i = game.people.length - 1; i >= 0; i--) {
+    const p = game.people[i];
+    const speed = p.urgent ? baseSpeed * 1.4 : baseSpeed;
+
+    // Update thought timer
+    if (p.thoughtTimer > 0) p.thoughtTimer -= dt;
+
+    // Patience
+    if (p.phase !== 'exit' && p.phase !== 'inStall' && p.phase !== 'washing' && p.phase !== 'entering') {
+      p.patience -= dt;
+
+      // Show impatient thoughts
+      const patienceRatio = p.patience / p.maxPatience;
+      if (patienceRatio < 0.3 && p.thoughtTimer <= 0) {
+        p.thought = pick(patienceRatio < 0.15 ? THOUGHTS.desperate : THOUGHTS.impatient);
+        p.thoughtTimer = 2000;
+      }
+
+      if (p.patience <= 0) {
+        game.rating = clamp(game.rating - 0.3, 0, 5);
+        game.stats.abandoned++;
+        game.combo = 0;
+        playBad();
+        screenShake();
+        floatMessage('😤 LEFT!', p.x, p.y - 20, 'bad');
+        p.phase = 'exit';
+        continue;
+      }
+    }
+
+    if (p.phase === 'enter') {
+      const tx = floorRect.width / 2 - 15 + rnd(-30, 30);
+      const ty = floorRect.height / 2 - 20;
+      const dx = tx - p.x, dy = ty - p.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 15) {
+        p.phase = 'findStall';
+      } else {
+        p.x += (dx / dist) * speed;
+        p.y += (dy / dist) * speed;
+      }
+    }
+    else if (p.phase === 'findStall') {
+      let found = -1;
+      for (let j = 0; j < game.stalls.length; j++) {
+        if (game.stalls[j].state === 'empty') { found = j; break; }
+      }
+      if (found < 0) {
+        for (let j = 0; j < game.stalls.length; j++) {
+          if (game.stalls[j].state === 'dirty' && game.activeStall !== j) { found = j; break; }
+        }
+      }
+      if (found >= 0) {
+        p.target = found;
+        p.phase = 'toStall';
+      }
+    }
+    else if (p.phase === 'toStall') {
+      const stallRow = $('stalls-row');
+      const stallEl = stallRow.children[p.target];
+      if (!stallEl) { p.phase = 'exit'; continue; }
+
+      const stallRect = stallEl.getBoundingClientRect();
+      const tx = stallRect.left - floorRect.left + stallRect.width/2 - 12;
+      const ty = 8;
+      const dx = tx - p.x, dy = ty - p.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+
+      if (dist < 10) {
+        p.phase = 'entering';
+        p.enterTimer = 350;
+
+        const stall = game.stalls[p.target];
+
+        // Check if we're cleaning it right now (SAVE!)
+        if (stall.state === 'cleaning') {
+          // Close call save!
+          game.stats.saves++;
+          game.score += 50;
+          floatMessage('SAVED! +50', p.x, p.y - 30, 'save');
+          playTaskComplete();
+
+          // Complete cleaning instantly
+          stall.state = 'empty';
+          stall.tasks = [];
+          if (game.activeStall === p.target) {
+            game.activeStall = -1;
+            game.activeTask = -1;
+            hideTaskPanel();
+          }
+          updateStallDOM(p.target);
+        }
+        else if (stall.state === 'dirty') {
+          game.rating = clamp(game.rating - 0.4, 0, 5);
+          game.stats.dirty++;
+          game.combo = 0;
+          playBad();
+          screenShake();
+          p.thought = pick(THOUGHTS.disgusted);
+          p.thoughtTimer = 2000;
+          floatMessage('-0.4⭐ GROSS!', p.x, p.y - 30, 'bad');
+        }
+
+        stall.doorOpen = true;
+        updateStallDOM(p.target);
+      } else {
+        p.x += (dx / dist) * speed;
+        p.y += (dy / dist) * speed;
+      }
+    }
+    else if (p.phase === 'entering') {
+      p.enterTimer -= dt;
+      p.y -= speed * 0.6;
+
+      if (p.enterTimer <= 0) {
+        const stall = game.stalls[p.target];
+        stall.state = 'occupied';
+        stall.customer = p.icon;
+        stall.timer = rnd(cfg.occMin, cfg.occMax);
+        stall.doorOpen = false;
+        stall.tasks = [];
+
+        if (game.activeStall === p.target) {
+          game.activeStall = -1;
+          game.activeTask = -1;
+          hideTaskPanel();
+        }
+        game.stats.served++;
+        updateStallDOM(p.target);
+        p.phase = 'inStall';
+      }
+    }
+    else if (p.phase === 'inStall') {
+      // Handled by stall timer
+    }
+    else if (p.phase === 'exitStall') {
+      const ty = 80;
+      if (p.y < ty) {
+        p.y += speed;
+      } else {
+        p.phase = 'toSink';
+      }
+    }
+    else if (p.phase === 'toSink') {
+      const sinkIdx = game.sinks.findIndex(s => !s.dirty && !s.cleaning);
+      if (sinkIdx < 0) { p.phase = 'exit'; continue; }
+
+      const sinksArea = $('sinks-area');
+      const sinkEl = sinksArea.children[sinkIdx];
+      if (!sinkEl) { p.phase = 'exit'; continue; }
+
+      const sinkRect = sinkEl.getBoundingClientRect();
+      const tx = sinkRect.left - floorRect.left + sinkRect.width/2 - 12;
+      const ty = sinkRect.top - floorRect.top - 30;
+      const dx = tx - p.x, dy = ty - p.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+
+      if (dist < 12) {
+        p.phase = 'washing';
+        p.washTime = 1000;
+        p.sinkIdx = sinkIdx;
+      } else {
+        p.x += (dx / dist) * speed;
+        p.y += (dy / dist) * speed;
+      }
+    }
+    else if (p.phase === 'washing') {
+      p.washTime -= dt;
+      if (p.washTime <= 0) {
+        if (Math.random() < 0.25) game.sinks[p.sinkIdx].dirty = true;
+        if (Math.random() < 0.5 && game.towels > 0) game.towels--;
+        updateSinkDOM(p.sinkIdx);
+        p.thought = pick(THOUGHTS.happy);
+        p.thoughtTimer = 1500;
+        p.phase = 'exit';
+      }
+    }
+    else if (p.phase === 'exit') {
+      const exitDoor = $('exit-door').getBoundingClientRect();
+      const tx = exitDoor.left - floorRect.left + 15;
+      const ty = exitDoor.top - floorRect.top + 20;
+      const dx = tx - p.x, dy = ty - p.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+
+      if (dist < 20) {
+        game.people.splice(i, 1);
+      } else {
+        p.x += (dx / dist) * speed * 1.2;
+        p.y += (dy / dist) * speed * 1.2;
+      }
+    }
+  }
+}
+
+function customerLeaves(stallIdx) {
+  const stall = game.stalls[stallIdx];
+  stall.state = 'dirty';
+  stall.doorOpen = true;
+
+  stall.tasks = TASKS.filter(t => Math.random() < t.chance).map(t => ({...t, done: false}));
+  if (stall.tasks.length === 0) stall.tasks.push({...TASKS[1], done: false});
+
+  updateStallDOM(stallIdx);
+
+  const person = game.people.find(p => p.phase === 'inStall' && p.target === stallIdx);
+  if (person) {
+    const stallRow = $('stalls-row');
+    const stallEl = stallRow.children[stallIdx];
+    const floorRect = $('floor-area').getBoundingClientRect();
+    if (stallEl) {
+      const stallRect = stallEl.getBoundingClientRect();
+      person.x = stallRect.left - floorRect.left + stallRect.width/2 - 12;
+      person.y = 8;
+    }
+    person.phase = 'exitStall';
+  }
+}
+
+function renderPeople() {
+  const floor = $('floor-area');
+
+  floor.querySelectorAll('.person').forEach(el => {
+    const id = parseInt(el.dataset.id);
+    if (!game.people.find(p => p.id === id)) el.remove();
+  });
+
+  game.people.forEach(p => {
+    if (p.phase === 'inStall') {
+      const el = floor.querySelector(`.person[data-id="${p.id}"]`);
+      if (el) el.remove();
+      return;
+    }
+
+    let el = floor.querySelector(`.person[data-id="${p.id}"]`);
+    if (!el) {
+      el = document.createElement('div');
+      el.className = 'person walking';
+      el.dataset.id = p.id;
+      el.innerHTML = `${p.icon}<div class="patience-bar"><div class="patience-fill"></div></div><div class="thought"></div>`;
+      floor.appendChild(el);
+    }
+
+    el.style.left = p.x + 'px';
+    el.style.top = p.y + 'px';
+
+    el.classList.toggle('walking', p.phase !== 'washing' && p.phase !== 'entering');
+    el.classList.toggle('entering', p.phase === 'entering');
+    el.classList.toggle('urgent', p.urgent);
+
+    const patienceRatio = p.patience / p.maxPatience;
+    el.classList.toggle('impatient', p.thoughtTimer > 0);
+
+    const thoughtEl = el.querySelector('.thought');
+    thoughtEl.textContent = p.thoughtTimer > 0 ? p.thought : '';
+
+    const pct = patienceRatio * 100;
+    const fill = el.querySelector('.patience-fill');
+    fill.style.width = pct + '%';
+    fill.style.background = pct > 50 ? '#43a047' : (pct > 25 ? '#fdd835' : '#e53935');
+  });
+}
+
+function clickStall(i) {
+  if (!game.running) return;
+  const stall = game.stalls[i];
+
+  if (stall.state === 'dirty' || stall.state === 'cleaning') {
+    if (stall.state === 'dirty') {
+      stall.state = 'cleaning';
+      updateStallDOM(i);
+    }
+    game.activeStall = i;
+    if (game.activeTask < 0) {
+      // Auto-select first incomplete task
+      const firstTask = stall.tasks.findIndex(t => !t.done);
+      if (firstTask >= 0) {
+        game.activeTask = firstTask;
+        game.taskProgress = 0;
+      }
+    }
+    showTaskPanel(i);
+    playClick();
+  }
+}
+
+function showTaskPanel(stallIdx) {
+  const stall = game.stalls[stallIdx];
+  const remaining = stall.tasks.filter(t => !t.done).length;
+  const total = stall.tasks.length;
+  $('task-title').textContent = `Stall ${stallIdx + 1} - ${total - remaining}/${total} done`;
+
+  const btns = $('task-buttons');
+  btns.innerHTML = stall.tasks.map((t, ti) => {
+    const progress = game.activeTask === ti ? (game.taskProgress / CONFIG.baseTaskTime) * 100 : 0;
+    return `<div class="task-btn ${t.done ? 'done' : ''} ${game.activeTask === ti ? 'active' : ''}" data-idx="${ti}">
+      ${t.icon} ${t.label}
+      <div class="progress" style="width:${progress}%"></div>
+    </div>`;
+  }).join('');
+
+  btns.querySelectorAll('.task-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const ti = parseInt(btn.dataset.idx);
+      if (!stall.tasks[ti].done) {
+        if (game.activeTask === ti) {
+          // Clicking active task = boost progress!
+          const boost = game.effects.speed > 0 ? CONFIG.clickBoost * 2 : CONFIG.clickBoost;
+          game.taskProgress += boost;
+          playClick();
+
+          if (game.taskProgress >= CONFIG.baseTaskTime) {
+            completeTask();
+          } else {
+            updateTaskPanel();
+          }
+        } else {
+          game.activeTask = ti;
+          game.taskProgress = 0;
+          playClick();
+          showTaskPanel(stallIdx);
+        }
+      }
+    });
+  });
+
+  $('task-panel').classList.add('show');
+}
+
+function updateTaskPanel() {
+  if (game.activeStall < 0) return;
+  const stall = game.stalls[game.activeStall];
+  const btns = $('task-buttons').querySelectorAll('.task-btn');
+
+  btns.forEach((btn, ti) => {
+    const progress = game.activeTask === ti ? (game.taskProgress / CONFIG.baseTaskTime) * 100 : 0;
+    btn.querySelector('.progress').style.width = Math.min(100, progress) + '%';
+    btn.classList.toggle('active', game.activeTask === ti && !stall.tasks[ti].done);
+  });
+}
+
+function hideTaskPanel() {
+  $('task-panel').classList.remove('show');
+}
+
+function completeTask() {
+  if (game.activeStall < 0 || game.activeTask < 0) return;
+
+  const stall = game.stalls[game.activeStall];
+  stall.tasks[game.activeTask].done = true;
+  game.taskProgress = 0;
+  playTaskComplete();
+
+  // Check if all done
+  if (stall.tasks.every(t => t.done)) {
+    stall.state = 'empty';
+    stall.tasks = [];
+    game.combo++;
+    if (game.combo > game.maxCombo) game.maxCombo = game.combo;
+
+    const multiplier = 1 + game.combo * 0.5;
+    const points = Math.floor(100 * multiplier);
+    game.score += points;
+    game.stats.cleaned++;
+    game.rating = clamp(game.rating + 0.08, 0, 5);
+
+    const stallEl = $('stalls-row').children[game.activeStall];
+    if (stallEl) {
+      const rect = stallEl.getBoundingClientRect();
+      const playRect = $('play-area').getBoundingClientRect();
+      const x = rect.left - playRect.left + rect.width/2;
+      const y = rect.top - playRect.top + 20;
+
+      const msg = game.combo >= 3 ? `${game.combo}x COMBO! +${points}` : `+${points} ${pick(CLEAN_MESSAGES)}`;
+      floatMessage(msg, x, y, game.combo >= 3 ? 'combo' : 'good');
+      spawnConfetti(x, y + 30, game.combo >= 3 ? 12 : 6);
+    }
+
+    playStallClean();
+    if (game.combo >= 3) screenShake();
+
+    game.activeStall = -1;
+    game.activeTask = -1;
+    hideTaskPanel();
+  } else {
+    // Move to next task
+    const nextTask = stall.tasks.findIndex(t => !t.done);
+    game.activeTask = nextTask;
+    showTaskPanel(game.activeStall);
+  }
+
+  updateStallDOM(game.activeStall >= 0 ? game.activeStall : 0);
+}
+
+function clickSink(i) {
+  if (!game.running) return;
+  const sink = game.sinks[i];
+  if (sink.dirty && !sink.cleaning) {
+    sink.cleaning = true;
+    sink.progress = 0;
+    playClick();
+  }
+}
+
+$('towels').addEventListener('click', () => {
+  if (!game.running) return;
+  if (game.towels < 10) {
+    game.towels = 10;
+    game.score += 20;
+    floatMessage('+20 Restocked!', 60, 300, 'good');
+    playTaskComplete();
+  }
+});
+
+$('pow-speed').addEventListener('click', () => {
+  if (game.powerups.speed > 0 && game.effects.speed <= 0) {
+    game.powerups.speed--;
+    game.effects.speed = 12000;
+    playClick();
+    floatMessage('⚡ SPEED BOOST!', 400, 200, 'combo');
+  }
+});
+
+$('pow-slow').addEventListener('click', () => {
+  if (game.powerups.slow > 0 && game.effects.slow <= 0) {
+    game.powerups.slow--;
+    game.effects.slow = 12000;
+    playClick();
+    floatMessage('🐢 SLOW MODE!', 400, 200, 'combo');
+  }
+});
+
+$('pow-auto').addEventListener('click', () => {
+  if (game.powerups.auto > 0) {
+    const dirty = game.stalls.findIndex(s => s.state === 'dirty');
+    if (dirty >= 0) {
+      game.powerups.auto--;
+      game.stalls[dirty].state = 'empty';
+      game.stalls[dirty].tasks = [];
+      game.score += 75;
+      game.stats.cleaned++;
+      updateStallDOM(dirty);
+
+      const stallEl = $('stalls-row').children[dirty];
+      if (stallEl) {
+        const rect = stallEl.getBoundingClientRect();
+        const playRect = $('play-area').getBoundingClientRect();
+        spawnConfetti(rect.left - playRect.left + rect.width/2, rect.top - playRect.top + 30, 10);
+        floatMessage('✨ AUTO CLEAN!', rect.left - playRect.left, rect.top - playRect.top, 'combo');
+      }
+      playStallClean();
+    }
+  }
+});
+
+function endShift() {
+  game.running = false;
+  playWin();
+
+  $('result-title').textContent = `Shift ${game.shift + 1} Complete!`;
+
+  let stars = '';
+  for (let i = 0; i < 5; i++) stars += game.rating >= i + 0.75 ? '⭐' : (game.rating >= i + 0.25 ? '🌟' : '☆');
+  $('result-rating').innerHTML = `<span style="font-size:1.6em">${stars}</span>`;
+
+  $('result-stats').innerHTML = `
+    <div class="stat"><div class="num">${game.stats.cleaned}</div><div class="lbl">Stalls Cleaned</div></div>
+    <div class="stat"><div class="num">${game.stats.served}</div><div class="lbl">Customers</div></div>
+    <div class="stat"><div class="num">${game.maxCombo}x</div><div class="lbl">Best Combo</div></div>
+    <div class="stat"><div class="num">${Math.floor(game.score)}</div><div class="lbl">Score</div></div>
+  `;
+
+  const ratio = game.stats.dirty / Math.max(1, game.stats.served);
+  let grade, comment;
+  if (ratio === 0 && game.stats.abandoned === 0) { grade = 'S'; comment = 'PERFECT! You\'re a true Beaver! 🦫'; }
+  else if (ratio <= 0.1) { grade = 'A'; comment = 'Dam good work, partner!'; }
+  else if (ratio <= 0.2) { grade = 'B'; comment = 'The lodge approves! Keep building!'; }
+  else if (ratio <= 0.35) { grade = 'C'; comment = 'Busy beaver needs more hustle...'; }
+  else { grade = 'F'; comment = 'This dam is leaking... badly.'; }
+
+  $('result-grade').textContent = grade;
+  $('result-grade').className = 'grade ' + grade;
+  $('result-comment').textContent = comment;
+
+  if (game.shift + 1 < CONFIG.shifts.length) {
+    $('pick-section').style.display = 'block';
+    $('pick-row').innerHTML = `
+      <div class="pick-item" data-type="speed">
+        <div class="icon">⚡</div>
+        <div class="name">Speed</div>
+        <div class="desc">2x clean speed</div>
+      </div>
+      <div class="pick-item" data-type="slow">
+        <div class="icon">🐢</div>
+        <div class="name">Slow</div>
+        <div class="desc">Slower arrivals</div>
+      </div>
+      <div class="pick-item" data-type="auto">
+        <div class="icon">✨</div>
+        <div class="name">Auto</div>
+        <div class="desc">Instant clean</div>
+      </div>
+    `;
+    let picked = false;
+    $('pick-row').querySelectorAll('.pick-item').forEach(item => {
+      item.addEventListener('click', () => {
+        if (picked) return;
+        picked = true;
+        game.powerups[item.dataset.type]++;
+        $('pick-row').querySelectorAll('.pick-item').forEach(x => x.style.opacity = '0.3');
+        item.style.opacity = '1';
+        item.style.borderColor = '#f5a623';
+        playTaskComplete();
+      });
+    });
+    $('next-btn').textContent = 'Next Shift →';
+  } else {
+    $('pick-section').style.display = 'none';
+    $('next-btn').textContent = 'Final Results';
+  }
+
+  showScreen('result-screen');
+}
+
+function gameOver() {
+  game.running = false;
+
+  const won = game.shift >= CONFIG.shifts.length - 1;
+  $('go-icon').textContent = won ? '🏆' : '💀';
+  $('go-title').textContent = won ? 'RESTROOM ROYALTY!' : 'FIRED!';
+  $('go-msg').textContent = won ? pick(WIN_MESSAGES) : pick(GAME_OVER_MESSAGES);
+  $('go-score').textContent = Math.floor(game.score);
+
+  $('go-stats').innerHTML = `
+    <div class="stat"><div class="num">${game.stats.cleaned}</div><div class="lbl">Cleaned</div></div>
+    <div class="stat"><div class="num">${game.stats.served}</div><div class="lbl">Served</div></div>
+    <div class="stat"><div class="num">${game.maxCombo}x</div><div class="lbl">Best Combo</div></div>
+    <div class="stat"><div class="num">${game.stats.saves}</div><div class="lbl">Close Calls</div></div>
+  `;
+
+  if (won) playWin();
+  else playBad();
+  showScreen('gameover-screen');
+}
+
+// Gender selection
+document.querySelectorAll('.gender-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedGender = btn.dataset.gender;
+    $('start-btn').disabled = false;
+    playClick();
+  });
+});
+
+$('start-btn').addEventListener('click', () => {
+  if (!selectedGender) return;
+  initAudio();
+  init();
+  startShift();
+});
+
+$('next-btn').addEventListener('click', () => {
+  game.shift++;
+  if (game.shift >= CONFIG.shifts.length) gameOver();
+  else startShift();
+});
+
+$('retry-btn').addEventListener('click', () => {
+  showScreen('title-screen');
+});
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (!game.running) return;
+  const keys = ['q','w','e','r','t','y','u','i','o','p'];
+  const idx = keys.indexOf(e.key.toLowerCase());
+  if (idx >= 0 && idx < game.stalls.length) clickStall(idx);
+  if (e.key === '1') $('pow-speed').click();
+  if (e.key === '2') $('pow-slow').click();
+  if (e.key === '3') $('pow-auto').click();
+
+  // Space bar to click active task rapidly
+  if (e.key === ' ' && game.activeTask >= 0) {
+    e.preventDefault();
+    const btn = $('task-buttons').querySelector('.task-btn.active');
+    if (btn) btn.click();
+  }
+});
+</script>
+</body>
+</html>
