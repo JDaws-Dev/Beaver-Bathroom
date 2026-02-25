@@ -6,25 +6,32 @@ const convex = new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL);
 
 // Auth state
 let currentUser = null;
+let deviceId = localStorage.getItem('beaverDeviceId');
 let playerName = localStorage.getItem('beaverPlayerName') || '';
 
-// Sign in anonymously (creates persistent session)
-async function signInAnonymous(name) {
+// Generate device ID if not exists
+if (!deviceId) {
+  deviceId = 'dev_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+  localStorage.setItem('beaverDeviceId', deviceId);
+}
+
+// Create or update user account
+async function createOrUpdateUser(name) {
   try {
-    const result = await convex.mutation(api.auth.signIn, {
-      provider: "anonymous",
-      params: { name }
+    const user = await convex.mutation(api.users.getOrCreateUser, {
+      deviceId,
+      name
     });
-    if (result?.userId) {
-      currentUser = { id: result.userId, name };
-      playerName = name;
-      localStorage.setItem('beaverPlayerName', name);
-      localStorage.setItem('beaverUserId', result.userId);
+    if (user) {
+      currentUser = { id: user._id, name: user.name, deviceId };
+      playerName = user.name;
+      localStorage.setItem('beaverPlayerName', user.name);
+      localStorage.setItem('beaverUserId', user._id);
       updateAuthUI();
-      return result;
+      return user;
     }
   } catch (e) {
-    console.log('Sign in failed, using guest mode:', e);
+    console.log('User creation failed:', e);
     // Fallback: just save name locally
     playerName = name;
     localStorage.setItem('beaverPlayerName', name);
@@ -32,32 +39,38 @@ async function signInAnonymous(name) {
   return null;
 }
 
-// Check if user is signed in
-function initAuth() {
+// Load existing user on startup
+async function initAuth() {
   const savedUserId = localStorage.getItem('beaverUserId');
   const savedName = localStorage.getItem('beaverPlayerName');
+
   if (savedUserId && savedName) {
-    currentUser = { id: savedUserId, name: savedName };
+    currentUser = { id: savedUserId, name: savedName, deviceId };
     playerName = savedName;
   }
+
+  // Try to sync with server if we have a deviceId
+  if (deviceId && savedName) {
+    try {
+      const user = await convex.query(api.users.getUser, { deviceId });
+      if (user) {
+        currentUser = { id: user._id, name: user.name, deviceId };
+        playerName = user.name;
+        localStorage.setItem('beaverPlayerName', user.name);
+      }
+    } catch (e) {
+      console.log('Could not sync user:', e);
+    }
+  }
+
   updateAuthUI();
 }
 
 // Update auth UI elements
 function updateAuthUI() {
-  const authStatus = $('auth-status');
-  const signInSection = $('signin-section');
-
-  if (authStatus) {
-    if (currentUser) {
-      authStatus.innerHTML = `<span class="auth-user">🦫 ${currentUser.name}</span>`;
-    } else {
-      authStatus.innerHTML = '<span class="auth-guest">Guest</span>';
-    }
-  }
-
-  if (signInSection) {
-    signInSection.style.display = currentUser ? 'none' : 'block';
+  const nameDisplay = $('player-name-display');
+  if (nameDisplay) {
+    nameDisplay.textContent = currentUser ? currentUser.name : 'Guest';
   }
 }
 
@@ -2674,12 +2687,15 @@ if (submitBtn) {
       nameInput?.focus();
       return;
     }
-    playerName = name;
-    localStorage.setItem('beaverPlayerName', playerName);
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creating account...';
+
+    // Create or update user account with their name
+    await createOrUpdateUser(name);
 
     if (window.pendingScore) {
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Submitting...';
+      submitBtn.textContent = 'Submitting score...';
       await submitScore(window.pendingScore.score, window.pendingScore.shift, window.pendingScore.grade);
       submitBtn.textContent = 'Submitted!';
       $('go-name-section').style.display = 'none';
