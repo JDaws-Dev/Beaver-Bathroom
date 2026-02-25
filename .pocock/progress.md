@@ -9,6 +9,19 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Volume/Mute Controls (a2h.3.2)
+- Goal: add UI to mute sounds, persist preference
+- Added mute button to HUD (🔊/🔇 toggle)
+- CSS: .mute-btn styles with hover/active states, opacity feedback (line 100-103)
+- Mobile responsive styles at 600px (line 341) and 420px (line 381)
+- JS: isMuted state loaded from localStorage on page load (line 667)
+- JS: toggleMute(), updateMuteButton() functions (lines 673-685)
+- JS: playSound() checks isMuted before playing (line 688)
+- localStorage key: 'beaverMuted' (true/false string)
+- Button added to HUD after Time stat (line 492)
+- Click handler at line 2349, button state init at line 2353
+- Technique: initAudio() called on mute click to ensure audioCtx exists
+
 ### Enhanced Task-Specific Sounds (a2h.3.1)
 - Goal: make each cleaning task have unique, cartoony sound
 - Added 4 new task sound functions:
@@ -43,25 +56,6 @@ This file maintains context between autonomous iterations.
   - Enhanced sparkle scaling: 10→14→20→24 particles by combo tier
   - Enhanced confetti scaling: 6→12→18→22 by combo tier
   - Tier-specific float messages: 🔥 (3x), ⚡ (5x), 🌟 LEGENDARY (10x)
-
-### Animation Easing and Bounce (a2h.5.5)
-- Goal: replace linear animations with bouncy/snappy easing
-- Key easing curve: cubic-bezier(0.34, 1.56, 0.64, 1) - "ease-out-back" style with overshoot
-- CSS changes:
-  - pop-in: now 4-step keyframes with overshoot (scale 0.5 → 1.08 → 0.96 → 1)
-  - float-up: adjusted for bounce at peak (scale 1.25 at 20%, 1.15 at 45%)
-  - New value-bump animation for HUD number changes
-- Added bouncy transitions to all interactive elements:
-  - .btn, .task-btn, .powerup (0.15-0.18s)
-  - .stall, .sink, #towels (0.15-0.18s)
-  - .pick-item, .upgrade-card, .upgrade-cost (0.15-0.18s)
-  - .gender-opt, #skip-upgrades (0.18s)
-- JS changes:
-  - New bumpValue(id) helper triggers value-bump animation on HUD items
-  - Called on score/combo changes in completeTask()
-  - Called on milestone rewards in checkComboMilestone()
-- CSS: lines 267-271 (keyframes), line 728 (bumpValue function)
-- Technique: el.classList.remove, void el.offsetWidth, el.classList.add for re-triggering
 
 ---
 
@@ -116,6 +110,25 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Animation Easing and Bounce (a2h.5.5)
+- Goal: replace linear animations with bouncy/snappy easing
+- Key easing curve: cubic-bezier(0.34, 1.56, 0.64, 1) - "ease-out-back" style with overshoot
+- CSS changes:
+  - pop-in: now 4-step keyframes with overshoot (scale 0.5 → 1.08 → 0.96 → 1)
+  - float-up: adjusted for bounce at peak (scale 1.25 at 20%, 1.15 at 45%)
+  - New value-bump animation for HUD number changes
+- Added bouncy transitions to all interactive elements:
+  - .btn, .task-btn, .powerup (0.15-0.18s)
+  - .stall, .sink, #towels (0.15-0.18s)
+  - .pick-item, .upgrade-card, .upgrade-cost (0.15-0.18s)
+  - .gender-opt, #skip-upgrades (0.18s)
+- JS changes:
+  - New bumpValue(id) helper triggers value-bump animation on HUD items
+  - Called on score/combo changes in completeTask()
+  - Called on milestone rewards in checkComboMilestone()
+- CSS: lines 267-271 (keyframes), line 728 (bumpValue function)
+- Technique: el.classList.remove, void el.offsetWidth, el.classList.add for re-triggering
 
 ### Stink Lines and Visual Dirt Cues (a2h.5.3)
 - Goal: add visual cues that make dirty stalls obviously need attention
