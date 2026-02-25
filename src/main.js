@@ -1,3 +1,64 @@
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "../convex/_generated/api";
+
+// Initialize Convex client
+const convex = new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL);
+
+// Leaderboard state
+let leaderboardData = [];
+let playerName = localStorage.getItem('beaverPlayerName') || '';
+
+// Fetch leaderboard on load
+async function fetchLeaderboard() {
+  try {
+    leaderboardData = await convex.query(api.scores.getTopScores, { limit: 10 });
+    updateLeaderboardUI();
+  } catch (e) {
+    console.log('Leaderboard offline:', e);
+  }
+}
+
+// Submit score to leaderboard
+async function submitScore(score, shift, grade) {
+  if (!playerName) return null;
+  try {
+    const scoreId = await convex.mutation(api.scores.submitScore, {
+      playerName,
+      score,
+      shift,
+      grade,
+    });
+    await fetchLeaderboard();
+    return scoreId;
+  } catch (e) {
+    console.log('Score submit failed:', e);
+    return null;
+  }
+}
+
+// Update leaderboard display
+function updateLeaderboardUI() {
+  const list = $('leaderboard-list');
+  if (!list) return;
+
+  if (leaderboardData.length === 0) {
+    list.innerHTML = '<div class="lb-empty">No scores yet. Be the first!</div>';
+    return;
+  }
+
+  list.innerHTML = leaderboardData.map((s, i) => `
+    <div class="lb-row ${s.playerName === playerName ? 'lb-you' : ''}">
+      <span class="lb-rank">${i + 1}</span>
+      <span class="lb-name">${s.playerName}</span>
+      <span class="lb-score">${s.score.toLocaleString()}</span>
+      <span class="lb-grade">${s.grade}</span>
+    </div>
+  `).join('');
+}
+
+// Initialize leaderboard
+fetchLeaderboard();
+
 const SHIFT_NARRATIVES = [
   {name: 'Training Day', desc: "Welcome to Beaver's Travel Stop, rookie! Show us what you've got.", progress: "Day 1 of 6"},
   {name: 'The Lunch Rush', desc: "You survived training! But hungry travelers are coming...", progress: "Day 2 of 6"},
@@ -2247,6 +2308,15 @@ function gameOver() {
   const finalScore = Math.floor(game.score);
   const isNewRecord = finalScore > highScore;
 
+  // Calculate grade for leaderboard
+  const ratio = game.stats.dirty / Math.max(1, game.stats.served);
+  let grade;
+  if (ratio === 0 && game.stats.abandoned === 0) grade = 'S';
+  else if (ratio <= 0.1) grade = 'A';
+  else if (ratio <= 0.2) grade = 'B';
+  else if (ratio <= 0.35) grade = 'C';
+  else grade = 'F';
+
   if (isNewRecord) {
     highScore = finalScore;
     localStorage.setItem('beaverHighScore', highScore);
@@ -2265,6 +2335,17 @@ function gameOver() {
     <div class="stat"><div class="num">${game.maxCombo}x</div><div class="lbl">Best Combo</div></div>
     <div class="stat"><div class="num">${game.stats.saves}</div><div class="lbl">Close Calls</div></div>
   `;
+
+  // Show name input for leaderboard
+  const nameSection = $('go-name-section');
+  const nameInput = $('go-name-input');
+  if (nameSection && nameInput) {
+    nameInput.value = playerName;
+    nameSection.style.display = 'block';
+  }
+
+  // Store score info for submission
+  window.pendingScore = { score: finalScore, shift: game.shift + 1, grade };
 
   if (won) playWin();
   else playBad();
@@ -2509,3 +2590,46 @@ document.addEventListener('keydown', e => {
     if (btn) btn.click();
   }
 });
+
+// Leaderboard submit
+const submitBtn = $('go-submit-score');
+if (submitBtn) {
+  submitBtn.addEventListener('click', async () => {
+    const nameInput = $('go-name-input');
+    const name = nameInput?.value?.trim();
+    if (!name) {
+      nameInput?.focus();
+      return;
+    }
+    playerName = name;
+    localStorage.setItem('beaverPlayerName', playerName);
+
+    if (window.pendingScore) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+      await submitScore(window.pendingScore.score, window.pendingScore.shift, window.pendingScore.grade);
+      submitBtn.textContent = 'Submitted!';
+      $('go-name-section').style.display = 'none';
+      $('leaderboard-section').style.display = 'block';
+    }
+  });
+}
+
+// Leaderboard toggle on title screen
+const lbBtn = $('leaderboard-btn');
+if (lbBtn) {
+  lbBtn.addEventListener('click', () => {
+    const panel = $('leaderboard-panel');
+    if (panel) {
+      panel.classList.toggle('active');
+      fetchLeaderboard();
+    }
+  });
+}
+
+const lbClose = $('leaderboard-close');
+if (lbClose) {
+  lbClose.addEventListener('click', () => {
+    $('leaderboard-panel')?.classList.remove('active');
+  });
+}

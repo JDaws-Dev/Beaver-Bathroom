@@ -42,6 +42,18 @@
         </div>
         <button class="btn btn-play" id="start-btn">PLAY</button>
         <button class="btn-help" id="help-btn">How to Play</button>
+        <button class="btn-help" id="leaderboard-btn">🏆 Leaderboard</button>
+      </div>
+    </div>
+
+    <!-- Leaderboard Panel -->
+    <div id="leaderboard-panel" class="leaderboard-panel">
+      <div class="lb-header">
+        <h3>🏆 Global Leaderboard</h3>
+        <button class="lb-close" id="leaderboard-close">&times;</button>
+      </div>
+      <div id="leaderboard-list" class="lb-list">
+        <div class="lb-empty">Loading...</div>
       </div>
     </div>
   </div>
@@ -144,6 +156,22 @@
     <div style="font-size:2.2em;color:#f5a623" id="go-score">0</div>
     <p class="high-score visible" id="go-high-score" style="margin-top:5px">High Score: <span id="go-high-score-val">0</span></p>
     <div class="stats-grid" id="go-stats"></div>
+
+    <!-- Name input for leaderboard -->
+    <div id="go-name-section" class="go-name-section">
+      <p>Submit to global leaderboard:</p>
+      <div class="go-name-row">
+        <input type="text" id="go-name-input" placeholder="Your name" maxlength="20">
+        <button class="btn btn-small" id="go-submit-score">Submit</button>
+      </div>
+    </div>
+
+    <!-- Leaderboard display -->
+    <div id="leaderboard-section" class="leaderboard-section" style="display:none">
+      <h4>🏆 Top Scores</h4>
+      <div id="leaderboard-list" class="lb-list"></div>
+    </div>
+
     <button class="btn" id="retry-btn">Try Again</button>
   </div>
 
