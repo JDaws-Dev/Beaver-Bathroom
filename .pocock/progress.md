@@ -9,6 +9,19 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Customer Character Improvements (a2h.1.3)
+- Added CSS art body to customers: torso + animated legs
+- Kept emoji as "head" for variety, added shirt for torso
+- 8 shirt color variations for visual variety
+- Walking animation: head-bob + alternating leg movement
+- Mood states now visually distinct:
+  - Urgent: red glow on icon, red shirt, body shakes
+  - Happy: golden glow, bounce animation
+  - Disgusted: green hue-rotate, recoil animation
+- Improved patience bar: darker background, thicker border
+- Thought bubbles: gradient bg, border, bounce-in animation
+- Files: beaver.html CSS lines 110-138 (new styles), JS lines 768-794 (shirtColors), 1027-1041 (renderPeople body)
+
 ### UI Elements Cartoony Styling (a2h.1.4)
 - Updated HUD with wood-grain texture, depth shadows, styled hud-items
 - Task panel: wood-grain bg, bouncy rounded borders, styled task buttons with gradients
@@ -27,16 +40,6 @@ This file maintains context between autonomous iterations.
 - `setBeaverMood(mood, duration)` function triggers expression changes
 - Events: happy on stall clean, excited on combo/save, sad on rating loss, worried during rush hour
 - Files: beaver.html - CSS lines 30-65, HTML lines 206-220, JS line 372 (setBeaverMood)
-
-### Stall Visual Overhaul (a2h.1.1)
-- Replaced plain stall rectangles with cartoony wood-grain design
-- Used CSS `repeating-linear-gradient` + `background-blend-mode:overlay` for wood texture
-- Added depth with multiple gradients, `box-shadow`, and `::before` highlight
-- Stall lights now have `radial-gradient` for 3D sphere effect
-- Door has top ventilation slot (`::before`) and chunky rounded handle (`::after`)
-- State colors (empty/occupied/dirty/cleaning) now use richer gradients
-- Updated responsive breakpoint for smaller screens
-- Files: beaver.html (CSS lines 36-57)
 
 ---
 
@@ -68,9 +71,9 @@ Patterns, gotchas, and decisions that affect future work:
 
 ### Code Structure
 
-- Lines 1-175: CSS styles (includes beaver mascot styles)
-- Lines 176-270: HTML structure (includes beaver element in HUD)
-- Lines 271-end: JavaScript game logic
+- Lines 1-195: CSS styles (includes beaver mascot, customer character styles)
+- Lines 196-290: HTML structure (includes beaver element in HUD)
+- Lines 291-end: JavaScript game logic
 - Key functions: update(), renderPeople(), updateStallDOM(), clickStall(), setBeaverMood()
 
 ### CSS Art Techniques
@@ -90,6 +93,16 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Stall Visual Overhaul (a2h.1.1)
+- Replaced plain stall rectangles with cartoony wood-grain design
+- Used CSS `repeating-linear-gradient` + `background-blend-mode:overlay` for wood texture
+- Added depth with multiple gradients, `box-shadow`, and `::before` highlight
+- Stall lights now have `radial-gradient` for 3D sphere effect
+- Door has top ventilation slot (`::before`) and chunky rounded handle (`::after`)
+- State colors (empty/occupied/dirty/cleaning) now use richer gradients
+- Updated responsive breakpoint for smaller screens
+- Files: beaver.html (CSS lines 36-57)
 
 ### Initial State (v4)
 - Game is functional single-file HTML (~900 lines)
