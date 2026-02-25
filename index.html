@@ -269,6 +269,20 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 @keyframes pop-in{0%{opacity:0;transform:translateX(-50%) scale(0.5)}60%{opacity:1;transform:translateX(-50%) scale(1.08)}80%{transform:translateX(-50%) scale(0.96)}100%{opacity:1;transform:translateX(-50%) scale(1)}}
 @keyframes value-bump{0%{transform:scale(1)}40%{transform:scale(1.25)}70%{transform:scale(0.92)}100%{transform:scale(1)}}
 .value-bump{animation:value-bump 0.25s cubic-bezier(0.34,1.56,0.64,1)}
+/* Escalating combo visual effects */
+@keyframes combo-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+@keyframes combo-pulse-fast{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+@keyframes combo-pulse-intense{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
+@keyframes combo-glow{0%,100%{text-shadow:0 0 8px rgba(245,166,35,0.6),0 2px 3px rgba(0,0,0,0.4)}50%{text-shadow:0 0 16px rgba(245,166,35,0.9),0 0 25px rgba(245,166,35,0.5),0 2px 3px rgba(0,0,0,0.4)}}
+@keyframes combo-glow-intense{0%,100%{text-shadow:0 0 12px rgba(255,87,34,0.7),0 2px 3px rgba(0,0,0,0.4)}50%{text-shadow:0 0 24px rgba(255,87,34,1),0 0 40px rgba(255,87,34,0.6),0 2px 3px rgba(0,0,0,0.4)}}
+@keyframes combo-glow-legendary{0%,100%{text-shadow:0 0 15px rgba(255,215,0,0.8),0 2px 3px rgba(0,0,0,0.4)}50%{text-shadow:0 0 30px rgba(255,215,0,1),0 0 50px rgba(255,215,0,0.7),0 0 70px rgba(255,165,0,0.4),0 2px 3px rgba(0,0,0,0.4)}}
+@keyframes screen-edge-glow{0%,100%{box-shadow:inset 0 0 60px rgba(255,87,34,0.15)}50%{box-shadow:inset 0 0 80px rgba(255,87,34,0.25)}}
+@keyframes screen-edge-legendary{0%,100%{box-shadow:inset 0 0 80px rgba(255,215,0,0.2)}50%{box-shadow:inset 0 0 120px rgba(255,215,0,0.35)}}
+#combo.combo-fire{animation:combo-pulse 0.5s ease-in-out infinite,combo-glow 0.5s ease-in-out infinite}
+#combo.combo-intense{animation:combo-pulse-fast 0.35s ease-in-out infinite,combo-glow-intense 0.35s ease-in-out infinite}
+#combo.combo-legendary{animation:combo-pulse-intense 0.25s ease-in-out infinite,combo-glow-legendary 0.25s ease-in-out infinite}
+#play-area.combo-edge-glow{animation:screen-edge-glow 0.6s ease-in-out infinite}
+#play-area.combo-edge-legendary{animation:screen-edge-legendary 0.4s ease-in-out infinite}
 @keyframes pulse{from{box-shadow:0 0 8px #1e88e5}to{box-shadow:0 0 16px #1e88e5}}
 @keyframes glow{from{box-shadow:0 0 8px #f5a623}to{box-shadow:0 0 18px #f5a623}}
 @keyframes pulse-dirty{from{background:#ffcc80}to{background:#ffb74d}}
@@ -1002,9 +1016,17 @@ function updateHUD() {
 
   const comboMult = 1 + game.combo * 0.5;
   const boostIcon = game.comboBoost > 0 ? '⚡' : '';
-  $('combo').textContent = game.combo > 0 ? `${boostIcon}x${comboMult.toFixed(1)}` : 'x1';
-  $('combo').style.color = game.combo >= 5 ? '#ff5722' : (game.combo >= 3 ? '#f5a623' : '#fff');
-  $('combo').style.fontSize = game.combo >= 3 ? '1.3em' : '1.1em';
+  const comboEl = $('combo');
+  const playArea = $('play-area');
+  comboEl.textContent = game.combo > 0 ? `${boostIcon}x${comboMult.toFixed(1)}` : 'x1';
+  comboEl.style.color = game.combo >= 10 ? '#ffd700' : (game.combo >= 5 ? '#ff5722' : (game.combo >= 3 ? '#f5a623' : '#fff'));
+  comboEl.style.fontSize = game.combo >= 10 ? '1.5em' : (game.combo >= 5 ? '1.4em' : (game.combo >= 3 ? '1.3em' : '1.1em'));
+  // Escalating combo visual effects
+  comboEl.classList.toggle('combo-fire', game.combo >= 3 && game.combo < 5);
+  comboEl.classList.toggle('combo-intense', game.combo >= 5 && game.combo < 10);
+  comboEl.classList.toggle('combo-legendary', game.combo >= 10);
+  playArea.classList.toggle('combo-edge-glow', game.combo >= 5 && game.combo < 10);
+  playArea.classList.toggle('combo-edge-legendary', game.combo >= 10);
 
   const dirtyCount = getDirtyCount();
   $('dirty-count').textContent = dirtyCount > 0 ? `⚠️ ${dirtyCount}` : '✓';
@@ -1932,19 +1954,25 @@ function completeTask() {
       stallEl.classList.add('celebrate');
       setTimeout(() => stallEl.classList.remove('celebrate'), 650);
 
-      // Sparkle burst effect
-      spawnSparkles(x, y + 40, wasVip ? 16 : (game.combo >= 3 ? 14 : 10));
+      // Sparkle burst effect - more particles at higher combos
+      const sparkleCount = game.combo >= 10 ? 24 : (game.combo >= 5 ? 20 : (game.combo >= 3 ? 14 : (wasVip ? 16 : 10)));
+      spawnSparkles(x, y + 40, sparkleCount);
 
       let msg;
-      if (wasVip) {
+      if (game.combo >= 10) {
+        msg = `🌟 ${game.combo}x LEGENDARY! +${points}`;
+      } else if (wasVip) {
         msg = `⭐ VIP! +${points}`;
+      } else if (game.combo >= 5) {
+        msg = `⚡ ${game.combo}x COMBO! +${points}`;
       } else if (game.combo >= 3) {
-        msg = `${game.combo}x COMBO! +${points}`;
+        msg = `🔥 ${game.combo}x COMBO! +${points}`;
       } else {
         msg = `+${points} ${pick(CLEAN_MESSAGES)}`;
       }
       floatMessage(msg, x, y, (wasVip || game.combo >= 3) ? 'combo' : 'good');
-      spawnConfetti(x, y + 30, wasVip ? 14 : (game.combo >= 3 ? 12 : 6));
+      const confettiCount = game.combo >= 10 ? 22 : (game.combo >= 5 ? 18 : (game.combo >= 3 ? 12 : (wasVip ? 14 : 6)));
+      spawnConfetti(x, y + 30, confettiCount);
     }
 
     playStallClean();

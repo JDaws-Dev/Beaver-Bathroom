@@ -9,6 +9,27 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Escalating Combo Visual Effects (a2h.5.4)
+- Goal: make combo feel more intense as it builds
+- Three combo tiers with escalating effects:
+  - combo-fire (3-4x): orange pulsing glow, 0.5s pulse, text-shadow
+  - combo-intense (5-9x): red-orange faster pulse (0.35s), screen edge glow starts
+  - combo-legendary (10x+): gold color, intense pulse (0.25s), bright screen edge glow
+- CSS additions (lines 272-286):
+  - @keyframes combo-pulse, combo-pulse-fast, combo-pulse-intense (scale animations)
+  - @keyframes combo-glow, combo-glow-intense, combo-glow-legendary (text-shadow animations)
+  - @keyframes screen-edge-glow, screen-edge-legendary (inset box-shadow on play-area)
+  - Classes: #combo.combo-fire/intense/legendary, #play-area.combo-edge-glow/legendary
+- JS updateHUD() (lines 1019-1029):
+  - Added comboEl and playArea references
+  - classList.toggle for combo-fire/intense/legendary based on game.combo
+  - playArea classList.toggle for screen edge effects
+  - Enhanced color/fontSize scaling for combo tiers
+- JS completeTask() (lines 1957-1975):
+  - Enhanced sparkle scaling: 10→14→20→24 particles by combo tier
+  - Enhanced confetti scaling: 6→12→18→22 by combo tier
+  - Tier-specific float messages: 🔥 (3x), ⚡ (5x), 🌟 LEGENDARY (10x)
+
 ### Animation Easing and Bounce (a2h.5.5)
 - Goal: replace linear animations with bouncy/snappy easing
 - Key easing curve: cubic-bezier(0.34, 1.56, 0.64, 1) - "ease-out-back" style with overshoot
@@ -44,23 +65,6 @@ This file maintains context between autonomous iterations.
 - Added position:relative to .stall for absolute positioning
 - HTML: stink-lines and stall-fly elements added to stall innerHTML
 - CSS: lines 123-137 (dirty stall styles and animations)
-
-### Mobile-Friendly Touch Controls (a2h.5.6)
-- Goal: make game playable on mobile phones
-- Added touch-action: manipulation to prevent double-tap zoom on interactive elements
-- Added -webkit-touch-callout:none and -webkit-tap-highlight-color:transparent to body
-- Created two responsive breakpoints:
-  - @media(max-width:600px): tablet/large phone sizes
-  - @media(max-width:420px): smaller phones, extra touch-friendly
-- Touch targets now have min-height/min-width of 44-48px (Apple HIG guideline)
-- Key responsive adjustments:
-  - Stalls: 54px→48px width, 88px→80px min-height
-  - Task buttons: min-height:48px, larger padding
-  - Powerups: min-height:44-48px
-  - Sinks: 52px→48px, min-width:44px
-  - Gender buttons: 50x50px on phone, min-width/height:44px
-- Existing touch feedback animations preserved (click-pulse, stall-click, sink-ripple)
-- CSS: lines 9-10 (touch-action, webkit styles), 299-380 (media queries)
 
 ---
 
@@ -115,6 +119,23 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Mobile-Friendly Touch Controls (a2h.5.6)
+- Goal: make game playable on mobile phones
+- Added touch-action: manipulation to prevent double-tap zoom on interactive elements
+- Added -webkit-touch-callout:none and -webkit-tap-highlight-color:transparent to body
+- Created two responsive breakpoints:
+  - @media(max-width:600px): tablet/large phone sizes
+  - @media(max-width:420px): smaller phones, extra touch-friendly
+- Touch targets now have min-height/min-width of 44-48px (Apple HIG guideline)
+- Key responsive adjustments:
+  - Stalls: 54px→48px width, 88px→80px min-height
+  - Task buttons: min-height:48px, larger padding
+  - Powerups: min-height:44-48px
+  - Sinks: 52px→48px, min-width:44px
+  - Gender buttons: 50x50px on phone, min-width/height:44px
+- Existing touch feedback animations preserved (click-pulse, stall-click, sink-ripple)
+- CSS: lines 9-10 (touch-action, webkit styles), 299-380 (media queries)
 
 ### Cleaning Completion Celebration (a2h.5.2)
 - Goal: make stall cleaning completion feel amazing
