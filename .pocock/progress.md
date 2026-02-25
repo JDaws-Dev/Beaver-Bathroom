@@ -9,15 +9,17 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
-### Prevent Multiple Customers Same Stall (8pk)
-- Bug: race condition allowed multiple customers to target same stall
-- Root cause: stall marked 'occupied' only after customer fully entered
-- Fix: added `reservedBy` property to stalls
-- When customer targets stall in findStall phase, immediately set `stall.reservedBy = p`
-- findStall logic now skips reserved stalls (both empty and dirty)
-- Reservation cleared when customer enters (state='occupied') or exits early
-- Patience drain logic updated to account for reservations
-- JS: stall init ~767, findStall ~1196-1210, entering ~1282, toStall edge case ~1216
+### Landing Page Redesign (re0)
+- Goal: cleaner, less cluttered title screen with optional tutorial
+- Removed: inline instructions box, large gender selection buttons
+- Added: compact gender toggle (🚹/🚺 as small buttons), defaults to female
+- Big "PLAY" button - no longer disabled, always ready to click
+- "How to Play" link opens modal overlay with tutorial content
+- Modal: dark overlay, card with header/close button, tutorial items, "Got it!" button
+- CSS changes: lines 30-49 (gender-toggle, btn-play, btn-help, modal, tutorial styles)
+- HTML: lines 294-340 (title-card, tutorial-modal)
+- JS: lines 2064-2079 (gender-opt handlers, modal open/close/click-outside)
+- `selectedGender` now defaults to 'female' instead of null
 
 ### Click/Tap Feedback Polish (a2h.5.1)
 - Added immediate visual feedback to all clickable elements
@@ -98,6 +100,15 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Prevent Multiple Customers Same Stall (8pk)
+- Bug: race condition allowed multiple customers to target same stall
+- Root cause: stall marked 'occupied' only after customer fully entered
+- Fix: added `reservedBy` property to stalls
+- When customer targets stall in findStall phase, immediately set `stall.reservedBy = p`
+- findStall logic now skips reserved stalls (both empty and dirty)
+- Reservation cleared when customer enters (state='occupied') or exits early
+- JS: stall init ~767, findStall ~1196-1210, entering ~1282, toStall edge case ~1216
 
 ### Upgrade System Between Shifts (a2h.2.4)
 - New "Beaver Supply Shop" screen between shifts
