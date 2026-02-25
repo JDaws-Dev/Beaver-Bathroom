@@ -9,6 +9,23 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Mobile-Friendly Touch Controls (a2h.5.6)
+- Goal: make game playable on mobile phones
+- Added touch-action: manipulation to prevent double-tap zoom on interactive elements
+- Added -webkit-touch-callout:none and -webkit-tap-highlight-color:transparent to body
+- Created two responsive breakpoints:
+  - @media(max-width:600px): tablet/large phone sizes
+  - @media(max-width:420px): smaller phones, extra touch-friendly
+- Touch targets now have min-height/min-width of 44-48px (Apple HIG guideline)
+- Key responsive adjustments:
+  - Stalls: 54px→48px width, 88px→80px min-height
+  - Task buttons: min-height:48px, larger padding
+  - Powerups: min-height:44-48px
+  - Sinks: 52px→48px, min-width:44px
+  - Gender buttons: 50x50px on phone, min-width/height:44px
+- Existing touch feedback animations preserved (click-pulse, stall-click, sink-ripple)
+- CSS: lines 9-10 (touch-action, webkit styles), 299-380 (media queries)
+
 ### Cleaning Completion Celebration (a2h.5.2)
 - Goal: make stall cleaning completion feel amazing
 - New CSS animations:
@@ -38,21 +55,6 @@ This file maintains context between autonomous iterations.
 - Pattern: el.classList.remove('clicked'); void el.offsetWidth; el.classList.add('clicked');
 - CSS: lines 278-287 (click feedback animations)
 - JS: clickStall, clickSink, showTaskPanel, powerup handlers
-
-### Combo Streak Bonuses (a2h.2.5)
-- Milestones at 3x, 5x, 10x combos with escalating rewards
-- CONFIG.comboMilestones: array of {level, speedBoost, rating, points, msg}
-  - 3x: "🔥 ON FIRE!" - 3s speed boost, +50 pts
-  - 5x: "⚡ UNSTOPPABLE!" - 4s speed boost, +0.1 rating, +100 pts
-  - 10x: "🌟 LEGENDARY!" - 5s speed boost, +0.3 rating, +250 pts
-- game.comboBoost: remaining duration of speed boost (30% faster cleaning)
-- game.lastMilestone: prevents re-triggering same milestone
-- Visual: banner with animation, legendary gets gold styling
-- Sound: escalating fanfares (3/4/5 note chords)
-- Combo break: softer "COMBO LOST!" message at 3+ streaks
-- CSS: lines 261-269 (milestone banner, break message, animations)
-- HTML: lines 367-368 (combo-milestone, combo-break divs)
-- JS: checkComboMilestone() ~693, showComboBreak() ~731, playComboMilestone/Break() ~557
 
 ---
 
@@ -107,6 +109,21 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Combo Streak Bonuses (a2h.2.5)
+- Milestones at 3x, 5x, 10x combos with escalating rewards
+- CONFIG.comboMilestones: array of {level, speedBoost, rating, points, msg}
+  - 3x: "🔥 ON FIRE!" - 3s speed boost, +50 pts
+  - 5x: "⚡ UNSTOPPABLE!" - 4s speed boost, +0.1 rating, +100 pts
+  - 10x: "🌟 LEGENDARY!" - 5s speed boost, +0.3 rating, +250 pts
+- game.comboBoost: remaining duration of speed boost (30% faster cleaning)
+- game.lastMilestone: prevents re-triggering same milestone
+- Visual: banner with animation, legendary gets gold styling
+- Sound: escalating fanfares (3/4/5 note chords)
+- Combo break: softer "COMBO LOST!" message at 3+ streaks
+- CSS: lines 261-269 (milestone banner, break message, animations)
+- HTML: lines 367-368 (combo-milestone, combo-break divs)
+- JS: checkComboMilestone() ~693, showComboBreak() ~731, playComboMilestone/Break() ~557
 
 ### Prevent Multiple Customers Same Stall (8pk)
 - Bug: race condition allowed multiple customers to target same stall
