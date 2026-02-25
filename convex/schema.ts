@@ -1,14 +1,10 @@
 import { defineSchema, defineTable } from "convex/server";
+import { authTables } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
 export default defineSchema({
-  // Users table - for logged-in players
-  users: defineTable({
-    name: v.string(),
-    email: v.optional(v.string()),
-    avatarUrl: v.optional(v.string()),
-    createdAt: v.number(),
-  }),
+  // Auth tables (users, sessions, accounts, etc.)
+  ...authTables,
 
   // Scores table - global leaderboard
   scores: defineTable({

@@ -4,9 +4,65 @@ import { api } from "../convex/_generated/api";
 // Initialize Convex client
 const convex = new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL);
 
+// Auth state
+let currentUser = null;
+let playerName = localStorage.getItem('beaverPlayerName') || '';
+
+// Sign in anonymously (creates persistent session)
+async function signInAnonymous(name) {
+  try {
+    const result = await convex.mutation(api.auth.signIn, {
+      provider: "anonymous",
+      params: { name }
+    });
+    if (result?.userId) {
+      currentUser = { id: result.userId, name };
+      playerName = name;
+      localStorage.setItem('beaverPlayerName', name);
+      localStorage.setItem('beaverUserId', result.userId);
+      updateAuthUI();
+      return result;
+    }
+  } catch (e) {
+    console.log('Sign in failed, using guest mode:', e);
+    // Fallback: just save name locally
+    playerName = name;
+    localStorage.setItem('beaverPlayerName', name);
+  }
+  return null;
+}
+
+// Check if user is signed in
+function initAuth() {
+  const savedUserId = localStorage.getItem('beaverUserId');
+  const savedName = localStorage.getItem('beaverPlayerName');
+  if (savedUserId && savedName) {
+    currentUser = { id: savedUserId, name: savedName };
+    playerName = savedName;
+  }
+  updateAuthUI();
+}
+
+// Update auth UI elements
+function updateAuthUI() {
+  const authStatus = $('auth-status');
+  const signInSection = $('signin-section');
+
+  if (authStatus) {
+    if (currentUser) {
+      authStatus.innerHTML = `<span class="auth-user">🦫 ${currentUser.name}</span>`;
+    } else {
+      authStatus.innerHTML = '<span class="auth-guest">Guest</span>';
+    }
+  }
+
+  if (signInSection) {
+    signInSection.style.display = currentUser ? 'none' : 'block';
+  }
+}
+
 // Leaderboard state
 let leaderboardData = [];
-let playerName = localStorage.getItem('beaverPlayerName') || '';
 
 // Fetch leaderboard on load
 async function fetchLeaderboard() {
@@ -27,6 +83,7 @@ async function submitScore(score, shift, grade) {
       score,
       shift,
       grade,
+      userId: currentUser?.id || null,
     });
     await fetchLeaderboard();
     return scoreId;
@@ -56,7 +113,8 @@ function updateLeaderboardUI() {
   `).join('');
 }
 
-// Initialize leaderboard
+// Initialize
+initAuth();
 fetchLeaderboard();
 
 const SHIFT_NARRATIVES = [
