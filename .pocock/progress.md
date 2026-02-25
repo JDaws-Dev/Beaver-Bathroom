@@ -9,6 +9,16 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Stall Visual Overhaul (a2h.1.1)
+- Replaced plain stall rectangles with cartoony wood-grain design
+- Used CSS `repeating-linear-gradient` + `background-blend-mode:overlay` for wood texture
+- Added depth with multiple gradients, `box-shadow`, and `::before` highlight
+- Stall lights now have `radial-gradient` for 3D sphere effect
+- Door has top ventilation slot (`::before`) and chunky rounded handle (`::after`)
+- State colors (empty/occupied/dirty/cleaning) now use richer gradients
+- Updated responsive breakpoint for smaller screens
+- Files: beaver.html (CSS lines 36-57)
+
 ### Initial State (v4)
 - Game is functional single-file HTML (~900 lines)
 - Has gender selection, customer flow, cleaning mechanics
@@ -45,10 +55,17 @@ Patterns, gotchas, and decisions that affect future work:
 
 ### Code Structure
 
-- Lines 1-96: CSS styles
-- Lines 97-164: HTML structure
-- Lines 165-end: JavaScript game logic
+- Lines 1-140: CSS styles (grew with visual polish)
+- Lines 141-220: HTML structure
+- Lines 221-end: JavaScript game logic
 - Key functions: update(), renderPeople(), updateStallDOM(), clickStall()
+
+### CSS Art Techniques
+
+- Wood grain: `repeating-linear-gradient(90deg,...)` with 2-4px stripe widths
+- Depth: combine `box-shadow` (outer) + `inset box-shadow` (inner)
+- 3D lights: `radial-gradient(circle at 30% 30%,...)` for sphere highlight
+- Cartooniness: larger `border-radius`, bold borders, warm brown palette (#5d4037, #3e2723, #8d6e63)
 
 ### Testing
 
