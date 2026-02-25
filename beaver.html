@@ -10,20 +10,49 @@ body{font-family:system-ui,sans-serif;background:#2d1f0f;color:#eee;overflow:hid
 #game-container{width:100%;max-width:800px;height:100vh;max-height:900px;display:flex;flex-direction:column;position:relative}
 .screen{display:none;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;position:absolute;inset:0;padding:20px;text-align:center}
 .screen.active{display:flex}
-#title-screen{background:linear-gradient(180deg,#3d2814 0%,#2d4a1e 60%,#1a3310 100%);gap:18px}
-#title-screen h1{font-size:2.1em;color:#f5a623;text-shadow:3px 3px 0 #2a1a0a,0 0 20px rgba(245,166,35,0.4);letter-spacing:1px}
-#title-screen p{color:#fdd835;font-style:italic;text-shadow:0 2px 4px rgba(0,0,0,0.5)}
-.instructions{background:linear-gradient(180deg,#007a47 0%,#006b3f 50%,#005530 100%);border:4px solid #00a05a;border-radius:14px;padding:14px 16px;font-size:0.85em;text-align:left;max-width:360px;box-shadow:inset 0 2px 4px rgba(255,255,255,0.2),inset 0 -3px 6px rgba(0,0,0,0.3),0 4px 10px rgba(0,0,0,0.4);text-shadow:0 1px 2px rgba(0,0,0,0.4)}
-.instructions li{list-style:none;margin:5px 0}
-.gender-select{display:flex;gap:18px;margin:12px 0}
-.gender-btn{padding:16px 28px;border:4px solid #f5a623;border-radius:14px;background:linear-gradient(180deg,#5a4030 0%,#3d2814 50%,#2d1f0f 100%);color:#fff;font-size:1.1em;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;transition:all 0.15s;box-shadow:inset 0 2px 0 rgba(255,255,255,0.15),inset 0 -3px 6px rgba(0,0,0,0.3),0 4px 8px rgba(0,0,0,0.35);text-shadow:0 2px 3px rgba(0,0,0,0.4)}
-.gender-btn:hover{transform:scale(1.08) translateY(-2px);background:linear-gradient(180deg,#6a5040 0%,#4d3824 50%,#3d2f1f 100%);box-shadow:inset 0 2px 0 rgba(255,255,255,0.2),0 6px 12px rgba(0,0,0,0.4)}
-.gender-btn.selected{background:linear-gradient(180deg,#fdd835 0%,#f5a623 50%,#e69500 100%);color:#2d1f0f;border-color:#fff;box-shadow:0 0 20px rgba(245,166,35,0.5),inset 0 2px 0 rgba(255,255,255,0.4)}
-.gender-btn .icon{font-size:2.2em;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.3))}
+#title-screen{background:linear-gradient(180deg,#3d2814 0%,#2d4a1e 60%,#1a3310 100%);gap:0;padding:15px 20px;overflow-y:auto}
+.title-card{background:linear-gradient(180deg,#5a4030 0%,#3d2814 50%,#2d1f0f 100%);border:5px solid #f5a623;border-radius:20px;padding:20px 25px 25px;max-width:380px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,0.5),inset 0 2px 4px rgba(255,200,100,0.15),inset 0 -4px 8px rgba(0,0,0,0.3);position:relative}
+.title-card::before{content:'';position:absolute;top:8px;left:8px;right:8px;height:2px;background:linear-gradient(90deg,transparent,rgba(255,200,100,0.3),transparent);border-radius:2px}
+.title-header{text-align:center;margin-bottom:15px}
+.title-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px}
+.title-beaver{width:56px;height:56px;position:relative;animation:title-beaver-bob 2s ease-in-out infinite}
+.title-beaver .beaver-face{width:48px;height:44px}
+.title-beaver .beaver-ear{width:14px;height:14px;top:0}
+.title-beaver .beaver-eye{width:12px;height:12px;top:12px}
+.title-beaver .beaver-eye.left{left:8px}
+.title-beaver .beaver-eye.right{right:8px}
+.title-beaver .beaver-pupil{width:6px;height:6px;animation:beaver-look 3s infinite}
+.title-beaver .beaver-nose{width:12px;height:8px;top:22px}
+.title-beaver .beaver-mouth{width:16px;height:7px;top:30px}
+.title-beaver .beaver-teeth{width:12px;height:7px;top:29px}
+.title-beaver .beaver-cheek{width:10px;height:7px;top:20px}
+#title-screen h1{font-size:1.7em;color:#f5a623;text-shadow:3px 3px 0 #2a1a0a,-1px -1px 0 #2a1a0a,0 0 25px rgba(245,166,35,0.5);letter-spacing:2px;line-height:1.1;margin:0}
+.title-tagline{color:#fdd835;font-style:italic;font-size:0.9em;margin-top:6px;text-shadow:0 2px 4px rgba(0,0,0,0.6)}
+.title-subtitle{font-size:0.7em;color:#c9a86c;margin-top:4px;text-shadow:0 1px 2px rgba(0,0,0,0.4)}
+@keyframes title-beaver-bob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-4px) rotate(2deg)}}
+.instructions{background:linear-gradient(180deg,#007a47 0%,#006b3f 50%,#005530 100%);border:4px solid #00a05a;border-radius:14px;padding:12px 14px;font-size:0.78em;text-align:left;width:100%;box-shadow:inset 0 2px 4px rgba(255,255,255,0.2),inset 0 -3px 6px rgba(0,0,0,0.3),0 4px 10px rgba(0,0,0,0.4);text-shadow:0 1px 2px rgba(0,0,0,0.4);margin:12px 0}
+.instructions-title{font-size:1em;font-weight:bold;color:#fff;text-align:center;margin-bottom:8px;letter-spacing:1px;text-shadow:0 2px 4px rgba(0,0,0,0.5)}
+.instructions li{list-style:none;margin:6px 0;display:flex;align-items:flex-start;gap:8px;line-height:1.3}
+.instructions li .inst-icon{font-size:1.1em;flex-shrink:0;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.3))}
+.gender-section{margin-top:15px}
+.gender-label{color:#c9a86c;font-size:0.85em;margin-bottom:10px;text-shadow:0 1px 2px rgba(0,0,0,0.4);letter-spacing:0.5px}
+.gender-select{display:flex;gap:15px;justify-content:center}
+.gender-btn{padding:12px 20px;width:120px;border:4px solid #6a5a48;border-radius:16px;background:linear-gradient(180deg,#5a4030 0%,#3d2814 50%,#2d1f0f 100%);color:#fff;font-size:1em;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:all 0.2s;box-shadow:inset 0 2px 0 rgba(255,255,255,0.15),inset 0 -3px 6px rgba(0,0,0,0.3),0 4px 8px rgba(0,0,0,0.35);text-shadow:0 2px 3px rgba(0,0,0,0.4)}
+.gender-btn:hover{transform:scale(1.05) translateY(-3px);background:linear-gradient(180deg,#6a5040 0%,#4d3824 50%,#3d2f1f 100%);border-color:#8a7a68;box-shadow:inset 0 2px 0 rgba(255,255,255,0.2),0 6px 12px rgba(0,0,0,0.4)}
+.gender-btn.selected{background:linear-gradient(180deg,#fdd835 0%,#f5a623 50%,#e69500 100%);color:#2d1f0f;border-color:#fff;box-shadow:0 0 25px rgba(245,166,35,0.6),inset 0 2px 0 rgba(255,255,255,0.4);transform:scale(1.05)}
+.gender-btn.selected .gender-icon{animation:gender-selected 0.4s ease-out}
+.gender-btn .gender-icon{font-size:2.4em;filter:drop-shadow(0 3px 4px rgba(0,0,0,0.4));transition:transform 0.2s}
+.gender-btn .gender-text{font-weight:bold;letter-spacing:0.5px}
+@keyframes gender-selected{0%{transform:scale(1)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
 .btn{padding:14px 35px;border:4px solid #a12d0a;border-radius:14px;font-size:1.15em;font-weight:bold;cursor:pointer;background:linear-gradient(180deg,#e53935 0%,#d4380d 50%,#b71c1c 100%);color:#fff;transition:all 0.12s;box-shadow:inset 0 3px 0 rgba(255,255,255,0.25),inset 0 -3px 6px rgba(0,0,0,0.3),0 4px 8px rgba(0,0,0,0.35);text-shadow:0 2px 3px rgba(0,0,0,0.4);letter-spacing:0.5px}
 .btn:hover{transform:scale(1.06) translateY(-2px);background:linear-gradient(180deg,#ef5350 0%,#e53935 50%,#c62828 100%);box-shadow:inset 0 3px 0 rgba(255,255,255,0.3),0 6px 12px rgba(0,0,0,0.4)}
 .btn:active{transform:scale(0.97);box-shadow:inset 0 3px 6px rgba(0,0,0,0.4)}
 .btn:disabled{opacity:0.45;cursor:not-allowed;filter:grayscale(0.4)}
+#start-btn{margin-top:18px;padding:16px 50px;font-size:1.3em;letter-spacing:2px;position:relative;overflow:hidden}
+#start-btn:not(:disabled){animation:start-pulse 1.5s ease-in-out infinite}
+#start-btn:not(:disabled)::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent);animation:start-shine 2s ease-in-out infinite}
+@keyframes start-pulse{0%,100%{box-shadow:inset 0 3px 0 rgba(255,255,255,0.25),inset 0 -3px 6px rgba(0,0,0,0.3),0 4px 8px rgba(0,0,0,0.35),0 0 15px rgba(229,57,53,0.4)}50%{box-shadow:inset 0 3px 0 rgba(255,255,255,0.25),inset 0 -3px 6px rgba(0,0,0,0.3),0 4px 8px rgba(0,0,0,0.35),0 0 30px rgba(229,57,53,0.6)}}
+@keyframes start-shine{0%{left:-100%}50%,100%{left:100%}}
 #game-screen{align-items:stretch;justify-content:flex-start}
 #hud{display:flex;justify-content:space-around;padding:12px 10px;background:repeating-linear-gradient(90deg,#4a3828 0px,#5a4838 2px,#3d2814 4px,#4a3828 6px),linear-gradient(180deg,#5a4838 0%,#3d2814 50%,#2d1f0f 100%);background-blend-mode:overlay;border-bottom:4px solid #f5a623;border-top:3px solid #2a1a0a;align-items:center;box-shadow:inset 0 2px 4px rgba(255,200,100,0.15),inset 0 -4px 8px rgba(0,0,0,0.4),0 4px 8px rgba(0,0,0,0.3)}
 .hud-item{text-align:center;background:linear-gradient(180deg,rgba(0,0,0,0.2),rgba(0,0,0,0.35));padding:6px 10px;border-radius:8px;border:2px solid #5d4037;box-shadow:inset 0 1px 0 rgba(255,255,255,0.1)}
@@ -205,34 +234,58 @@ body{font-family:system-ui,sans-serif;background:#2d1f0f;color:#eee;overflow:hid
 .inspector-icon{filter:drop-shadow(0 0 8px rgba(33,150,243,0.8)) drop-shadow(0 2px 3px rgba(0,0,0,0.4))}
 .inspector-badge{position:absolute;top:-8px;right:-8px;background:#1565c0;color:#fff;font-size:0.4em;padding:2px 5px;border-radius:4px;border:2px solid #0d47a1;font-weight:bold}
 .inspector-clipboard{position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);font-size:0.5em}
-@media(max-width:500px){.stall{width:52px}.stall-body{width:48px;height:65px}.stall-light{width:12px;height:12px;border-width:2px}.person{font-size:1.3em}.person-body{width:30px;height:40px}.person-torso{width:20px;height:16px}.person-legs{width:16px}.gender-btn{padding:10px 15px}}
+@media(max-width:500px){.title-card{padding:15px 18px 20px;border-width:4px;border-radius:16px}.title-beaver{width:44px;height:44px}.title-beaver .beaver-face{width:38px;height:34px}.title-beaver .beaver-eye{width:10px;height:10px;top:10px}.title-beaver .beaver-eye.left{left:6px}.title-beaver .beaver-eye.right{right:6px}#title-screen h1{font-size:1.4em}.instructions{font-size:0.72em;padding:10px 12px}.gender-btn{width:100px;padding:10px 15px}.gender-btn .gender-icon{font-size:2em}#start-btn{padding:14px 40px;font-size:1.15em}.stall{width:52px}.stall-body{width:48px;height:65px}.stall-light{width:12px;height:12px;border-width:2px}.person{font-size:1.3em}.person-body{width:30px;height:40px}.person-torso{width:20px;height:16px}.person-legs{width:16px}}
 </style>
 </head>
 <body>
 <div id="game-container">
   <div id="title-screen" class="screen active">
-    <h1>🦫 Beaver's Bathroom Blitz</h1>
-    <p>"Dam Good Restrooms - Since 1982"</p>
-    <p style="font-size:0.7em;opacity:0.7;margin-top:-10px">🛣️ The Legendary Texas Pit Stop Experience</p>
-    <div class="instructions">
-      <li>🚗 Road-trippers need to GO! Keep stalls spotless!</li>
-      <li>🚽 Click dirty stalls, then MASH to clean faster!</li>
-      <li>🚿 Scrub those sinks - travelers notice everything!</li>
-      <li>📄 Keep towels stocked - it's the beaver way!</li>
-      <li>⭐ Protect the lodge's 5-star reputation!</li>
+    <div class="title-card">
+      <div class="title-header">
+        <div class="title-logo">
+          <div class="title-beaver">
+            <div class="beaver-head">
+              <div class="beaver-ear left"></div>
+              <div class="beaver-ear right"></div>
+              <div class="beaver-face">
+                <div class="beaver-eye left"><div class="beaver-pupil"></div></div>
+                <div class="beaver-eye right"><div class="beaver-pupil"></div></div>
+                <div class="beaver-nose"></div>
+                <div class="beaver-mouth"></div>
+                <div class="beaver-teeth"></div>
+                <div class="beaver-cheek left"></div>
+                <div class="beaver-cheek right"></div>
+              </div>
+            </div>
+          </div>
+          <h1>Beaver's<br>Bathroom Blitz</h1>
+        </div>
+        <p class="title-tagline">"Dam Good Restrooms - Since 1982"</p>
+        <p class="title-subtitle">The Legendary Texas Pit Stop Experience</p>
+      </div>
+      <div class="instructions">
+        <div class="instructions-title">How to Play</div>
+        <li><span class="inst-icon">🚗</span><span>Road-trippers need to GO! Keep stalls spotless!</span></li>
+        <li><span class="inst-icon">🚽</span><span>Click dirty stalls, then MASH tasks to clean faster!</span></li>
+        <li><span class="inst-icon">🚿</span><span>Scrub those sinks - travelers notice everything!</span></li>
+        <li><span class="inst-icon">📄</span><span>Keep towels stocked - it's the beaver way!</span></li>
+        <li><span class="inst-icon">⭐</span><span>Protect the lodge's 5-star reputation!</span></li>
+      </div>
+      <div class="gender-section">
+        <p class="gender-label">Choose your restroom:</p>
+        <div class="gender-select">
+          <button class="gender-btn" data-gender="male">
+            <span class="gender-icon">🚹</span>
+            <span class="gender-text">Men's</span>
+          </button>
+          <button class="gender-btn" data-gender="female">
+            <span class="gender-icon">🚺</span>
+            <span class="gender-text">Women's</span>
+          </button>
+        </div>
+      </div>
+      <button class="btn" id="start-btn" disabled>Clock In!</button>
     </div>
-    <p style="margin-top:10px;font-size:0.9em">Choose your restroom:</p>
-    <div class="gender-select">
-      <button class="gender-btn" data-gender="male">
-        <span class="icon">🚹</span>
-        <span>Men's</span>
-      </button>
-      <button class="gender-btn" data-gender="female">
-        <span class="icon">🚺</span>
-        <span>Women's</span>
-      </button>
-    </div>
-    <button class="btn" id="start-btn" disabled>Clock In!</button>
   </div>
 
   <div id="game-screen" class="screen">

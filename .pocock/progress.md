@@ -9,6 +9,20 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Title Screen Redesign (a2h.6)
+- Complete redesign with card/sign metaphor - brown wood-grain card with gold border
+- Beaver mascot integrated into title logo with bobbing animation
+- Title text with glowing text-shadow effect, split "Beaver's / Bathroom Blitz"
+- Tagline and subtitle with styled typography
+- Instructions section: green Buc-ee's themed panel with "How to Play" title
+- Each instruction is flexbox with icon + text for clean alignment
+- Gender buttons: 120px wide with large emoji icons, gold glow on selection
+- Clock In button: pulsing glow animation + shine effect when enabled
+- Mobile responsive breakpoint updates for smaller screens
+- CSS: lines 13-55 (title screen styles, animations)
+- HTML: lines 242-289 (title-card structure with beaver mascot)
+- Animations: title-beaver-bob, gender-selected, start-pulse, start-shine
+
 ### Health Inspector Events (a2h.2.3)
 - 25% chance per shift (after first shift) for inspector visit
 - Inspector appears 20-40 seconds into shift with 3-second warning banner
@@ -34,17 +48,6 @@ This file maintains context between autonomous iterations.
 - Creates strategic priority: clean VIP stalls fast for big rewards
 - CSS: lines 133-136 (.person.vip styles)
 - JS: spawnCustomer ~line 778, rating impacts ~834/912, clean bonus ~1203
-
-### Background Art and Floor Details (a2h.1.5)
-- Changed floor from plain stripes to checkered tile pattern
-- Used `repeating-conic-gradient` for alternating tile colors (#c4b89a, #d8cdb5)
-- Added grout lines via `::before` with thin dark repeating gradients
-- Added baseboard via `::after` at floor bottom (wood brown gradient)
-- Inset shadow at top of floor for depth
-- Wall background: gradient from light beige to darker, horizontal line texture
-- Added "🦫 KEEP IT CLEAN!" wall sign in Buc-ee's green
-- CSS Technique: `repeating-conic-gradient(from 0deg at 50% 50%, ...)` for checkered pattern
-- Files: beaver.html CSS lines 71-72, 96-99, HTML line 255
 
 ---
 
@@ -99,6 +102,17 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Background Art and Floor Details (a2h.1.5)
+- Changed floor from plain stripes to checkered tile pattern
+- Used `repeating-conic-gradient` for alternating tile colors (#c4b89a, #d8cdb5)
+- Added grout lines via `::before` with thin dark repeating gradients
+- Added baseboard via `::after` at floor bottom (wood brown gradient)
+- Inset shadow at top of floor for depth
+- Wall background: gradient from light beige to darker, horizontal line texture
+- Added "🦫 KEEP IT CLEAN!" wall sign in Buc-ee's green
+- CSS Technique: `repeating-conic-gradient(from 0deg at 50% 50%, ...)` for checkered pattern
+- Files: beaver.html CSS lines 71-72, 96-99, HTML line 255
 
 ### Customer Character Improvements (a2h.1.3)
 - Added CSS art body to customers: torso + animated legs
