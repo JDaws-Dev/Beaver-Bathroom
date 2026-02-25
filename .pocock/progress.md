@@ -9,6 +9,20 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Separate Music and SFX Volume Controls (7eo)
+- Goal: separate controls for music vs SFX so players can mute independently
+- Finding: feature already existed! `isMuted` (SFX) and `isMusicMuted` (music) were already separate
+- Problem: UI wasn't clear - buttons had confusing icons (🔈 for muted music looked like speaker)
+- Fix: added labeled controls for clarity
+  - New `.audio-ctrl` wrapper with `.audio-label` ("SFX" / "Music")
+  - Both buttons now show strikethrough when muted (`.muted{text-decoration:line-through}`)
+  - Updated aria-labels for accessibility
+  - Music button uses 🎵 consistently (muted state shown via opacity + strikethrough)
+  - SFX button keeps 🔇/🔊 icons (already clear)
+- Responsive: added `.audio-label` sizing at 600px and 420px breakpoints
+- Files: index.html (CSS lines 105-106, 373, 416; HTML lines 539-540; JS line 945)
+- localStorage keys unchanged: 'beaverMuted', 'beaverMusicMuted'
+
 ### UI/UX and Gameplay Evaluation (el6)
 - Goal: comprehensive evaluation without code changes - recommendations only
 - Deliverable: EVALUATION.md with prioritized recommendations
@@ -58,23 +72,6 @@ This file maintains context between autonomous iterations.
   - Happy state detection includes special character thoughts
 - Responsive styles: smaller name labels at 600px and 420px breakpoints
 - Character personalities: truckers patient/messy, soccer moms rushed/clean, tourists slow/clean
-
-### Player Identity and Stakes (a2h.4.3)
-- Goal: establish who player is, what they want, what happens on win/loss
-- Player identity: "new hire at Beaver Lodge, first day"
-- Goal: survive 6 shifts to earn the "Golden Plunger" award
-- Stakes: win = trophy, lose = fired
-- Title screen updates:
-  - New .title-subtitle with player intro text (line 456)
-  - .golden-plunger class with gold glow styling (line 33)
-- SHIFT_NARRATIVES: added `progress` field ("Day 1 of 6", "Final Day", etc.)
-- showShiftIntro() now shows progress instead of "SHIFT X"
-- Tutorial updated: explains player is new hire, goal is 6 shifts
-- WIN_MESSAGES: now reference Golden Plunger and "rookie" identity
-- GAME_OVER_MESSAGES: reference badge, manager disappointment
-- gameOver(): win title = "GOLDEN PLUNGER EARNED!", lose = "FIRED!", icon 📦 for loss
-- endShift() comments: now reference remaining shifts, Golden Plunger for S grades
-- CSS: .title-subtitle and .golden-plunger styles added
 
 ---
 
@@ -129,6 +126,23 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Player Identity and Stakes (a2h.4.3)
+- Goal: establish who player is, what they want, what happens on win/loss
+- Player identity: "new hire at Beaver Lodge, first day"
+- Goal: survive 6 shifts to earn the "Golden Plunger" award
+- Stakes: win = trophy, lose = fired
+- Title screen updates:
+  - New .title-subtitle with player intro text (line 456)
+  - .golden-plunger class with gold glow styling (line 33)
+- SHIFT_NARRATIVES: added `progress` field ("Day 1 of 6", "Final Day", etc.)
+- showShiftIntro() now shows progress instead of "SHIFT X"
+- Tutorial updated: explains player is new hire, goal is 6 shifts
+- WIN_MESSAGES: now reference Golden Plunger and "rookie" identity
+- GAME_OVER_MESSAGES: reference badge, manager disappointment
+- gameOver(): win title = "GOLDEN PLUNGER EARNED!", lose = "FIRED!", icon 📦 for loss
+- endShift() comments: now reference remaining shifts, Golden Plunger for S grades
+- CSS: .title-subtitle and .golden-plunger styles added
 
 ### Shift Narrative Names and Intro Screen (a2h.4.1)
 - Goal: add narrative names to shifts with intro screen showing before gameplay
