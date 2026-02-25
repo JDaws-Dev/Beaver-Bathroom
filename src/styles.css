@@ -516,3 +516,11 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 /* Leaderboard Section on Game Over */
 .leaderboard-section{margin:12px 0;padding:12px;background:rgba(0,0,0,0.2);border-radius:10px;width:100%;max-width:300px}
 .leaderboard-section h4{color:#f5a623;margin-bottom:10px;font-size:0.95em}
+
+/* Tip Jar Styles */
+.tip-section{margin:12px 0}
+.tip-btn{display:inline-block;padding:12px 20px;background:linear-gradient(180deg,#43a047,#2e7d32);color:#fff;text-decoration:none;border-radius:12px;font-size:0.95em;font-weight:bold;border:2px solid #1b5e20;box-shadow:0 4px 12px rgba(0,0,0,0.3);transition:all 0.2s}
+.tip-btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,0.4);background:linear-gradient(180deg,#4caf50,#388e3c)}
+.title-footer{margin-top:16px;padding-top:12px;border-top:1px solid rgba(245,166,35,0.2)}
+.tip-link{color:#c9a86c;text-decoration:none;font-size:0.8em;opacity:0.8;transition:opacity 0.2s}
+.tip-link:hover{opacity:1;color:#f5a623}
