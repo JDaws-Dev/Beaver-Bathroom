@@ -9,6 +9,13 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Improve SAVED Message Clarity (424)
+- Goal: change unclear "SAVED!" message to something more descriptive
+- Changed: "SAVED! +50" → "JUST IN TIME! +50" (line 1849)
+- Why: "Just in time" immediately conveys urgency + success of cleaning before customer entered
+- Pairs well with existing "Close Calls" stat label on game over screen
+- Files: index.html (one line change in toStall phase handler)
+
 ### High Score Persistence (rzf)
 - Goal: save high score to localStorage, show on title and game over screens
 - localStorage key: `beaverHighScore` - stores integer value
@@ -26,15 +33,6 @@ This file maintains context between autonomous iterations.
 - Math: 30% slower rate = 43% longer intervals (1/0.7 ≈ 1.43x)
 - Other shifts unchanged - only affects Shift 1
 - Files: index.html (CONFIG.shifts[0] line 682)
-
-### Auto-show Tutorial on First Play (2uk)
-- Goal: show tutorial automatically on first visit, don't make players hunt for it
-- localStorage key: `beaverTutorialSeen` - set to 'true' when tutorial is closed
-- On page load: check if key exists, if not show tutorial modal automatically
-- Close handlers (close button, "Got it!" button, click outside) all set localStorage
-- "How to Play" button still works for returning players
-- Files: index.html (JS lines 2793-2811)
-- Simple localStorage pattern, matches existing mute preference storage
 
 ---
 
@@ -89,6 +87,15 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Auto-show Tutorial on First Play (2uk)
+- Goal: show tutorial automatically on first visit, don't make players hunt for it
+- localStorage key: `beaverTutorialSeen` - set to 'true' when tutorial is closed
+- On page load: check if key exists, if not show tutorial modal automatically
+- Close handlers (close button, "Got it!" button, click outside) all set localStorage
+- "How to Play" button still works for returning players
+- Files: index.html (JS lines 2793-2811)
+- Simple localStorage pattern, matches existing mute preference storage
 
 ### Bucky the Beaver Mentor Tips (a2h.4.2)
 - Goal: add Bucky as mentor character providing tips before each shift
