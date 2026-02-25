@@ -9,6 +9,20 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Interactive Tutorial with Guided Clicks (e02)
+- Goal: guided first-time tutorial that highlights elements and prompts clicks
+- localStorage key: `beaverInteractiveTutorial` - tracks completion
+- Triggers on Shift 1 start (after 500ms delay) if not already completed
+- 4-step flow: dirty stall → task panel → sinks → powerups
+- Steps have `waitFor` property: 'stall-click', 'task-complete', or 'next' (button click)
+- Tutorial pauses game except for steps requiring interaction
+- Creates one dirty stall with single "Scrub" task + one dirty sink for practice
+- CSS: dark overlay (z:900), golden pulsing highlight (z:910), bouncing arrow (z:915), speech bubble (z:920)
+- HTML: overlay with skip button, arrow emoji, Bucky speech bubble, next button
+- JS: TUTORIAL_STEPS array, tutorialActive/tutorialStep/tutorialHighlight state
+- advanceTutorial() called from clickStall() and completeTask()
+- Files: index.html (CSS ~475-489, HTML ~651-660, JS ~2910-3045, startShift ~1522-1525)
+
 ### Stack Task Buttons Vertically on Mobile (5tr)
 - Goal: make task buttons full-width and stacked for better touch on portrait phones
 - Added to 420px breakpoint: `#task-buttons{flex-direction:column;gap:8px}` + `.task-btn{width:100%}`
@@ -24,13 +38,6 @@ This file maintains context between autonomous iterations.
 - Also handles 'cleaning' state: if player started cleaning during grace, instant completion + save
 - Logic added to lines 1893-1944 in entering phase handler
 - Files: index.html (toStall line 1876-1880, entering lines 1893-1944)
-
-### Improve SAVED Message Clarity (424)
-- Goal: change unclear "SAVED!" message to something more descriptive
-- Changed: "SAVED! +50" → "JUST IN TIME! +50" (line 1849)
-- Why: "Just in time" immediately conveys urgency + success of cleaning before customer entered
-- Pairs well with existing "Close Calls" stat label on game over screen
-- Files: index.html (one line change in toStall phase handler)
 
 ---
 
@@ -85,6 +92,13 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Improve SAVED Message Clarity (424)
+- Goal: change unclear "SAVED!" message to something more descriptive
+- Changed: "SAVED! +50" → "JUST IN TIME! +50" (line 1849)
+- Why: "Just in time" immediately conveys urgency + success of cleaning before customer entered
+- Pairs well with existing "Close Calls" stat label on game over screen
+- Files: index.html (one line change in toStall phase handler)
 
 ### High Score Persistence (rzf)
 - Goal: save high score to localStorage, show on title and game over screens

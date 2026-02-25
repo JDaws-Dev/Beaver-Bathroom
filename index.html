@@ -471,6 +471,22 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .intro-desc{font-size:0.8em;margin-bottom:12px}
 .intro-shift-num{font-size:0.75em;letter-spacing:2px}
 }
+/* Interactive Tutorial */
+.tutorial-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:900;display:none;align-items:center;justify-content:center;flex-direction:column}
+.tutorial-overlay.active{display:flex}
+.tutorial-highlight{position:relative;z-index:910;box-shadow:0 0 0 4px #f5a623,0 0 20px 8px rgba(245,166,35,0.6);border-radius:8px;animation:tutorial-pulse 1s ease-in-out infinite}
+@keyframes tutorial-pulse{0%,100%{box-shadow:0 0 0 4px #f5a623,0 0 20px 8px rgba(245,166,35,0.6)}50%{box-shadow:0 0 0 6px #fdd835,0 0 30px 12px rgba(245,166,35,0.8)}}
+.tutorial-speech{position:fixed;bottom:20%;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#fff 0%,#f0f0f0 100%);color:#333;padding:16px 24px;border-radius:16px;font-size:1.1em;max-width:320px;text-align:center;z-index:920;box-shadow:0 6px 20px rgba(0,0,0,0.4);border:3px solid #f5a623}
+.tutorial-speech::before{content:'';position:absolute;top:-20px;left:50%;transform:translateX(-50%);border:12px solid transparent;border-bottom-color:#f5a623}
+.tutorial-speech::after{content:'';position:absolute;top:-14px;left:50%;transform:translateX(-50%);border:10px solid transparent;border-bottom-color:#fff}
+.tutorial-bucky{position:absolute;top:-45px;left:50%;transform:translateX(-50%);font-size:2em;animation:tutorial-bucky-bounce 0.5s ease-in-out infinite}
+@keyframes tutorial-bucky-bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-5px)}}
+.tutorial-arrow{position:fixed;font-size:2em;z-index:915;animation:tutorial-arrow-bounce 0.5s ease-in-out infinite;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))}
+@keyframes tutorial-arrow-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.tutorial-skip{position:fixed;top:20px;right:20px;background:none;border:2px solid rgba(255,255,255,0.5);color:rgba(255,255,255,0.8);padding:8px 16px;border-radius:8px;cursor:pointer;z-index:930;font-size:0.9em;transition:all 0.2s}
+.tutorial-skip:hover{background:rgba(255,255,255,0.1);border-color:#fff;color:#fff}
+.tutorial-next{margin-top:12px;padding:10px 24px;background:linear-gradient(180deg,#43a047,#2e7d32);color:#fff;border:2px solid #1b5e20;border-radius:10px;cursor:pointer;font-size:0.95em;font-weight:bold;transition:transform 0.15s}
+.tutorial-next:hover{transform:scale(1.05)}
 </style>
 </head>
 <body>
@@ -629,6 +645,17 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
         <div class="intro-stat"><span class="intro-stat-icon">⏱️</span> <span id="intro-time">60</span>s</div>
       </div>
       <button class="btn btn-play" id="shift-start-btn">Let's Go!</button>
+    </div>
+  </div>
+
+  <!-- Interactive Tutorial Overlay -->
+  <div id="tutorial-overlay" class="tutorial-overlay">
+    <button class="tutorial-skip" id="tutorial-skip">Skip Tutorial</button>
+    <div class="tutorial-arrow" id="tutorial-arrow">👆</div>
+    <div class="tutorial-speech" id="tutorial-speech">
+      <div class="tutorial-bucky">🦫</div>
+      <div id="tutorial-text">Welcome, rookie!</div>
+      <button class="tutorial-next" id="tutorial-next" style="display:none">Got it!</button>
     </div>
   </div>
 </div>
@@ -1491,6 +1518,11 @@ function startShift() {
   game.lastTime = performance.now();
   startMusic();
   requestAnimationFrame(gameLoop);
+
+  // Start interactive tutorial on first shift
+  if (game.shift === 0 && !localStorage.getItem('beaverInteractiveTutorial')) {
+    setTimeout(() => startInteractiveTutorial(), 500);
+  }
 }
 
 function gameLoop(now) {
@@ -2397,6 +2429,8 @@ function clickStall(i) {
     if (stall.state === 'dirty') {
       stall.state = 'cleaning';
       updateStallDOM(i);
+      // Tutorial: advance when clicking dirty stall
+      if (tutorialActive) advanceTutorial('stall-click');
     }
     game.activeStall = i;
     if (game.activeTask < 0) {
@@ -2552,6 +2586,8 @@ function completeTask() {
     game.activeStall = -1;
     game.activeTask = -1;
     hideTaskPanel();
+    // Tutorial: advance when stall fully cleaned
+    if (tutorialActive) advanceTutorial('task-complete');
   } else {
     // Move to next task
     const nextTask = stall.tasks.findIndex(t => !t.done);
@@ -2870,6 +2906,143 @@ $('tutorial-modal').addEventListener('click', (e) => {
 if (!localStorage.getItem('beaverTutorialSeen')) {
   $('tutorial-modal').classList.add('active');
 }
+
+// Interactive tutorial system
+const TUTORIAL_STEPS = [
+  {
+    target: 'stalls-row',
+    text: "See those stalls? When the light turns YELLOW, click to clean it!",
+    arrow: 'down',
+    waitFor: 'stall-click'
+  },
+  {
+    target: 'task-panel',
+    text: "MASH these task buttons to clean faster! The more you click, the quicker you finish!",
+    arrow: 'up',
+    waitFor: 'task-complete'
+  },
+  {
+    target: 'sinks-area',
+    text: "Don't forget the sinks! Click dirty sinks to scrub them clean.",
+    arrow: 'up',
+    waitFor: 'next'
+  },
+  {
+    target: 'powerups',
+    text: "Use powerups when things get hectic! ⚡ Speed and ✨ Auto-clean are lifesavers!",
+    arrow: 'up',
+    waitFor: 'next'
+  }
+];
+
+let tutorialStep = 0;
+let tutorialActive = false;
+let tutorialHighlight = null;
+
+function startInteractiveTutorial() {
+  if (localStorage.getItem('beaverInteractiveTutorial')) return;
+  tutorialActive = true;
+  tutorialStep = 0;
+  game.running = false; // Pause game during tutorial
+
+  // Create initial dirty stall for tutorial (just one easy task)
+  if (game.stalls.length > 0) {
+    const stall = game.stalls[0];
+    stall.state = 'dirty';
+    stall.tasks = [{...TASKS[1], done: false}]; // Just "Scrub" task for tutorial
+    updateStallDOM(0);
+  }
+
+  // Make first sink dirty
+  if (game.sinks.length > 0) {
+    game.sinks[0].dirty = true;
+    updateSinkDOM(0);
+  }
+
+  showTutorialStep();
+}
+
+function showTutorialStep() {
+  if (tutorialStep >= TUTORIAL_STEPS.length) {
+    endTutorial();
+    return;
+  }
+
+  const step = TUTORIAL_STEPS[tutorialStep];
+  const overlay = $('tutorial-overlay');
+  const speech = $('tutorial-speech');
+  const arrow = $('tutorial-arrow');
+  const nextBtn = $('tutorial-next');
+  const textEl = $('tutorial-text');
+
+  // Clear previous highlight
+  if (tutorialHighlight) {
+    tutorialHighlight.classList.remove('tutorial-highlight');
+  }
+
+  // Find and highlight target
+  const target = $(step.target);
+  if (target) {
+    target.classList.add('tutorial-highlight');
+    tutorialHighlight = target;
+
+    // Position arrow
+    const rect = target.getBoundingClientRect();
+    if (step.arrow === 'down') {
+      arrow.textContent = '👇';
+      arrow.style.top = (rect.top - 50) + 'px';
+      arrow.style.left = (rect.left + rect.width/2 - 16) + 'px';
+    } else {
+      arrow.textContent = '👆';
+      arrow.style.top = (rect.bottom + 10) + 'px';
+      arrow.style.left = (rect.left + rect.width/2 - 16) + 'px';
+    }
+    arrow.style.display = 'block';
+  }
+
+  textEl.textContent = step.text;
+  nextBtn.style.display = step.waitFor === 'next' ? 'block' : 'none';
+  overlay.classList.add('active');
+
+  // Enable limited game interaction for tutorial
+  if (step.waitFor === 'stall-click' || step.waitFor === 'task-complete') {
+    game.running = true;
+  }
+}
+
+function advanceTutorial(trigger) {
+  if (!tutorialActive) return;
+
+  const step = TUTORIAL_STEPS[tutorialStep];
+  if (step.waitFor === trigger || trigger === 'skip') {
+    tutorialStep++;
+    if (tutorialStep >= TUTORIAL_STEPS.length) {
+      endTutorial();
+    } else {
+      showTutorialStep();
+    }
+  }
+}
+
+function endTutorial() {
+  tutorialActive = false;
+  $('tutorial-overlay').classList.remove('active');
+  if (tutorialHighlight) {
+    tutorialHighlight.classList.remove('tutorial-highlight');
+    tutorialHighlight = null;
+  }
+  localStorage.setItem('beaverInteractiveTutorial', 'true');
+  game.running = true;
+}
+
+$('tutorial-skip').addEventListener('click', () => {
+  advanceTutorial('skip');
+  endTutorial();
+});
+
+$('tutorial-next').addEventListener('click', () => {
+  advanceTutorial('next');
+});
 
 // Show high score on title screen if exists
 function updateHighScoreDisplay() {
