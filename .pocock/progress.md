@@ -9,6 +9,12 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Fix Mobile Scroll Bounce (4cz)
+- Goal: prevent rubber-band scroll effect on mobile devices
+- Fix: added `overscroll-behavior:none` to body CSS (line 10)
+- One-liner change - minimal risk
+- Files: index.html (CSS line 10)
+
 ### Bucky the Beaver Mentor Tips (a2h.4.2)
 - Goal: add Bucky as mentor character providing tips before each shift
 - New BUCKY_TIPS array (line 641-678): 6 shift-specific tip sets, 3 tips each
