@@ -9,6 +9,20 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Enhanced Task-Specific Sounds (a2h.3.1)
+- Goal: make each cleaning task have unique, cartoony sound
+- Added 4 new task sound functions:
+  - playPlunge(): low freq burst (80Hz) + pop (200Hz) - comedic 'plop'
+  - playScrub(): layered high freq sawtooth (1800-2200Hz) - spray sound
+  - playMop(): high sine wobble (800-1000Hz) - squeaky clean
+  - playRestock(): rapid random crinkle bursts (3000-5000Hz sawtooth)
+- Added playTaskSound(taskId) dispatcher to map task IDs to sounds
+- Task IDs: 'plunge', 'wipe', 'mop', 'tp' (from TASKS config ~line 616)
+- Updated task button click handler (~line 1919/1929) to use playTaskSound()
+- Randomization added to each sound for variety (Math.random() on freq)
+- JS: lines 683-714 (new sound functions)
+- Technique: layer multiple oscillators with slight timing offsets
+
 ### Escalating Combo Visual Effects (a2h.5.4)
 - Goal: make combo feel more intense as it builds
 - Three combo tiers with escalating effects:
@@ -48,23 +62,6 @@ This file maintains context between autonomous iterations.
   - Called on milestone rewards in checkComboMilestone()
 - CSS: lines 267-271 (keyframes), line 728 (bumpValue function)
 - Technique: el.classList.remove, void el.offsetWidth, el.classList.add for re-triggering
-
-### Stink Lines and Visual Dirt Cues (a2h.5.3)
-- Goal: add visual cues that make dirty stalls obviously need attention
-- Added wavy stink lines with animated rising effect
-  - 3 wavy lines that float upward with staggered animation delays
-  - @keyframes stink-wave: translateY, scaleY, rotate for organic look
-  - Uses flex layout for spacing, border-radius for curved shapes
-- Added buzzing fly (🪰) that orbits around dirty stalls
-  - @keyframes fly-buzz: figure-8 style flight pattern with rotation
-  - Positioned top-right corner of stall
-- Added grime spots overlay using radial gradients
-  - ::after pseudo-element on .stall-body with brownish spots
-  - Makes dirty stalls look visibly grimy
-- Updated dirty stall body color to more brownish/dingy gradient
-- Added position:relative to .stall for absolute positioning
-- HTML: stink-lines and stall-fly elements added to stall innerHTML
-- CSS: lines 123-137 (dirty stall styles and animations)
 
 ---
 
@@ -119,6 +116,23 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Stink Lines and Visual Dirt Cues (a2h.5.3)
+- Goal: add visual cues that make dirty stalls obviously need attention
+- Added wavy stink lines with animated rising effect
+  - 3 wavy lines that float upward with staggered animation delays
+  - @keyframes stink-wave: translateY, scaleY, rotate for organic look
+  - Uses flex layout for spacing, border-radius for curved shapes
+- Added buzzing fly (🪰) that orbits around dirty stalls
+  - @keyframes fly-buzz: figure-8 style flight pattern with rotation
+  - Positioned top-right corner of stall
+- Added grime spots overlay using radial gradients
+  - ::after pseudo-element on .stall-body with brownish spots
+  - Makes dirty stalls look visibly grimy
+- Updated dirty stall body color to more brownish/dingy gradient
+- Added position:relative to .stall for absolute positioning
+- HTML: stink-lines and stall-fly elements added to stall innerHTML
+- CSS: lines 123-137 (dirty stall styles and animations)
 
 ### Mobile-Friendly Touch Controls (a2h.5.6)
 - Goal: make game playable on mobile phones

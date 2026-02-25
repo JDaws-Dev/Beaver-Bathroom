@@ -679,6 +679,46 @@ function playSound(freq, duration, type = 'sine', volume = 0.25) {
 
 function playClick() { playSound(500, 0.05, 'square', 0.15); }
 function playTaskComplete() { playSound(700, 0.08); setTimeout(() => playSound(900, 0.1), 60); }
+
+// Task-specific sounds for cartoony feel
+function playPlunge() {
+  // Comedic 'plop' - low burst with pop
+  playSound(80 + Math.random()*20, 0.12, 'sine', 0.3);
+  setTimeout(() => playSound(200 + Math.random()*50, 0.06, 'triangle', 0.2), 80);
+}
+
+function playScrub() {
+  // Satisfying spray/scrub - layered high freq bursts
+  const base = 1800 + Math.random()*400;
+  playSound(base, 0.04, 'sawtooth', 0.08);
+  setTimeout(() => playSound(base + 200, 0.03, 'sawtooth', 0.06), 20);
+  setTimeout(() => playSound(base - 100, 0.05, 'sawtooth', 0.07), 40);
+}
+
+function playMop() {
+  // Squeaky clean - high pitch wobble
+  const freq = 800 + Math.random()*200;
+  playSound(freq, 0.06, 'sine', 0.12);
+  setTimeout(() => playSound(freq + 150, 0.05, 'sine', 0.1), 50);
+}
+
+function playRestock() {
+  // Paper rustle - quick random crinkle bursts
+  for(let i=0; i<3; i++) {
+    setTimeout(() => playSound(3000 + Math.random()*2000, 0.02, 'sawtooth', 0.05), i*25);
+  }
+}
+
+// Map task ID to sound function
+function playTaskSound(taskId) {
+  switch(taskId) {
+    case 'plunge': playPlunge(); break;
+    case 'wipe': playScrub(); break;
+    case 'mop': playMop(); break;
+    case 'tp': playRestock(); break;
+    default: playClick();
+  }
+}
 function playStallClean() {
   // Layered celebration: base arpeggio + sparkle shimmer
   playSound(523, 0.12, 'sine', 0.25);
@@ -1876,7 +1916,7 @@ function showTaskPanel(stallIdx) {
           // Clicking active task = boost progress!
           const boost = game.effects.speed > 0 ? CONFIG.clickBoost * 2 : CONFIG.clickBoost;
           game.taskProgress += boost;
-          playClick();
+          playTaskSound(stall.tasks[ti].id);
 
           if (game.taskProgress >= getEffectiveTaskTime()) {
             completeTask();
@@ -1886,7 +1926,7 @@ function showTaskPanel(stallIdx) {
         } else {
           game.activeTask = ti;
           game.taskProgress = 0;
-          playClick();
+          playTaskSound(stall.tasks[ti].id);
           showTaskPanel(stallIdx);
         }
       }
