@@ -1727,6 +1727,13 @@ function updatePeople(dt) {
       }
     }
     else if (p.phase === 'findStall') {
+      // Clear stale reservations (fix for bug where reservations weren't cleared)
+      for (let j = 0; j < game.stalls.length; j++) {
+        if (game.stalls[j].reservedBy && !game.people.includes(game.stalls[j].reservedBy)) {
+          game.stalls[j].reservedBy = null;
+        }
+      }
+
       let found = -1;
       // Find empty unreserved stall
       for (let j = 0; j < game.stalls.length; j++) {

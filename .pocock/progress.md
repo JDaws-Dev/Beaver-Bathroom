@@ -9,6 +9,16 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Fix: Waiting Customers Don't Enter Available Stalls (7sq)
+- Goal: fix bug where customers waiting in findStall phase didn't claim newly available stalls
+- Root cause: stale reservedBy references - when a customer was removed from game.people array, their reservation on a stall might not be cleared in all edge cases
+- Fix: added stale reservation cleanup loop at start of findStall phase (lines 1730-1735)
+  - Checks if reservedBy points to a customer still in game.people
+  - Clears reservation if customer no longer exists
+- Location: updatePeople() function, findStall phase handler
+- Why this works: reservedBy holding reference to removed customer would block other customers from claiming that stall
+- The fix runs every frame for customers in findStall, quickly clearing any stale reservations
+
 ### Memorable Customer Characters (a2h.4.4)
 - Goal: add named customer types with distinct personalities
 - New SPECIAL_CUSTOMERS config array (line 681-712):
@@ -47,20 +57,6 @@ This file maintains context between autonomous iterations.
 - gameOver(): win title = "GOLDEN PLUNGER EARNED!", lose = "FIRED!", icon 📦 for loss
 - endShift() comments: now reference remaining shifts, Golden Plunger for S grades
 - CSS: .title-subtitle and .golden-plunger styles added
-
-### Shift Narrative Names and Intro Screen (a2h.4.1)
-- Goal: add narrative names to shifts with intro screen showing before gameplay
-- New SHIFT_NARRATIVES config array with 6 shift stories:
-  - Training Day, Lunch Rush, Tour Bus Season, Health Inspector, Festival Weekend, Championship Sunday
-- New shift-intro screen HTML (line 568-576):
-  - intro-card with shift number, title, description, stats (stalls/sinks/time)
-  - btn-play to start shift
-- CSS: lines 269-278 - intro-card, intro-title, intro-desc, intro-stats, intro-appear animation
-- JS: showShiftIntro() function (line 1289) populates and shows intro screen
-- Flow change: startShift() → showShiftIntro() → user clicks → startShift()
-- Button handlers updated: start-btn and skip-upgrades now call showShiftIntro()
-- endShift() uses narrative.name in result-title ("Training Day Complete!")
-- Note: line numbers shifted ~10 lines from SHIFT_NARRATIVES addition
 
 ---
 
@@ -115,6 +111,20 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Shift Narrative Names and Intro Screen (a2h.4.1)
+- Goal: add narrative names to shifts with intro screen showing before gameplay
+- New SHIFT_NARRATIVES config array with 6 shift stories:
+  - Training Day, Lunch Rush, Tour Bus Season, Health Inspector, Festival Weekend, Championship Sunday
+- New shift-intro screen HTML (line 568-576):
+  - intro-card with shift number, title, description, stats (stalls/sinks/time)
+  - btn-play to start shift
+- CSS: lines 269-278 - intro-card, intro-title, intro-desc, intro-stats, intro-appear animation
+- JS: showShiftIntro() function (line 1289) populates and shows intro screen
+- Flow change: startShift() → showShiftIntro() → user clicks → startShift()
+- Button handlers updated: start-btn and skip-upgrades now call showShiftIntro()
+- endShift() uses narrative.name in result-title ("Training Day Complete!")
+- Note: line numbers shifted ~10 lines from SHIFT_NARRATIVES addition
 
 ### Background Music - Procedural Upbeat Theme (a2h.3.3)
 - Goal: add procedural background music using Web Audio API
