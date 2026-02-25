@@ -9,6 +9,20 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Shift Narrative Names and Intro Screen (a2h.4.1)
+- Goal: add narrative names to shifts with intro screen showing before gameplay
+- New SHIFT_NARRATIVES config array with 6 shift stories:
+  - Training Day, Lunch Rush, Tour Bus Season, Health Inspector, Festival Weekend, Championship Sunday
+- New shift-intro screen HTML (line 568-576):
+  - intro-card with shift number, title, description, stats (stalls/sinks/time)
+  - btn-play to start shift
+- CSS: lines 269-278 - intro-card, intro-title, intro-desc, intro-stats, intro-appear animation
+- JS: showShiftIntro() function (line 1289) populates and shows intro screen
+- Flow change: startShift() → showShiftIntro() → user clicks → startShift()
+- Button handlers updated: start-btn and skip-upgrades now call showShiftIntro()
+- endShift() uses narrative.name in result-title ("Training Day Complete!")
+- Note: line numbers shifted ~10 lines from SHIFT_NARRATIVES addition
+
 ### Background Music - Procedural Upbeat Theme (a2h.3.3)
 - Goal: add procedural background music using Web Audio API
 - New music button 🎶/🔈 in HUD (line 493) - separate from SFX mute
@@ -40,20 +54,6 @@ This file maintains context between autonomous iterations.
 - Button added to HUD after Time stat (line 492)
 - Click handler at line 2349, button state init at line 2353
 - Technique: initAudio() called on mute click to ensure audioCtx exists
-
-### Enhanced Task-Specific Sounds (a2h.3.1)
-- Goal: make each cleaning task have unique, cartoony sound
-- Added 4 new task sound functions:
-  - playPlunge(): low freq burst (80Hz) + pop (200Hz) - comedic 'plop'
-  - playScrub(): layered high freq sawtooth (1800-2200Hz) - spray sound
-  - playMop(): high sine wobble (800-1000Hz) - squeaky clean
-  - playRestock(): rapid random crinkle bursts (3000-5000Hz sawtooth)
-- Added playTaskSound(taskId) dispatcher to map task IDs to sounds
-- Task IDs: 'plunge', 'wipe', 'mop', 'tp' (from TASKS config ~line 616)
-- Updated task button click handler (~line 1919/1929) to use playTaskSound()
-- Randomization added to each sound for variety (Math.random() on freq)
-- JS: lines 683-714 (new sound functions)
-- Technique: layer multiple oscillators with slight timing offsets
 
 ---
 
@@ -108,6 +108,20 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Enhanced Task-Specific Sounds (a2h.3.1)
+- Goal: make each cleaning task have unique, cartoony sound
+- Added 4 new task sound functions:
+  - playPlunge(): low freq burst (80Hz) + pop (200Hz) - comedic 'plop'
+  - playScrub(): layered high freq sawtooth (1800-2200Hz) - spray sound
+  - playMop(): high sine wobble (800-1000Hz) - squeaky clean
+  - playRestock(): rapid random crinkle bursts (3000-5000Hz sawtooth)
+- Added playTaskSound(taskId) dispatcher to map task IDs to sounds
+- Task IDs: 'plunge', 'wipe', 'mop', 'tp' (from TASKS config ~line 616)
+- Updated task button click handler (~line 1919/1929) to use playTaskSound()
+- Randomization added to each sound for variety (Math.random() on freq)
+- JS: lines 683-714 (new sound functions)
+- Technique: layer multiple oscillators with slight timing offsets
 
 ### Escalating Combo Visual Effects (a2h.5.4)
 - Goal: make combo feel more intense as it builds

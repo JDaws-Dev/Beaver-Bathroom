@@ -265,6 +265,17 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .upgrade-bonus{position:absolute;top:-8px;right:-8px;background:#e53935;color:#fff;padding:3px 8px;border-radius:10px;font-size:0.6em;font-weight:bold;border:2px solid #b71c1c}
 #skip-upgrades{margin-top:10px;padding:12px 30px;background:linear-gradient(180deg,#5a4a38 0%,#4a3a28 100%);border:3px solid #6a5a48;border-radius:12px;color:#c9a86c;font-size:1em;cursor:pointer;transition:all 0.18s cubic-bezier(0.34,1.56,0.64,1);text-shadow:0 1px 2px rgba(0,0,0,0.4)}
 #skip-upgrades:hover{background:linear-gradient(180deg,#6a5a48 0%,#5a4a38 100%);border-color:#8a7a68}
+/* Shift intro screen */
+#shift-intro{background:linear-gradient(180deg,#3d2814 0%,#2d4a1e 60%,#1a3310 100%);gap:0}
+.intro-card{background:linear-gradient(180deg,#5a4030 0%,#3d2814 50%,#2d1f0f 100%);border:5px solid #f5a623;border-radius:20px;padding:25px 30px;max-width:340px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,0.5),inset 0 2px 4px rgba(255,200,100,0.15);text-align:center;animation:intro-appear 0.4s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes intro-appear{from{opacity:0;transform:scale(0.8) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.intro-shift-num{font-size:0.9em;color:#c9a86c;text-transform:uppercase;letter-spacing:3px;margin-bottom:6px}
+.intro-title{font-size:1.8em;color:#f5a623;text-shadow:3px 3px 0 #2a1a0a,0 0 20px rgba(245,166,35,0.4);margin-bottom:12px}
+.intro-desc{font-size:1em;color:#eee;line-height:1.4;margin-bottom:20px;opacity:0.9}
+.intro-stats{display:flex;justify-content:center;gap:20px;margin-bottom:24px}
+.intro-stat{display:flex;align-items:center;gap:6px;background:linear-gradient(180deg,rgba(0,0,0,0.2),rgba(0,0,0,0.35));padding:8px 12px;border-radius:8px;font-size:0.9em;border:2px solid #5d4037}
+.intro-stat-icon{font-size:1.1em}
+#shift-start-btn{margin-top:5px}
 @keyframes blink{from{box-shadow:0 0 8px #fdd835}to{box-shadow:0 0 20px #fdd835}}
 @keyframes shake{0%,100%{transform:translateX(0)}50%{transform:translateX(-3px)}}
 @keyframes walk{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-5px) rotate(4deg)}}
@@ -549,9 +560,32 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
     <div class="stats-grid" id="go-stats"></div>
     <button class="btn" id="retry-btn">Try Again</button>
   </div>
+
+  <div id="shift-intro" class="screen">
+    <div class="intro-card">
+      <div class="intro-shift-num" id="intro-shift-num">SHIFT 1</div>
+      <h2 class="intro-title" id="intro-title">Training Day</h2>
+      <p class="intro-desc" id="intro-desc">Welcome to Beaver Lodge! Time to learn the ropes.</p>
+      <div class="intro-stats">
+        <div class="intro-stat"><span class="intro-stat-icon">🚽</span> <span id="intro-stalls">5</span> Stalls</div>
+        <div class="intro-stat"><span class="intro-stat-icon">🚿</span> <span id="intro-sinks">2</span> Sinks</div>
+        <div class="intro-stat"><span class="intro-stat-icon">⏱️</span> <span id="intro-time">60</span>s</div>
+      </div>
+      <button class="btn btn-play" id="shift-start-btn">Let's Go!</button>
+    </div>
+  </div>
 </div>
 
 <script>
+const SHIFT_NARRATIVES = [
+  {name: 'Training Day', desc: "Welcome to Beaver Lodge, rookie! Show us what you've got."},
+  {name: 'The Lunch Rush', desc: 'Hungry travelers are stopping by. The real work begins!'},
+  {name: 'Tour Bus Season', desc: "Three buses just pulled in. It's gonna get messy!"},
+  {name: 'Health Inspector', desc: 'Word is the inspector might visit today. Stay sharp!'},
+  {name: 'Festival Weekend', desc: 'The BBQ fest crowd is here. Prepare for chaos!'},
+  {name: 'Championship Sunday', desc: 'This is it - the ultimate test. Make Bucky proud!'},
+];
+
 const CONFIG = {
   shifts: [
     {stalls:5, sinks:2, spawnMin:3000, spawnMax:4500, occMin:2000, occMax:4000, duration:60},
@@ -1250,6 +1284,18 @@ function updateHUD() {
   $('towels').style.background = game.towels <= 2 ? '#c62828' : '#a67c52';
   $('towels').classList.toggle('low', game.towels <= 2);
   $('towels').children[0].textContent = game.towels > 5 ? '📄📄📄' : (game.towels > 2 ? '📄📄' : (game.towels > 0 ? '📄' : '❌'));
+}
+
+function showShiftIntro() {
+  const cfg = getShiftConfig();
+  const narrative = SHIFT_NARRATIVES[game.shift] || SHIFT_NARRATIVES[0];
+  $('intro-shift-num').textContent = `SHIFT ${game.shift + 1}`;
+  $('intro-title').textContent = narrative.name;
+  $('intro-desc').textContent = narrative.desc;
+  $('intro-stalls').textContent = cfg.stalls;
+  $('intro-sinks').textContent = cfg.sinks;
+  $('intro-time').textContent = cfg.duration;
+  showScreen('shift-intro');
 }
 
 function startShift() {
@@ -2371,7 +2417,8 @@ function endShift() {
   if (inspectorEl) inspectorEl.remove();
   $('inspector-warning').style.display = 'none';
 
-  $('result-title').textContent = `Shift ${game.shift + 1} Complete!`;
+  const narrative = SHIFT_NARRATIVES[game.shift] || SHIFT_NARRATIVES[0];
+  $('result-title').textContent = `${narrative.name} Complete!`;
 
   let stars = '';
   for (let i = 0; i < 5; i++) stars += game.rating >= i + 0.75 ? '⭐' : (game.rating >= i + 0.25 ? '🌟' : '☆');
@@ -2493,6 +2540,10 @@ updateMusicButton();
 $('start-btn').addEventListener('click', () => {
   initAudio();
   init();
+  showShiftIntro();
+});
+
+$('shift-start-btn').addEventListener('click', () => {
   startShift();
 });
 
@@ -2506,7 +2557,7 @@ $('next-btn').addEventListener('click', () => {
 });
 
 $('skip-upgrades').addEventListener('click', () => {
-  startShift();
+  showShiftIntro();
 });
 
 $('retry-btn').addEventListener('click', () => {
