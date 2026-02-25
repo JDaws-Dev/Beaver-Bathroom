@@ -243,10 +243,10 @@ const TASKS = [
 ];
 
 const THOUGHTS = {
-  impatient: ['Hurry up!', 'Come ON!', '😤', 'Ugh...', '🙄', 'NEED TO GO!'],
-  desperate: ['EMERGENCY! 🚨', 'HURRY!!!', '😱', 'CAN\'T WAIT!', '💀'],
-  happy: ['Ahh! 😌', 'Nice & clean!', '✨', 'Perfect!', '👍'],
-  disgusted: ['Gross! 🤢', 'Ewww!', 'Nasty...', '😖', 'Really?!'],
+  impatient: ['Hurry up!', 'Come ON!', 'Ugh...', 'NEED TO GO!', 'Waiting...', 'Tick tock!'],
+  desperate: ['EMERGENCY!', 'HURRY!!!', 'CAN\'T WAIT!', 'PLEASE!', 'NOW!!!'],
+  happy: ['Ahh, nice!', 'Nice & clean!', 'Perfect!', 'Spotless!', 'Thanks!'],
+  disgusted: ['Gross!', 'Ewww!', 'Nasty...', 'Yuck!', 'Really?!'],
 };
 
 const CUSTOMERS_MALE = ['👨','👴','👦','🧔','👨‍🦰','👨‍🦱','👨‍🦳','👱‍♂️','🧑‍🦰','👨‍🦲'];
@@ -2529,16 +2529,25 @@ function showTutorialStep() {
     target.classList.add('tutorial-highlight');
     tutorialHighlight = target;
 
-    // Position arrow
+    // Position arrow and speech based on target location
     const rect = target.getBoundingClientRect();
-    if (step.arrow === 'down') {
+    const viewHeight = window.innerHeight;
+    const targetCenter = rect.top + rect.height / 2;
+
+    if (step.arrow === 'down' || targetCenter > viewHeight / 2) {
+      // Target is in bottom half - put speech at top, arrow points down
       arrow.textContent = '👇';
-      arrow.style.top = (rect.top - 50) + 'px';
-      arrow.style.left = (rect.left + rect.width/2 - 16) + 'px';
+      arrow.style.top = (rect.top - 40) + 'px';
+      arrow.style.left = (rect.left + rect.width/2 - 14) + 'px';
+      speech.classList.remove('bottom');
+      speech.classList.add('top');
     } else {
+      // Target is in top half - put speech at bottom, arrow points up
       arrow.textContent = '👆';
-      arrow.style.top = (rect.bottom + 10) + 'px';
-      arrow.style.left = (rect.left + rect.width/2 - 16) + 'px';
+      arrow.style.top = (rect.bottom + 8) + 'px';
+      arrow.style.left = (rect.left + rect.width/2 - 14) + 'px';
+      speech.classList.remove('top');
+      speech.classList.add('bottom');
     }
     arrow.style.display = 'block';
   }

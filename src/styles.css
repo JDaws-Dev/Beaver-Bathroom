@@ -472,19 +472,21 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .intro-shift-num{font-size:0.75em;letter-spacing:2px}
 }
 /* Interactive Tutorial */
-.tutorial-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:900;display:none;align-items:center;justify-content:center;flex-direction:column}
-.tutorial-overlay.active{display:flex}
-.tutorial-highlight{position:relative;z-index:910;box-shadow:0 0 0 4px #f5a623,0 0 20px 8px rgba(245,166,35,0.6);border-radius:8px;animation:tutorial-pulse 1s ease-in-out infinite}
-@keyframes tutorial-pulse{0%,100%{box-shadow:0 0 0 4px #f5a623,0 0 20px 8px rgba(245,166,35,0.6)}50%{box-shadow:0 0 0 6px #fdd835,0 0 30px 12px rgba(245,166,35,0.8)}}
-.tutorial-speech{position:fixed;bottom:20%;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#fff 0%,#f0f0f0 100%);color:#333;padding:16px 24px;border-radius:16px;font-size:1.1em;max-width:320px;text-align:center;z-index:920;box-shadow:0 6px 20px rgba(0,0,0,0.4);border:3px solid #f5a623}
-.tutorial-speech::before{content:'';position:absolute;top:-20px;left:50%;transform:translateX(-50%);border:12px solid transparent;border-bottom-color:#f5a623}
-.tutorial-speech::after{content:'';position:absolute;top:-14px;left:50%;transform:translateX(-50%);border:10px solid transparent;border-bottom-color:#fff}
-.tutorial-bucky{position:absolute;top:-45px;left:50%;transform:translateX(-50%);font-size:2em;animation:tutorial-bucky-bounce 0.5s ease-in-out infinite}
-@keyframes tutorial-bucky-bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-5px)}}
-.tutorial-arrow{position:fixed;font-size:2em;z-index:915;animation:tutorial-arrow-bounce 0.5s ease-in-out infinite;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))}
-@keyframes tutorial-arrow-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-.tutorial-skip{position:fixed;top:20px;right:20px;background:none;border:2px solid rgba(255,255,255,0.5);color:rgba(255,255,255,0.8);padding:8px 16px;border-radius:8px;cursor:pointer;z-index:930;font-size:0.9em;transition:all 0.2s}
-.tutorial-skip:hover{background:rgba(255,255,255,0.1);border-color:#fff;color:#fff}
+.tutorial-overlay{position:fixed;inset:0;z-index:900;display:none;pointer-events:none}
+.tutorial-overlay.active{display:block}
+.tutorial-overlay::before{content:'';position:absolute;inset:0;background:rgba(0,0,0,0.7);pointer-events:auto}
+.tutorial-highlight{position:relative;z-index:1000!important;box-shadow:0 0 0 4px #f5a623,0 0 20px 8px rgba(245,166,35,0.6),0 0 0 9999px rgba(0,0,0,0.7);border-radius:8px;animation:tutorial-pulse 1s ease-in-out infinite;pointer-events:auto!important}
+@keyframes tutorial-pulse{0%,100%{box-shadow:0 0 0 4px #f5a623,0 0 20px 8px rgba(245,166,35,0.6),0 0 0 9999px rgba(0,0,0,0.7)}50%{box-shadow:0 0 0 6px #fdd835,0 0 30px 12px rgba(245,166,35,0.8),0 0 0 9999px rgba(0,0,0,0.7)}}
+.tutorial-speech{position:fixed;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#fff 0%,#f0f0f0 100%);color:#333;padding:16px 24px;border-radius:16px;font-size:1em;max-width:300px;text-align:center;z-index:1010;box-shadow:0 6px 20px rgba(0,0,0,0.5);border:3px solid #f5a623;pointer-events:auto}
+.tutorial-speech.top{top:15%;bottom:auto}
+.tutorial-speech.bottom{bottom:12%;top:auto}
+.tutorial-speech::before,.tutorial-speech::after{display:none}
+.tutorial-bucky{position:absolute;top:-40px;left:50%;transform:translateX(-50%);font-size:1.8em;animation:tutorial-bucky-bounce 0.5s ease-in-out infinite}
+@keyframes tutorial-bucky-bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-4px)}}
+.tutorial-arrow{position:fixed;font-size:1.8em;z-index:1005;animation:tutorial-arrow-bounce 0.5s ease-in-out infinite;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));pointer-events:none}
+@keyframes tutorial-arrow-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.tutorial-skip{position:fixed;top:12px;right:12px;background:rgba(0,0,0,0.5);border:2px solid rgba(255,255,255,0.6);color:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;z-index:1020;font-size:0.85em;transition:all 0.2s;pointer-events:auto}
+.tutorial-skip:hover{background:rgba(0,0,0,0.7);border-color:#fff}
 .tutorial-next{margin-top:12px;padding:10px 24px;background:linear-gradient(180deg,#43a047,#2e7d32);color:#fff;border:2px solid #1b5e20;border-radius:10px;cursor:pointer;font-size:0.95em;font-weight:bold;transition:transform 0.15s}
 .tutorial-next:hover{transform:scale(1.05)}
 
