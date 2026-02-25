@@ -9,6 +9,24 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### UI/UX and Gameplay Evaluation (el6)
+- Goal: comprehensive evaluation without code changes - recommendations only
+- Deliverable: EVALUATION.md with prioritized recommendations
+- Key findings:
+  - **Onboarding gap**: tutorial hidden, first shift too fast, no interactive guidance
+  - **Mobile UX**: task buttons small, puddles hard to tap, missing haptic feedback
+  - **Strategic depth limited**: most runs play similarly, upgrades incremental
+  - **Core loop solid**: task sounds satisfying, combos feel rewarding, celebrations good
+- Quick wins identified:
+  1. Auto-show tutorial on first play (localStorage check)
+  2. Slow spawn rate on Shift 1 (let players learn)
+  3. Add `overscroll-behavior: none` for mobile
+  4. High score persistence in localStorage
+  5. Better "SAVED!" message clarity
+- What creates tension: patience bars, multiple dirty stalls, inspectors, rush hour
+- What creates joy: combos, saves, VIP bonuses, perfect inspections, special characters
+- No code written - pure research/evaluation task
+
 ### Fix: Waiting Customers Don't Enter Available Stalls (7sq)
 - Goal: fix bug where customers waiting in findStall phase didn't claim newly available stalls
 - Root cause: stale reservedBy references - when a customer was removed from game.people array, their reservation on a stall might not be cleared in all edge cases
