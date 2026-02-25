@@ -9,6 +9,23 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Player Identity and Stakes (a2h.4.3)
+- Goal: establish who player is, what they want, what happens on win/loss
+- Player identity: "new hire at Beaver Lodge, first day"
+- Goal: survive 6 shifts to earn the "Golden Plunger" award
+- Stakes: win = trophy, lose = fired
+- Title screen updates:
+  - New .title-subtitle with player intro text (line 456)
+  - .golden-plunger class with gold glow styling (line 33)
+- SHIFT_NARRATIVES: added `progress` field ("Day 1 of 6", "Final Day", etc.)
+- showShiftIntro() now shows progress instead of "SHIFT X"
+- Tutorial updated: explains player is new hire, goal is 6 shifts
+- WIN_MESSAGES: now reference Golden Plunger and "rookie" identity
+- GAME_OVER_MESSAGES: reference badge, manager disappointment
+- gameOver(): win title = "GOLDEN PLUNGER EARNED!", lose = "FIRED!", icon 📦 for loss
+- endShift() comments: now reference remaining shifts, Golden Plunger for S grades
+- CSS: .title-subtitle and .golden-plunger styles added
+
 ### Shift Narrative Names and Intro Screen (a2h.4.1)
 - Goal: add narrative names to shifts with intro screen showing before gameplay
 - New SHIFT_NARRATIVES config array with 6 shift stories:
@@ -41,19 +58,6 @@ This file maintains context between autonomous iterations.
   - Music button click handler (line 2487-2491), init (line 2492)
 - Volume: musicGain.value = 0.08 (lower than SFX to not overwhelm)
 - Technique: separate gain node for music, oscillators array for cleanup
-
-### Volume/Mute Controls (a2h.3.2)
-- Goal: add UI to mute sounds, persist preference
-- Added mute button to HUD (🔊/🔇 toggle)
-- CSS: .mute-btn styles with hover/active states, opacity feedback (line 100-103)
-- Mobile responsive styles at 600px (line 341) and 420px (line 381)
-- JS: isMuted state loaded from localStorage on page load (line 667)
-- JS: toggleMute(), updateMuteButton() functions (lines 673-685)
-- JS: playSound() checks isMuted before playing (line 688)
-- localStorage key: 'beaverMuted' (true/false string)
-- Button added to HUD after Time stat (line 492)
-- Click handler at line 2349, button state init at line 2353
-- Technique: initAudio() called on mute click to ensure audioCtx exists
 
 ---
 
@@ -108,6 +112,19 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Volume/Mute Controls (a2h.3.2)
+- Goal: add UI to mute sounds, persist preference
+- Added mute button to HUD (🔊/🔇 toggle)
+- CSS: .mute-btn styles with hover/active states, opacity feedback (line 100-103)
+- Mobile responsive styles at 600px (line 341) and 420px (line 381)
+- JS: isMuted state loaded from localStorage on page load (line 667)
+- JS: toggleMute(), updateMuteButton() functions (lines 673-685)
+- JS: playSound() checks isMuted before playing (line 688)
+- localStorage key: 'beaverMuted' (true/false string)
+- Button added to HUD after Time stat (line 492)
+- Click handler at line 2349, button state init at line 2353
+- Technique: initAudio() called on mute click to ensure audioCtx exists
 
 ### Enhanced Task-Specific Sounds (a2h.3.1)
 - Goal: make each cleaning task have unique, cartoony sound
