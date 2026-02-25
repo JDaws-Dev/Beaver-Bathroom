@@ -9,6 +9,18 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Fix Blue Cleaning Stall - Block Customer Entry (4z8)
+- Goal: customers shouldn't enter stalls in 'cleaning' state
+- Root cause: customers who reserved a dirty stall kept walking even after player started cleaning
+- Fix approach: redirect customers when they arrive at a cleaning stall
+- Changes at arrival (toStall→entering): if stall is `cleaning`, release reservation, redirect to findStall
+- Changes at entry completion (enterTimer<=0): same check, but respect `enteredDirty` flag
+- Grace period logic preserved: if customer arrives at dirty, grace period gives 200ms for save
+- Added `p.enteredDirty` flag: set when grace period expires, prevents redirect after penalty applied
+- Key insight: existing findStall logic already excludes cleaning stalls (only matches empty/dirty)
+- The save mechanic still works: player starts cleaning during grace period → instant save + bonus
+- Files: src/main.js (~15 lines changed in updatePeople entering phase)
+
 ### Simplify and Unify Upgrade/Powerup System (lxh)
 - Goal: fix confusing dual-system (upgrades + powerups) with icon overlap (⚡ used twice)
 - Solution: Option A from issue - PERKS (passive) + ITEMS (consumables) with clear separation
@@ -30,16 +42,6 @@ This file maintains context between autonomous iterations.
 - Removed: TUTORIAL_STEPS array, tutorialActive/tutorialStep/tutorialHighlight state
 - Kept: tutorial-modal (How to Play), beaverTutorialSeen localStorage, Bucky tips system
 - Files: index.html (~10 lines), src/styles.css (~18 lines), src/main.js (~150 lines)
-
-### Beaver Speech Bubbles for Tips (3ud)
-- Goal: have beaver mascot show speech bubble tips during first shift at relevant moments
-- Added `#beaver-speech` element inside `#beaver-mascot` in HUD
-- CSS: speech bubble with pointer arrow, pop animation, hidden by default (opacity:0)
-- Responsive: smaller text at 600px and 420px breakpoints, wrapping text on phone
-- 8 tips defined in BEAVER_TIPS object for different gameplay moments
-- localStorage: tracks each tip shown with `beaverTip_<tipKey>` keys
-- Only shows on first shift (game.shift === 0) and each tip only once
-- Files: index.html (CSS lines 104-108, 386, 430; HTML line 571; JS lines 1134-1169)
 
 ---
 
@@ -95,6 +97,16 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Beaver Speech Bubbles for Tips (3ud)
+- Goal: have beaver mascot show speech bubble tips during first shift at relevant moments
+- Added `#beaver-speech` element inside `#beaver-mascot` in HUD
+- CSS: speech bubble with pointer arrow, pop animation, hidden by default (opacity:0)
+- Responsive: smaller text at 600px and 420px breakpoints, wrapping text on phone
+- 8 tips defined in BEAVER_TIPS object for different gameplay moments
+- localStorage: tracks each tip shown with `beaverTip_<tipKey>` keys
+- Only shows on first shift (game.shift === 0) and each tip only once
+- Files: index.html (CSS lines 104-108, 386, 430; HTML line 571; JS lines 1134-1169)
 
 ### Stack Task Buttons Vertically on Mobile (5tr)
 - Goal: make task buttons full-width and stacked for better touch on portrait phones
