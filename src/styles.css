@@ -371,15 +371,15 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 /* Mobile/tablet breakpoint */
 @media(max-width:600px){
 #game-container{max-height:100vh}
-#hud{padding:10px 6px;gap:4px;position:relative}
+#hud{padding:10px 6px;gap:4px}
 .hud-item{padding:4px 6px}
 .hud-item .label{font-size:0.5em}
 .hud-item .value{font-size:0.95em}
 #beaver-mascot{width:40px;height:40px}
 .beaver-speech{font-size:0.55em;padding:5px 8px}
 .audio-label{display:none}
-.audio-ctrl{position:absolute;top:8px;right:8px;flex-direction:row;gap:4px;z-index:50}
-.mute-btn{font-size:1em;padding:4px;background:rgba(0,0,0,0.4);border-radius:50%;width:32px;height:32px}
+.audio-ctrl{position:fixed;bottom:75px;right:6px;flex-direction:column;gap:3px;z-index:100}
+.mute-btn{font-size:0.9em;padding:4px;background:rgba(60,40,20,0.85);border:2px solid #5d4037;border-radius:8px;width:28px;height:28px;box-shadow:0 2px 4px rgba(0,0,0,0.4)}
 #stalls-row{gap:4px;padding:8px 4px}
 .stall{width:54px;min-height:88px}
 .stall-body{width:48px;height:68px}
@@ -422,8 +422,8 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .hud-item .value{font-size:0.85em}
 #beaver-mascot{width:36px;height:36px}
 .beaver-speech{font-size:0.5em;padding:4px 6px;max-width:140px;white-space:normal}
-.audio-ctrl{top:6px;right:6px;gap:3px}
-.mute-btn{font-size:0.9em;width:28px;height:28px}
+.audio-ctrl{bottom:68px;right:4px;gap:2px}
+.mute-btn{font-size:0.8em;width:26px;height:26px}
 #stalls-row{gap:3px;padding:6px 3px}
 .stall{width:44px;min-height:70px}
 .stall-body{width:38px;height:52px}
