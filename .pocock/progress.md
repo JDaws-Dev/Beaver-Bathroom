@@ -9,6 +9,13 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Bug Fix: Customers Leaving When Stalls Available (jl4)
+- Root cause: patience was draining during ALL phases except inStall/washing/exit
+- This included 'enter', 'toStall', 'entering' phases while customer was walking to stall
+- Fix: patience ONLY drains during 'findStall' phase when NO empty stalls exist
+- JS line 1025: simplified shouldDrainPatience check
+- Now customers only get impatient when they literally cannot find an empty stall
+
 ### Upgrade System Between Shifts (a2h.2.4)
 - New "Beaver Supply Shop" screen between shifts
 - Earn coins based on score + grade multiplier (S=2x, A=1.5x, B=1.2x, C=1x, F=0.5x)
@@ -38,20 +45,6 @@ This file maintains context between autonomous iterations.
 - CSS: lines 13-55 (title screen styles, animations)
 - HTML: lines 242-289 (title-card structure with beaver mascot)
 - Animations: title-beaver-bob, gender-selected, start-pulse, start-shine
-
-### Health Inspector Events (a2h.2.3)
-- 25% chance per shift (after first shift) for inspector visit
-- Inspector appears 20-40 seconds into shift with 3-second warning banner
-- Blue-themed warning banner: "🔍 HEALTH INSPECTOR! 🔍"
-- Inspector walks from exit door → center → each stall in order
-- At each stall: 600ms pause, checks if dirty, shows ✓ or ❌
-- Result: dirty stalls = -0.5 rating each; clean inspection = +100 pts, +0.3 rating
-- Sound effects: ascending tones for warning, happy chord for pass, low buzz for fail
-- Inspector visual: 🧑‍⚕️ emoji with "HEALTH" badge and clipboard
-- CSS: lines 202-208 (#inspector-warning, .inspector classes)
-- JS: spawnInspector() ~1090, updateInspector() ~1123, finishInspection() ~1222
-- Game state: game.inspector, game.inspectorTimer, game.inspectorWarning
-- CONFIG: inspectorChance, inspectorPenalty, inspectorBonus
 
 ---
 
@@ -106,6 +99,20 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Health Inspector Events (a2h.2.3)
+- 25% chance per shift (after first shift) for inspector visit
+- Inspector appears 20-40 seconds into shift with 3-second warning banner
+- Blue-themed warning banner: "🔍 HEALTH INSPECTOR! 🔍"
+- Inspector walks from exit door → center → each stall in order
+- At each stall: 600ms pause, checks if dirty, shows ✓ or ❌
+- Result: dirty stalls = -0.5 rating each; clean inspection = +100 pts, +0.3 rating
+- Sound effects: ascending tones for warning, happy chord for pass, low buzz for fail
+- Inspector visual: 🧑‍⚕️ emoji with "HEALTH" badge and clipboard
+- CSS: lines 202-208 (#inspector-warning, .inspector classes)
+- JS: spawnInspector() ~1090, updateInspector() ~1123, finishInspection() ~1222
+- Game state: game.inspector, game.inspectorTimer, game.inspectorWarning
+- CONFIG: inspectorChance, inspectorPenalty, inspectorBonus
 
 ### VIP Customers - High Stakes Visitors (a2h.2.1)
 - Added VIP customer type: 12% spawn chance (not if urgent)

@@ -1019,8 +1019,11 @@ function updatePeople(dt) {
     // Update thought timer
     if (p.thoughtTimer > 0) p.thoughtTimer -= dt;
 
-    // Patience
-    if (p.phase !== 'exit' && p.phase !== 'inStall' && p.phase !== 'washing' && p.phase !== 'entering') {
+    // Patience - only drain when truly waiting for a stall
+    // Only drain during findStall when NO empty stalls are available
+    const shouldDrainPatience = p.phase === 'findStall' && !game.stalls.some(s => s.state === 'empty');
+
+    if (shouldDrainPatience) {
       p.patience -= dt;
 
       // Show impatient thoughts
