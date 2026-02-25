@@ -149,6 +149,17 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 #floor-area{flex:1;position:relative;background:repeating-conic-gradient(from 0deg at 50% 50%,#c4b89a 0deg 90deg,#d8cdb5 90deg 180deg,#c4b89a 180deg 270deg,#d8cdb5 270deg 360deg);background-size:40px 40px;box-shadow:inset 0 40px 60px -20px rgba(0,0,0,0.15)}
 #floor-area::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08) 39px,rgba(0,0,0,0.08) 41px),repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08) 39px,rgba(0,0,0,0.08) 41px);pointer-events:none}
 #floor-area::after{content:'';position:absolute;bottom:0;left:0;right:0;height:8px;background:linear-gradient(180deg,#5d4037 0%,#3e2723 100%);box-shadow:inset 0 2px 0 rgba(255,255,255,0.1),0 -2px 4px rgba(0,0,0,0.2)}
+.puddle{position:absolute;width:40px;height:28px;border-radius:50%;cursor:pointer;z-index:8;transition:transform 0.15s;display:flex;align-items:center;justify-content:center;font-size:1.2em}
+.puddle:hover{transform:scale(1.15)}
+.puddle:active{transform:scale(0.9)}
+.puddle.vomit{background:radial-gradient(ellipse,#9acd32 20%,#6b8e23 60%,#556b2f 100%);box-shadow:0 2px 6px rgba(0,0,0,0.3),inset 0 -3px 6px rgba(0,0,0,0.2)}
+.puddle.pee{background:radial-gradient(ellipse,#ffd54f 20%,#ffb300 60%,#ff8f00 100%);box-shadow:0 2px 6px rgba(0,0,0,0.3),inset 0 -3px 6px rgba(0,0,0,0.2)}
+.puddle .puddle-stink{position:absolute;top:-12px;left:50%;transform:translateX(-50%);display:flex;gap:2px}
+.puddle .stink-line{width:3px;height:14px;background:linear-gradient(180deg,transparent 0%,rgba(100,80,20,0.6) 40%,transparent 100%);border-radius:50%;animation:stink-wave 0.8s ease-in-out infinite}
+.puddle .stink-line:nth-child(2){animation-delay:0.2s;height:18px}
+.puddle .stink-line:nth-child(3){animation-delay:0.4s}
+.puddle.cleaning{animation:puddle-clean 0.3s ease-out forwards}
+@keyframes puddle-clean{to{transform:scale(0);opacity:0}}
 #wall-sign{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#4a8c4a 0%,#3d7a3d 50%,#2e6b2e 100%);color:#fff;padding:6px 16px;border-radius:6px;font-size:0.7em;font-weight:bold;letter-spacing:1px;border:3px solid #2a5a2a;box-shadow:0 3px 8px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.2);z-index:5;text-shadow:0 1px 2px rgba(0,0,0,0.4)}
 #sinks-area{position:absolute;bottom:0;left:50%;transform:translateX(-50%);display:flex;gap:12px;padding:8px 15px;background:linear-gradient(#5a4a38,#4a3a28);border-radius:10px 10px 0 0;border:2px solid #6a5a48;border-bottom:none}
 .sink{width:48px;height:42px;background:linear-gradient(#e8e8e8,#c0c0c0);border:3px solid #888;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:transform 0.15s cubic-bezier(0.34,1.56,0.64,1)}
@@ -1044,6 +1055,7 @@ function init() {
     stalls: [],
     sinks: [],
     people: [],
+    puddles: [],
     towels: 10,
     powerups: {speed: 1, slow: 1, auto: 0},
     effects: {speed: 0, slow: 0},
@@ -1373,6 +1385,8 @@ function startShift() {
   game.inspector = null;
   game.inspectorTimer = 0;
   game.inspectorWarning = 0;
+  game.puddles = [];
+  document.querySelectorAll('.puddle').forEach(el => el.remove());
 
   // Apply supplies upgrade bonus to starting powerups
   const suppliesBonus = game.upgrades.supplies;
@@ -1689,6 +1703,10 @@ function updatePeople(dt) {
         setBeaverMood('sad', 1500);
         const msg = p.vip ? '⭐ VIP LEFT! -' + ratingLoss.toFixed(1) + '⭐' : '😤 LEFT!';
         floatMessage(msg, p.x, p.y - 20, 'bad');
+
+        // Pee accident when customer gives up!
+        spawnPuddle(p.x + rnd(-10, 10), p.y + rnd(20, 35), 'pee');
+
         p.phase = 'exit';
         continue;
       }
@@ -1942,7 +1960,59 @@ function customerLeaves(stallIdx) {
       person.y = 8;
     }
     person.phase = 'exitStall';
+
+    // Chance of vomit - messy customers more likely
+    const vomitChance = person.messiness === 1 ? 0.25 : (person.messiness === -1 ? 0.05 : 0.12);
+    if (Math.random() < vomitChance) {
+      spawnPuddle(person.x + rnd(-20, 20), person.y + rnd(30, 50), 'vomit');
+    }
   }
+}
+
+function spawnPuddle(x, y, type) {
+  const id = Date.now() + Math.random();
+  game.puddles.push({ id, x, y, type, age: 0 });
+  renderPuddles();
+  playBad();
+  floatMessage(type === 'vomit' ? '🤮 MESS!' : '💦 ACCIDENT!', x, y - 20, 'bad');
+}
+
+function renderPuddles() {
+  // Remove old puddle elements
+  document.querySelectorAll('.puddle').forEach(el => el.remove());
+
+  const floor = $('floor-area');
+  game.puddles.forEach(puddle => {
+    const el = document.createElement('div');
+    el.className = 'puddle ' + puddle.type;
+    el.style.left = puddle.x + 'px';
+    el.style.top = puddle.y + 'px';
+    el.innerHTML = `<div class="puddle-stink"><div class="stink-line"></div><div class="stink-line"></div><div class="stink-line"></div></div>`;
+    el.addEventListener('click', () => clickPuddle(puddle.id));
+    floor.appendChild(el);
+  });
+}
+
+function clickPuddle(id) {
+  const idx = game.puddles.findIndex(p => p.id === id);
+  if (idx === -1) return;
+
+  const puddle = game.puddles[idx];
+  const points = puddle.type === 'vomit' ? 40 : 30;
+  game.score += points;
+  game.stats.cleaned++;
+
+  floatMessage('+' + points + ' 🧹', puddle.x, puddle.y - 10, 'good');
+  playTaskComplete();
+
+  // Animate out
+  const el = document.querySelector(`.puddle[style*="left: ${puddle.x}px"]`);
+  if (el) el.classList.add('cleaning');
+
+  setTimeout(() => {
+    game.puddles.splice(idx, 1);
+    renderPuddles();
+  }, 300);
 }
 
 function spawnInspector() {
