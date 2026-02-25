@@ -966,9 +966,11 @@ function updateHUD() {
   $('pow-speed').classList.toggle('active-effect', game.effects.speed > 0);
   $('pow-slow').classList.toggle('active-effect', game.effects.slow > 0);
 
-  $('towels').style.background = game.towels <= 2 ? '#c62828' : '#a67c52';
-  $('towels').classList.toggle('low', game.towels <= 2);
-  $('towels').children[0].textContent = game.towels > 5 ? '📄📄📄' : (game.towels > 2 ? '📄📄' : (game.towels > 0 ? '📄' : '❌'));
+  const towelEl = $('towels');
+  towelEl.classList.toggle('low', game.towels <= 2 && game.towels > 0);
+  towelEl.classList.toggle('empty', game.towels === 0);
+  towelEl.children[0].textContent = game.towels > 5 ? '📄📄📄' : (game.towels > 2 ? '📄📄' : (game.towels > 0 ? '📄' : '❌'));
+  towelEl.children[1].textContent = game.towels === 0 ? 'EMPTY!' : 'TOWELS';
 }
 
 function showShiftIntro() {
@@ -1562,15 +1564,39 @@ function updatePeople(dt) {
           game.sinks[p.sinkIdx].dirty = true;
           showBeaverTip('dirtySink');
         }
-        if (Math.random() < 0.5 && game.towels > 0) game.towels--;
         updateSinkDOM(p.sinkIdx);
-        // Special characters have their own happy line
-        if (p.specialThoughts && p.specialThoughts.happy) {
-          p.thought = p.specialThoughts.happy;
+
+        // Customer wants to dry hands (70% chance)
+        const wantsTowel = Math.random() < 0.7;
+        if (wantsTowel) {
+          if (game.towels > 0) {
+            game.towels--;
+            // Happy - got a towel
+            if (p.specialThoughts && p.specialThoughts.happy) {
+              p.thought = p.specialThoughts.happy;
+            } else {
+              p.thought = pick(THOUGHTS.happy);
+            }
+            p.thoughtTimer = 1500;
+          } else {
+            // No towels! Customer is unhappy
+            p.thought = pick(['No towels?!', 'Wet hands...', 'Seriously?', 'Ugh, drip dry...']);
+            p.thoughtTimer = 2000;
+            const penalty = p.vip ? 0.3 : 0.15;
+            game.rating = Math.max(0, game.rating - penalty);
+            floatMessage('No towels! -⭐', p.x, p.y - 30, 'bad');
+            playBad();
+            setBeaverMood('worried', 1500);
+          }
         } else {
-          p.thought = pick(THOUGHTS.happy);
+          // Didn't need towel, still happy
+          if (p.specialThoughts && p.specialThoughts.happy) {
+            p.thought = p.specialThoughts.happy;
+          } else {
+            p.thought = pick(THOUGHTS.happy);
+          }
+          p.thoughtTimer = 1500;
         }
-        p.thoughtTimer = 1500;
         p.phase = 'exit';
       }
     }
