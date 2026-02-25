@@ -9,6 +9,25 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Animation Easing and Bounce (a2h.5.5)
+- Goal: replace linear animations with bouncy/snappy easing
+- Key easing curve: cubic-bezier(0.34, 1.56, 0.64, 1) - "ease-out-back" style with overshoot
+- CSS changes:
+  - pop-in: now 4-step keyframes with overshoot (scale 0.5 → 1.08 → 0.96 → 1)
+  - float-up: adjusted for bounce at peak (scale 1.25 at 20%, 1.15 at 45%)
+  - New value-bump animation for HUD number changes
+- Added bouncy transitions to all interactive elements:
+  - .btn, .task-btn, .powerup (0.15-0.18s)
+  - .stall, .sink, #towels (0.15-0.18s)
+  - .pick-item, .upgrade-card, .upgrade-cost (0.15-0.18s)
+  - .gender-opt, #skip-upgrades (0.18s)
+- JS changes:
+  - New bumpValue(id) helper triggers value-bump animation on HUD items
+  - Called on score/combo changes in completeTask()
+  - Called on milestone rewards in checkComboMilestone()
+- CSS: lines 267-271 (keyframes), line 728 (bumpValue function)
+- Technique: el.classList.remove, void el.offsetWidth, el.classList.add for re-triggering
+
 ### Stink Lines and Visual Dirt Cues (a2h.5.3)
 - Goal: add visual cues that make dirty stalls obviously need attention
 - Added wavy stink lines with animated rising effect
@@ -42,25 +61,6 @@ This file maintains context between autonomous iterations.
   - Gender buttons: 50x50px on phone, min-width/height:44px
 - Existing touch feedback animations preserved (click-pulse, stall-click, sink-ripple)
 - CSS: lines 9-10 (touch-action, webkit styles), 299-380 (media queries)
-
-### Cleaning Completion Celebration (a2h.5.2)
-- Goal: make stall cleaning completion feel amazing
-- New CSS animations:
-  - stall-celebrate: bouncy scale animation (1 → 1.08 → 0.96 → 1.04 → 0.98 → 1)
-  - stall-success-flash: green inset glow pulse on .stall-body
-  - door-swing: physics-based door swing with overshoot (rotateY easing)
-  - sparkle-burst: radial particle effect with CSS vars for direction
-- New .stall.celebrate class triggers all three animations
-- New spawnSparkles(x, y, count) function - radial sparkle particle effect
-  - Uses CSS custom properties (--tx, --ty) for direction
-  - Randomized size and timing
-- Enhanced playStallClean() sound - layered arpeggio + high freq shimmer
-  - Base: C5-E5-G5-C6 arpeggio (523-659-784-1047 Hz)
-  - Overlay: sparkle shimmer (2093-2349-2637 Hz)
-- Beaver now gets 'excited' for ALL clean completions (not just VIP/combo)
-- Applied celebration to: completeTask(), save moments, auto-clean powerup
-- CSS: lines 262-271 (new animations and classes)
-- JS: spawnSparkles() ~700, completeTask() ~1799, save handling ~1268
 
 ---
 
@@ -115,6 +115,25 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Cleaning Completion Celebration (a2h.5.2)
+- Goal: make stall cleaning completion feel amazing
+- New CSS animations:
+  - stall-celebrate: bouncy scale animation (1 → 1.08 → 0.96 → 1.04 → 0.98 → 1)
+  - stall-success-flash: green inset glow pulse on .stall-body
+  - door-swing: physics-based door swing with overshoot (rotateY easing)
+  - sparkle-burst: radial particle effect with CSS vars for direction
+- New .stall.celebrate class triggers all three animations
+- New spawnSparkles(x, y, count) function - radial sparkle particle effect
+  - Uses CSS custom properties (--tx, --ty) for direction
+  - Randomized size and timing
+- Enhanced playStallClean() sound - layered arpeggio + high freq shimmer
+  - Base: C5-E5-G5-C6 arpeggio (523-659-784-1047 Hz)
+  - Overlay: sparkle shimmer (2093-2349-2637 Hz)
+- Beaver now gets 'excited' for ALL clean completions (not just VIP/combo)
+- Applied celebration to: completeTask(), save moments, auto-clean powerup
+- CSS: lines 262-271 (new animations and classes)
+- JS: spawnSparkles() ~700, completeTask() ~1799, save handling ~1268
 
 ### Click/Tap Feedback Polish (a2h.5.1)
 - Added immediate visual feedback to all clickable elements

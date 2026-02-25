@@ -31,7 +31,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .title-tagline{color:#fdd835;font-style:italic;font-size:0.95em;margin-top:8px;text-shadow:0 2px 4px rgba(0,0,0,0.6)}
 @keyframes title-beaver-bob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-4px) rotate(2deg)}}
 .gender-toggle{display:flex;gap:8px;margin:20px 0 8px}
-.gender-opt{width:48px;height:48px;font-size:1.8em;border:3px solid #5d4037;border-radius:12px;background:linear-gradient(180deg,#4a3828,#2d1f0f);cursor:pointer;transition:all 0.15s;opacity:0.6}
+.gender-opt{width:48px;height:48px;font-size:1.8em;border:3px solid #5d4037;border-radius:12px;background:linear-gradient(180deg,#4a3828,#2d1f0f);cursor:pointer;transition:all 0.18s cubic-bezier(0.34,1.56,0.64,1);opacity:0.6}
 .gender-opt:hover{opacity:0.85;transform:scale(1.05)}
 .gender-opt.selected{opacity:1;border-color:#f5a623;background:linear-gradient(180deg,#5a4030,#3d2814);box-shadow:0 0 12px rgba(245,166,35,0.4)}
 .btn-play{padding:18px 60px;font-size:1.5em;letter-spacing:3px;animation:start-pulse 1.5s ease-in-out infinite;position:relative;overflow:hidden}
@@ -48,7 +48,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .tutorial-body{margin-bottom:20px}
 .tutorial-item{display:flex;gap:10px;margin:12px 0;align-items:flex-start;font-size:0.9em;line-height:1.4}
 .tutorial-icon{font-size:1.3em;flex-shrink:0}
-.btn{padding:14px 35px;border:4px solid #a12d0a;border-radius:14px;font-size:1.15em;font-weight:bold;cursor:pointer;background:linear-gradient(180deg,#e53935 0%,#d4380d 50%,#b71c1c 100%);color:#fff;transition:all 0.12s;box-shadow:inset 0 3px 0 rgba(255,255,255,0.25),inset 0 -3px 6px rgba(0,0,0,0.3),0 4px 8px rgba(0,0,0,0.35);text-shadow:0 2px 3px rgba(0,0,0,0.4);letter-spacing:0.5px}
+.btn{padding:14px 35px;border:4px solid #a12d0a;border-radius:14px;font-size:1.15em;font-weight:bold;cursor:pointer;background:linear-gradient(180deg,#e53935 0%,#d4380d 50%,#b71c1c 100%);color:#fff;transition:all 0.15s cubic-bezier(0.34,1.56,0.64,1);box-shadow:inset 0 3px 0 rgba(255,255,255,0.25),inset 0 -3px 6px rgba(0,0,0,0.3),0 4px 8px rgba(0,0,0,0.35);text-shadow:0 2px 3px rgba(0,0,0,0.4);letter-spacing:0.5px}
 .btn:hover{transform:scale(1.06) translateY(-2px);background:linear-gradient(180deg,#ef5350 0%,#e53935 50%,#c62828 100%);box-shadow:inset 0 3px 0 rgba(255,255,255,0.3),0 6px 12px rgba(0,0,0,0.4)}
 .btn:active{transform:scale(0.97);box-shadow:inset 0 3px 6px rgba(0,0,0,0.4)}
 .btn:disabled{opacity:0.45;cursor:not-allowed;filter:grayscale(0.4)}
@@ -102,7 +102,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 #bathroom{position:absolute;inset:0;background:linear-gradient(180deg,#f5f0e6 0%,#ebe4d6 30%,#e0d8c8 100%);display:flex;flex-direction:column}
 #bathroom::before{content:'';position:absolute;top:0;left:0;right:0;height:50%;background:repeating-linear-gradient(0deg,transparent 0px,transparent 15px,rgba(200,190,170,0.3) 15px,rgba(200,190,170,0.3) 16px);pointer-events:none;z-index:0}
 #stalls-row{display:flex;justify-content:center;gap:8px;padding:12px 10px;background:linear-gradient(180deg,#7d5a44 0%,#5d4037 50%,#4e342e 100%);border-bottom:5px solid #3e2723;box-shadow:inset 0 2px 8px rgba(0,0,0,0.3),0 4px 8px rgba(0,0,0,0.2)}
-.stall{width:62px;display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:transform 0.15s ease-out;position:relative}
+.stall{width:62px;display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:transform 0.18s cubic-bezier(0.34,1.56,0.64,1);position:relative}
 .stall:hover{transform:scale(1.08) translateY(-2px)}
 .stall:active{transform:scale(0.95)}
 .stall-light{width:16px;height:16px;border-radius:50%;margin-bottom:5px;border:3px solid #2a1a0a;box-shadow:inset 0 -3px 0 rgba(0,0,0,0.3),0 2px 4px rgba(0,0,0,0.4);transition:all 0.3s}
@@ -142,7 +142,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 #floor-area::after{content:'';position:absolute;bottom:0;left:0;right:0;height:8px;background:linear-gradient(180deg,#5d4037 0%,#3e2723 100%);box-shadow:inset 0 2px 0 rgba(255,255,255,0.1),0 -2px 4px rgba(0,0,0,0.2)}
 #wall-sign{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#4a8c4a 0%,#3d7a3d 50%,#2e6b2e 100%);color:#fff;padding:6px 16px;border-radius:6px;font-size:0.7em;font-weight:bold;letter-spacing:1px;border:3px solid #2a5a2a;box-shadow:0 3px 8px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.2);z-index:5;text-shadow:0 1px 2px rgba(0,0,0,0.4)}
 #sinks-area{position:absolute;bottom:0;left:50%;transform:translateX(-50%);display:flex;gap:12px;padding:8px 15px;background:linear-gradient(#5a4a38,#4a3a28);border-radius:10px 10px 0 0;border:2px solid #6a5a48;border-bottom:none}
-.sink{width:48px;height:42px;background:linear-gradient(#e8e8e8,#c0c0c0);border:3px solid #888;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:transform 0.1s}
+.sink{width:48px;height:42px;background:linear-gradient(#e8e8e8,#c0c0c0);border:3px solid #888;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:transform 0.15s cubic-bezier(0.34,1.56,0.64,1)}
 .sink:hover{transform:scale(1.1)}
 .sink:active{transform:scale(0.95)}
 .sink-bowl{width:30px;height:12px;background:#fff;border:2px solid #999;border-radius:0 0 10px 10px}
@@ -151,7 +151,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .sink-label{font-size:0.45em;color:#333;font-weight:bold;margin-top:2px}
 #exit-door{position:absolute;bottom:0;right:10px;width:55px;height:75px;background:linear-gradient(#5a4a3a,#3a2a1a);border:3px solid #2a1a0a;border-bottom:none;border-radius:8px 8px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:1.4em}
 #exit-door::after{content:'EXIT';font-size:0.35em;color:#aaa;margin-top:2px}
-#towels{position:absolute;bottom:0;left:10px;width:50px;height:60px;background:linear-gradient(#a67c52,#8b6342);border:3px solid #6d4c2a;border-bottom:none;border-radius:6px 6px 0 0;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:0.7em;transition:transform 0.1s}
+#towels{position:absolute;bottom:0;left:10px;width:50px;height:60px;background:linear-gradient(#a67c52,#8b6342);border:3px solid #6d4c2a;border-bottom:none;border-radius:6px 6px 0 0;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:0.7em;transition:transform 0.15s cubic-bezier(0.34,1.56,0.64,1)}
 #towels:hover{transform:scale(1.08)}
 #towels:active{transform:scale(0.95)}
 #towels.low{animation:pulse-danger 0.5s infinite alternate}
@@ -201,14 +201,14 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 #task-panel h3{font-size:0.95em;color:#f5a623;margin-bottom:8px;text-shadow:0 2px 4px rgba(0,0,0,0.5);letter-spacing:0.5px}
 #task-panel .hint{font-size:0.65em;color:#c9a86c;margin-bottom:10px;text-shadow:0 1px 2px rgba(0,0,0,0.4)}
 #task-buttons{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
-.task-btn{padding:12px 18px;background:linear-gradient(180deg,#5a4a38 0%,#4a3a28 50%,#3a2a18 100%);border:3px solid #6a5a48;border-radius:12px;color:#fff;font-size:0.9em;cursor:pointer;transition:all 0.12s;position:relative;overflow:hidden;box-shadow:inset 0 2px 0 rgba(255,255,255,0.15),inset 0 -2px 4px rgba(0,0,0,0.3),0 3px 6px rgba(0,0,0,0.3);text-shadow:0 1px 2px rgba(0,0,0,0.4)}
+.task-btn{padding:12px 18px;background:linear-gradient(180deg,#5a4a38 0%,#4a3a28 50%,#3a2a18 100%);border:3px solid #6a5a48;border-radius:12px;color:#fff;font-size:0.9em;cursor:pointer;transition:all 0.15s cubic-bezier(0.34,1.56,0.64,1);position:relative;overflow:hidden;box-shadow:inset 0 2px 0 rgba(255,255,255,0.15),inset 0 -2px 4px rgba(0,0,0,0.3),0 3px 6px rgba(0,0,0,0.3);text-shadow:0 1px 2px rgba(0,0,0,0.4)}
 .task-btn:hover{background:linear-gradient(180deg,#6a5a48 0%,#5a4a38 50%,#4a3a28 100%);transform:scale(1.08) translateY(-2px);box-shadow:inset 0 2px 0 rgba(255,255,255,0.2),0 5px 10px rgba(0,0,0,0.4)}
 .task-btn:active{transform:scale(0.95);box-shadow:inset 0 2px 4px rgba(0,0,0,0.4)}
 .task-btn.done{background:linear-gradient(180deg,#4caf50 0%,#43a047 50%,#388e3c 100%);border-color:#2e7d32;opacity:0.8}
 .task-btn.active{border-color:#f5a623;box-shadow:0 0 20px rgba(245,166,35,0.6),inset 0 2px 0 rgba(255,255,255,0.2);animation:glow 0.5s infinite alternate}
 .task-btn .progress{position:absolute;bottom:0;left:0;height:5px;background:linear-gradient(90deg,#f5a623,#fdd835);transition:width 0.05s;border-radius:0 4px 4px 0}
 #powerups{display:flex;gap:10px;padding:12px;background:repeating-linear-gradient(90deg,#3d2814 0px,#4a3424 2px,#2d1f0f 4px,#3d2814 6px),linear-gradient(180deg,#3d2814 0%,#2d1f0f 100%);background-blend-mode:overlay;border-top:4px solid #f5a623;justify-content:center;box-shadow:inset 0 4px 8px rgba(0,0,0,0.3)}
-.powerup{padding:10px 14px;background:linear-gradient(180deg,#5a4a38 0%,#4a3a28 50%,#3a2a18 100%);border:3px solid #6a5a48;border-radius:12px;color:#fff;font-size:0.75em;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.15s;box-shadow:inset 0 2px 0 rgba(255,255,255,0.15),inset 0 -2px 4px rgba(0,0,0,0.3),0 3px 6px rgba(0,0,0,0.3);text-shadow:0 1px 2px rgba(0,0,0,0.4)}
+.powerup{padding:10px 14px;background:linear-gradient(180deg,#5a4a38 0%,#4a3a28 50%,#3a2a18 100%);border:3px solid #6a5a48;border-radius:12px;color:#fff;font-size:0.75em;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.18s cubic-bezier(0.34,1.56,0.64,1);box-shadow:inset 0 2px 0 rgba(255,255,255,0.15),inset 0 -2px 4px rgba(0,0,0,0.3),0 3px 6px rgba(0,0,0,0.3);text-shadow:0 1px 2px rgba(0,0,0,0.4)}
 .powerup:hover{background:linear-gradient(180deg,#6a5a48 0%,#5a4a38 50%,#4a3a28 100%);transform:scale(1.08) translateY(-2px);box-shadow:inset 0 2px 0 rgba(255,255,255,0.2),0 5px 10px rgba(0,0,0,0.4)}
 .powerup:active{transform:scale(0.95);box-shadow:inset 0 2px 4px rgba(0,0,0,0.4)}
 .powerup.disabled{opacity:0.35;pointer-events:none;filter:grayscale(0.3)}
@@ -232,7 +232,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .grade.C{background:linear-gradient(180deg,rgba(251,140,0,0.4),rgba(251,140,0,0.2));color:#ffa726;border:3px solid #fb8c00}
 .grade.F{background:linear-gradient(180deg,rgba(229,57,53,0.4),rgba(229,57,53,0.2));color:#ef5350;border:3px solid #e53935}
 .pick-row{display:flex;gap:14px}
-.pick-item{padding:14px 20px;background:linear-gradient(180deg,#5a4a38 0%,#4a3a28 50%,#3a2a18 100%);border:3px solid #6a5a48;border-radius:14px;cursor:pointer;text-align:center;transition:all 0.15s;box-shadow:inset 0 2px 0 rgba(255,255,255,0.15),inset 0 -2px 4px rgba(0,0,0,0.3),0 3px 6px rgba(0,0,0,0.3)}
+.pick-item{padding:14px 20px;background:linear-gradient(180deg,#5a4a38 0%,#4a3a28 50%,#3a2a18 100%);border:3px solid #6a5a48;border-radius:14px;cursor:pointer;text-align:center;transition:all 0.18s cubic-bezier(0.34,1.56,0.64,1);box-shadow:inset 0 2px 0 rgba(255,255,255,0.15),inset 0 -2px 4px rgba(0,0,0,0.3),0 3px 6px rgba(0,0,0,0.3)}
 .pick-item:hover{border-color:#f5a623;transform:scale(1.08) translateY(-2px);box-shadow:0 0 15px rgba(245,166,35,0.4),0 5px 10px rgba(0,0,0,0.4)}
 .pick-item .icon{font-size:1.6em;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.3))}
 .pick-item .name{font-size:0.8em;margin-top:5px;font-weight:bold;text-shadow:0 1px 2px rgba(0,0,0,0.4)}
@@ -243,7 +243,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .coins-display{font-size:1.3em;color:#fdd835;text-shadow:0 2px 4px rgba(0,0,0,0.4)}
 .coins-display .coin-icon{font-size:1.1em}
 .upgrades-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:360px;width:100%}
-.upgrade-card{background:linear-gradient(180deg,#5a4a38 0%,#4a3a28 50%,#3a2a18 100%);padding:14px 10px;border-radius:14px;border:3px solid #6a5a48;text-align:center;transition:all 0.15s;box-shadow:inset 0 2px 0 rgba(255,255,255,0.15),inset 0 -3px 6px rgba(0,0,0,0.3),0 4px 8px rgba(0,0,0,0.35);position:relative}
+.upgrade-card{background:linear-gradient(180deg,#5a4a38 0%,#4a3a28 50%,#3a2a18 100%);padding:14px 10px;border-radius:14px;border:3px solid #6a5a48;text-align:center;transition:all 0.18s cubic-bezier(0.34,1.56,0.64,1);box-shadow:inset 0 2px 0 rgba(255,255,255,0.15),inset 0 -3px 6px rgba(0,0,0,0.3),0 4px 8px rgba(0,0,0,0.35);position:relative}
 .upgrade-card:hover:not(.maxed){border-color:#f5a623;transform:scale(1.03) translateY(-2px);box-shadow:0 0 15px rgba(245,166,35,0.3),0 6px 12px rgba(0,0,0,0.4)}
 .upgrade-card.maxed{opacity:0.7;border-color:#43a047}
 .upgrade-icon{font-size:2em;filter:drop-shadow(0 3px 4px rgba(0,0,0,0.4))}
@@ -252,20 +252,23 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .upgrade-level{font-size:0.75em;margin-top:8px;padding:4px 10px;background:linear-gradient(180deg,rgba(0,0,0,0.2),rgba(0,0,0,0.35));border-radius:6px;display:inline-block}
 .upgrade-level .current{color:#81c784}
 .upgrade-level .max{color:#888}
-.upgrade-cost{margin-top:8px;padding:6px 12px;background:linear-gradient(180deg,#fdd835 0%,#f5a623 50%,#e69500 100%);color:#2d1f0f;border:2px solid #e69500;border-radius:8px;cursor:pointer;font-weight:bold;font-size:0.8em;transition:all 0.15s;box-shadow:inset 0 2px 0 rgba(255,255,255,0.3),0 2px 4px rgba(0,0,0,0.3)}
+.upgrade-cost{margin-top:8px;padding:6px 12px;background:linear-gradient(180deg,#fdd835 0%,#f5a623 50%,#e69500 100%);color:#2d1f0f;border:2px solid #e69500;border-radius:8px;cursor:pointer;font-weight:bold;font-size:0.8em;transition:all 0.15s cubic-bezier(0.34,1.56,0.64,1);box-shadow:inset 0 2px 0 rgba(255,255,255,0.3),0 2px 4px rgba(0,0,0,0.3)}
 .upgrade-cost:hover{transform:scale(1.05);box-shadow:0 0 10px rgba(245,166,35,0.5)}
 .upgrade-cost:active{transform:scale(0.95)}
 .upgrade-cost.cant-afford{background:linear-gradient(180deg,#666,#555);color:#999;border-color:#444;cursor:not-allowed}
 .upgrade-cost.cant-afford:hover{transform:none;box-shadow:none}
 .upgrade-maxed{margin-top:8px;padding:6px 12px;background:linear-gradient(180deg,#43a047,#388e3c);color:#fff;border:2px solid #2e7d32;border-radius:8px;font-size:0.75em;font-weight:bold}
 .upgrade-bonus{position:absolute;top:-8px;right:-8px;background:#e53935;color:#fff;padding:3px 8px;border-radius:10px;font-size:0.6em;font-weight:bold;border:2px solid #b71c1c}
-#skip-upgrades{margin-top:10px;padding:12px 30px;background:linear-gradient(180deg,#5a4a38 0%,#4a3a28 100%);border:3px solid #6a5a48;border-radius:12px;color:#c9a86c;font-size:1em;cursor:pointer;transition:all 0.15s;text-shadow:0 1px 2px rgba(0,0,0,0.4)}
+#skip-upgrades{margin-top:10px;padding:12px 30px;background:linear-gradient(180deg,#5a4a38 0%,#4a3a28 100%);border:3px solid #6a5a48;border-radius:12px;color:#c9a86c;font-size:1em;cursor:pointer;transition:all 0.18s cubic-bezier(0.34,1.56,0.64,1);text-shadow:0 1px 2px rgba(0,0,0,0.4)}
 #skip-upgrades:hover{background:linear-gradient(180deg,#6a5a48 0%,#5a4a38 100%);border-color:#8a7a68}
 @keyframes blink{from{box-shadow:0 0 8px #fdd835}to{box-shadow:0 0 20px #fdd835}}
 @keyframes shake{0%,100%{transform:translateX(0)}50%{transform:translateX(-3px)}}
 @keyframes walk{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-5px) rotate(4deg)}}
-@keyframes float-up{0%{opacity:1;transform:translateY(0) scale(1)}40%{opacity:1;transform:translateY(-25px) scale(1.2)}100%{opacity:0;transform:translateY(-60px) scale(0.8)}}
-@keyframes pop-in{from{opacity:0;transform:translateX(-50%) scale(0.8)}to{opacity:1;transform:translateX(-50%) scale(1)}}
+/* Bouncy animations with overshoot easing */
+@keyframes float-up{0%{opacity:1;transform:translateY(0) scale(1)}20%{opacity:1;transform:translateY(-15px) scale(1.25)}45%{opacity:1;transform:translateY(-30px) scale(1.15)}100%{opacity:0;transform:translateY(-60px) scale(0.7)}}
+@keyframes pop-in{0%{opacity:0;transform:translateX(-50%) scale(0.5)}60%{opacity:1;transform:translateX(-50%) scale(1.08)}80%{transform:translateX(-50%) scale(0.96)}100%{opacity:1;transform:translateX(-50%) scale(1)}}
+@keyframes value-bump{0%{transform:scale(1)}40%{transform:scale(1.25)}70%{transform:scale(0.92)}100%{transform:scale(1)}}
+.value-bump{animation:value-bump 0.25s cubic-bezier(0.34,1.56,0.64,1)}
 @keyframes pulse{from{box-shadow:0 0 8px #1e88e5}to{box-shadow:0 0 16px #1e88e5}}
 @keyframes glow{from{box-shadow:0 0 8px #f5a623}to{box-shadow:0 0 18px #f5a623}}
 @keyframes pulse-dirty{from{background:#ffcc80}to{background:#ffb74d}}
@@ -722,6 +725,14 @@ function screenShake() {
   setTimeout(() => $('play-area').classList.remove('shake'), 300);
 }
 
+function bumpValue(id) {
+  const el = $(id);
+  if (!el) return;
+  el.classList.remove('value-bump');
+  void el.offsetWidth; // Force reflow
+  el.classList.add('value-bump');
+}
+
 function init() {
   game = {
     shift: 0,
@@ -839,8 +850,8 @@ function checkComboMilestone() {
 
       // Rewards
       if (m.speedBoost > 0) game.comboBoost = m.speedBoost;
-      if (m.rating > 0) game.rating = clamp(game.rating + m.rating, 0, 5);
-      if (m.points > 0) game.score += m.points;
+      if (m.rating > 0) { game.rating = clamp(game.rating + m.rating, 0, 5); bumpValue('rating'); }
+      if (m.points > 0) { game.score += m.points; bumpValue('score'); }
 
       // Visual feedback
       const banner = $('combo-milestone');
@@ -1897,11 +1908,13 @@ function completeTask() {
     game.combo++;
     if (game.combo > game.maxCombo) game.maxCombo = game.combo;
     checkComboMilestone();
+    bumpValue('combo');
 
     const comboMult = 1 + game.combo * 0.5;
     const vipMult = wasVip ? 2 : 1; // VIP stalls give 2x score!
     const points = Math.floor(100 * comboMult * vipMult);
     game.score += points;
+    bumpValue('score');
     game.stats.cleaned++;
     const ratingGain = wasVip ? 0.16 : 0.08; // VIP = 2x rating boost too
     game.rating = clamp(game.rating + ratingGain, 0, 5);
