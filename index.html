@@ -190,6 +190,9 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .person.clean .person-icon{filter:drop-shadow(0 0 8px rgba(100,200,255,0.6)) drop-shadow(0 2px 3px rgba(0,0,0,0.4))}
 .person.clean .clean-badge{position:absolute;top:-6px;left:-4px;font-size:0.45em;z-index:15;animation:sparkle 0.6s infinite alternate}
 .person.clean .person-torso{background:linear-gradient(180deg,#81d4fa,#4fc3f7);border-color:#0288d1}
+.person.special .person-icon{filter:drop-shadow(0 0 8px rgba(255,165,0,0.5)) drop-shadow(0 2px 3px rgba(0,0,0,0.4))}
+.person.special .special-badge{position:absolute;top:-8px;left:-4px;font-size:0.5em;z-index:15}
+.person.special .special-name{position:absolute;bottom:-28px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#5d4037,#3e2723);padding:2px 6px;border-radius:8px;font-size:0.35em;white-space:nowrap;color:#ffd54f;font-weight:bold;text-shadow:0 1px 2px rgba(0,0,0,0.6);border:1px solid #f5a623;box-shadow:0 2px 4px rgba(0,0,0,0.4);letter-spacing:0.5px}
 @keyframes messy-drip{0%{transform:translateY(0)}100%{transform:translateY(2px)}}
 @keyframes sparkle{0%{transform:scale(1)}100%{transform:scale(1.2);filter:brightness(1.3)}}
 .person.happy .person-icon{animation:happy-bounce 0.4s ease-out;filter:drop-shadow(0 0 6px rgba(255,235,59,0.6)) drop-shadow(0 2px 3px rgba(0,0,0,0.4))}
@@ -370,6 +373,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .person{font-size:1.5em}
 .person-body{width:32px;height:42px}
 .person .patience-bar{width:28px;height:5px;bottom:-12px}
+.person.special .special-name{bottom:-24px;font-size:0.3em;padding:1px 5px}
 #wall-sign{font-size:0.6em;padding:4px 10px}
 }
 /* Phone breakpoint - extra touch-friendly */
@@ -417,6 +421,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .person-legs{width:14px;height:8px}
 .person .patience-bar{width:24px;height:4px;bottom:-10px}
 .person .thought{font-size:0.45em;padding:3px 6px}
+.person.special .special-name{bottom:-22px;font-size:0.28em;padding:1px 4px}
 #wall-sign{font-size:0.55em;padding:3px 8px;top:6px}
 .float-msg{font-size:1em}
 .stats-grid{gap:8px;max-width:280px}
@@ -452,7 +457,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
           </div>
           <h1>Beaver's<br>Bathroom Blitz</h1>
         </div>
-        <p class="title-tagline">"Dam Good Restrooms - Since 1982"</p>
+        <p class="title-tagline">"Cleanest Restrooms in Texas - Since 1982"</p>
         <p class="title-subtitle">Your first day as a Beaver Lodge attendant.<br>Survive 6 shifts to earn the <span class="golden-plunger">🏆 Golden Plunger</span>!</p>
       </div>
       <div class="gender-toggle">
@@ -509,7 +514,6 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
       <div id="bathroom">
         <div id="stalls-row"></div>
         <div id="floor-area">
-          <div id="wall-sign">🦫 KEEP IT CLEAN!</div>
           <div id="exit-door">🚪</div>
           <div id="towels"><div>📄</div><div>TOWELS</div></div>
           <div id="sinks-area"></div>
@@ -674,8 +678,50 @@ const THOUGHTS = {
 const CUSTOMERS_MALE = ['👨','👴','👦','🧔','👨‍🦰','👨‍🦱','👨‍🦳','👱‍♂️','🧑‍🦰','👨‍🦲'];
 const CUSTOMERS_FEMALE = ['👩','👵','👧','👩‍🦰','👩‍🦱','👩‍🦳','👱‍♀️','👩‍🦲','🧑‍🦱','👩‍🔧'];
 
+// Named special characters that create memorable moments
+const SPECIAL_CUSTOMERS = [
+  // Male bathroom characters
+  {name:'Big Rig Bill', icon:'🧔', badge:'🚚', gender:'male', chance:0.06,
+   shirt:{top:'#8b4513',bot:'#5d3a1a',border:'#3d2510'}, // Brown trucker
+   patience:1.3, messiness:1, // Patient but messy
+   thoughts:{enter:'Long haul!',happy:'Now THAT\'S a clean restroom!',impatient:'Seen worse...'}},
+  {name:'Road Trip Randy', icon:'👨‍🦰', badge:'🚗', gender:'male', chance:0.05,
+   shirt:{top:'#ff6b6b',bot:'#ee5a5a',border:'#d43d3d'}, // Red vacation shirt
+   patience:0.5, messiness:0, // Super urgent, been driving 8 hours
+   thoughts:{enter:'8 HOURS!',happy:'Finally!',impatient:'CAN\'T WAIT!'}},
+  {name:'Business Bob', icon:'👨', badge:'💼', gender:'male', chance:0.05,
+   shirt:{top:'#2c3e50',bot:'#1a252f',border:'#0d1318'}, // Suit
+   patience:0.7, messiness:-1, // Tight schedule but clean
+   thoughts:{enter:'Quick stop.',happy:'Efficient!',impatient:'Time is money!'}},
+  {name:'Weekend Warrior', icon:'👱‍♂️', badge:'🎣', gender:'male', chance:0.05,
+   shirt:{top:'#27ae60',bot:'#1e8449',border:'#145a32'}, // Outdoor green
+   patience:1.4, messiness:0, // Relaxed, headed to the lake
+   thoughts:{enter:'Lake time!',happy:'Great pit stop!',impatient:'No rush...'}},
+  {name:'Trucker Tom', icon:'🧔', badge:'⛽', gender:'male', chance:0.04,
+   shirt:{top:'#34495e',bot:'#2c3e50',border:'#1a252f'}, // Gray work shirt
+   patience:1.5, messiness:1, // Bill's buddy, very patient
+   thoughts:{enter:'Bill here?',happy:'Top notch!',impatient:'Eh, it happens.'}},
+  // Female bathroom characters
+  {name:'Soccer Mom', icon:'👩', badge:'⚽', gender:'female', chance:0.06,
+   shirt:{top:'#9b59b6',bot:'#8e44ad',border:'#6c3483'}, // Purple athleisure
+   patience:0.6, messiness:-1, // Rushed but clean
+   thoughts:{enter:'Practice in 20!',happy:'Perfect!',impatient:'Kids are waiting!'}},
+  {name:'Tourist Tina', icon:'👩‍🦰', badge:'📸', gender:'female', chance:0.05,
+   shirt:{top:'#f39c12',bot:'#d68910',border:'#b9770e'}, // Bright tourist
+   patience:1.2, messiness:-1, // Taking photos, distracted but clean
+   thoughts:{enter:'Is this THE Buc-ee\'s?!',happy:'Instagram perfect!',impatient:'One more pic...'}},
+  {name:'Snack Sally', icon:'👱‍♀️', badge:'🍫', gender:'female', chance:0.05,
+   shirt:{top:'#e74c3c',bot:'#c0392b',border:'#922b21'}, // Red
+   patience:1.0, messiness:-1, // Here for snacks, distracted
+   thoughts:{enter:'Snack time!',happy:'Clean AND they have fudge!',impatient:'Where\'s the jerky aisle?'}},
+  {name:'Road Queen', icon:'👩‍🦱', badge:'👑', gender:'female', chance:0.04,
+   shirt:{top:'#e91e63',bot:'#c2185b',border:'#880e4f'}, // Pink
+   patience:0.8, messiness:0, // Standards, but fair
+   thoughts:{enter:'Pit stop, y\'all!',happy:'LOVE this place!',impatient:'Hmm...'}}
+];
+
 const CLEAN_MESSAGES = [
-  'Sparkling! ✨', 'Spotless!', 'Dam good!', 'Fresh!', 'Pristine!',
+  'Sparkling! ✨', 'Spotless!', 'Super clean!', 'Fresh!', 'Pristine!',
   'Squeaky clean!', 'Like new!', 'Beaver-approved!', 'Road-trip ready!',
   'Rest stop royalty!', 'Lodge quality!', 'Tail-slapping clean!'
 ];
@@ -1489,53 +1535,101 @@ function spawnCustomer() {
   const rect = floor.getBoundingClientRect();
   const exitDoor = $('exit-door').getBoundingClientRect();
 
-  const isUrgent = Math.random() < 0.2; // 20% chance of urgent customer
-  const isVip = !isUrgent && Math.random() < 0.12; // 12% chance of VIP (not if urgent)
-
-  // Messiness: 0 = average, -1 = clean (sparkle), 1 = messy (more tasks)
-  // 15% clean, 20% messy, 65% average
-  const messRoll = Math.random();
-  const messiness = messRoll < 0.15 ? -1 : (messRoll < 0.35 ? 1 : 0);
-
-  // Variety of shirt colors for personality
-  const shirtColors = [
-    {top:'#5a8dd8',bot:'#3d6cb8',border:'#2d5090'}, // Blue
-    {top:'#e57373',bot:'#c62828',border:'#b71c1c'}, // Red
-    {top:'#81c784',bot:'#43a047',border:'#2e7d32'}, // Green
-    {top:'#ffb74d',bot:'#fb8c00',border:'#e65100'}, // Orange
-    {top:'#ba68c8',bot:'#8e24aa',border:'#6a1b9a'}, // Purple
-    {top:'#4dd0e1',bot:'#00acc1',border:'#00838f'}, // Cyan
-    {top:'#f06292',bot:'#e91e63',border:'#c2185b'}, // Pink
-    {top:'#aed581',bot:'#7cb342',border:'#558b2f'}, // Lime
-  ];
-
-  // Determine shirt color based on type
-  let shirt;
-  if (isVip) {
-    shirt = {top:'#ffd700',bot:'#daa520',border:'#b8860b'}; // Gold for VIP
-  } else if (messiness === 1) {
-    shirt = {top:'#a67c52',bot:'#8b5a2b',border:'#6d4c2a'}; // Brown for messy
-  } else if (messiness === -1) {
-    shirt = {top:'#81d4fa',bot:'#4fc3f7',border:'#0288d1'}; // Light blue for clean
-  } else {
-    shirt = pick(shirtColors);
+  // Check for special character spawn first
+  const genderFilter = game.gender === 'male' ? 'male' : 'female';
+  const eligibleSpecials = SPECIAL_CUSTOMERS.filter(c => c.gender === genderFilter);
+  let special = null;
+  for (const sc of eligibleSpecials) {
+    if (Math.random() < sc.chance) {
+      special = sc;
+      break;
+    }
   }
+
+  let isUrgent, isVip, messiness, shirt, icon, specialName, specialBadge, specialThoughts;
+
+  if (special) {
+    // Special character - use their specific properties
+    specialName = special.name;
+    specialBadge = special.badge;
+    specialThoughts = special.thoughts;
+    icon = special.icon;
+    shirt = special.shirt;
+    messiness = special.messiness;
+    isUrgent = special.patience < 0.7; // Low patience = urgent behavior
+    isVip = false; // Special characters aren't VIPs (they're their own thing)
+  } else {
+    // Regular customer
+    specialName = null;
+    specialBadge = null;
+    specialThoughts = null;
+    icon = pick(getCustomers());
+    isUrgent = Math.random() < 0.2; // 20% chance of urgent customer
+    isVip = !isUrgent && Math.random() < 0.12; // 12% chance of VIP (not if urgent)
+
+    // Messiness: 0 = average, -1 = clean (sparkle), 1 = messy (more tasks)
+    const messRoll = Math.random();
+    messiness = messRoll < 0.15 ? -1 : (messRoll < 0.35 ? 1 : 0);
+
+    // Variety of shirt colors for personality
+    const shirtColors = [
+      {top:'#5a8dd8',bot:'#3d6cb8',border:'#2d5090'}, // Blue
+      {top:'#e57373',bot:'#c62828',border:'#b71c1c'}, // Red
+      {top:'#81c784',bot:'#43a047',border:'#2e7d32'}, // Green
+      {top:'#ffb74d',bot:'#fb8c00',border:'#e65100'}, // Orange
+      {top:'#ba68c8',bot:'#8e24aa',border:'#6a1b9a'}, // Purple
+      {top:'#4dd0e1',bot:'#00acc1',border:'#00838f'}, // Cyan
+      {top:'#f06292',bot:'#e91e63',border:'#c2185b'}, // Pink
+      {top:'#aed581',bot:'#7cb342',border:'#558b2f'}, // Lime
+    ];
+
+    // Determine shirt color based on type
+    if (isVip) {
+      shirt = {top:'#ffd700',bot:'#daa520',border:'#b8860b'}; // Gold for VIP
+    } else if (messiness === 1) {
+      shirt = {top:'#a67c52',bot:'#8b5a2b',border:'#6d4c2a'}; // Brown for messy
+    } else if (messiness === -1) {
+      shirt = {top:'#81d4fa',bot:'#4fc3f7',border:'#0288d1'}; // Light blue for clean
+    } else {
+      shirt = pick(shirtColors);
+    }
+  }
+
+  // Calculate patience based on special character or regular modifiers
+  const basePat = getEffectivePatience();
+  let patience;
+  if (special) {
+    patience = basePat * special.patience;
+  } else if (isUrgent) {
+    patience = basePat * 0.6;
+  } else if (isVip) {
+    patience = basePat * 0.8;
+  } else {
+    patience = basePat;
+  }
+
+  // Special characters get an enter thought
+  const enterThought = specialThoughts && specialThoughts.enter ? specialThoughts.enter : '';
+  const enterTimer = enterThought ? 2500 : 0;
 
   game.people.push({
     id: ++game.personId,
-    icon: pick(getCustomers()),
+    icon: icon,
     x: exitDoor.left - rect.left + 15,
     y: exitDoor.top - rect.top + 20,
     phase: 'enter',
     target: -1,
-    patience: isUrgent ? getEffectivePatience() * 0.6 : (isVip ? getEffectivePatience() * 0.8 : getEffectivePatience()),
-    maxPatience: isUrgent ? getEffectivePatience() * 0.6 : (isVip ? getEffectivePatience() * 0.8 : getEffectivePatience()),
+    patience: patience,
+    maxPatience: patience,
     urgent: isUrgent,
     vip: isVip,
-    messiness: messiness, // -1 = clean, 0 = average, 1 = messy
-    thought: '',
-    thoughtTimer: 0,
+    messiness: messiness,
+    thought: enterThought,
+    thoughtTimer: enterTimer,
     shirt: shirt,
+    specialName: specialName,
+    specialBadge: specialBadge,
+    specialThoughts: specialThoughts,
   });
 }
 
@@ -1562,7 +1656,12 @@ function updatePeople(dt) {
       // Show impatient thoughts
       const patienceRatio = p.patience / p.maxPatience;
       if (patienceRatio < 0.3 && p.thoughtTimer <= 0) {
-        p.thought = pick(patienceRatio < 0.15 ? THOUGHTS.desperate : THOUGHTS.impatient);
+        // Special characters have their own impatient line
+        if (p.specialThoughts && p.specialThoughts.impatient) {
+          p.thought = p.specialThoughts.impatient;
+        } else {
+          p.thought = pick(patienceRatio < 0.15 ? THOUGHTS.desperate : THOUGHTS.impatient);
+        }
         p.thoughtTimer = 2000;
       }
 
@@ -1754,7 +1853,12 @@ function updatePeople(dt) {
         if (Math.random() < 0.25) game.sinks[p.sinkIdx].dirty = true;
         if (Math.random() < 0.5 && game.towels > 0) game.towels--;
         updateSinkDOM(p.sinkIdx);
-        p.thought = pick(THOUGHTS.happy);
+        // Special characters have their own happy line
+        if (p.specialThoughts && p.specialThoughts.happy) {
+          p.thought = p.specialThoughts.happy;
+        } else {
+          p.thought = pick(THOUGHTS.happy);
+        }
         p.thoughtTimer = 1500;
         p.phase = 'exit';
       }
@@ -2037,8 +2141,23 @@ function renderPeople() {
       el.querySelector('.person-body').appendChild(badge);
     }
 
+    // Add special character badge and name
+    el.classList.toggle('special', !!p.specialName);
+    if (p.specialName && !el.querySelector('.special-badge')) {
+      const badge = document.createElement('div');
+      badge.className = 'special-badge';
+      badge.textContent = p.specialBadge || '⭐';
+      el.querySelector('.person-body').appendChild(badge);
+      const nameEl = document.createElement('div');
+      nameEl.className = 'special-name';
+      nameEl.textContent = p.specialName;
+      el.appendChild(nameEl);
+    }
+
     // Mood states based on thoughts
-    const isHappy = p.thought && THOUGHTS.happy.includes(p.thought);
+    // Check both generic thoughts and special character happy thoughts
+    const isHappy = p.thought && (THOUGHTS.happy.includes(p.thought) ||
+      (p.specialThoughts && p.thought === p.specialThoughts.happy));
     const isDisgusted = p.thought && THOUGHTS.disgusted.includes(p.thought);
     el.classList.toggle('happy', isHappy && p.thoughtTimer > 0);
     el.classList.toggle('disgusted', isDisgusted && p.thoughtTimer > 0);
