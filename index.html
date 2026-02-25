@@ -32,6 +32,8 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .title-tagline{color:#fdd835;font-style:italic;font-size:0.95em;margin-top:8px;text-shadow:0 2px 4px rgba(0,0,0,0.6)}
 .title-subtitle{font-size:0.8em;color:#c9a86c;margin-top:10px;line-height:1.4;text-shadow:0 1px 3px rgba(0,0,0,0.5)}
 .golden-plunger{color:#ffd700;text-shadow:0 0 8px rgba(255,215,0,0.6);font-weight:bold}
+.high-score{font-size:0.75em;color:#f5a623;margin-top:8px;display:none}
+.high-score.visible{display:block}
 @keyframes title-beaver-bob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-4px) rotate(2deg)}}
 .start-section{display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:15px}
 .gender-toggle{display:flex;gap:10px;align-items:center}
@@ -494,6 +496,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
         </div>
         <p class="title-tagline">"Cleanest Restrooms in Texas - Since 1982"</p>
         <p class="title-subtitle">Your first day as a Beaver's Travel Stop attendant.<br>Survive 6 shifts to earn the <span class="golden-plunger">🏆 Golden Plunger</span>!</p>
+        <p class="high-score" id="title-high-score">🏆 High Score: <span id="high-score-val">0</span></p>
       </div>
       <div class="start-section">
         <div class="gender-toggle">
@@ -601,6 +604,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
     <h2 id="go-title">Game Over</h2>
     <p id="go-msg"></p>
     <div style="font-size:2.2em;color:#f5a623" id="go-score">0</div>
+    <p class="high-score visible" id="go-high-score" style="margin-top:5px">High Score: <span id="go-high-score-val">0</span></p>
     <div class="stats-grid" id="go-stats"></div>
     <button class="btn" id="retry-btn">Try Again</button>
   </div>
@@ -829,6 +833,7 @@ const WIN_MESSAGES = [
 
 let game = {};
 let selectedGender = 'female';
+let highScore = parseInt(localStorage.getItem('beaverHighScore')) || 0;
 
 // Audio
 let audioCtx = null;
@@ -2759,10 +2764,20 @@ function gameOver() {
   $('inspector-warning').style.display = 'none';
 
   const won = game.shift >= CONFIG.shifts.length - 1;
+  const finalScore = Math.floor(game.score);
+  const isNewRecord = finalScore > highScore;
+
+  if (isNewRecord) {
+    highScore = finalScore;
+    localStorage.setItem('beaverHighScore', highScore);
+    updateHighScoreDisplay();
+  }
+
   $('go-icon').textContent = won ? '🏆' : '📦';
   $('go-title').textContent = won ? 'GOLDEN PLUNGER EARNED!' : 'FIRED!';
   $('go-msg').textContent = won ? pick(WIN_MESSAGES) : pick(GAME_OVER_MESSAGES);
-  $('go-score').textContent = Math.floor(game.score);
+  $('go-score').textContent = finalScore + (isNewRecord ? ' 🎉 NEW RECORD!' : '');
+  $('go-high-score-val').textContent = highScore;
 
   $('go-stats').innerHTML = `
     <div class="stat"><div class="num">${game.stats.cleaned}</div><div class="lbl">Cleaned</div></div>
@@ -2809,6 +2824,15 @@ $('tutorial-modal').addEventListener('click', (e) => {
 if (!localStorage.getItem('beaverTutorialSeen')) {
   $('tutorial-modal').classList.add('active');
 }
+
+// Show high score on title screen if exists
+function updateHighScoreDisplay() {
+  if (highScore > 0) {
+    $('high-score-val').textContent = highScore;
+    $('title-high-score').classList.add('visible');
+  }
+}
+updateHighScoreDisplay();
 
 // Mute button
 $('mute-btn').addEventListener('click', () => {

@@ -9,6 +9,17 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### High Score Persistence (rzf)
+- Goal: save high score to localStorage, show on title and game over screens
+- localStorage key: `beaverHighScore` - stores integer value
+- Title screen: shows "🏆 High Score: X" below subtitle (hidden if 0)
+- Game over screen: shows "High Score: X" below final score, adds "🎉 NEW RECORD!" if beaten
+- CSS: `.high-score` class with `.visible` modifier (line 35-36)
+- HTML: `#title-high-score` (line 499), `#go-high-score` (line 607)
+- JS: `highScore` variable loaded on init (line 836), `updateHighScoreDisplay()` (line 2830)
+- gameOver() checks for new record, saves to localStorage, updates display (line 2768-2780)
+- Files: index.html (CSS, HTML, JS changes)
+
 ### Slow Down Shift 1 for New Players (f1f)
 - Goal: reduce spawn rate 30% on first shift to let players learn
 - Fix: increased spawnMin 3000→4300, spawnMax 4500→6400 (line 682)
@@ -24,12 +35,6 @@ This file maintains context between autonomous iterations.
 - "How to Play" button still works for returning players
 - Files: index.html (JS lines 2793-2811)
 - Simple localStorage pattern, matches existing mute preference storage
-
-### Fix Mobile Scroll Bounce (4cz)
-- Goal: prevent rubber-band scroll effect on mobile devices
-- Fix: added `overscroll-behavior:none` to body CSS (line 10)
-- One-liner change - minimal risk
-- Files: index.html (CSS line 10)
 
 ---
 
