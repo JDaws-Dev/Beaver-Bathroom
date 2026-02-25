@@ -1,0 +1,17 @@
+{
+  "name": "beaver-bathroom-blitz",
+  "version": "1.0.0",
+  "description": "A Buc-ee's themed bathroom cleaning game",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "convex": "^1.17.4"
+  },
+  "devDependencies": {
+    "vite": "^6.1.0"
+  }
+}

@@ -9,6 +9,19 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Convert to Vite Project Structure (qeu)
+- Goal: convert single-file HTML game to Vite project for Convex integration
+- Created `package.json` with vite 6.x and convex 1.17.x dependencies
+- Created minimal `vite.config.js`
+- Extracted CSS (~489 lines) to `src/styles.css`
+- Extracted JS (~2511 lines) to `src/main.js`
+- Created new `index.html` with `<link>` for CSS and `<script type="module">` for JS
+- Added `.gitignore` for node_modules and dist
+- Verified: `npm install` works, `npm run dev` serves game, `npm run build` produces dist
+- Project structure now: index.html, package.json, vite.config.js, src/{main.js,styles.css}
+- Files changed: package.json (new), vite.config.js (new), .gitignore (new), index.html (rewritten), src/styles.css (new), src/main.js (new)
+- Single-file constraint removed - now modular Vite project ready for Convex
+
 ### Beaver Speech Bubbles for Tips (3ud)
 - Goal: have beaver mascot show speech bubble tips during first shift at relevant moments
 - Added `#beaver-speech` element inside `#beaver-mascot` in HUD
@@ -48,9 +61,8 @@ This file maintains context between autonomous iterations.
 
 ## Active Roadblocks
 
-- Single-file constraint: all CSS/JS must stay in beaver.html
 - No external assets: everything generated via CSS/SVG/Web Audio
-- Must work offline in browser
+- Must work offline in browser (Convex will add online features)
 
 ---
 
@@ -60,7 +72,9 @@ Patterns, gotchas, and decisions that affect future work:
 
 ### Stack
 
-- Pure HTML/CSS/JS - no frameworks, no build step
+- Vite for dev server and bundling
+- Convex for backend (auth, leaderboard - to be added)
+- Pure vanilla JS - no frontend frameworks
 - Web Audio API for procedural sounds
 - CSS animations for all motion
 - Emojis for characters (considering SVG alternatives)
@@ -74,9 +88,9 @@ Patterns, gotchas, and decisions that affect future work:
 
 ### Code Structure
 
-- Lines 1-195: CSS styles (includes beaver mascot, customer character styles)
-- Lines 196-290: HTML structure (includes beaver element in HUD)
-- Lines 291-end: JavaScript game logic
+- `index.html`: HTML structure only (~170 lines)
+- `src/styles.css`: all CSS (~489 lines)
+- `src/main.js`: all game logic (~2511 lines)
 - Key functions: update(), renderPeople(), updateStallDOM(), clickStall(), setBeaverMood()
 
 ### CSS Art Techniques
