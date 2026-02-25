@@ -9,6 +9,25 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Background Music - Procedural Upbeat Theme (a2h.3.3)
+- Goal: add procedural background music using Web Audio API
+- New music button 🎶/🔈 in HUD (line 493) - separate from SFX mute
+- localStorage key: 'beaverMusicMuted' for independent music preference
+- JS: lines 784-910 - complete music system:
+  - MUSIC_NOTES object: C major scale frequencies
+  - MELODY array: 24-note catchy pattern with rests
+  - BASS array: 8-note simple root pattern
+  - TEMPO: 180 BPM for upbeat feel
+  - startMusic(), stopMusic(), toggleMusic(), updateMusicButton()
+  - playMusicNote(): triangle wave melody, sine wave bass, soft attack/release
+  - playNextMelodyNote/Bass(): setTimeout-based sequencers
+- Integration:
+  - startMusic() called in startShift() (line 1299)
+  - stopMusic() called in endShift() (line 2365) and gameOver() (line 2429)
+  - Music button click handler (line 2487-2491), init (line 2492)
+- Volume: musicGain.value = 0.08 (lower than SFX to not overwhelm)
+- Technique: separate gain node for music, oscillators array for cleanup
+
 ### Volume/Mute Controls (a2h.3.2)
 - Goal: add UI to mute sounds, persist preference
 - Added mute button to HUD (🔊/🔇 toggle)
@@ -35,27 +54,6 @@ This file maintains context between autonomous iterations.
 - Randomization added to each sound for variety (Math.random() on freq)
 - JS: lines 683-714 (new sound functions)
 - Technique: layer multiple oscillators with slight timing offsets
-
-### Escalating Combo Visual Effects (a2h.5.4)
-- Goal: make combo feel more intense as it builds
-- Three combo tiers with escalating effects:
-  - combo-fire (3-4x): orange pulsing glow, 0.5s pulse, text-shadow
-  - combo-intense (5-9x): red-orange faster pulse (0.35s), screen edge glow starts
-  - combo-legendary (10x+): gold color, intense pulse (0.25s), bright screen edge glow
-- CSS additions (lines 272-286):
-  - @keyframes combo-pulse, combo-pulse-fast, combo-pulse-intense (scale animations)
-  - @keyframes combo-glow, combo-glow-intense, combo-glow-legendary (text-shadow animations)
-  - @keyframes screen-edge-glow, screen-edge-legendary (inset box-shadow on play-area)
-  - Classes: #combo.combo-fire/intense/legendary, #play-area.combo-edge-glow/legendary
-- JS updateHUD() (lines 1019-1029):
-  - Added comboEl and playArea references
-  - classList.toggle for combo-fire/intense/legendary based on game.combo
-  - playArea classList.toggle for screen edge effects
-  - Enhanced color/fontSize scaling for combo tiers
-- JS completeTask() (lines 1957-1975):
-  - Enhanced sparkle scaling: 10→14→20→24 particles by combo tier
-  - Enhanced confetti scaling: 6→12→18→22 by combo tier
-  - Tier-specific float messages: 🔥 (3x), ⚡ (5x), 🌟 LEGENDARY (10x)
 
 ---
 
@@ -110,6 +108,27 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Escalating Combo Visual Effects (a2h.5.4)
+- Goal: make combo feel more intense as it builds
+- Three combo tiers with escalating effects:
+  - combo-fire (3-4x): orange pulsing glow, 0.5s pulse, text-shadow
+  - combo-intense (5-9x): red-orange faster pulse (0.35s), screen edge glow starts
+  - combo-legendary (10x+): gold color, intense pulse (0.25s), bright screen edge glow
+- CSS additions (lines 272-286):
+  - @keyframes combo-pulse, combo-pulse-fast, combo-pulse-intense (scale animations)
+  - @keyframes combo-glow, combo-glow-intense, combo-glow-legendary (text-shadow animations)
+  - @keyframes screen-edge-glow, screen-edge-legendary (inset box-shadow on play-area)
+  - Classes: #combo.combo-fire/intense/legendary, #play-area.combo-edge-glow/legendary
+- JS updateHUD() (lines 1019-1029):
+  - Added comboEl and playArea references
+  - classList.toggle for combo-fire/intense/legendary based on game.combo
+  - playArea classList.toggle for screen edge effects
+  - Enhanced color/fontSize scaling for combo tiers
+- JS completeTask() (lines 1957-1975):
+  - Enhanced sparkle scaling: 10→14→20→24 particles by combo tier
+  - Enhanced confetti scaling: 6→12→18→22 by combo tier
+  - Tier-specific float messages: 🔥 (3x), ⚡ (5x), 🌟 LEGENDARY (10x)
 
 ### Animation Easing and Bounce (a2h.5.5)
 - Goal: replace linear animations with bouncy/snappy easing
