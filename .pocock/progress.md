@@ -9,6 +9,17 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### UI Elements Cartoony Styling (a2h.1.4)
+- Updated HUD with wood-grain texture, depth shadows, styled hud-items
+- Task panel: wood-grain bg, bouncy rounded borders, styled task buttons with gradients
+- Powerup buttons: consistent gradient styling, cartoony count badges, wood-grain container
+- Main buttons (.btn): gradient bg, depth shadows, hover lift effect
+- Title screen: styled instructions box (green gradient), gender buttons (selectable gold glow)
+- Result screens: stat cards with gradients, grade badges with colored glows, pick items styled
+- Pattern: combine `inset box-shadow` + outer `box-shadow` for depth
+- Pattern: gradients (3-stop 180deg) for 3D button look
+- Files: beaver.html CSS lines 11-175 (various sections)
+
 ### Beaver Mascot Integration (a2h.1.2)
 - Added CSS art beaver face in HUD area (48x48px)
 - Pure CSS character: ears, eyes with pupils, nose, mouth, teeth, cheeks
@@ -26,12 +37,6 @@ This file maintains context between autonomous iterations.
 - State colors (empty/occupied/dirty/cleaning) now use richer gradients
 - Updated responsive breakpoint for smaller screens
 - Files: beaver.html (CSS lines 36-57)
-
-### Initial State (v4)
-- Game is functional single-file HTML (~900 lines)
-- Has gender selection, customer flow, cleaning mechanics
-- Basic sound effects via Web Audio API
-- Needs: more polish, cartoony visuals, deeper gameplay, story
 
 ---
 
@@ -85,3 +90,9 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Initial State (v4)
+- Game is functional single-file HTML (~900 lines)
+- Has gender selection, customer flow, cleaning mechanics
+- Basic sound effects via Web Audio API
+- Needs: more polish, cartoony visuals, deeper gameplay, story
