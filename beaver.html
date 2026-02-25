@@ -275,6 +275,16 @@ body{font-family:system-ui,sans-serif;background:#2d1f0f;color:#eee;overflow:hid
 .inspector-icon{filter:drop-shadow(0 0 8px rgba(33,150,243,0.8)) drop-shadow(0 2px 3px rgba(0,0,0,0.4))}
 .inspector-badge{position:absolute;top:-8px;right:-8px;background:#1565c0;color:#fff;font-size:0.4em;padding:2px 5px;border-radius:4px;border:2px solid #0d47a1;font-weight:bold}
 .inspector-clipboard{position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);font-size:0.5em}
+/* Click feedback animations */
+@keyframes click-pulse{0%{transform:scale(1)}30%{transform:scale(0.92)}100%{transform:scale(1)}}
+@keyframes click-flash{0%{box-shadow:inset 0 0 0 rgba(255,255,255,0)}30%{box-shadow:inset 0 0 20px rgba(255,255,255,0.5)}100%{box-shadow:inset 0 0 0 rgba(255,255,255,0)}}
+@keyframes stall-click{0%{transform:scale(1)}25%{transform:scale(0.95)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
+@keyframes sink-ripple{0%{box-shadow:0 0 0 0 rgba(129,212,250,0.6)}100%{box-shadow:0 0 0 15px rgba(129,212,250,0)}}
+.task-btn.clicked{animation:click-pulse 0.15s ease-out,click-flash 0.15s ease-out}
+.stall.clicked{animation:stall-click 0.2s ease-out}
+.sink.clicked{animation:sink-ripple 0.3s ease-out}
+#towels.clicked{animation:click-pulse 0.2s ease-out}
+.powerup.clicked{animation:click-pulse 0.15s ease-out}
 @media(max-width:500px){.title-card{padding:15px 18px 20px;border-width:4px;border-radius:16px}.title-beaver{width:44px;height:44px}.title-beaver .beaver-face{width:38px;height:34px}.title-beaver .beaver-eye{width:10px;height:10px;top:10px}.title-beaver .beaver-eye.left{left:6px}.title-beaver .beaver-eye.right{right:6px}#title-screen h1{font-size:1.4em}.instructions{font-size:0.72em;padding:10px 12px}.gender-btn{width:100px;padding:10px 15px}.gender-btn .gender-icon{font-size:2em}#start-btn{padding:14px 40px;font-size:1.15em}.stall{width:52px}.stall-body{width:48px;height:65px}.stall-light{width:12px;height:12px;border-width:2px}.person{font-size:1.3em}.person-body{width:30px;height:40px}.person-torso{width:20px;height:16px}.person-legs{width:16px}}
 </style>
 </head>
@@ -1623,6 +1633,14 @@ function renderPeople() {
 function clickStall(i) {
   if (!game.running) return;
   const stall = game.stalls[i];
+  const stallEl = $('stalls-row').children[i];
+
+  // Visual click feedback
+  if (stallEl) {
+    stallEl.classList.remove('clicked');
+    void stallEl.offsetWidth;
+    stallEl.classList.add('clicked');
+  }
 
   if (stall.state === 'dirty' || stall.state === 'cleaning') {
     if (stall.state === 'dirty') {
@@ -1663,6 +1681,11 @@ function showTaskPanel(stallIdx) {
       e.stopPropagation();
       const ti = parseInt(btn.dataset.idx);
       if (!stall.tasks[ti].done) {
+        // Visual click feedback
+        btn.classList.remove('clicked');
+        void btn.offsetWidth; // Force reflow
+        btn.classList.add('clicked');
+
         if (game.activeTask === ti) {
           // Clicking active task = boost progress!
           const boost = game.effects.speed > 0 ? CONFIG.clickBoost * 2 : CONFIG.clickBoost;
@@ -1773,6 +1796,15 @@ function completeTask() {
 function clickSink(i) {
   if (!game.running) return;
   const sink = game.sinks[i];
+  const sinkEl = $('sinks-area').children[i];
+
+  // Visual click feedback
+  if (sinkEl) {
+    sinkEl.classList.remove('clicked');
+    void sinkEl.offsetWidth;
+    sinkEl.classList.add('clicked');
+  }
+
   if (sink.dirty && !sink.cleaning) {
     sink.cleaning = true;
     sink.progress = 0;
@@ -1782,6 +1814,13 @@ function clickSink(i) {
 
 $('towels').addEventListener('click', () => {
   if (!game.running) return;
+  const towelEl = $('towels');
+
+  // Visual click feedback
+  towelEl.classList.remove('clicked');
+  void towelEl.offsetWidth;
+  towelEl.classList.add('clicked');
+
   if (game.towels < 10) {
     game.towels = 10;
     game.score += 20;
@@ -1791,6 +1830,8 @@ $('towels').addEventListener('click', () => {
 });
 
 $('pow-speed').addEventListener('click', () => {
+  const el = $('pow-speed');
+  el.classList.remove('clicked'); void el.offsetWidth; el.classList.add('clicked');
   if (game.powerups.speed > 0 && game.effects.speed <= 0) {
     game.powerups.speed--;
     game.effects.speed = 12000;
@@ -1800,6 +1841,8 @@ $('pow-speed').addEventListener('click', () => {
 });
 
 $('pow-slow').addEventListener('click', () => {
+  const el = $('pow-slow');
+  el.classList.remove('clicked'); void el.offsetWidth; el.classList.add('clicked');
   if (game.powerups.slow > 0 && game.effects.slow <= 0) {
     game.powerups.slow--;
     game.effects.slow = 12000;
@@ -1809,6 +1852,8 @@ $('pow-slow').addEventListener('click', () => {
 });
 
 $('pow-auto').addEventListener('click', () => {
+  const el = $('pow-auto');
+  el.classList.remove('clicked'); void el.offsetWidth; el.classList.add('clicked');
   if (game.powerups.auto > 0) {
     const dirty = game.stalls.findIndex(s => s.state === 'dirty');
     if (dirty >= 0) {

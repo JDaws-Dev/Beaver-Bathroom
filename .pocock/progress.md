@@ -9,6 +9,17 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Click/Tap Feedback Polish (a2h.5.1)
+- Added immediate visual feedback to all clickable elements
+- New CSS animations: click-pulse, click-flash, stall-click, sink-ripple
+- Task buttons: scale + flash on click (.task-btn.clicked)
+- Stalls: bounce effect on click (.stall.clicked)
+- Sinks: ripple effect on click (.sink.clicked)
+- Towels/Powerups: pulse on click
+- Pattern: el.classList.remove('clicked'); void el.offsetWidth; el.classList.add('clicked');
+- CSS: lines 278-287 (click feedback animations)
+- JS: clickStall, clickSink, showTaskPanel, powerup handlers
+
 ### Combo Streak Bonuses (a2h.2.5)
 - Milestones at 3x, 5x, 10x combos with escalating rewards
 - CONFIG.comboMilestones: array of {level, speedBoost, rating, points, msg}
