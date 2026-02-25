@@ -9,6 +9,15 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Auto-show Tutorial on First Play (2uk)
+- Goal: show tutorial automatically on first visit, don't make players hunt for it
+- localStorage key: `beaverTutorialSeen` - set to 'true' when tutorial is closed
+- On page load: check if key exists, if not show tutorial modal automatically
+- Close handlers (close button, "Got it!" button, click outside) all set localStorage
+- "How to Play" button still works for returning players
+- Files: index.html (JS lines 2793-2811)
+- Simple localStorage pattern, matches existing mute preference storage
+
 ### Fix Mobile Scroll Bounce (4cz)
 - Goal: prevent rubber-band scroll effect on mobile devices
 - Fix: added `overscroll-behavior:none` to body CSS (line 10)
@@ -33,48 +42,6 @@ This file maintains context between autonomous iterations.
 - HTML: added bucky-tip div in intro-card (lines 613-618) between desc and stats
 - JS: showShiftIntro() updated (lines 1429-1432) to pick random tip per shift
 - Makes beaver mascot meaningful - now provides contextual gameplay advice
-
-### Separate Music and SFX Volume Controls (7eo)
-- Goal: separate controls for music vs SFX so players can mute independently
-- Finding: feature already existed! `isMuted` (SFX) and `isMusicMuted` (music) were already separate
-- Problem: UI wasn't clear - buttons had confusing icons (🔈 for muted music looked like speaker)
-- Fix: added labeled controls for clarity
-  - New `.audio-ctrl` wrapper with `.audio-label` ("SFX" / "Music")
-  - Both buttons now show strikethrough when muted (`.muted{text-decoration:line-through}`)
-  - Updated aria-labels for accessibility
-  - Music button uses 🎵 consistently (muted state shown via opacity + strikethrough)
-  - SFX button keeps 🔇/🔊 icons (already clear)
-- Responsive: added `.audio-label` sizing at 600px and 420px breakpoints
-- Files: index.html (CSS lines 105-106, 373, 416; HTML lines 539-540; JS line 945)
-- localStorage keys unchanged: 'beaverMuted', 'beaverMusicMuted'
-
-### UI/UX and Gameplay Evaluation (el6)
-- Goal: comprehensive evaluation without code changes - recommendations only
-- Deliverable: EVALUATION.md with prioritized recommendations
-- Key findings:
-  - **Onboarding gap**: tutorial hidden, first shift too fast, no interactive guidance
-  - **Mobile UX**: task buttons small, puddles hard to tap, missing haptic feedback
-  - **Strategic depth limited**: most runs play similarly, upgrades incremental
-  - **Core loop solid**: task sounds satisfying, combos feel rewarding, celebrations good
-- Quick wins identified:
-  1. Auto-show tutorial on first play (localStorage check)
-  2. Slow spawn rate on Shift 1 (let players learn)
-  3. Add `overscroll-behavior: none` for mobile
-  4. High score persistence in localStorage
-  5. Better "SAVED!" message clarity
-- What creates tension: patience bars, multiple dirty stalls, inspectors, rush hour
-- What creates joy: combos, saves, VIP bonuses, perfect inspections, special characters
-- No code written - pure research/evaluation task
-
-### Fix: Waiting Customers Don't Enter Available Stalls (7sq)
-- Goal: fix bug where customers waiting in findStall phase didn't claim newly available stalls
-- Root cause: stale reservedBy references - when a customer was removed from game.people array, their reservation on a stall might not be cleared in all edge cases
-- Fix: added stale reservation cleanup loop at start of findStall phase (lines 1730-1735)
-  - Checks if reservedBy points to a customer still in game.people
-  - Clears reservation if customer no longer exists
-- Location: updatePeople() function, findStall phase handler
-- Why this works: reservedBy holding reference to removed customer would block other customers from claiming that stall
-- The fix runs every frame for customers in findStall, quickly clearing any stale reservations
 
 ---
 
@@ -129,6 +96,48 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### UI/UX and Gameplay Evaluation (el6)
+- Goal: comprehensive evaluation without code changes - recommendations only
+- Deliverable: EVALUATION.md with prioritized recommendations
+- Key findings:
+  - **Onboarding gap**: tutorial hidden, first shift too fast, no interactive guidance
+  - **Mobile UX**: task buttons small, puddles hard to tap, missing haptic feedback
+  - **Strategic depth limited**: most runs play similarly, upgrades incremental
+  - **Core loop solid**: task sounds satisfying, combos feel rewarding, celebrations good
+- Quick wins identified:
+  1. Auto-show tutorial on first play (localStorage check)
+  2. Slow spawn rate on Shift 1 (let players learn)
+  3. Add `overscroll-behavior: none` for mobile
+  4. High score persistence in localStorage
+  5. Better "SAVED!" message clarity
+- What creates tension: patience bars, multiple dirty stalls, inspectors, rush hour
+- What creates joy: combos, saves, VIP bonuses, perfect inspections, special characters
+- No code written - pure research/evaluation task
+
+### Separate Music and SFX Volume Controls (7eo)
+- Goal: separate controls for music vs SFX so players can mute independently
+- Finding: feature already existed! `isMuted` (SFX) and `isMusicMuted` (music) were already separate
+- Problem: UI wasn't clear - buttons had confusing icons (🔈 for muted music looked like speaker)
+- Fix: added labeled controls for clarity
+  - New `.audio-ctrl` wrapper with `.audio-label` ("SFX" / "Music")
+  - Both buttons now show strikethrough when muted (`.muted{text-decoration:line-through}`)
+  - Updated aria-labels for accessibility
+  - Music button uses 🎵 consistently (muted state shown via opacity + strikethrough)
+  - SFX button keeps 🔇/🔊 icons (already clear)
+- Responsive: added `.audio-label` sizing at 600px and 420px breakpoints
+- Files: index.html (CSS lines 105-106, 373, 416; HTML lines 539-540; JS line 945)
+- localStorage keys unchanged: 'beaverMuted', 'beaverMusicMuted'
+
+### Fix: Waiting Customers Don't Enter Available Stalls (7sq)
+- Goal: fix bug where customers waiting in findStall phase didn't claim newly available stalls
+- Root cause: stale reservedBy references - when a customer was removed from game.people array, their reservation on a stall might not be cleared in all edge cases
+- Fix: added stale reservation cleanup loop at start of findStall phase (lines 1730-1735)
+  - Checks if reservedBy points to a customer still in game.people
+  - Clears reservation if customer no longer exists
+- Location: updatePeople() function, findStall phase handler
+- Why this works: reservedBy holding reference to removed customer would block other customers from claiming that stall
+- The fix runs every frame for customers in findStall, quickly clearing any stale reservations
 
 ### Memorable Customer Characters (a2h.4.4)
 - Goal: add named customer types with distinct personalities

@@ -2792,13 +2792,23 @@ $('help-btn').addEventListener('click', () => {
 });
 $('close-tutorial').addEventListener('click', () => {
   $('tutorial-modal').classList.remove('active');
+  localStorage.setItem('beaverTutorialSeen', 'true');
 });
 $('tutorial-got-it').addEventListener('click', () => {
   $('tutorial-modal').classList.remove('active');
+  localStorage.setItem('beaverTutorialSeen', 'true');
 });
 $('tutorial-modal').addEventListener('click', (e) => {
-  if (e.target.id === 'tutorial-modal') $('tutorial-modal').classList.remove('active');
+  if (e.target.id === 'tutorial-modal') {
+    $('tutorial-modal').classList.remove('active');
+    localStorage.setItem('beaverTutorialSeen', 'true');
+  }
 });
+
+// Auto-show tutorial on first visit
+if (!localStorage.getItem('beaverTutorialSeen')) {
+  $('tutorial-modal').classList.add('active');
+}
 
 // Mute button
 $('mute-btn').addEventListener('click', () => {
