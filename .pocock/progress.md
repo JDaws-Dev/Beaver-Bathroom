@@ -9,6 +9,13 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Stack Task Buttons Vertically on Mobile (5tr)
+- Goal: make task buttons full-width and stacked for better touch on portrait phones
+- Added to 420px breakpoint: `#task-buttons{flex-direction:column;gap:8px}` + `.task-btn{width:100%}`
+- Touch targets: min-height 48px (exceeds 44px guideline)
+- Change is purely CSS, no JS modifications
+- Files: index.html (CSS lines 441-442 in 420px media query)
+
 ### Grace Period Before Dirty Stall Penalty (tct)
 - Goal: add 200ms grace period when customer enters dirty stall, reduce frustration
 - When customer reaches dirty stall in toStall phase, sets `p.gracePending = true` and `p.graceTimer = 200`
@@ -24,17 +31,6 @@ This file maintains context between autonomous iterations.
 - Why: "Just in time" immediately conveys urgency + success of cleaning before customer entered
 - Pairs well with existing "Close Calls" stat label on game over screen
 - Files: index.html (one line change in toStall phase handler)
-
-### High Score Persistence (rzf)
-- Goal: save high score to localStorage, show on title and game over screens
-- localStorage key: `beaverHighScore` - stores integer value
-- Title screen: shows "🏆 High Score: X" below subtitle (hidden if 0)
-- Game over screen: shows "High Score: X" below final score, adds "🎉 NEW RECORD!" if beaten
-- CSS: `.high-score` class with `.visible` modifier (line 35-36)
-- HTML: `#title-high-score` (line 499), `#go-high-score` (line 607)
-- JS: `highScore` variable loaded on init (line 836), `updateHighScoreDisplay()` (line 2830)
-- gameOver() checks for new record, saves to localStorage, updates display (line 2768-2780)
-- Files: index.html (CSS, HTML, JS changes)
 
 ---
 
@@ -89,6 +85,17 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### High Score Persistence (rzf)
+- Goal: save high score to localStorage, show on title and game over screens
+- localStorage key: `beaverHighScore` - stores integer value
+- Title screen: shows "🏆 High Score: X" below subtitle (hidden if 0)
+- Game over screen: shows "High Score: X" below final score, adds "🎉 NEW RECORD!" if beaten
+- CSS: `.high-score` class with `.visible` modifier (line 35-36)
+- HTML: `#title-high-score` (line 499), `#go-high-score` (line 607)
+- JS: `highScore` variable loaded on init (line 836), `updateHighScoreDisplay()` (line 2830)
+- gameOver() checks for new record, saves to localStorage, updates display (line 2768-2780)
+- Files: index.html (CSS, HTML, JS changes)
 
 ### Slow Down Shift 1 for New Players (f1f)
 - Goal: reduce spawn rate 30% on first shift to let players learn
