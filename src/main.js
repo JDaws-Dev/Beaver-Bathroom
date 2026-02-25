@@ -324,7 +324,7 @@ const SPECIAL_CUSTOMERS = [
   {name:'Tourist Tina', icon:'👩‍🦰', badge:'📸', gender:'female', chance:0.05,
    shirt:{top:'#f39c12',bot:'#d68910',border:'#b9770e'}, // Bright tourist
    patience:1.2, messiness:-1, // Taking photos, distracted but clean
-   thoughts:{enter:'Is this THE Buc-ee\'s?!',happy:'Instagram perfect!',impatient:'One more pic...'}},
+   thoughts:{enter:'THE famous restrooms?!',happy:'Instagram perfect!',impatient:'One more pic...'}},
   {name:'Snack Sally', icon:'👱‍♀️', badge:'🍫', gender:'female', chance:0.05,
    shirt:{top:'#e74c3c',bot:'#c0392b',border:'#922b21'}, // Red
    patience:1.0, messiness:-1, // Here for snacks, distracted
@@ -1439,44 +1439,20 @@ function updatePeople(dt) {
       const dist = Math.sqrt(dx*dx + dy*dy);
 
       if (dist < 10) {
+        const stall = game.stalls[p.target];
+
+        // If stall is being cleaned, redirect customer to find another stall
+        if (stall.state === 'cleaning') {
+          stall.reservedBy = null; // Release reservation
+          p.phase = 'findStall';
+          p.target = -1;
+          continue;
+        }
+
         p.phase = 'entering';
         p.enterTimer = 350;
 
-        const stall = game.stalls[p.target];
-
-        // Check if we're cleaning it right now (SAVE!)
-        if (stall.state === 'cleaning') {
-          // Close call save!
-          game.stats.saves++;
-          game.score += 50;
-          floatMessage('JUST IN TIME! +50', p.x, p.y - 30, 'save');
-          playStallClean();
-          setBeaverMood('excited', 1200);
-
-          // Complete cleaning instantly with celebration
-          stall.state = 'empty';
-          stall.tasks = [];
-          if (game.activeStall === p.target) {
-            game.activeStall = -1;
-            game.activeTask = -1;
-            hideTaskPanel();
-          }
-
-          // Celebrate the save!
-          const stallEl = $('stalls-row').children[p.target];
-          if (stallEl) {
-            stallEl.classList.remove('celebrate');
-            void stallEl.offsetWidth;
-            stallEl.classList.add('celebrate');
-            setTimeout(() => stallEl.classList.remove('celebrate'), 650);
-
-            const rect = stallEl.getBoundingClientRect();
-            const playRect = $('play-area').getBoundingClientRect();
-            spawnSparkles(rect.left - playRect.left + rect.width/2, rect.top - playRect.top + 40, 12);
-          }
-          updateStallDOM(p.target);
-        }
-        else if (stall.state === 'dirty') {
+        if (stall.state === 'dirty') {
           // Start grace period - player has 200ms to finish cleaning
           p.gracePending = true;
           p.graceTimer = 200;
@@ -1530,6 +1506,7 @@ function updatePeople(dt) {
           if (p.graceTimer <= 0) {
             // Grace period expired, stall still dirty - apply penalty
             p.gracePending = false;
+            p.enteredDirty = true; // Mark that they committed to dirty stall
             const ratingLoss = p.vip ? 0.8 : 0.4;
             game.rating = clamp(game.rating - ratingLoss, 0, 5);
             game.stats.dirty++;
@@ -1549,6 +1526,18 @@ function updatePeople(dt) {
 
       if (p.enterTimer <= 0) {
         const stall = game.stalls[p.target];
+
+        // If stall is being cleaned and customer hasn't committed to dirty stall yet,
+        // redirect them to find another stall
+        if (stall.state === 'cleaning' && !p.enteredDirty) {
+          stall.reservedBy = null; // Release reservation
+          stall.doorOpen = false;
+          updateStallDOM(p.target);
+          p.phase = 'findStall'; // Go back to finding a stall
+          p.target = -1;
+          continue;
+        }
+
         stall.state = 'occupied';
         stall.reservedBy = null; // Clear reservation now that customer is inside
         stall.customer = p.icon;
