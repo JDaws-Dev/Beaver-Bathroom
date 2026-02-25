@@ -9,6 +9,28 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Memorable Customer Characters (a2h.4.4)
+- Goal: add named customer types with distinct personalities
+- New SPECIAL_CUSTOMERS config array (line 681-712):
+  - 9 named characters: Big Rig Bill, Road Trip Randy, Business Bob, Weekend Warrior, Trucker Tom (male)
+  - Soccer Mom, Tourist Tina, Snack Sally, Road Queen (female)
+- Each special character has: name, icon, badge, shirt color, patience modifier, messiness, custom thoughts
+- spawnCustomer() updated (line 1537-1628):
+  - Rolls for special character spawn first based on gender
+  - Special characters use their own properties (not random)
+  - patience < 0.7 triggers urgent behavior
+  - Special characters show enter thought when spawning
+- CSS additions (line 193-196):
+  - .person.special with orange glow
+  - .special-badge positioned top-left
+  - .special-name label below patience bar (gold text on wood bg)
+- renderPeople() updated (line 2143-2154):
+  - Adds 'special' class when p.specialName exists
+  - Creates badge and name elements for special characters
+  - Happy state detection includes special character thoughts
+- Responsive styles: smaller name labels at 600px and 420px breakpoints
+- Character personalities: truckers patient/messy, soccer moms rushed/clean, tourists slow/clean
+
 ### Player Identity and Stakes (a2h.4.3)
 - Goal: establish who player is, what they want, what happens on win/loss
 - Player identity: "new hire at Beaver Lodge, first day"
@@ -39,25 +61,6 @@ This file maintains context between autonomous iterations.
 - Button handlers updated: start-btn and skip-upgrades now call showShiftIntro()
 - endShift() uses narrative.name in result-title ("Training Day Complete!")
 - Note: line numbers shifted ~10 lines from SHIFT_NARRATIVES addition
-
-### Background Music - Procedural Upbeat Theme (a2h.3.3)
-- Goal: add procedural background music using Web Audio API
-- New music button 🎶/🔈 in HUD (line 493) - separate from SFX mute
-- localStorage key: 'beaverMusicMuted' for independent music preference
-- JS: lines 784-910 - complete music system:
-  - MUSIC_NOTES object: C major scale frequencies
-  - MELODY array: 24-note catchy pattern with rests
-  - BASS array: 8-note simple root pattern
-  - TEMPO: 180 BPM for upbeat feel
-  - startMusic(), stopMusic(), toggleMusic(), updateMusicButton()
-  - playMusicNote(): triangle wave melody, sine wave bass, soft attack/release
-  - playNextMelodyNote/Bass(): setTimeout-based sequencers
-- Integration:
-  - startMusic() called in startShift() (line 1299)
-  - stopMusic() called in endShift() (line 2365) and gameOver() (line 2429)
-  - Music button click handler (line 2487-2491), init (line 2492)
-- Volume: musicGain.value = 0.08 (lower than SFX to not overwhelm)
-- Technique: separate gain node for music, oscillators array for cleanup
 
 ---
 
@@ -112,6 +115,25 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Background Music - Procedural Upbeat Theme (a2h.3.3)
+- Goal: add procedural background music using Web Audio API
+- New music button 🎶/🔈 in HUD (line 493) - separate from SFX mute
+- localStorage key: 'beaverMusicMuted' for independent music preference
+- JS: lines 784-910 - complete music system:
+  - MUSIC_NOTES object: C major scale frequencies
+  - MELODY array: 24-note catchy pattern with rests
+  - BASS array: 8-note simple root pattern
+  - TEMPO: 180 BPM for upbeat feel
+  - startMusic(), stopMusic(), toggleMusic(), updateMusicButton()
+  - playMusicNote(): triangle wave melody, sine wave bass, soft attack/release
+  - playNextMelodyNote/Bass(): setTimeout-based sequencers
+- Integration:
+  - startMusic() called in startShift() (line 1299)
+  - stopMusic() called in endShift() (line 2365) and gameOver() (line 2429)
+  - Music button click handler (line 2487-2491), init (line 2492)
+- Volume: musicGain.value = 0.08 (lower than SFX to not overwhelm)
+- Technique: separate gain node for music, oscillators array for cleanup
 
 ### Volume/Mute Controls (a2h.3.2)
 - Goal: add UI to mute sounds, persist preference
