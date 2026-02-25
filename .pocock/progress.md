@@ -9,6 +9,18 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### VIP Customers - High Stakes Visitors (a2h.2.1)
+- Added VIP customer type: 12% spawn chance (not if urgent)
+- Visual: golden glow on icon, gold shirt, ⭐ badge on character
+- Golden patience bar border with glow effect
+- 2x rating impact (both positive and negative)
+- 2x score multiplier when cleaning after VIP
+- Reduced patience (80% of normal)
+- Tracked via `p.vip` on person and `stall.wasVip` for clean bonus
+- Creates strategic priority: clean VIP stalls fast for big rewards
+- CSS: lines 133-136 (.person.vip styles)
+- JS: spawnCustomer ~line 778, rating impacts ~834/912, clean bonus ~1203
+
 ### Background Art and Floor Details (a2h.1.5)
 - Changed floor from plain stripes to checkered tile pattern
 - Used `repeating-conic-gradient` for alternating tile colors (#c4b89a, #d8cdb5)
@@ -32,17 +44,6 @@ This file maintains context between autonomous iterations.
 - Improved patience bar: darker background, thicker border
 - Thought bubbles: gradient bg, border, bounce-in animation
 - Files: beaver.html CSS lines 110-138 (new styles), JS lines 768-794 (shirtColors), 1027-1041 (renderPeople body)
-
-### UI Elements Cartoony Styling (a2h.1.4)
-- Updated HUD with wood-grain texture, depth shadows, styled hud-items
-- Task panel: wood-grain bg, bouncy rounded borders, styled task buttons with gradients
-- Powerup buttons: consistent gradient styling, cartoony count badges, wood-grain container
-- Main buttons (.btn): gradient bg, depth shadows, hover lift effect
-- Title screen: styled instructions box (green gradient), gender buttons (selectable gold glow)
-- Result screens: stat cards with gradients, grade badges with colored glows, pick items styled
-- Pattern: combine `inset box-shadow` + outer `box-shadow` for depth
-- Pattern: gradients (3-stop 180deg) for 3D button look
-- Files: beaver.html CSS lines 11-175 (various sections)
 
 ---
 
@@ -97,6 +98,17 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### UI Elements Cartoony Styling (a2h.1.4)
+- Updated HUD with wood-grain texture, depth shadows, styled hud-items
+- Task panel: wood-grain bg, bouncy rounded borders, styled task buttons with gradients
+- Powerup buttons: consistent gradient styling, cartoony count badges, wood-grain container
+- Main buttons (.btn): gradient bg, depth shadows, hover lift effect
+- Title screen: styled instructions box (green gradient), gender buttons (selectable gold glow)
+- Result screens: stat cards with gradients, grade badges with colored glows, pick items styled
+- Pattern: combine `inset box-shadow` + outer `box-shadow` for depth
+- Pattern: gradients (3-stop 180deg) for 3D button look
+- Files: beaver.html CSS lines 11-175 (various sections)
 
 ### Beaver Mascot Integration (a2h.1.2)
 - Added CSS art beaver face in HUD area (48x48px)

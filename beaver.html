@@ -130,6 +130,10 @@ body{font-family:system-ui,sans-serif;background:#2d1f0f;color:#eee;overflow:hid
 .person.urgent .person-body{animation:urgent-shake 0.15s infinite}
 .person.urgent .person-icon{filter:drop-shadow(0 0 8px rgba(229,57,53,0.7)) drop-shadow(0 2px 3px rgba(0,0,0,0.4))}
 .person.urgent .person-torso{background:linear-gradient(180deg,#e57373,#c62828);border-color:#b71c1c}
+.person.vip .person-icon{filter:drop-shadow(0 0 10px rgba(255,215,0,0.8)) drop-shadow(0 2px 3px rgba(0,0,0,0.4))}
+.person.vip .person-torso{background:linear-gradient(180deg,#ffd700,#daa520);border-color:#b8860b}
+.person.vip .vip-badge{position:absolute;top:-8px;right:-4px;font-size:0.5em;z-index:15}
+.person.vip .patience-bar{border-color:#ffd700;box-shadow:0 0 6px rgba(255,215,0,0.5)}
 .person.happy .person-icon{animation:happy-bounce 0.4s ease-out;filter:drop-shadow(0 0 6px rgba(255,235,59,0.6)) drop-shadow(0 2px 3px rgba(0,0,0,0.4))}
 .person.disgusted .person-icon{filter:hue-rotate(80deg) saturate(1.3) drop-shadow(0 2px 3px rgba(0,0,0,0.4))}
 .person.disgusted .person-body{animation:disgust-recoil 0.3s ease-out}
@@ -491,7 +495,8 @@ function buildStalls() {
       timer: 0,
       tasks: [],
       customer: '',
-      doorOpen: false
+      doorOpen: false,
+      wasVip: false
     });
 
     const el = document.createElement('div');
@@ -770,6 +775,7 @@ function spawnCustomer() {
   const exitDoor = $('exit-door').getBoundingClientRect();
 
   const isUrgent = Math.random() < 0.2; // 20% chance of urgent customer
+  const isVip = !isUrgent && Math.random() < 0.12; // 12% chance of VIP (not if urgent)
 
   // Variety of shirt colors for personality
   const shirtColors = [
@@ -790,12 +796,13 @@ function spawnCustomer() {
     y: exitDoor.top - rect.top + 20,
     phase: 'enter',
     target: -1,
-    patience: isUrgent ? CONFIG.patience * 0.6 : CONFIG.patience,
-    maxPatience: isUrgent ? CONFIG.patience * 0.6 : CONFIG.patience,
+    patience: isUrgent ? CONFIG.patience * 0.6 : (isVip ? CONFIG.patience * 0.8 : CONFIG.patience),
+    maxPatience: isUrgent ? CONFIG.patience * 0.6 : (isVip ? CONFIG.patience * 0.8 : CONFIG.patience),
     urgent: isUrgent,
+    vip: isVip,
     thought: '',
     thoughtTimer: 0,
-    shirt: pick(shirtColors),
+    shirt: isVip ? {top:'#ffd700',bot:'#daa520',border:'#b8860b'} : pick(shirtColors),
   });
 }
 
@@ -824,13 +831,15 @@ function updatePeople(dt) {
       }
 
       if (p.patience <= 0) {
-        game.rating = clamp(game.rating - 0.3, 0, 5);
+        const ratingLoss = p.vip ? 0.6 : 0.3; // VIP = 2x rating impact
+        game.rating = clamp(game.rating - ratingLoss, 0, 5);
         game.stats.abandoned++;
         game.combo = 0;
         playBad();
         screenShake();
         setBeaverMood('sad', 1500);
-        floatMessage('😤 LEFT!', p.x, p.y - 20, 'bad');
+        const msg = p.vip ? '⭐ VIP LEFT! -' + ratingLoss.toFixed(1) + '⭐' : '😤 LEFT!';
+        floatMessage(msg, p.x, p.y - 20, 'bad');
         p.phase = 'exit';
         continue;
       }
@@ -900,7 +909,8 @@ function updatePeople(dt) {
           updateStallDOM(p.target);
         }
         else if (stall.state === 'dirty') {
-          game.rating = clamp(game.rating - 0.4, 0, 5);
+          const ratingLoss = p.vip ? 0.8 : 0.4; // VIP = 2x rating impact
+          game.rating = clamp(game.rating - ratingLoss, 0, 5);
           game.stats.dirty++;
           game.combo = 0;
           playBad();
@@ -908,7 +918,8 @@ function updatePeople(dt) {
           setBeaverMood('sad', 1500);
           p.thought = pick(THOUGHTS.disgusted);
           p.thoughtTimer = 2000;
-          floatMessage('-0.4⭐ GROSS!', p.x, p.y - 30, 'bad');
+          const msg = p.vip ? '⭐ VIP DISGUSTED! -' + ratingLoss.toFixed(1) + '⭐' : '-0.4⭐ GROSS!';
+          floatMessage(msg, p.x, p.y - 30, 'bad');
         }
 
         stall.doorOpen = true;
@@ -926,6 +937,7 @@ function updatePeople(dt) {
         const stall = game.stalls[p.target];
         stall.state = 'occupied';
         stall.customer = p.icon;
+        stall.wasVip = p.vip; // Track if VIP used this stall
         stall.timer = rnd(cfg.occMin, cfg.occMax);
         stall.doorOpen = false;
         stall.tasks = [];
@@ -1066,6 +1078,15 @@ function renderPeople() {
     el.classList.toggle('walking', isWalking);
     el.classList.toggle('entering', p.phase === 'entering');
     el.classList.toggle('urgent', p.urgent);
+    el.classList.toggle('vip', p.vip);
+
+    // Add VIP badge if needed
+    if (p.vip && !el.querySelector('.vip-badge')) {
+      const badge = document.createElement('div');
+      badge.className = 'vip-badge';
+      badge.textContent = '⭐';
+      el.querySelector('.person-body').appendChild(badge);
+    }
 
     // Mood states based on thoughts
     const isHappy = p.thought && THOUGHTS.happy.includes(p.thought);
@@ -1179,16 +1200,20 @@ function completeTask() {
 
   // Check if all done
   if (stall.tasks.every(t => t.done)) {
+    const wasVip = stall.wasVip;
     stall.state = 'empty';
     stall.tasks = [];
+    stall.wasVip = false; // Reset for next customer
     game.combo++;
     if (game.combo > game.maxCombo) game.maxCombo = game.combo;
 
-    const multiplier = 1 + game.combo * 0.5;
-    const points = Math.floor(100 * multiplier);
+    const comboMult = 1 + game.combo * 0.5;
+    const vipMult = wasVip ? 2 : 1; // VIP stalls give 2x score!
+    const points = Math.floor(100 * comboMult * vipMult);
     game.score += points;
     game.stats.cleaned++;
-    game.rating = clamp(game.rating + 0.08, 0, 5);
+    const ratingGain = wasVip ? 0.16 : 0.08; // VIP = 2x rating boost too
+    game.rating = clamp(game.rating + ratingGain, 0, 5);
 
     const stallEl = $('stalls-row').children[game.activeStall];
     if (stallEl) {
@@ -1197,13 +1222,20 @@ function completeTask() {
       const x = rect.left - playRect.left + rect.width/2;
       const y = rect.top - playRect.top + 20;
 
-      const msg = game.combo >= 3 ? `${game.combo}x COMBO! +${points}` : `+${points} ${pick(CLEAN_MESSAGES)}`;
-      floatMessage(msg, x, y, game.combo >= 3 ? 'combo' : 'good');
-      spawnConfetti(x, y + 30, game.combo >= 3 ? 12 : 6);
+      let msg;
+      if (wasVip) {
+        msg = `⭐ VIP! +${points}`;
+      } else if (game.combo >= 3) {
+        msg = `${game.combo}x COMBO! +${points}`;
+      } else {
+        msg = `+${points} ${pick(CLEAN_MESSAGES)}`;
+      }
+      floatMessage(msg, x, y, (wasVip || game.combo >= 3) ? 'combo' : 'good');
+      spawnConfetti(x, y + 30, wasVip ? 14 : (game.combo >= 3 ? 12 : 6));
     }
 
     playStallClean();
-    if (game.combo >= 3) {
+    if (wasVip || game.combo >= 3) {
       screenShake();
       setBeaverMood('excited', 1500);
     } else {
