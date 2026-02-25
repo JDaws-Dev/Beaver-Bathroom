@@ -9,6 +9,23 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Stink Lines and Visual Dirt Cues (a2h.5.3)
+- Goal: add visual cues that make dirty stalls obviously need attention
+- Added wavy stink lines with animated rising effect
+  - 3 wavy lines that float upward with staggered animation delays
+  - @keyframes stink-wave: translateY, scaleY, rotate for organic look
+  - Uses flex layout for spacing, border-radius for curved shapes
+- Added buzzing fly (🪰) that orbits around dirty stalls
+  - @keyframes fly-buzz: figure-8 style flight pattern with rotation
+  - Positioned top-right corner of stall
+- Added grime spots overlay using radial gradients
+  - ::after pseudo-element on .stall-body with brownish spots
+  - Makes dirty stalls look visibly grimy
+- Updated dirty stall body color to more brownish/dingy gradient
+- Added position:relative to .stall for absolute positioning
+- HTML: stink-lines and stall-fly elements added to stall innerHTML
+- CSS: lines 123-137 (dirty stall styles and animations)
+
 ### Mobile-Friendly Touch Controls (a2h.5.6)
 - Goal: make game playable on mobile phones
 - Added touch-action: manipulation to prevent double-tap zoom on interactive elements
@@ -44,17 +61,6 @@ This file maintains context between autonomous iterations.
 - Applied celebration to: completeTask(), save moments, auto-clean powerup
 - CSS: lines 262-271 (new animations and classes)
 - JS: spawnSparkles() ~700, completeTask() ~1799, save handling ~1268
-
-### Click/Tap Feedback Polish (a2h.5.1)
-- Added immediate visual feedback to all clickable elements
-- New CSS animations: click-pulse, click-flash, stall-click, sink-ripple
-- Task buttons: scale + flash on click (.task-btn.clicked)
-- Stalls: bounce effect on click (.stall.clicked)
-- Sinks: ripple effect on click (.sink.clicked)
-- Towels/Powerups: pulse on click
-- Pattern: el.classList.remove('clicked'); void el.offsetWidth; el.classList.add('clicked');
-- CSS: lines 278-287 (click feedback animations)
-- JS: clickStall, clickSink, showTaskPanel, powerup handlers
 
 ---
 
@@ -109,6 +115,17 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Click/Tap Feedback Polish (a2h.5.1)
+- Added immediate visual feedback to all clickable elements
+- New CSS animations: click-pulse, click-flash, stall-click, sink-ripple
+- Task buttons: scale + flash on click (.task-btn.clicked)
+- Stalls: bounce effect on click (.stall.clicked)
+- Sinks: ripple effect on click (.sink.clicked)
+- Towels/Powerups: pulse on click
+- Pattern: el.classList.remove('clicked'); void el.offsetWidth; el.classList.add('clicked');
+- CSS: lines 278-287 (click feedback animations)
+- JS: clickStall, clickSink, showTaskPanel, powerup handlers
 
 ### Combo Streak Bonuses (a2h.2.5)
 - Milestones at 3x, 5x, 10x combos with escalating rewards
