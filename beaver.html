@@ -25,8 +25,44 @@ body{font-family:system-ui,sans-serif;background:#2d1f0f;color:#eee;overflow:hid
 .btn:active{transform:scale(0.98)}
 .btn:disabled{opacity:0.5;cursor:not-allowed}
 #game-screen{align-items:stretch;justify-content:flex-start}
-#hud{display:flex;justify-content:space-around;padding:10px 8px;background:linear-gradient(#3d2814,#2d1f0f);border-bottom:3px solid #f5a623}
+#hud{display:flex;justify-content:space-around;padding:10px 8px;background:linear-gradient(#3d2814,#2d1f0f);border-bottom:3px solid #f5a623;align-items:center}
 .hud-item{text-align:center}
+#beaver-mascot{width:48px;height:48px;position:relative;flex-shrink:0;transition:transform 0.2s}
+.beaver-head{width:100%;height:100%;position:relative}
+.beaver-face{width:40px;height:36px;background:linear-gradient(180deg,#c9a86c 0%,#a67c52 70%,#8b6342 100%);border-radius:50% 50% 45% 45%;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:2px solid #5d4037;box-shadow:inset 0 -4px 8px rgba(0,0,0,0.2),0 2px 4px rgba(0,0,0,0.3)}
+.beaver-ear{width:12px;height:12px;background:linear-gradient(180deg,#8b6342,#6d4c2a);border-radius:50%;position:absolute;top:2px;border:2px solid #5d4037}
+.beaver-ear.left{left:2px}
+.beaver-ear.right{right:2px}
+.beaver-eye{width:10px;height:10px;background:#fff;border-radius:50%;position:absolute;top:10px;border:1px solid #333;overflow:hidden}
+.beaver-eye.left{left:6px}
+.beaver-eye.right{right:6px}
+.beaver-pupil{width:5px;height:5px;background:#222;border-radius:50%;position:absolute;top:2px;left:2px;transition:all 0.15s}
+.beaver-nose{width:10px;height:7px;background:linear-gradient(180deg,#4a3728,#2d1f14);border-radius:50%;position:absolute;top:18px;left:50%;transform:translateX(-50%)}
+.beaver-mouth{width:14px;height:6px;background:#2d1f14;border-radius:0 0 8px 8px;position:absolute;top:25px;left:50%;transform:translateX(-50%);transition:all 0.2s}
+.beaver-teeth{width:10px;height:6px;background:#fff;position:absolute;top:24px;left:50%;transform:translateX(-50%);display:flex;gap:1px;border-radius:0 0 2px 2px;box-shadow:0 1px 2px rgba(0,0,0,0.3)}
+.beaver-teeth::before,.beaver-teeth::after{content:'';flex:1;background:#fff;border:1px solid #ddd}
+.beaver-cheek{width:8px;height:6px;background:rgba(255,150,150,0.5);border-radius:50%;position:absolute;top:16px;opacity:0;transition:opacity 0.2s}
+.beaver-cheek.left{left:1px}
+.beaver-cheek.right{right:1px}
+.beaver-idle .beaver-pupil{animation:beaver-look 3s infinite}
+.beaver-happy{animation:beaver-bounce 0.3s ease-out}
+.beaver-happy .beaver-mouth{width:16px;height:8px;border-radius:0 0 10px 10px}
+.beaver-happy .beaver-cheek{opacity:1}
+.beaver-happy .beaver-eye{height:6px}
+.beaver-excited{animation:beaver-bounce 0.15s infinite}
+.beaver-excited .beaver-mouth{width:18px;height:10px;border-radius:0 0 12px 12px;background:#1a1209}
+.beaver-excited .beaver-cheek{opacity:1}
+.beaver-excited .beaver-eye{height:5px}
+.beaver-worried .beaver-eye{height:12px}
+.beaver-worried .beaver-pupil{top:4px;animation:beaver-shake 0.2s infinite}
+.beaver-worried .beaver-mouth{width:10px;height:8px;border-radius:50%;background:#2d1f14}
+.beaver-sad{transform:translateY(2px)}
+.beaver-sad .beaver-eye{height:6px}
+.beaver-sad .beaver-pupil{top:3px}
+.beaver-sad .beaver-mouth{width:12px;height:4px;border-radius:8px 8px 0 0;top:27px}
+@keyframes beaver-look{0%,100%{transform:translateX(0)}25%{transform:translateX(2px)}75%{transform:translateX(-2px)}}
+@keyframes beaver-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes beaver-shake{0%,100%{transform:translateX(0)}50%{transform:translateX(2px)}}
 .hud-item .label{font-size:0.65em;opacity:0.8;text-transform:uppercase;color:#f5a623}
 .hud-item .value{font-size:1.1em;font-weight:bold}
 #dirty-count{color:#fdd835;font-size:0.9em}
@@ -167,6 +203,21 @@ body{font-family:system-ui,sans-serif;background:#2d1f0f;color:#eee;overflow:hid
 
   <div id="game-screen" class="screen">
     <div id="hud">
+      <div id="beaver-mascot" class="beaver-idle">
+        <div class="beaver-head">
+          <div class="beaver-ear left"></div>
+          <div class="beaver-ear right"></div>
+          <div class="beaver-face">
+            <div class="beaver-eye left"><div class="beaver-pupil"></div></div>
+            <div class="beaver-eye right"><div class="beaver-pupil"></div></div>
+            <div class="beaver-nose"></div>
+            <div class="beaver-mouth"></div>
+            <div class="beaver-teeth"></div>
+            <div class="beaver-cheek left"></div>
+            <div class="beaver-cheek right"></div>
+          </div>
+        </div>
+      </div>
       <div class="hud-item"><div class="label">Rating</div><div class="value" id="rating">⭐⭐⭐⭐⭐</div></div>
       <div class="hud-item"><div class="label">Score</div><div class="value" id="score">0</div></div>
       <div class="hud-item"><div class="label">Combo</div><div class="value" id="combo">x1</div></div>
@@ -314,6 +365,18 @@ function playUrgent() { playSound(800, 0.08, 'square', 0.1); setTimeout(() => pl
 function playRush() { for(let i=0;i<3;i++) setTimeout(() => playSound(1000, 0.1, 'square', 0.2), i*100); }
 function playWin() {
   [523,659,784,1047].forEach((f,i) => setTimeout(() => playSound(f, 0.15), i*120));
+}
+
+// Beaver mascot expressions
+let beaverTimeout = null;
+function setBeaverMood(mood, duration = 1000) {
+  const beaver = document.getElementById('beaver-mascot');
+  if (!beaver) return;
+  beaver.className = 'beaver-' + mood;
+  clearTimeout(beaverTimeout);
+  if (duration > 0) {
+    beaverTimeout = setTimeout(() => beaver.className = 'beaver-idle', duration);
+  }
 }
 
 function $(id) { return document.getElementById(id); }
@@ -596,6 +659,7 @@ function update(dt) {
       $('rush-warning').style.display = 'block';
       playRush();
       screenShake();
+      setBeaverMood('worried', 0); // Stay worried during rush
     }
   }
   if (game.rushMode) {
@@ -603,6 +667,7 @@ function update(dt) {
     if (game.rushDuration <= 0) {
       game.rushMode = false;
       $('rush-warning').style.display = 'none';
+      setBeaverMood('idle', 0);
     }
   }
 
@@ -726,6 +791,7 @@ function updatePeople(dt) {
         game.combo = 0;
         playBad();
         screenShake();
+        setBeaverMood('sad', 1500);
         floatMessage('😤 LEFT!', p.x, p.y - 20, 'bad');
         p.phase = 'exit';
         continue;
@@ -783,6 +849,7 @@ function updatePeople(dt) {
           game.score += 50;
           floatMessage('SAVED! +50', p.x, p.y - 30, 'save');
           playTaskComplete();
+          setBeaverMood('excited', 1200);
 
           // Complete cleaning instantly
           stall.state = 'empty';
@@ -800,6 +867,7 @@ function updatePeople(dt) {
           game.combo = 0;
           playBad();
           screenShake();
+          setBeaverMood('sad', 1500);
           p.thought = pick(THOUGHTS.disgusted);
           p.thoughtTimer = 2000;
           floatMessage('-0.4⭐ GROSS!', p.x, p.y - 30, 'bad');
@@ -1081,7 +1149,12 @@ function completeTask() {
     }
 
     playStallClean();
-    if (game.combo >= 3) screenShake();
+    if (game.combo >= 3) {
+      screenShake();
+      setBeaverMood('excited', 1500);
+    } else {
+      setBeaverMood('happy', 800);
+    }
 
     game.activeStall = -1;
     game.activeTask = -1;

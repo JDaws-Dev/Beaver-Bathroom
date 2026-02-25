@@ -9,6 +9,14 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Beaver Mascot Integration (a2h.1.2)
+- Added CSS art beaver face in HUD area (48x48px)
+- Pure CSS character: ears, eyes with pupils, nose, mouth, teeth, cheeks
+- 4 mood states: idle (eyes look around), happy (squint + bounce), excited (big smile + fast bounce), worried (wide eyes + shake), sad (droopy)
+- `setBeaverMood(mood, duration)` function triggers expression changes
+- Events: happy on stall clean, excited on combo/save, sad on rating loss, worried during rush hour
+- Files: beaver.html - CSS lines 30-65, HTML lines 206-220, JS line 372 (setBeaverMood)
+
 ### Stall Visual Overhaul (a2h.1.1)
 - Replaced plain stall rectangles with cartoony wood-grain design
 - Used CSS `repeating-linear-gradient` + `background-blend-mode:overlay` for wood texture
@@ -55,10 +63,10 @@ Patterns, gotchas, and decisions that affect future work:
 
 ### Code Structure
 
-- Lines 1-140: CSS styles (grew with visual polish)
-- Lines 141-220: HTML structure
-- Lines 221-end: JavaScript game logic
-- Key functions: update(), renderPeople(), updateStallDOM(), clickStall()
+- Lines 1-175: CSS styles (includes beaver mascot styles)
+- Lines 176-270: HTML structure (includes beaver element in HUD)
+- Lines 271-end: JavaScript game logic
+- Key functions: update(), renderPeople(), updateStallDOM(), clickStall(), setBeaverMood()
 
 ### CSS Art Techniques
 
