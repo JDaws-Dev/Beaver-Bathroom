@@ -9,6 +9,20 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Health Inspector Events (a2h.2.3)
+- 25% chance per shift (after first shift) for inspector visit
+- Inspector appears 20-40 seconds into shift with 3-second warning banner
+- Blue-themed warning banner: "🔍 HEALTH INSPECTOR! 🔍"
+- Inspector walks from exit door → center → each stall in order
+- At each stall: 600ms pause, checks if dirty, shows ✓ or ❌
+- Result: dirty stalls = -0.5 rating each; clean inspection = +100 pts, +0.3 rating
+- Sound effects: ascending tones for warning, happy chord for pass, low buzz for fail
+- Inspector visual: 🧑‍⚕️ emoji with "HEALTH" badge and clipboard
+- CSS: lines 202-208 (#inspector-warning, .inspector classes)
+- JS: spawnInspector() ~1090, updateInspector() ~1123, finishInspection() ~1222
+- Game state: game.inspector, game.inspectorTimer, game.inspectorWarning
+- CONFIG: inspectorChance, inspectorPenalty, inspectorBonus
+
 ### VIP Customers - High Stakes Visitors (a2h.2.1)
 - Added VIP customer type: 12% spawn chance (not if urgent)
 - Visual: golden glow on icon, gold shirt, ⭐ badge on character
@@ -31,19 +45,6 @@ This file maintains context between autonomous iterations.
 - Added "🦫 KEEP IT CLEAN!" wall sign in Buc-ee's green
 - CSS Technique: `repeating-conic-gradient(from 0deg at 50% 50%, ...)` for checkered pattern
 - Files: beaver.html CSS lines 71-72, 96-99, HTML line 255
-
-### Customer Character Improvements (a2h.1.3)
-- Added CSS art body to customers: torso + animated legs
-- Kept emoji as "head" for variety, added shirt for torso
-- 8 shirt color variations for visual variety
-- Walking animation: head-bob + alternating leg movement
-- Mood states now visually distinct:
-  - Urgent: red glow on icon, red shirt, body shakes
-  - Happy: golden glow, bounce animation
-  - Disgusted: green hue-rotate, recoil animation
-- Improved patience bar: darker background, thicker border
-- Thought bubbles: gradient bg, border, bounce-in animation
-- Files: beaver.html CSS lines 110-138 (new styles), JS lines 768-794 (shirtColors), 1027-1041 (renderPeople body)
 
 ---
 
@@ -98,6 +99,14 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Customer Character Improvements (a2h.1.3)
+- Added CSS art body to customers: torso + animated legs
+- Kept emoji as "head" for variety, added shirt for torso
+- 8 shirt color variations for visual variety
+- Walking animation: head-bob + alternating leg movement
+- Mood states: urgent (red glow, shake), happy (golden, bounce), disgusted (green hue)
+- Files: beaver.html CSS lines 110-138, JS lines 768-794
 
 ### UI Elements Cartoony Styling (a2h.1.4)
 - Updated HUD with wood-grain texture, depth shadows, styled hud-items

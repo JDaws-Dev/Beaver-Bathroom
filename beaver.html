@@ -199,6 +199,12 @@ body{font-family:system-ui,sans-serif;background:#2d1f0f;color:#eee;overflow:hid
 .confetti{position:absolute;font-size:1.4em;animation:confetti 0.7s forwards;pointer-events:none;z-index:200}
 @keyframes rush-warning{0%,100%{opacity:1}50%{opacity:0.5}}
 #rush-warning{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(213,0,0,0.9);color:#fff;padding:15px 30px;border-radius:10px;font-size:1.3em;font-weight:bold;display:none;z-index:100;animation:rush-warning 0.3s infinite}
+#inspector-warning{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(180deg,rgba(33,150,243,0.95),rgba(25,118,210,0.95));color:#fff;padding:15px 30px;border-radius:10px;font-size:1.3em;font-weight:bold;display:none;z-index:100;animation:rush-warning 0.3s infinite;border:3px solid #1565c0;box-shadow:0 0 20px rgba(33,150,243,0.5)}
+.inspector{position:absolute;z-index:25;font-size:1.6em;transition:opacity 0.3s}
+.inspector-body{display:flex;flex-direction:column;align-items:center}
+.inspector-icon{filter:drop-shadow(0 0 8px rgba(33,150,243,0.8)) drop-shadow(0 2px 3px rgba(0,0,0,0.4))}
+.inspector-badge{position:absolute;top:-8px;right:-8px;background:#1565c0;color:#fff;font-size:0.4em;padding:2px 5px;border-radius:4px;border:2px solid #0d47a1;font-weight:bold}
+.inspector-clipboard{position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);font-size:0.5em}
 @media(max-width:500px){.stall{width:52px}.stall-body{width:48px;height:65px}.stall-light{width:12px;height:12px;border-width:2px}.person{font-size:1.3em}.person-body{width:30px;height:40px}.person-torso{width:20px;height:16px}.person-legs{width:16px}.gender-btn{padding:10px 15px}}
 </style>
 </head>
@@ -263,6 +269,7 @@ body{font-family:system-ui,sans-serif;background:#2d1f0f;color:#eee;overflow:hid
         </div>
       </div>
       <div id="rush-warning">🚌 TOUR BUS ARRIVING! 🚌</div>
+      <div id="inspector-warning">🔍 HEALTH INSPECTOR! 🔍</div>
       <div id="task-panel">
         <h3 id="task-title">Stall #1</h3>
         <div class="hint">Click rapidly to clean faster!</div>
@@ -315,6 +322,9 @@ const CONFIG = {
   clickBoost: 80,      // Each click reduces time by this much
   sinkCleanTime: 400,
   rushChance: 0.15,    // Chance of rush hour per shift
+  inspectorChance: 0.25,  // Chance of inspector visit per shift
+  inspectorPenalty: 0.5,  // Rating loss per dirty stall
+  inspectorBonus: 100,    // Points for clean inspection
 };
 
 const TASKS = [
@@ -392,6 +402,9 @@ function playStallClean() {
 function playBad() { playSound(200, 0.25, 'sawtooth', 0.2); }
 function playUrgent() { playSound(800, 0.08, 'square', 0.1); setTimeout(() => playSound(600, 0.08, 'square', 0.1), 100); }
 function playRush() { for(let i=0;i<3;i++) setTimeout(() => playSound(1000, 0.1, 'square', 0.2), i*100); }
+function playInspector() { playSound(600, 0.15, 'sine', 0.2); setTimeout(() => playSound(800, 0.15, 'sine', 0.2), 150); setTimeout(() => playSound(1000, 0.2, 'sine', 0.25), 300); }
+function playInspectorBad() { playSound(300, 0.3, 'sawtooth', 0.25); setTimeout(() => playSound(200, 0.4, 'sawtooth', 0.2), 200); }
+function playInspectorGood() { [784, 988, 1175, 1319].forEach((f,i) => setTimeout(() => playSound(f, 0.12, 'sine', 0.2), i*80)); }
 function playWin() {
   [523,659,784,1047].forEach((f,i) => setTimeout(() => playSound(f, 0.15), i*120));
 }
@@ -443,6 +456,9 @@ function init() {
     rushMode: false,
     rushTimer: 0,
     lastUrgentBeep: 0,
+    inspector: null,          // Inspector object when active
+    inspectorTimer: 0,        // Countdown until inspector appears
+    inspectorWarning: 0,      // Warning countdown before inspector enters
   };
 }
 
@@ -640,6 +656,14 @@ function startShift() {
   game.towels = 10;
   game.rushMode = false;
   game.rushTimer = 0;
+  game.inspector = null;
+  game.inspectorTimer = 0;
+  game.inspectorWarning = 0;
+
+  // Maybe trigger inspector visit (not on first shift)
+  if (Math.random() < CONFIG.inspectorChance && game.shift > 0) {
+    game.inspectorTimer = rnd(20000, 40000); // Inspector arrives after 20-40 seconds
+  }
 
   // Maybe trigger rush hour
   if (Math.random() < CONFIG.rushChance && game.shift > 0) {
@@ -652,6 +676,7 @@ function startShift() {
   updateHUD();
   showScreen('game-screen');
   $('rush-warning').style.display = 'none';
+  $('inspector-warning').style.display = 'none';
 
   game.running = true;
   game.lastTime = performance.now();
@@ -697,8 +722,32 @@ function update(dt) {
     if (game.rushDuration <= 0) {
       game.rushMode = false;
       $('rush-warning').style.display = 'none';
-      setBeaverMood('idle', 0);
+      if (!game.inspector) setBeaverMood('idle', 0);
     }
+  }
+
+  // Health inspector logic
+  if (game.inspectorTimer > 0 && !game.inspector) {
+    game.inspectorTimer -= dt;
+    // Show warning 3 seconds before arrival
+    if (game.inspectorTimer <= 3000 && game.inspectorWarning === 0) {
+      game.inspectorWarning = 3000;
+      $('inspector-warning').style.display = 'block';
+      playInspector();
+      setBeaverMood('worried', 0);
+    }
+    if (game.inspectorWarning > 0) {
+      game.inspectorWarning -= dt;
+    }
+    if (game.inspectorTimer <= 0) {
+      spawnInspector();
+      $('inspector-warning').style.display = 'none';
+    }
+  }
+
+  // Update inspector
+  if (game.inspector) {
+    updateInspector(dt);
   }
 
   // Spawn customers
@@ -1038,6 +1087,164 @@ function customerLeaves(stallIdx) {
   }
 }
 
+function spawnInspector() {
+  const floor = $('floor-area');
+  const rect = floor.getBoundingClientRect();
+  const exitDoor = $('exit-door').getBoundingClientRect();
+
+  game.inspector = {
+    x: exitDoor.left - rect.left + 15,
+    y: exitDoor.top - rect.top + 20,
+    phase: 'enter',        // enter, inspect, counting, leave
+    currentStall: -1,      // Which stall is being checked
+    dirtyCount: 0,         // How many dirty stalls found
+    inspectTimer: 0,       // Time spent at current stall
+    countdownTimer: 0,     // Time before showing results
+  };
+
+  // Remove existing inspector element if any
+  const existing = floor.querySelector('.inspector');
+  if (existing) existing.remove();
+
+  // Create inspector element
+  const el = document.createElement('div');
+  el.className = 'inspector';
+  el.innerHTML = `
+    <div class="inspector-body">
+      <div class="inspector-icon">🧑‍⚕️</div>
+      <div class="inspector-badge">HEALTH</div>
+      <div class="inspector-clipboard">📋</div>
+    </div>`;
+  floor.appendChild(el);
+
+  setBeaverMood('worried', 0);
+}
+
+function updateInspector(dt) {
+  const inspector = game.inspector;
+  if (!inspector) return;
+
+  const floor = $('floor-area');
+  const floorRect = floor.getBoundingClientRect();
+  const speed = CONFIG.walkSpeed * 0.7 * (dt / 1000); // Slower than customers
+
+  const el = floor.querySelector('.inspector');
+  if (!el) return;
+
+  if (inspector.phase === 'enter') {
+    // Walk to first stall area
+    const tx = floorRect.width / 2 - 60;
+    const ty = 30;
+    const dx = tx - inspector.x, dy = ty - inspector.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+
+    if (dist < 10) {
+      inspector.phase = 'inspect';
+      inspector.currentStall = 0;
+      inspector.inspectTimer = 0;
+    } else {
+      inspector.x += (dx / dist) * speed;
+      inspector.y += (dy / dist) * speed;
+    }
+  }
+  else if (inspector.phase === 'inspect') {
+    // Move to current stall and check it
+    const stallRow = $('stalls-row');
+    const stallEl = stallRow.children[inspector.currentStall];
+
+    if (!stallEl) {
+      // Done with all stalls, show results
+      inspector.phase = 'counting';
+      inspector.countdownTimer = 1500;
+      return;
+    }
+
+    const stallRect = stallEl.getBoundingClientRect();
+    const tx = stallRect.left - floorRect.left + stallRect.width/2 - 20;
+    const ty = 25;
+    const dx = tx - inspector.x, dy = ty - inspector.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+
+    if (dist < 10) {
+      inspector.inspectTimer += dt;
+
+      // Check stall after brief pause
+      if (inspector.inspectTimer >= 600) {
+        const stall = game.stalls[inspector.currentStall];
+        if (stall.state === 'dirty') {
+          inspector.dirtyCount++;
+          floatMessage('❌', inspector.x + 20, inspector.y - 10, 'bad');
+          playBad();
+        } else if (stall.state === 'empty') {
+          floatMessage('✓', inspector.x + 20, inspector.y - 10, 'good');
+        }
+        // Move to next stall
+        inspector.currentStall++;
+        inspector.inspectTimer = 0;
+      }
+    } else {
+      inspector.x += (dx / dist) * speed;
+      inspector.y += (dy / dist) * speed;
+    }
+  }
+  else if (inspector.phase === 'counting') {
+    inspector.countdownTimer -= dt;
+    if (inspector.countdownTimer <= 0) {
+      finishInspection();
+      inspector.phase = 'leave';
+    }
+  }
+  else if (inspector.phase === 'leave') {
+    // Walk to exit
+    const exitDoor = $('exit-door').getBoundingClientRect();
+    const tx = exitDoor.left - floorRect.left + 15;
+    const ty = exitDoor.top - floorRect.top + 20;
+    const dx = tx - inspector.x, dy = ty - inspector.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+
+    if (dist < 15) {
+      // Inspector gone
+      game.inspector = null;
+      el.remove();
+      setBeaverMood('idle', 0);
+      return;
+    } else {
+      inspector.x += (dx / dist) * speed;
+      inspector.y += (dy / dist) * speed;
+    }
+  }
+
+  // Update element position
+  el.style.left = inspector.x + 'px';
+  el.style.top = inspector.y + 'px';
+}
+
+function finishInspection() {
+  const inspector = game.inspector;
+  if (!inspector) return;
+
+  const dirtyCount = inspector.dirtyCount;
+  const totalStalls = game.stalls.length;
+
+  if (dirtyCount === 0) {
+    // Perfect inspection!
+    game.score += CONFIG.inspectorBonus;
+    game.rating = clamp(game.rating + 0.3, 0, 5);
+    floatMessage('PERFECT INSPECTION! +' + CONFIG.inspectorBonus, 400, 200, 'combo');
+    playInspectorGood();
+    spawnConfetti(400, 200, 12);
+    setBeaverMood('excited', 2000);
+  } else {
+    // Penalty based on dirty stalls
+    const ratingLoss = dirtyCount * CONFIG.inspectorPenalty;
+    game.rating = clamp(game.rating - ratingLoss, 0, 5);
+    floatMessage('INSPECTION: -' + ratingLoss.toFixed(1) + '⭐ (' + dirtyCount + ' dirty)', 400, 200, 'bad');
+    playInspectorBad();
+    screenShake();
+    setBeaverMood('sad', 2000);
+  }
+}
+
 function renderPeople() {
   const floor = $('floor-area');
 
@@ -1320,6 +1527,12 @@ function endShift() {
   game.running = false;
   playWin();
 
+  // Clean up inspector if still present
+  game.inspector = null;
+  const inspectorEl = $('floor-area').querySelector('.inspector');
+  if (inspectorEl) inspectorEl.remove();
+  $('inspector-warning').style.display = 'none';
+
   $('result-title').textContent = `Shift ${game.shift + 1} Complete!`;
 
   let stars = '';
@@ -1387,6 +1600,12 @@ function endShift() {
 
 function gameOver() {
   game.running = false;
+
+  // Clean up inspector if still present
+  game.inspector = null;
+  const inspectorEl = $('floor-area').querySelector('.inspector');
+  if (inspectorEl) inspectorEl.remove();
+  $('inspector-warning').style.display = 'none';
 
   const won = game.shift >= CONFIG.shifts.length - 1;
   $('go-icon').textContent = won ? '🏆' : '💀';
