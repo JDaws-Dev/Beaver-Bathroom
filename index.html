@@ -297,6 +297,11 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .intro-stat{display:flex;align-items:center;gap:6px;background:linear-gradient(180deg,rgba(0,0,0,0.2),rgba(0,0,0,0.35));padding:8px 12px;border-radius:8px;font-size:0.9em;border:2px solid #5d4037}
 .intro-stat-icon{font-size:1.1em}
 #shift-start-btn{margin-top:5px}
+.bucky-tip{display:flex;align-items:flex-start;gap:10px;background:linear-gradient(180deg,rgba(45,74,30,0.6),rgba(26,51,16,0.7));border:2px solid #4a7c32;border-radius:10px;padding:10px 14px;margin-bottom:16px;text-align:left}
+.bucky-tip-icon{font-size:1.5em;flex-shrink:0}
+.bucky-tip-content{flex:1}
+.bucky-tip-label{font-size:0.7em;color:#8bc34a;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;font-weight:bold}
+.bucky-tip-text{font-size:0.85em;color:#e8f5e9;line-height:1.4}
 @keyframes blink{from{box-shadow:0 0 8px #fdd835}to{box-shadow:0 0 20px #fdd835}}
 @keyframes shake{0%,100%{transform:translateX(0)}50%{transform:translateX(-3px)}}
 @keyframes walk{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-5px) rotate(4deg)}}
@@ -451,6 +456,10 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .upgrade-name{font-size:0.8em}
 .upgrades-grid{gap:8px;max-width:320px}
 .intro-card{padding:14px 12px;max-width:92%;border-width:4px}
+.bucky-tip{padding:8px 10px;gap:8px;margin-bottom:12px}
+.bucky-tip-icon{font-size:1.3em}
+.bucky-tip-label{font-size:0.6em}
+.bucky-tip-text{font-size:0.75em}
 .intro-stats{gap:6px;flex-wrap:wrap;justify-content:center}
 .intro-stat{padding:5px 8px;font-size:0.7em;gap:4px}
 .intro-stat-icon{font-size:0.9em}
@@ -601,6 +610,13 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
       <div class="intro-shift-num" id="intro-shift-num">SHIFT 1</div>
       <h2 class="intro-title" id="intro-title">Training Day</h2>
       <p class="intro-desc" id="intro-desc">Welcome to Beaver's Travel Stop! Time to learn the ropes.</p>
+      <div class="bucky-tip">
+        <span class="bucky-tip-icon">🦫</span>
+        <div class="bucky-tip-content">
+          <div class="bucky-tip-label">Bucky says...</div>
+          <div class="bucky-tip-text" id="intro-tip">Mash those task buttons fast! Speed is everything.</div>
+        </div>
+      </div>
       <div class="intro-stats">
         <div class="intro-stat"><span class="intro-stat-icon">🚽</span> <span id="intro-stalls">5</span> Stalls</div>
         <div class="intro-stat"><span class="intro-stat-icon">🚿</span> <span id="intro-sinks">2</span> Sinks</div>
@@ -619,6 +635,46 @@ const SHIFT_NARRATIVES = [
   {name: 'Health Inspector', desc: "Word is the inspector might visit. Keep it spotless!", progress: "Day 4 of 6"},
   {name: 'Festival Weekend', desc: "BBQ fest crowd incoming! You're so close to that trophy...", progress: "Day 5 of 6"},
   {name: 'Championship Sunday', desc: "FINAL SHIFT! Earn the Golden Plunger and become a legend!", progress: "Final Day"},
+];
+
+// Bucky the Beaver mentor tips - shown on shift intro
+const BUCKY_TIPS = [
+  // Shift 1 (Training Day) tips - basics
+  [
+    "Mash those task buttons fast! Speed is everything in this business.",
+    "Watch the patience bars - red means trouble!",
+    "VIP customers have gold badges. They tip big but expect the best!",
+  ],
+  // Shift 2 (Lunch Rush) tips - combo focus
+  [
+    "Chain your cleans for combo streaks. 3x combos give speed boosts!",
+    "Don't forget the sinks! Travelers notice dirty sinks too.",
+    "Urgent customers move fast - help 'em quick or they'll leave mad!",
+  ],
+  // Shift 3 (Tour Bus) tips - volume handling
+  [
+    "Use your powerups wisely - ⚡ Speed and ✨ Auto-clean are lifesavers!",
+    "When it gets busy, prioritize VIPs and urgent customers.",
+    "Watch for puddles on the floor - click 'em to mop 'em up!",
+  ],
+  // Shift 4 (Health Inspector) tips - cleanliness
+  [
+    "Health inspector might visit! Keep ALL stalls clean, not just busy ones.",
+    "A perfect inspection gives bonus points AND rating!",
+    "Clean stalls glow green. Any yellow means the inspector will notice!",
+  ],
+  // Shift 5 (Festival Weekend) tips - endurance
+  [
+    "Almost there! Spend coins on upgrades between shifts.",
+    "Speed Scrub upgrade makes a HUGE difference late game.",
+    "Rush hour is chaos - stay calm and keep clicking!",
+  ],
+  // Shift 6 (Championship) tips - final push
+  [
+    "This is it! Everything you've learned comes together now.",
+    "Legendary 10x combos give massive bonuses - go for glory!",
+    "You got this, rookie. Make Beaver's Travel Stop proud!",
+  ],
 ];
 
 const CONFIG = {
@@ -1370,6 +1426,10 @@ function showShiftIntro() {
   $('intro-shift-num').textContent = narrative.progress || `SHIFT ${game.shift + 1}`;
   $('intro-title').textContent = narrative.name;
   $('intro-desc').textContent = narrative.desc;
+  // Pick a random tip for this shift from Bucky
+  const shiftTips = BUCKY_TIPS[game.shift] || BUCKY_TIPS[0];
+  const tip = shiftTips[Math.floor(Math.random() * shiftTips.length)];
+  $('intro-tip').textContent = tip;
   $('intro-stalls').textContent = cfg.stalls;
   $('intro-sinks').textContent = cfg.sinks;
   $('intro-time').textContent = cfg.duration;

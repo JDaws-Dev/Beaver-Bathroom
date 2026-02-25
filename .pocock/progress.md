@@ -9,6 +9,25 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Bucky the Beaver Mentor Tips (a2h.4.2)
+- Goal: add Bucky as mentor character providing tips before each shift
+- New BUCKY_TIPS array (line 641-678): 6 shift-specific tip sets, 3 tips each
+  - Shift 1: basics (mashing, patience bars, VIPs)
+  - Shift 2: combos and urgency
+  - Shift 3: powerups and puddles
+  - Shift 4: health inspector prep
+  - Shift 5: upgrades and endurance
+  - Shift 6: final push encouragement
+- CSS additions (lines 300-304, 459-462):
+  - `.bucky-tip` green panel with flexbox layout
+  - `.bucky-tip-icon` for beaver emoji
+  - `.bucky-tip-label` styled "Bucky says..." header
+  - `.bucky-tip-text` for the actual tip content
+  - Responsive styles at 420px breakpoint
+- HTML: added bucky-tip div in intro-card (lines 613-618) between desc and stats
+- JS: showShiftIntro() updated (lines 1429-1432) to pick random tip per shift
+- Makes beaver mascot meaningful - now provides contextual gameplay advice
+
 ### Separate Music and SFX Volume Controls (7eo)
 - Goal: separate controls for music vs SFX so players can mute independently
 - Finding: feature already existed! `isMuted` (SFX) and `isMusicMuted` (music) were already separate
@@ -50,28 +69,6 @@ This file maintains context between autonomous iterations.
 - Location: updatePeople() function, findStall phase handler
 - Why this works: reservedBy holding reference to removed customer would block other customers from claiming that stall
 - The fix runs every frame for customers in findStall, quickly clearing any stale reservations
-
-### Memorable Customer Characters (a2h.4.4)
-- Goal: add named customer types with distinct personalities
-- New SPECIAL_CUSTOMERS config array (line 681-712):
-  - 9 named characters: Big Rig Bill, Road Trip Randy, Business Bob, Weekend Warrior, Trucker Tom (male)
-  - Soccer Mom, Tourist Tina, Snack Sally, Road Queen (female)
-- Each special character has: name, icon, badge, shirt color, patience modifier, messiness, custom thoughts
-- spawnCustomer() updated (line 1537-1628):
-  - Rolls for special character spawn first based on gender
-  - Special characters use their own properties (not random)
-  - patience < 0.7 triggers urgent behavior
-  - Special characters show enter thought when spawning
-- CSS additions (line 193-196):
-  - .person.special with orange glow
-  - .special-badge positioned top-left
-  - .special-name label below patience bar (gold text on wood bg)
-- renderPeople() updated (line 2143-2154):
-  - Adds 'special' class when p.specialName exists
-  - Creates badge and name elements for special characters
-  - Happy state detection includes special character thoughts
-- Responsive styles: smaller name labels at 600px and 420px breakpoints
-- Character personalities: truckers patient/messy, soccer moms rushed/clean, tourists slow/clean
 
 ---
 
@@ -126,6 +123,28 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Memorable Customer Characters (a2h.4.4)
+- Goal: add named customer types with distinct personalities
+- New SPECIAL_CUSTOMERS config array (line 681-712):
+  - 9 named characters: Big Rig Bill, Road Trip Randy, Business Bob, Weekend Warrior, Trucker Tom (male)
+  - Soccer Mom, Tourist Tina, Snack Sally, Road Queen (female)
+- Each special character has: name, icon, badge, shirt color, patience modifier, messiness, custom thoughts
+- spawnCustomer() updated (line 1537-1628):
+  - Rolls for special character spawn first based on gender
+  - Special characters use their own properties (not random)
+  - patience < 0.7 triggers urgent behavior
+  - Special characters show enter thought when spawning
+- CSS additions (line 193-196):
+  - .person.special with orange glow
+  - .special-badge positioned top-left
+  - .special-name label below patience bar (gold text on wood bg)
+- renderPeople() updated (line 2143-2154):
+  - Adds 'special' class when p.specialName exists
+  - Creates badge and name elements for special characters
+  - Happy state detection includes special character thoughts
+- Responsive styles: smaller name labels at 600px and 420px breakpoints
+- Character personalities: truckers patient/messy, soccer moms rushed/clean, tourists slow/clean
 
 ### Player Identity and Stakes (a2h.4.3)
 - Goal: establish who player is, what they want, what happens on win/loss
