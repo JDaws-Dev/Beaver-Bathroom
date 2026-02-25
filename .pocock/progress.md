@@ -9,6 +9,13 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Slow Down Shift 1 for New Players (f1f)
+- Goal: reduce spawn rate 30% on first shift to let players learn
+- Fix: increased spawnMin 3000→4300, spawnMax 4500→6400 (line 682)
+- Math: 30% slower rate = 43% longer intervals (1/0.7 ≈ 1.43x)
+- Other shifts unchanged - only affects Shift 1
+- Files: index.html (CONFIG.shifts[0] line 682)
+
 ### Auto-show Tutorial on First Play (2uk)
 - Goal: show tutorial automatically on first visit, don't make players hunt for it
 - localStorage key: `beaverTutorialSeen` - set to 'true' when tutorial is closed
@@ -23,25 +30,6 @@ This file maintains context between autonomous iterations.
 - Fix: added `overscroll-behavior:none` to body CSS (line 10)
 - One-liner change - minimal risk
 - Files: index.html (CSS line 10)
-
-### Bucky the Beaver Mentor Tips (a2h.4.2)
-- Goal: add Bucky as mentor character providing tips before each shift
-- New BUCKY_TIPS array (line 641-678): 6 shift-specific tip sets, 3 tips each
-  - Shift 1: basics (mashing, patience bars, VIPs)
-  - Shift 2: combos and urgency
-  - Shift 3: powerups and puddles
-  - Shift 4: health inspector prep
-  - Shift 5: upgrades and endurance
-  - Shift 6: final push encouragement
-- CSS additions (lines 300-304, 459-462):
-  - `.bucky-tip` green panel with flexbox layout
-  - `.bucky-tip-icon` for beaver emoji
-  - `.bucky-tip-label` styled "Bucky says..." header
-  - `.bucky-tip-text` for the actual tip content
-  - Responsive styles at 420px breakpoint
-- HTML: added bucky-tip div in intro-card (lines 613-618) between desc and stats
-- JS: showShiftIntro() updated (lines 1429-1432) to pick random tip per shift
-- Makes beaver mascot meaningful - now provides contextual gameplay advice
 
 ---
 
@@ -96,6 +84,25 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Bucky the Beaver Mentor Tips (a2h.4.2)
+- Goal: add Bucky as mentor character providing tips before each shift
+- New BUCKY_TIPS array (line 641-678): 6 shift-specific tip sets, 3 tips each
+  - Shift 1: basics (mashing, patience bars, VIPs)
+  - Shift 2: combos and urgency
+  - Shift 3: powerups and puddles
+  - Shift 4: health inspector prep
+  - Shift 5: upgrades and endurance
+  - Shift 6: final push encouragement
+- CSS additions (lines 300-304, 459-462):
+  - `.bucky-tip` green panel with flexbox layout
+  - `.bucky-tip-icon` for beaver emoji
+  - `.bucky-tip-label` styled "Bucky says..." header
+  - `.bucky-tip-text` for the actual tip content
+  - Responsive styles at 420px breakpoint
+- HTML: added bucky-tip div in intro-card (lines 613-618) between desc and stats
+- JS: showShiftIntro() updated (lines 1429-1432) to pick random tip per shift
+- Makes beaver mascot meaningful - now provides contextual gameplay advice
 
 ### UI/UX and Gameplay Evaluation (el6)
 - Goal: comprehensive evaluation without code changes - recommendations only
