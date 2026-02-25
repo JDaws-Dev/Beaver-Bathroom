@@ -9,6 +9,22 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Upgrade System Between Shifts (a2h.2.4)
+- New "Beaver Supply Shop" screen between shifts
+- Earn coins based on score + grade multiplier (S=2x, A=1.5x, B=1.2x, C=1x, F=0.5x)
+- 4 permanent upgrades purchasable with coins:
+  - Speed Scrub (⚡): 12% faster cleaning per level, max 5
+  - Patience Plus (🕐): 15% longer customer wait per level, max 5
+  - Auto-Mop (🤖): 8% chance tasks auto-complete per level, max 3
+  - Better Supplies (📦): +1 of each powerup per shift, max 3
+- Upgrade costs scale (baseCost * costScale^level)
+- CSS: lines 217-241 (upgrade-screen, upgrade-card styles)
+- HTML: lines 376-383 (upgrade-screen structure)
+- JS: UPGRADES config ~417, game.coins/upgrades state ~593
+- Helper functions: getUpgradeCost(), getUpgradeEffect(), calculateCoins()
+- Integration: getEffectiveTaskTime(), getEffectivePatience() apply bonuses
+- Flow: result-screen → upgrade-screen → next shift
+
 ### Title Screen Redesign (a2h.6)
 - Complete redesign with card/sign metaphor - brown wood-grain card with gold border
 - Beaver mascot integrated into title logo with bobbing animation
@@ -36,18 +52,6 @@ This file maintains context between autonomous iterations.
 - JS: spawnInspector() ~1090, updateInspector() ~1123, finishInspection() ~1222
 - Game state: game.inspector, game.inspectorTimer, game.inspectorWarning
 - CONFIG: inspectorChance, inspectorPenalty, inspectorBonus
-
-### VIP Customers - High Stakes Visitors (a2h.2.1)
-- Added VIP customer type: 12% spawn chance (not if urgent)
-- Visual: golden glow on icon, gold shirt, ⭐ badge on character
-- Golden patience bar border with glow effect
-- 2x rating impact (both positive and negative)
-- 2x score multiplier when cleaning after VIP
-- Reduced patience (80% of normal)
-- Tracked via `p.vip` on person and `stall.wasVip` for clean bonus
-- Creates strategic priority: clean VIP stalls fast for big rewards
-- CSS: lines 133-136 (.person.vip styles)
-- JS: spawnCustomer ~line 778, rating impacts ~834/912, clean bonus ~1203
 
 ---
 
@@ -102,6 +106,18 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### VIP Customers - High Stakes Visitors (a2h.2.1)
+- Added VIP customer type: 12% spawn chance (not if urgent)
+- Visual: golden glow on icon, gold shirt, ⭐ badge on character
+- Golden patience bar border with glow effect
+- 2x rating impact (both positive and negative)
+- 2x score multiplier when cleaning after VIP
+- Reduced patience (80% of normal)
+- Tracked via `p.vip` on person and `stall.wasVip` for clean bonus
+- Creates strategic priority: clean VIP stalls fast for big rewards
+- CSS: lines 133-136 (.person.vip styles)
+- JS: spawnCustomer ~line 778, rating impacts ~834/912, clean bonus ~1203
 
 ### Background Art and Floor Details (a2h.1.5)
 - Changed floor from plain stripes to checkered tile pattern
