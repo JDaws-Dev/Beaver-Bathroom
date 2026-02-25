@@ -9,18 +9,16 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
-### Convert to Vite Project Structure (qeu)
-- Goal: convert single-file HTML game to Vite project for Convex integration
-- Created `package.json` with vite 6.x and convex 1.17.x dependencies
-- Created minimal `vite.config.js`
-- Extracted CSS (~489 lines) to `src/styles.css`
-- Extracted JS (~2511 lines) to `src/main.js`
-- Created new `index.html` with `<link>` for CSS and `<script type="module">` for JS
-- Added `.gitignore` for node_modules and dist
-- Verified: `npm install` works, `npm run dev` serves game, `npm run build` produces dist
-- Project structure now: index.html, package.json, vite.config.js, src/{main.js,styles.css}
-- Files changed: package.json (new), vite.config.js (new), .gitignore (new), index.html (rewritten), src/styles.css (new), src/main.js (new)
-- Single-file constraint removed - now modular Vite project ready for Convex
+### Remove Blocking Tutorial System (etg)
+- Goal: remove buggy interactive tutorial that blocked gameplay
+- Decision: kept "How to Play" modal (non-blocking), removed interactive overlay
+- Why: game teaches itself, Shift 1 is slow (4300-6400ms spawns), Bucky tips provide guidance
+- Removed: tutorial-overlay HTML, 18 lines of tutorial CSS, ~150 lines of tutorial JS
+- Removed: TUTORIAL_STEPS array, tutorialActive/tutorialStep/tutorialHighlight state
+- Removed: startInteractiveTutorial, showTutorialStep, advanceTutorial, endTutorial functions
+- Removed: tutorial-skip and tutorial-next event listeners
+- Kept: tutorial-modal (How to Play), beaverTutorialSeen localStorage, Bucky tips system
+- Files: index.html (~10 lines), src/styles.css (~18 lines), src/main.js (~150 lines)
 
 ### Beaver Speech Bubbles for Tips (3ud)
 - Goal: have beaver mascot show speech bubble tips during first shift at relevant moments
@@ -42,20 +40,6 @@ This file maintains context between autonomous iterations.
 - Added `#dirty-sinks` CSS style (line 107)
 - updateHUD() now calculates dirty sinks and toggles visibility (lines 1430-1439)
 - Files: index.html (CSS line 107, HTML line 569, JS lines 1430-1439)
-
-### Interactive Tutorial with Guided Clicks (e02)
-- Goal: guided first-time tutorial that highlights elements and prompts clicks
-- localStorage key: `beaverInteractiveTutorial` - tracks completion
-- Triggers on Shift 1 start (after 500ms delay) if not already completed
-- 4-step flow: dirty stall → task panel → sinks → powerups
-- Steps have `waitFor` property: 'stall-click', 'task-complete', or 'next' (button click)
-- Tutorial pauses game except for steps requiring interaction
-- Creates one dirty stall with single "Scrub" task + one dirty sink for practice
-- CSS: dark overlay (z:900), golden pulsing highlight (z:910), bouncing arrow (z:915), speech bubble (z:920)
-- HTML: overlay with skip button, arrow emoji, Bucky speech bubble, next button
-- JS: TUTORIAL_STEPS array, tutorialActive/tutorialStep/tutorialHighlight state
-- advanceTutorial() called from clickStall() and completeTask()
-- Files: index.html (CSS ~475-489, HTML ~651-660, JS ~2910-3045, startShift ~1522-1525)
 
 ---
 

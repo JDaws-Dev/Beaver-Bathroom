@@ -1037,11 +1037,6 @@ function startShift() {
   game.lastTime = performance.now();
   startMusic();
   requestAnimationFrame(gameLoop);
-
-  // Start interactive tutorial on first shift
-  if (game.shift === 0 && !localStorage.getItem('beaverInteractiveTutorial')) {
-    setTimeout(() => startInteractiveTutorial(), 500);
-  }
 }
 
 function gameLoop(now) {
@@ -1981,8 +1976,6 @@ function clickStall(i) {
     if (stall.state === 'dirty') {
       stall.state = 'cleaning';
       updateStallDOM(i);
-      // Tutorial: advance when clicking dirty stall
-      if (tutorialActive) advanceTutorial('stall-click');
     }
     game.activeStall = i;
     if (game.activeTask < 0) {
@@ -2139,8 +2132,6 @@ function completeTask() {
     game.activeStall = -1;
     game.activeTask = -1;
     hideTaskPanel();
-    // Tutorial: advance when stall fully cleaned
-    if (tutorialActive) advanceTutorial('task-complete');
     // After first clean, hint about powerups
     if (game.combo >= 2) showBeaverTip('comboStart');
     else if (game.powerups.speed > 0 || game.powerups.slow > 0) showBeaverTip('powerupReady');
@@ -2488,152 +2479,6 @@ $('tutorial-modal').addEventListener('click', (e) => {
 if (!localStorage.getItem('beaverTutorialSeen')) {
   $('tutorial-modal').classList.add('active');
 }
-
-// Interactive tutorial system
-const TUTORIAL_STEPS = [
-  {
-    target: 'stalls-row',
-    text: "See those stalls? When the light turns YELLOW, click to clean it!",
-    arrow: 'down',
-    waitFor: 'stall-click'
-  },
-  {
-    target: 'task-panel',
-    text: "MASH these task buttons to clean faster! The more you click, the quicker you finish!",
-    arrow: 'up',
-    waitFor: 'task-complete'
-  },
-  {
-    target: 'sinks-area',
-    text: "Don't forget the sinks! Click dirty sinks to scrub them clean.",
-    arrow: 'up',
-    waitFor: 'next'
-  },
-  {
-    target: 'powerups',
-    text: "Use powerups when things get hectic! ⚡ Speed and ✨ Auto-clean are lifesavers!",
-    arrow: 'up',
-    waitFor: 'next'
-  }
-];
-
-let tutorialStep = 0;
-let tutorialActive = false;
-let tutorialHighlight = null;
-
-function startInteractiveTutorial() {
-  if (localStorage.getItem('beaverInteractiveTutorial')) return;
-  tutorialActive = true;
-  tutorialStep = 0;
-  game.running = false; // Pause game during tutorial
-
-  // Create initial dirty stall for tutorial (just one easy task)
-  if (game.stalls.length > 0) {
-    const stall = game.stalls[0];
-    stall.state = 'dirty';
-    stall.tasks = [{...TASKS[1], done: false}]; // Just "Scrub" task for tutorial
-    updateStallDOM(0);
-  }
-
-  // Make first sink dirty
-  if (game.sinks.length > 0) {
-    game.sinks[0].dirty = true;
-    updateSinkDOM(0);
-  }
-
-  showTutorialStep();
-}
-
-function showTutorialStep() {
-  if (tutorialStep >= TUTORIAL_STEPS.length) {
-    endTutorial();
-    return;
-  }
-
-  const step = TUTORIAL_STEPS[tutorialStep];
-  const overlay = $('tutorial-overlay');
-  const speech = $('tutorial-speech');
-  const arrow = $('tutorial-arrow');
-  const nextBtn = $('tutorial-next');
-  const textEl = $('tutorial-text');
-
-  // Clear previous highlight
-  if (tutorialHighlight) {
-    tutorialHighlight.classList.remove('tutorial-highlight');
-  }
-
-  // Find and highlight target
-  const target = $(step.target);
-  if (target) {
-    target.classList.add('tutorial-highlight');
-    tutorialHighlight = target;
-
-    // Position arrow and speech based on target location
-    const rect = target.getBoundingClientRect();
-    const viewHeight = window.innerHeight;
-    const targetCenter = rect.top + rect.height / 2;
-
-    if (step.arrow === 'down' || targetCenter > viewHeight / 2) {
-      // Target is in bottom half - put speech at top, arrow points down
-      arrow.textContent = '👇';
-      arrow.style.top = (rect.top - 40) + 'px';
-      arrow.style.left = (rect.left + rect.width/2 - 14) + 'px';
-      speech.classList.remove('bottom');
-      speech.classList.add('top');
-    } else {
-      // Target is in top half - put speech at bottom, arrow points up
-      arrow.textContent = '👆';
-      arrow.style.top = (rect.bottom + 8) + 'px';
-      arrow.style.left = (rect.left + rect.width/2 - 14) + 'px';
-      speech.classList.remove('top');
-      speech.classList.add('bottom');
-    }
-    arrow.style.display = 'block';
-  }
-
-  textEl.textContent = step.text;
-  nextBtn.style.display = step.waitFor === 'next' ? 'block' : 'none';
-  overlay.classList.add('active');
-
-  // Enable limited game interaction for tutorial
-  if (step.waitFor === 'stall-click' || step.waitFor === 'task-complete') {
-    game.running = true;
-  }
-}
-
-function advanceTutorial(trigger) {
-  if (!tutorialActive) return;
-
-  const step = TUTORIAL_STEPS[tutorialStep];
-  if (step.waitFor === trigger || trigger === 'skip') {
-    tutorialStep++;
-    if (tutorialStep >= TUTORIAL_STEPS.length) {
-      endTutorial();
-    } else {
-      showTutorialStep();
-    }
-  }
-}
-
-function endTutorial() {
-  tutorialActive = false;
-  $('tutorial-overlay').classList.remove('active');
-  if (tutorialHighlight) {
-    tutorialHighlight.classList.remove('tutorial-highlight');
-    tutorialHighlight = null;
-  }
-  localStorage.setItem('beaverInteractiveTutorial', 'true');
-  game.running = true;
-}
-
-$('tutorial-skip').addEventListener('click', () => {
-  advanceTutorial('skip');
-  endTutorial();
-});
-
-$('tutorial-next').addEventListener('click', () => {
-  advanceTutorial('next');
-});
 
 // Show high score on title screen if exists
 function updateHighScoreDisplay() {
