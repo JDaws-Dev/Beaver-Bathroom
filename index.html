@@ -763,7 +763,8 @@ function buildStalls() {
       tasks: [],
       customer: '',
       doorOpen: false,
-      wasVip: false
+      wasVip: false,
+      reservedBy: null
     });
 
     const el = document.createElement('div');
@@ -1148,8 +1149,8 @@ function updatePeople(dt) {
     if (p.thoughtTimer > 0) p.thoughtTimer -= dt;
 
     // Patience - only drain when truly waiting for a stall
-    // Only drain during findStall when NO empty stalls are available
-    const shouldDrainPatience = p.phase === 'findStall' && !game.stalls.some(s => s.state === 'empty');
+    // Only drain during findStall when NO empty unreserved stalls are available
+    const shouldDrainPatience = p.phase === 'findStall' && !game.stalls.some(s => s.state === 'empty' && !s.reservedBy);
 
     if (shouldDrainPatience) {
       p.patience -= dt;
@@ -1192,15 +1193,18 @@ function updatePeople(dt) {
     }
     else if (p.phase === 'findStall') {
       let found = -1;
+      // Find empty unreserved stall
       for (let j = 0; j < game.stalls.length; j++) {
-        if (game.stalls[j].state === 'empty') { found = j; break; }
+        if (game.stalls[j].state === 'empty' && !game.stalls[j].reservedBy) { found = j; break; }
       }
+      // Fallback: dirty stall not being cleaned and not reserved
       if (found < 0) {
         for (let j = 0; j < game.stalls.length; j++) {
-          if (game.stalls[j].state === 'dirty' && game.activeStall !== j) { found = j; break; }
+          if (game.stalls[j].state === 'dirty' && game.activeStall !== j && !game.stalls[j].reservedBy) { found = j; break; }
         }
       }
       if (found >= 0) {
+        game.stalls[found].reservedBy = p; // Reserve immediately
         p.target = found;
         p.phase = 'toStall';
       }
@@ -1208,7 +1212,11 @@ function updatePeople(dt) {
     else if (p.phase === 'toStall') {
       const stallRow = $('stalls-row');
       const stallEl = stallRow.children[p.target];
-      if (!stallEl) { p.phase = 'exit'; continue; }
+      if (!stallEl) {
+        if (p.target >= 0 && game.stalls[p.target]) game.stalls[p.target].reservedBy = null;
+        p.phase = 'exit';
+        continue;
+      }
 
       const stallRect = stallEl.getBoundingClientRect();
       const tx = stallRect.left - floorRect.left + stallRect.width/2 - 12;
@@ -1271,6 +1279,7 @@ function updatePeople(dt) {
       if (p.enterTimer <= 0) {
         const stall = game.stalls[p.target];
         stall.state = 'occupied';
+        stall.reservedBy = null; // Clear reservation now that customer is inside
         stall.customer = p.icon;
         stall.wasVip = p.vip; // Track if VIP used this stall
         stall.messiness = p.messiness; // Track messiness for task generation
