@@ -163,6 +163,14 @@ body{font-family:system-ui,sans-serif;background:#2d1f0f;color:#eee;overflow:hid
 .person.vip .person-torso{background:linear-gradient(180deg,#ffd700,#daa520);border-color:#b8860b}
 .person.vip .vip-badge{position:absolute;top:-8px;right:-4px;font-size:0.5em;z-index:15}
 .person.vip .patience-bar{border-color:#ffd700;box-shadow:0 0 6px rgba(255,215,0,0.5)}
+.person.messy .person-icon{filter:drop-shadow(0 0 6px rgba(139,90,43,0.7)) drop-shadow(0 2px 3px rgba(0,0,0,0.4))}
+.person.messy .messy-badge{position:absolute;top:-6px;left:-4px;font-size:0.45em;z-index:15;animation:messy-drip 0.8s infinite alternate}
+.person.messy .person-torso{background:linear-gradient(180deg,#a67c52,#8b5a2b);border-color:#6d4c2a}
+.person.clean .person-icon{filter:drop-shadow(0 0 8px rgba(100,200,255,0.6)) drop-shadow(0 2px 3px rgba(0,0,0,0.4))}
+.person.clean .clean-badge{position:absolute;top:-6px;left:-4px;font-size:0.45em;z-index:15;animation:sparkle 0.6s infinite alternate}
+.person.clean .person-torso{background:linear-gradient(180deg,#81d4fa,#4fc3f7);border-color:#0288d1}
+@keyframes messy-drip{0%{transform:translateY(0)}100%{transform:translateY(2px)}}
+@keyframes sparkle{0%{transform:scale(1)}100%{transform:scale(1.2);filter:brightness(1.3)}}
 .person.happy .person-icon{animation:happy-bounce 0.4s ease-out;filter:drop-shadow(0 0 6px rgba(255,235,59,0.6)) drop-shadow(0 2px 3px rgba(0,0,0,0.4))}
 .person.disgusted .person-icon{filter:hue-rotate(80deg) saturate(1.3) drop-shadow(0 2px 3px rgba(0,0,0,0.4))}
 .person.disgusted .person-body{animation:disgust-recoil 0.3s ease-out}
@@ -977,6 +985,11 @@ function spawnCustomer() {
   const isUrgent = Math.random() < 0.2; // 20% chance of urgent customer
   const isVip = !isUrgent && Math.random() < 0.12; // 12% chance of VIP (not if urgent)
 
+  // Messiness: 0 = average, -1 = clean (sparkle), 1 = messy (more tasks)
+  // 15% clean, 20% messy, 65% average
+  const messRoll = Math.random();
+  const messiness = messRoll < 0.15 ? -1 : (messRoll < 0.35 ? 1 : 0);
+
   // Variety of shirt colors for personality
   const shirtColors = [
     {top:'#5a8dd8',bot:'#3d6cb8',border:'#2d5090'}, // Blue
@@ -989,6 +1002,18 @@ function spawnCustomer() {
     {top:'#aed581',bot:'#7cb342',border:'#558b2f'}, // Lime
   ];
 
+  // Determine shirt color based on type
+  let shirt;
+  if (isVip) {
+    shirt = {top:'#ffd700',bot:'#daa520',border:'#b8860b'}; // Gold for VIP
+  } else if (messiness === 1) {
+    shirt = {top:'#a67c52',bot:'#8b5a2b',border:'#6d4c2a'}; // Brown for messy
+  } else if (messiness === -1) {
+    shirt = {top:'#81d4fa',bot:'#4fc3f7',border:'#0288d1'}; // Light blue for clean
+  } else {
+    shirt = pick(shirtColors);
+  }
+
   game.people.push({
     id: ++game.personId,
     icon: pick(getCustomers()),
@@ -1000,9 +1025,10 @@ function spawnCustomer() {
     maxPatience: isUrgent ? getEffectivePatience() * 0.6 : (isVip ? getEffectivePatience() * 0.8 : getEffectivePatience()),
     urgent: isUrgent,
     vip: isVip,
+    messiness: messiness, // -1 = clean, 0 = average, 1 = messy
     thought: '',
     thoughtTimer: 0,
-    shirt: isVip ? {top:'#ffd700',bot:'#daa520',border:'#b8860b'} : pick(shirtColors),
+    shirt: shirt,
   });
 }
 
@@ -1141,6 +1167,7 @@ function updatePeople(dt) {
         stall.state = 'occupied';
         stall.customer = p.icon;
         stall.wasVip = p.vip; // Track if VIP used this stall
+        stall.messiness = p.messiness; // Track messiness for task generation
         stall.timer = rnd(cfg.occMin, cfg.occMax);
         stall.doorOpen = false;
         stall.tasks = [];
@@ -1222,8 +1249,27 @@ function customerLeaves(stallIdx) {
   stall.state = 'dirty';
   stall.doorOpen = true;
 
-  stall.tasks = TASKS.filter(t => Math.random() < t.chance).map(t => ({...t, done: false}));
-  if (stall.tasks.length === 0) stall.tasks.push({...TASKS[1], done: false});
+  // Generate tasks based on customer messiness
+  // Clean customers (-1): lower chance of each task, min 1 task
+  // Average customers (0): normal behavior
+  // Messy customers (1): higher chance of each task, likely 3-4 tasks
+  const messiness = stall.messiness || 0;
+  const chanceModifier = messiness === -1 ? 0.4 : (messiness === 1 ? 1.5 : 1);
+
+  stall.tasks = TASKS.filter(t => Math.random() < (t.chance * chanceModifier)).map(t => ({...t, done: false}));
+
+  // Ensure minimum tasks based on messiness
+  if (messiness === 1 && stall.tasks.length < 3) {
+    // Messy customers: guarantee at least 3 tasks
+    const remaining = TASKS.filter(t => !stall.tasks.find(st => st.id === t.id));
+    while (stall.tasks.length < 3 && remaining.length > 0) {
+      const idx = Math.floor(Math.random() * remaining.length);
+      stall.tasks.push({...remaining.splice(idx, 1)[0], done: false});
+    }
+  } else if (stall.tasks.length === 0) {
+    // At least 1 task for everyone
+    stall.tasks.push({...TASKS[1], done: false});
+  }
 
   // Auto-mop upgrade: chance to auto-complete some tasks
   const automopChance = getUpgradeEffect('automop');
@@ -1564,7 +1610,8 @@ function hideTaskPanel() {
 function completeTask() {
   if (game.activeStall < 0 || game.activeTask < 0) return;
 
-  const stall = game.stalls[game.activeStall];
+  const stallIdx = game.activeStall; // Save before we reset it
+  const stall = game.stalls[stallIdx];
   stall.tasks[game.activeTask].done = true;
   game.taskProgress = 0;
   playTaskComplete();
@@ -1586,7 +1633,7 @@ function completeTask() {
     const ratingGain = wasVip ? 0.16 : 0.08; // VIP = 2x rating boost too
     game.rating = clamp(game.rating + ratingGain, 0, 5);
 
-    const stallEl = $('stalls-row').children[game.activeStall];
+    const stallEl = $('stalls-row').children[stallIdx];
     if (stallEl) {
       const rect = stallEl.getBoundingClientRect();
       const playRect = $('play-area').getBoundingClientRect();
@@ -1623,7 +1670,7 @@ function completeTask() {
     showTaskPanel(game.activeStall);
   }
 
-  updateStallDOM(game.activeStall >= 0 ? game.activeStall : 0);
+  updateStallDOM(stallIdx);
 }
 
 function clickSink(i) {

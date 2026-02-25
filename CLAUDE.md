@@ -2,50 +2,43 @@
 
 A Buc-ee's themed single-file HTML browser game where you play as a bathroom attendant keeping stalls clean.
 
-## Current State (v4 - Major UI/UX Update)
+## Current State (v5 - Cartoony Overhaul)
 
-Complete rewrite with gender selection, improved animations, sound effects, and visual polish.
+Major visual and gameplay overhaul with cartoony art style, reactive beaver mascot, VIP customers, health inspector events, and upgrade system.
 
 ## File Structure
 ```
 /
-├── beaver.html    # Complete game (~850 lines)
-└── CLAUDE.md      # This file
+├── beaver.html      # Complete game (~1200+ lines)
+├── CLAUDE.md        # This file
+├── AGENTS.md        # Agent instructions
+├── .beads/          # Issue tracking database
+└── .pocock/         # Autonomous loop scripts
 ```
 
-## Recent Changes (v4)
+## Recent Changes (v5)
 
-### Gender Selection
-- Choose Men's (🚹) or Women's (🚺) restroom at start
-- Customer emojis match selected gender
-- Male: 👨👴👦🧔👨‍🦰👨‍🦱👨‍🦳👱‍♂️🧑‍🦰
-- Female: 👩👵👧👩‍🦰👩‍🦱👩‍🦳👱‍♀️👩‍🦲🧑‍🦱
+### Cartoony Visual Overhaul
+- **Wood-grain stall doors** with rounded shapes and door handles
+- **Reactive beaver mascot** in HUD with 4 expressions (happy, excited, worried, sad)
+- **CSS art customer bodies** with personality (not just emoji heads)
+- **Checkered floor tiles** and wall details with decorative elements
+- **Cartoony UI** - rounded buttons, panels, and HUD elements
+- **Professional title screen** with logo-like title and clear layout
 
-### Fixed Customer Animation
-- Customers walk TO the stall (not through it)
-- Door opens as they approach
-- They fade/shrink while entering the stall
-- Door closes when fully inside
-- Stall shows 🚽 when occupied (realistic - can't see inside!)
-- Person reappears when exiting
+### New Gameplay Features
+- **VIP Customers** (👑) - 2x rating impact, bigger tips, wear crowns
+- **Health Inspector Events** - Random inspections, keep all stalls clean!
+- **Upgrade System** - Spend points between shifts on permanent upgrades
+- **Messy vs Clean Customers** - Different customer types affect mess level
+- **Combo Streak Bonuses** - Visual fanfare at high combos
 
-### Sound Effects (Web Audio API)
-- Task click: short beep
-- Task complete: ascending tones
-- Stall fully cleaned: celebratory chord
-- Rating loss: descending sawtooth
-- Shift end: victory fanfare
-
-### Visual Polish
-- Warmer brown color scheme (Buc-ee's theme)
-- Better power-up icons: ⚡ Speed, 🐢 Slow, ✨ Auto
-- Dirty stall count in HUD (⚠️ 3 or ✓)
-- Confetti particles on stall clean
-- Active effect glow on power-ups
-- Task panel shows progress (2/3)
-- Improved stall doors with handles
-- Thicker patience bars (5px, color-coded)
-- Pop-in animations for panels
+### Customer Types
+- Regular customers (normal behavior)
+- **VIP** 👑 - High stakes, 2x rating change
+- **Urgent** - Move faster, less patience
+- **Messy** - Leave more cleaning tasks
+- **Clean** - Leave fewer tasks
 
 ## Features
 
@@ -56,7 +49,7 @@ Complete rewrite with gender selection, improved animations, sound effects, and 
 4. **Enter Stall** - Door opens, customer walks in and fades
 5. **Use Stall** - Invisible inside, timer counts down
 6. **Exit Stall** - Door opens, customer walks out
-7. **Wash Hands** - Walk to sink, use it ~1.2s
+7. **Wash Hands** - Walk to sink at bottom of screen
 8. **Exit** - Walk to exit door and leave
 
 ### Stall States
@@ -65,38 +58,42 @@ Complete rewrite with gender selection, improved animations, sound effects, and 
 - **Dirty** (yellow flashing) - Needs cleaning, has tasks
 - **Cleaning** (blue light) - Player working on it
 
+### Reactive Beaver Mascot
+The beaver in the HUD reacts to gameplay:
+- 😊 **Happy** - Default state, things going well
+- 🤩 **Excited** - Combos, stalls cleaned, bonuses
+- 😰 **Worried** - Dirty stalls piling up, low time
+- 😢 **Sad** - Rating loss, customers leaving angry
+
 ### Multi-Step Cleaning
-Click dirty stall → Task panel opens → Click each task:
-- 🪠 **Plunge** (25% chance)
-- 🧽 **Wipe Seat** (70% chance)
-- 🧹 **Mop** (40% chance)
-- 🧻 **Refill TP** (35% chance)
+Click dirty stall → Task panel opens → Mash buttons to clean faster:
+- 🪠 **Plunge** (30% chance)
+- 🧽 **Scrub** (75% chance)
+- 🧹 **Mop** (45% chance)
+- 🧻 **Restock** (40% chance)
 
-### Sink System
-- 2-4 sinks (increases with shift)
-- Customers wash hands after stalls
-- 30% chance sink gets dirty
-- Click dirty sinks to clean (+25 points)
+### Health Inspector Events
+- Random inspections during shifts
+- Inspector walks around checking stalls
+- Penalty for each dirty stall found
+- Bonus for all-clean inspection
 
-### Paper Towel Station
-- 50% chance customers use towels
-- Supply depletes over time
-- Click to refill (+15 points)
-- Turns red when low
-
-### Progression
-- 6 shifts with increasing difficulty
-- More stalls per shift (5→10)
-- Faster customer spawns
-- Shorter occupation times
+### Upgrade System
+Between shifts, spend points on:
+- **Faster Cleaning** - Reduce task time
+- **More Patience** - Customers wait longer
+- **Better Tips** - Earn more per clean
+- **Auto-Sink** - Sinks clean themselves
 
 ### Power-ups
-- ⚡ **Speed** - 2x cleaning speed for 10s
-- 🐢 **Slow** - 2x slower arrivals for 10s
+- ⚡ **Speed** - 2x cleaning speed for 12s
+- 🐢 **Slow** - 2x slower arrivals for 12s
 - ✨ **Auto** - Instantly clean one dirty stall
 
 ### Controls
-- **Click** stalls, sinks, towels to interact
+- **Click/Tap** stalls, sinks, towels to interact
+- **Mash** task buttons to clean faster
+- **Spacebar** - Quick-clean active task
 - **Keyboard**: Q-P for stalls 1-10, 1-3 for power-ups
 
 ## Technical Details
@@ -104,57 +101,58 @@ Click dirty stall → Task panel opens → Click each task:
 ### Key Config
 ```javascript
 shifts: [
-  {stalls:5, sinks:2, spawnMin:3500, spawnMax:5500, ...},
-  // ... 6 total shifts
+  {stalls:5, sinks:2, spawnMin:3000, spawnMax:4500, ...},
+  // ... 6 total shifts with scaling difficulty
 ],
-patience: 12000,      // Customer patience (ms)
-walkSpeed: 100,       // Pixels per second
-taskTime: 400,        // Time per cleaning task (ms)
-sinkCleanTime: 600,   // Sink cleaning time (ms)
+patience: 10000,      // Customer patience (ms)
+walkSpeed: 120,       // Pixels per second
+baseTaskTime: 500,    // Base time per task (ms)
+clickBoost: 80,       // Each click reduces task time
 ```
 
 ### Customer Phases
 `enter` → `findStall` → `toStall` → `entering` → `inStall` → `exitStall` → `toSink` → `washing` → `exit`
 
 ### Audio System
-Uses Web Audio API with oscillators:
-- Frequencies: 200-1047 Hz
-- Types: sine, square, sawtooth
-- Short durations (50-300ms)
+Uses Web Audio API with procedural sounds:
+- Task clicks, completions, stall clean fanfares
+- Urgent beeping when time is low
+- Rush hour alerts
+- Victory/failure sounds
 
-## Known Issues / TODO
+## Development
 
-### Potential Improvements
-- [ ] Add tour bus events (flood of customers)
-- [ ] Add manager inspection events
-- [ ] Add more customer variety (VIP, runner)
-- [ ] Show thought bubbles on impatient customers
-- [ ] Mobile touch optimization
-- [ ] Add background music (toggleable)
-- [ ] Add high score persistence
+### Issue Tracking (Beads)
+```bash
+bd list              # See all issues
+bd ready             # See available work
+bd show <id>         # View issue details
+```
 
-### Design Notes
-- Coordinates relative to `#floor-area`
-- Stall positions from `#stalls-row` children
-- Task panel absolute at bottom center
-- All CSS/JS in single HTML file
-- Web Audio API for sounds (no external files)
+### Autonomous Loop (Pocock)
+```bash
+./.pocock/once.sh                    # Single iteration
+./.pocock/loop.sh 10                 # 10 iterations
+./.pocock/loop.sh 5 --epic <id>      # Work on specific epic
+```
 
 ## How to Test
 1. Open `beaver.html` in browser
-2. Select Men's or Women's restroom
-3. Click "Clock In!"
-4. Watch customers walk in, enter stalls, exit
-5. Click dirty (yellow) stalls to clean
-6. Complete all tasks in task panel
-7. Click dirty sinks to clean
-8. Click towels to refill when low
-9. Survive the shift!
+2. See the new professional title screen
+3. Select Men's or Women's restroom
+4. Click "Clock In!"
+5. Watch customers with CSS art bodies walk around
+6. Notice the reactive beaver mascot in the HUD
+7. Look for VIP customers (crown icon)
+8. Survive health inspector visits
+9. Use the upgrade system between shifts
 
 ## Buc-ee's Theme Elements
-- Beaver mascot concept (🦫)
-- "Dam Good Restrooms" tagline
-- Warm brown color palette
+- **Beaver mascot** with reactive expressions
+- "Dam Good Restrooms - Since 1982" tagline
+- Warm brown/orange color palette
+- Wood-grain textures
 - Rest stop bathroom humor
 - Texas road trip references
-- Clean bathroom reputation parody
+- Checkered tile floors
+- "Lodge quality" messaging
