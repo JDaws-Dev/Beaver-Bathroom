@@ -9,6 +9,17 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Beaver Speech Bubbles for Tips (3ud)
+- Goal: have beaver mascot show speech bubble tips during first shift at relevant moments
+- Added `#beaver-speech` element inside `#beaver-mascot` in HUD
+- CSS: speech bubble with pointer arrow, pop animation, hidden by default (opacity:0)
+- Responsive: smaller text at 600px and 420px breakpoints, wrapping text on phone
+- 8 tips defined in BEAVER_TIPS object for different gameplay moments
+- localStorage: tracks each tip shown with `beaverTip_<tipKey>` keys
+- Only shows on first shift (game.shift === 0) and each tip only once
+- Triggers: dirty stall, task panel open, dirty sink, powerup available, combo start, VIP customer, inspector warning, low time (15s)
+- Files: index.html (CSS lines 104-108, 386, 430; HTML line 571; JS lines 1134-1169; triggers scattered)
+
 ### Sink Dirty Indicator in HUD (uh9)
 - Goal: show dirty sink count in HUD so players don't forget them
 - Added `#sinks-hud` element after dirty stall count in HUD
@@ -32,13 +43,6 @@ This file maintains context between autonomous iterations.
 - JS: TUTORIAL_STEPS array, tutorialActive/tutorialStep/tutorialHighlight state
 - advanceTutorial() called from clickStall() and completeTask()
 - Files: index.html (CSS ~475-489, HTML ~651-660, JS ~2910-3045, startShift ~1522-1525)
-
-### Stack Task Buttons Vertically on Mobile (5tr)
-- Goal: make task buttons full-width and stacked for better touch on portrait phones
-- Added to 420px breakpoint: `#task-buttons{flex-direction:column;gap:8px}` + `.task-btn{width:100%}`
-- Touch targets: min-height 48px (exceeds 44px guideline)
-- Change is purely CSS, no JS modifications
-- Files: index.html (CSS lines 441-442 in 420px media query)
 
 ---
 
@@ -93,6 +97,13 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Stack Task Buttons Vertically on Mobile (5tr)
+- Goal: make task buttons full-width and stacked for better touch on portrait phones
+- Added to 420px breakpoint: `#task-buttons{flex-direction:column;gap:8px}` + `.task-btn{width:100%}`
+- Touch targets: min-height 48px (exceeds 44px guideline)
+- Change is purely CSS, no JS modifications
+- Files: index.html (CSS lines 441-442 in 420px media query)
 
 ### Grace Period Before Dirty Stall Penalty (tct)
 - Goal: add 200ms grace period when customer enters dirty stall, reduce frustration

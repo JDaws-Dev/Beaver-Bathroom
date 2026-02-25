@@ -101,6 +101,11 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 @keyframes beaver-look{0%,100%{transform:translateX(0)}25%{transform:translateX(2px)}75%{transform:translateX(-2px)}}
 @keyframes beaver-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 @keyframes beaver-shake{0%,100%{transform:translateX(0)}50%{transform:translateX(2px)}}
+.beaver-speech{position:absolute;left:100%;top:50%;transform:translateY(-50%);margin-left:8px;background:linear-gradient(180deg,#fff 0%,#f5f5f5 100%);color:#333;padding:6px 10px;border-radius:10px;font-size:0.65em;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.3);border:2px solid #f5a623;opacity:0;pointer-events:none;z-index:100}
+.beaver-speech::before{content:'';position:absolute;left:-8px;top:50%;transform:translateY(-50%);border:6px solid transparent;border-right-color:#f5a623}
+.beaver-speech::after{content:'';position:absolute;left:-5px;top:50%;transform:translateY(-50%);border:5px solid transparent;border-right-color:#fff}
+.beaver-speech.active{opacity:1;animation:speech-pop 0.3s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes speech-pop{0%{opacity:0;transform:translateY(-50%) scale(0.8)}100%{opacity:1;transform:translateY(-50%) scale(1)}}
 .hud-item .label{font-size:0.6em;opacity:0.9;text-transform:uppercase;color:#f5a623;letter-spacing:0.5px;text-shadow:0 1px 2px rgba(0,0,0,0.5)}
 .hud-item .value{font-size:1.1em;font-weight:bold;text-shadow:0 2px 3px rgba(0,0,0,0.4)}
 #dirty-count{color:#fdd835;font-size:0.9em}
@@ -378,6 +383,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .hud-item .label{font-size:0.5em}
 .hud-item .value{font-size:0.95em}
 #beaver-mascot{width:40px;height:40px}
+.beaver-speech{font-size:0.55em;padding:5px 8px}
 .audio-label{font-size:0.45em}
 .mute-btn{font-size:1.1em;padding:3px 6px}
 #stalls-row{gap:4px;padding:8px 4px}
@@ -421,6 +427,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .hud-item .label{font-size:0.45em}
 .hud-item .value{font-size:0.85em}
 #beaver-mascot{width:36px;height:36px}
+.beaver-speech{font-size:0.5em;padding:4px 6px;max-width:140px;white-space:normal}
 .audio-label{font-size:0.4em}
 .mute-btn{font-size:1em;padding:2px 4px;min-width:32px;min-height:32px}
 #stalls-row{gap:3px;padding:6px 3px}
@@ -561,6 +568,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
             <div class="beaver-cheek right"></div>
           </div>
         </div>
+        <div id="beaver-speech" class="beaver-speech"></div>
       </div>
       <div class="hud-item"><div class="label">Rating</div><div class="value" id="rating">⭐⭐⭐⭐⭐</div></div>
       <div class="hud-item"><div class="label">Score</div><div class="value" id="score">0</div></div>
@@ -1123,6 +1131,43 @@ function setBeaverMood(mood, duration = 1000) {
   }
 }
 
+// Beaver speech bubble tips - shown at relevant moments during first shift
+const BEAVER_TIPS = {
+  dirtyStall: "Click dirty stalls to clean!",
+  taskMash: "Mash the buttons faster!",
+  dirtySink: "Don't forget the sinks!",
+  powerupReady: "Use your powerups! (⚡🐢✨)",
+  comboStart: "Keep cleaning for combos!",
+  lowTime: "Hurry! Time's running out!",
+  vipCustomer: "VIP customer! Clean fast for 2x bonus!",
+  inspectorComing: "Keep stalls clean for inspection!"
+};
+let tipTimeout = null;
+let shownTips = {};
+
+function showBeaverTip(tipKey, duration = 3500) {
+  // Only show tips on first shift
+  if (game.shift > 0) return;
+  // Only show each tip once per session
+  const storageKey = 'beaverTip_' + tipKey;
+  if (shownTips[tipKey] || localStorage.getItem(storageKey)) return;
+
+  shownTips[tipKey] = true;
+  localStorage.setItem(storageKey, 'true');
+
+  const speech = document.getElementById('beaver-speech');
+  if (!speech) return;
+
+  clearTimeout(tipTimeout);
+  speech.textContent = BEAVER_TIPS[tipKey];
+  speech.classList.add('active');
+  setBeaverMood('happy', duration);
+
+  tipTimeout = setTimeout(() => {
+    speech.classList.remove('active');
+  }, duration);
+}
+
 function $(id) { return document.getElementById(id); }
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function rnd(min, max) { return min + Math.random() * (max - min); }
@@ -1559,6 +1604,8 @@ function update(dt) {
     endShift();
     return;
   }
+  // Low time warning at 15 seconds
+  if (game.time <= 15 && game.time > 14.5) showBeaverTip('lowTime');
 
   // Rush hour logic
   if (game.rushTimer > 0) {
@@ -1590,6 +1637,7 @@ function update(dt) {
       $('inspector-warning').style.display = 'block';
       playInspector();
       setBeaverMood('worried', 0);
+      showBeaverTip('inspectorComing');
     }
     if (game.inspectorWarning > 0) {
       game.inspectorWarning -= dt;
@@ -1775,6 +1823,8 @@ function spawnCustomer() {
     specialBadge: specialBadge,
     specialThoughts: specialThoughts,
   });
+
+  if (isVip) showBeaverTip('vipCustomer');
 }
 
 function updatePeople(dt) {
@@ -2049,7 +2099,10 @@ function updatePeople(dt) {
     else if (p.phase === 'washing') {
       p.washTime -= dt;
       if (p.washTime <= 0) {
-        if (Math.random() < 0.25) game.sinks[p.sinkIdx].dirty = true;
+        if (Math.random() < 0.25) {
+          game.sinks[p.sinkIdx].dirty = true;
+          showBeaverTip('dirtySink');
+        }
         if (Math.random() < 0.5 && game.towels > 0) game.towels--;
         updateSinkDOM(p.sinkIdx);
         // Special characters have their own happy line
@@ -2117,6 +2170,7 @@ function customerLeaves(stallIdx) {
   }
 
   updateStallDOM(stallIdx);
+  showBeaverTip('dirtyStall');
 
   const person = game.people.find(p => p.phase === 'inStall' && p.target === stallIdx);
   if (person) {
@@ -2506,6 +2560,7 @@ function showTaskPanel(stallIdx) {
   });
 
   $('task-panel').classList.add('show');
+  showBeaverTip('taskMash');
 }
 
 function updateTaskPanel() {
@@ -2601,6 +2656,9 @@ function completeTask() {
     hideTaskPanel();
     // Tutorial: advance when stall fully cleaned
     if (tutorialActive) advanceTutorial('task-complete');
+    // After first clean, hint about powerups
+    if (game.combo >= 2) showBeaverTip('comboStart');
+    else if (game.powerups.speed > 0 || game.powerups.slow > 0) showBeaverTip('powerupReady');
   } else {
     // Move to next task
     const nextTask = stall.tasks.findIndex(t => !t.done);
