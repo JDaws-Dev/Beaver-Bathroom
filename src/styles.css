@@ -376,6 +376,9 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 @keyframes rush-warning{0%,100%{opacity:1}50%{opacity:0.5}}
 #rush-warning{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(213,0,0,0.9);color:#fff;padding:15px 30px;border-radius:10px;font-size:1.3em;font-weight:bold;display:none;z-index:100;animation:rush-warning 0.3s infinite}
 #inspector-warning{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(180deg,rgba(33,150,243,0.95),rgba(25,118,210,0.95));color:#fff;padding:15px 30px;border-radius:10px;font-size:1.3em;font-weight:bold;display:none;z-index:100;animation:rush-warning 0.3s infinite;border:3px solid #1565c0;box-shadow:0 0 20px rgba(33,150,243,0.5)}
+#pause-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:150}
+#pause-overlay.active{display:flex}
+#pause-overlay span{font-size:2em;color:#f5a623;font-weight:bold;text-shadow:0 4px 8px rgba(0,0,0,0.6);letter-spacing:2px}
 .inspector{position:absolute;z-index:25;font-size:1.6em;transition:opacity 0.3s}
 .inspector-body{display:flex;flex-direction:column;align-items:center}
 .inspector-icon{filter:drop-shadow(0 0 8px rgba(33,150,243,0.8)) drop-shadow(0 2px 3px rgba(0,0,0,0.4))}

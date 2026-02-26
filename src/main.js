@@ -415,10 +415,25 @@ function openSettings() {
   initAudio();
   updateSettingsUI();
   $('settings-modal').classList.add('active');
+  // Pause game if running
+  if (game.running && !game.paused) {
+    game.paused = true;
+    $('pause-overlay').classList.add('active');
+    stopMusic();
+  }
 }
 
 function closeSettings() {
   $('settings-modal').classList.remove('active');
+  // Resume game if it was paused by settings
+  if (game.running && game.paused) {
+    game.paused = false;
+    $('pause-overlay').classList.remove('active');
+    // Reset lastTime to avoid large dt on resume
+    game.lastTime = performance.now();
+    // Resume music if not muted
+    if (!isMuted && !isMusicMuted) startMusic();
+  }
 }
 
 function playSound(freq, duration, type = 'sine', volume = 0.25) {
@@ -1224,8 +1239,10 @@ function startShift() {
   showScreen('game-screen');
   $('rush-warning').style.display = 'none';
   $('inspector-warning').style.display = 'none';
+  $('pause-overlay').classList.remove('active');
 
   game.running = true;
+  game.paused = false;
   game.lastTime = performance.now();
   startMusic();
   requestAnimationFrame(gameLoop);
@@ -1233,6 +1250,13 @@ function startShift() {
 
 function gameLoop(now) {
   if (!game.running) return;
+
+  // Skip game logic when paused but keep loop running
+  if (game.paused) {
+    game.lastTime = now;
+    requestAnimationFrame(gameLoop);
+    return;
+  }
 
   const dt = Math.min(now - game.lastTime, 100);
   game.lastTime = now;

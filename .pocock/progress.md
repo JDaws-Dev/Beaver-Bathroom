@@ -9,32 +9,18 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
-### Define Visual Art Style (6yh)
-- Goal: decide on cohesive art style for the game, create style guide
-- Decision: **Retro Americana Arcade** - hybrid of vintage travel stop + modern vector rendering
-- Why: matches Texas travel stop theme, differentiates from competitors, AI tools handle well, mobile readable
-- Created STYLE-GUIDE.md (~300 lines) documenting:
-  - Art style pillars: Retro Americana Foundation + Modern Arcade Execution + Bathroom Comedy Tone
-  - Complete color palette with hex codes and usage
-  - Typography hierarchy and text effects
-  - Character design specs (Bucky, customers)
-  - UI element CSS patterns (panels, buttons, wood grain)
-  - Environment art specs (stalls, floor, walls)
-  - Animation guidelines with easing curves
-  - Asset production roadmap (Phase 1: CSS art → Phase 2: AI-generated → Phase 3: sprites)
-  - Mobile readability guidelines
-- Files: STYLE-GUIDE.md (new, ~300 lines)
-
-### Fun Sound Effects System (86w)
-- Goal: add entertaining sound effects to enhance bathroom cleaning theme
-- Added 3 toilet flush varieties: playFlushNormal(), playFlushPowerful(), playFlushWeak()
-- Random flush selection via playFlush() - each sounds distinct
-- Customer reaction sounds: playCustomerHappy(), playCustomerDisgusted(), playCustomerImpatient()
-- Comedy sounds: playFart() (8-15% on stall exit), playSplash() (on puddles), playBloop() (high combos)
-- Additional ambient: playDoorCreak(), playSinkWater(), playVIPFanfare(), playCoinEarned()
-- All sounds use existing Web Audio synthesis - no external files
-- Hooked sounds to game events: customerLeaves, washing phase, VIP spawn, impatient thoughts, towel grab/fail
-- Files: src/main.js (~120 lines added for sound functions + ~15 lines for event hooks)
+### Persistent Settings + Pause Game (w9a)
+- Goal: settings button always visible during gameplay, pause game when modal open
+- Implementation was partially started - completed and enhanced:
+  - `game.paused` flag added to game state
+  - `openSettings()` sets `game.paused = true`, shows pause overlay, stops music
+  - `closeSettings()` resumes game, resets lastTime, restarts music if not muted
+  - `gameLoop()` checks `game.paused` and skips updates when true (keeps loop running)
+  - `#pause-overlay` shows "⏸️ PAUSED" over play area
+- Settings button already had fixed position (top-right, z-index:50) and mobile responsive styles
+- Settings modal already had SFX volume, music volume, and mute controls with localStorage persistence
+- Added: stopMusic() call on pause, startMusic() call on resume (respects mute state)
+- Files: src/main.js (~5 lines changed in openSettings/closeSettings)
 
 ### Settings Modal with Volume Controls (voq)
 - Goal: replace floating audio buttons with single gear icon and settings modal
@@ -118,6 +104,33 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Define Visual Art Style (6yh)
+- Goal: decide on cohesive art style for the game, create style guide
+- Decision: **Retro Americana Arcade** - hybrid of vintage travel stop + modern vector rendering
+- Why: matches Texas travel stop theme, differentiates from competitors, AI tools handle well, mobile readable
+- Created STYLE-GUIDE.md (~300 lines) documenting:
+  - Art style pillars: Retro Americana Foundation + Modern Arcade Execution + Bathroom Comedy Tone
+  - Complete color palette with hex codes and usage
+  - Typography hierarchy and text effects
+  - Character design specs (Bucky, customers)
+  - UI element CSS patterns (panels, buttons, wood grain)
+  - Environment art specs (stalls, floor, walls)
+  - Animation guidelines with easing curves
+  - Asset production roadmap (Phase 1: CSS art → Phase 2: AI-generated → Phase 3: sprites)
+  - Mobile readability guidelines
+- Files: STYLE-GUIDE.md (new, ~300 lines)
+
+### Fun Sound Effects System (86w)
+- Goal: add entertaining sound effects to enhance bathroom cleaning theme
+- Added 3 toilet flush varieties: playFlushNormal(), playFlushPowerful(), playFlushWeak()
+- Random flush selection via playFlush() - each sounds distinct
+- Customer reaction sounds: playCustomerHappy(), playCustomerDisgusted(), playCustomerImpatient()
+- Comedy sounds: playFart() (8-15% on stall exit), playSplash() (on puddles), playBloop() (high combos)
+- Additional ambient: playDoorCreak(), playSinkWater(), playVIPFanfare(), playCoinEarned()
+- All sounds use existing Web Audio synthesis - no external files
+- Hooked sounds to game events: customerLeaves, washing phase, VIP spawn, impatient thoughts, towel grab/fail
+- Files: src/main.js (~120 lines added for sound functions + ~15 lines for event hooks)
 
 ### Fix Blue Cleaning Stall - Block Customer Entry (4z8)
 - Goal: customers shouldn't enter stalls in 'cleaning' state
