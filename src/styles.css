@@ -64,6 +64,36 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .achievement-info{text-align:left}
 .achievement-label{font-size:0.7em;color:#c9a86c;text-transform:uppercase;letter-spacing:1px}
 .achievement-name{font-size:1.1em;font-weight:bold;color:#f5a623}
+
+/* Daily Reward Modal */
+.daily-reward-content{max-width:340px;text-align:center}
+.dr-header{margin-bottom:16px}
+.dr-mascot{font-size:3em;animation:dr-bounce 0.6s ease-out}
+.dr-title{font-size:1.5em;font-weight:bold;color:#ffd700;text-shadow:0 2px 6px rgba(0,0,0,0.4)}
+@keyframes dr-bounce{0%{transform:scale(0.5) rotate(-10deg)}50%{transform:scale(1.15) rotate(5deg)}100%{transform:scale(1) rotate(0)}}
+.dr-info{margin-bottom:14px}
+.dr-day{font-size:1.1em;color:#f5a623;font-weight:bold;margin-bottom:6px}
+.dr-streak-row{display:flex;align-items:center;justify-content:center;gap:8px}
+.dr-streak-label{color:#c9a86c;font-size:0.9em}
+.dr-streak-val{font-size:1.2em;color:#ff9800;font-weight:bold}
+.dr-streak-badge{font-size:0.75em;color:#fff;background:linear-gradient(90deg,#ff4081,#f50057);padding:2px 8px;border-radius:10px;font-weight:bold;display:none}
+.dr-streak-badge.visible{display:inline}
+.dr-calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:14px 0;padding:10px;background:linear-gradient(180deg,#2d1f0f,#1e1408);border-radius:10px;border:2px solid #5d4037}
+.dr-cal-day{background:linear-gradient(180deg,#3d2814,#2d1f0f);border:2px solid #5d4037;border-radius:6px;padding:6px 2px;text-align:center;font-size:0.7em;transition:all 0.2s}
+.dr-cal-day.claimed{border-color:#4caf50;background:linear-gradient(180deg,#2e7d32,#1b5e20);opacity:0.7}
+.dr-cal-day.today{border-color:#ffd700;box-shadow:0 0 10px rgba(255,215,0,0.5);animation:dr-pulse 1s ease-in-out infinite}
+@keyframes dr-pulse{0%,100%{box-shadow:0 0 10px rgba(255,215,0,0.5)}50%{box-shadow:0 0 20px rgba(255,215,0,0.8)}}
+.dr-cal-num{display:block;color:#c9a86c;font-weight:bold}
+.dr-cal-reward{display:block;color:#f5a623;font-size:0.85em}
+.dr-reward{background:linear-gradient(180deg,#3d2814,#2d1f0f);border:3px solid #ffd700;border-radius:12px;padding:16px;margin:14px 0}
+.dr-coins{font-size:2em;font-weight:bold;color:#ffd700;text-shadow:0 2px 6px rgba(0,0,0,0.4)}
+.dr-bonus{font-size:0.9em;color:#4caf50;margin-top:6px;display:none}
+.dr-bonus.visible{display:block}
+.dr-claim{width:100%;font-size:1.1em;padding:14px;animation:dr-claim-pulse 1.5s ease-in-out infinite}
+@keyframes dr-claim-pulse{0%,100%{box-shadow:0 4px 10px rgba(0,0,0,0.3)}50%{box-shadow:0 4px 20px rgba(245,166,35,0.5)}}
+.coin-float{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.8em;font-weight:bold;color:#ffd700;text-shadow:0 2px 6px rgba(0,0,0,0.5);animation:coin-collect 1.5s ease-out forwards;pointer-events:none;z-index:100}
+@keyframes coin-collect{0%{opacity:1;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-100%) scale(1.2)}100%{opacity:0;transform:translate(-50%,-150%) scale(0.8)}}
+
 .player-rank-display{margin-top:10px;text-align:center}
 .rank-badge{font-size:1em;font-weight:bold;margin-bottom:6px;text-shadow:0 2px 4px rgba(0,0,0,0.5)}
 .rank-icon{font-size:1.1em}

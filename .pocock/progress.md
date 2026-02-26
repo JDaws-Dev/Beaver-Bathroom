@@ -9,6 +9,18 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Daily Login Reward System (8oh)
+- Goal: daily rewards for returning players with streak bonuses
+- 7-day reward cycle: 25→50→75→100→150→200→300 coins (day 7 also gives free Insta-Clean)
+- Streak multipliers: 7+ days = 1.5x, 14+ days = 2x, 30+ days = 3x
+- localStorage key: `beaverDailyReward` (JSON with lastClaimDate, streak, pendingCoins)
+- Shows modal on page load (500ms delay, after tutorial check)
+- Calendar UI shows claimed days and today highlighted
+- Coins stored as `pendingCoins` and applied to `game.coins` in init()
+- Claim button with pulsing animation, celebratory sound on claim
+- CSS: bouncing beaver mascot, pulsing today indicator, coin float animation
+- Files: src/main.js (~140 lines), src/styles.css (~35 lines), index.html (~22 lines)
+
 ### Improved Puddle/Mess System (g0v)
 - Goal: expand mess variety with different types, spawn locations, and cleanup times
 - New MESS_TYPES config with 4 mess varieties:
@@ -16,36 +28,14 @@ This file maintains context between autonomous iterations.
   - 💦 pee: medium clean (400ms), 30 pts, customer accidents, stink lines
   - 🤮 vomit: long clean (600ms), 50 pts, messy customers, stink lines, larger puddle
   - 👣 muddy: quick clean (250ms), 20 pts, tracked in by customers, footprint icon
-- Spawn locations:
-  - sinkSplash: 8% chance after washing hands (water near sinks)
-  - stallAccident: 15% chance when customer leaves angry (pee)
-  - walkwayRandom: during rush hour, random messes appear (chaos!)
-  - vomitSick: messy customers have higher vomit chance
 - Cleanup mechanic changed: click to start mopping, mash to fill progress bar
-  - Progress bar shows under puddle while cleaning
-  - Speed boost doubles click progress
-  - Triggers combo, sparkles, and beaver happy on clean
-- Customer reactions:
-  - Customers stepping in mess show disgusted thought + sound
-  - Small rating hit (-0.05) for letting them step in mess
-  - Messy messes (vomit, muddy) leave footprints on customer (hasMessyFeet)
-  - Customers with messy feet occasionally leave muddy footprints as they walk
-- New sounds: playSplat() for vomit, playSquish() for muddy
-- CSS: water/muddy puddle styles, progress bar, mopping animation
 - Files: src/main.js (~180 lines), src/styles.css (~10 lines)
 
 ### Speed Clean Challenge Mini-Game (151)
 - Goal: 30-second bonus round where player cleans as many stalls as possible
 - Triggers after shifts 2, 4, 6 (0-indexed: 1, 3, 5) for pacing variety
 - MINIGAME_CONFIG: duration 30s, 8 stalls, 300ms respawn, 5 coins per clean
-- 4 new screens: minigame-intro, minigame-screen, minigame-result (+ game flow)
 - Files: src/main.js (~160 lines), src/styles.css (~60 lines), index.html (~50 lines)
-
-### Social Sharing - Share Score to Instagram/TikTok (ok8)
-- Goal: let players share high scores to social media for viral marketing
-- Canvas-based score card generator (9:16 ratio for Instagram Stories)
-- Web Share API integration with fallback to download image
-- Files: src/main.js (~220 lines), src/styles.css (~15 lines), index.html (~25 lines)
 
 ---
 
@@ -101,6 +91,12 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Social Sharing - Share Score to Instagram/TikTok (ok8)
+- Goal: let players share high scores to social media for viral marketing
+- Canvas-based score card generator (9:16 ratio for Instagram Stories)
+- Web Share API integration with fallback to download image
+- Files: src/main.js (~220 lines), src/styles.css (~15 lines), index.html (~25 lines)
 
 ### Achievement/Badge System (7zi)
 - Goal: award badges for milestones (first shift, 10x combo, etc.)

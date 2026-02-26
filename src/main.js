@@ -669,6 +669,193 @@ function closeAchievementsModal() {
 }
 
 // =============================================================================
+// DAILY LOGIN REWARD SYSTEM
+// =============================================================================
+
+const DAILY_REWARDS = [
+  { day: 1, coins: 25,  label: '25 🪙' },
+  { day: 2, coins: 50,  label: '50 🪙' },
+  { day: 3, coins: 75,  label: '75 🪙' },
+  { day: 4, coins: 100, label: '100 🪙' },
+  { day: 5, coins: 150, label: '150 🪙' },
+  { day: 6, coins: 200, label: '200 🪙' },
+  { day: 7, coins: 300, label: '300 🪙 + ✨', bonus: 'instaClean' },
+];
+
+// Streak multipliers
+function getStreakMultiplier(streak) {
+  if (streak >= 30) return { mult: 3, label: '3x LEGENDARY!' };
+  if (streak >= 14) return { mult: 2, label: '2x BONUS' };
+  if (streak >= 7) return { mult: 1.5, label: '1.5x BONUS' };
+  return { mult: 1, label: '' };
+}
+
+// Load daily reward state
+let dailyRewardState = JSON.parse(localStorage.getItem('beaverDailyReward') || 'null') || {
+  lastClaimDate: null,
+  streak: 0,
+  pendingCoins: 0, // Coins to add to next game session
+};
+
+// Get today's date as YYYY-MM-DD string
+function getTodayString() {
+  return new Date().toISOString().split('T')[0];
+}
+
+// Check if reward is available
+function checkDailyReward() {
+  const today = getTodayString();
+  if (dailyRewardState.lastClaimDate === today) {
+    return null; // Already claimed today
+  }
+
+  // Calculate if streak continues or resets
+  let newStreak = 1;
+  if (dailyRewardState.lastClaimDate) {
+    const lastDate = new Date(dailyRewardState.lastClaimDate);
+    const todayDate = new Date(today);
+    const dayDiff = Math.floor((todayDate - lastDate) / (1000 * 60 * 60 * 24));
+
+    if (dayDiff === 1) {
+      // Consecutive day - continue streak
+      newStreak = dailyRewardState.streak + 1;
+    } else if (dayDiff > 1) {
+      // Streak broken
+      newStreak = 1;
+    }
+  }
+
+  // Calculate reward (cycle through 7 days)
+  const dayIndex = ((newStreak - 1) % 7);
+  const reward = DAILY_REWARDS[dayIndex];
+  const streakInfo = getStreakMultiplier(newStreak);
+  const finalCoins = Math.floor(reward.coins * streakInfo.mult);
+
+  return {
+    day: dayIndex + 1,
+    streak: newStreak,
+    baseCoins: reward.coins,
+    finalCoins: finalCoins,
+    label: reward.label,
+    bonus: reward.bonus,
+    streakLabel: streakInfo.label,
+    streakMult: streakInfo.mult,
+  };
+}
+
+// Show the daily reward modal
+function showDailyRewardModal() {
+  const reward = checkDailyReward();
+  if (!reward) return false;
+
+  const modal = $('daily-reward-modal');
+  if (!modal) return false;
+
+  // Populate reward info
+  $('dr-day-num').textContent = reward.day;
+  $('dr-streak').textContent = reward.streak;
+  $('dr-coins').textContent = '+' + reward.finalCoins;
+
+  // Show streak multiplier badge if applicable
+  const streakBadge = $('dr-streak-badge');
+  if (reward.streakMult > 1 && streakBadge) {
+    streakBadge.textContent = reward.streakLabel;
+    streakBadge.classList.add('visible');
+  } else if (streakBadge) {
+    streakBadge.classList.remove('visible');
+  }
+
+  // Show bonus item if day 7
+  const bonusEl = $('dr-bonus');
+  if (reward.bonus && bonusEl) {
+    bonusEl.textContent = '+ Free Insta-Clean!';
+    bonusEl.classList.add('visible');
+  } else if (bonusEl) {
+    bonusEl.classList.remove('visible');
+  }
+
+  // Build calendar preview
+  const calendar = $('dr-calendar');
+  if (calendar) {
+    calendar.innerHTML = DAILY_REWARDS.map((r, i) => {
+      const isPast = i < reward.day - 1;
+      const isToday = i === reward.day - 1;
+      return `<div class="dr-cal-day ${isPast ? 'claimed' : ''} ${isToday ? 'today' : ''}">
+        <span class="dr-cal-num">${i + 1}</span>
+        <span class="dr-cal-reward">${r.coins}🪙</span>
+      </div>`;
+    }).join('');
+  }
+
+  modal.classList.add('active');
+  playDailyRewardSound();
+  return true;
+}
+
+// Claim the reward
+function claimDailyReward() {
+  const reward = checkDailyReward();
+  if (!reward) return;
+
+  // Update state
+  dailyRewardState.lastClaimDate = getTodayString();
+  dailyRewardState.streak = reward.streak;
+  dailyRewardState.pendingCoins += reward.finalCoins;
+
+  // Save to localStorage
+  localStorage.setItem('beaverDailyReward', JSON.stringify(dailyRewardState));
+
+  // Close modal with celebration
+  haptic('success');
+  $('daily-reward-modal').classList.remove('active');
+
+  // Add a coin animation to title screen
+  showCoinCollect(reward.finalCoins);
+}
+
+// Apply pending coins to game start
+function applyPendingDailyCoins() {
+  if (dailyRewardState.pendingCoins > 0) {
+    game.coins += dailyRewardState.pendingCoins;
+    dailyRewardState.pendingCoins = 0;
+    localStorage.setItem('beaverDailyReward', JSON.stringify(dailyRewardState));
+  }
+}
+
+// Show coin collect animation on title
+function showCoinCollect(amount) {
+  const float = document.createElement('div');
+  float.className = 'coin-float';
+  float.textContent = '+' + amount + ' 🪙';
+  const titleCard = document.querySelector('.title-card');
+  if (titleCard) {
+    titleCard.appendChild(float);
+    setTimeout(() => float.remove(), 1500);
+  }
+}
+
+// Play celebratory sound for daily reward
+function playDailyRewardSound() {
+  if (isMuted) return;
+  initAudio();
+  // Ascending coin collect arpeggio
+  const freqs = [392, 523, 659, 784]; // G4, C5, E5, G5
+  freqs.forEach((f, i) => {
+    setTimeout(() => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = f;
+      gain.gain.value = 0.12 * sfxVolume;
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.25);
+    }, i * 60);
+  });
+}
+
+// =============================================================================
 // MINI-GAME: SPEED CLEAN CHALLENGE
 // =============================================================================
 
@@ -1419,6 +1606,9 @@ function init() {
     comboBoost: 0,            // Remaining duration of combo speed boost
     lastMilestone: 0,         // Last milestone level achieved (to avoid re-triggering)
   };
+
+  // Apply any pending daily reward coins
+  applyPendingDailyCoins();
 }
 
 function getCustomers() {
@@ -3545,6 +3735,22 @@ $('close-achievements').addEventListener('click', closeAchievementsModal);
 $('achievements-modal').addEventListener('click', e => {
   if (e.target === $('achievements-modal')) closeAchievementsModal();
 });
+
+// Daily reward modal
+$('dr-claim-btn')?.addEventListener('click', () => {
+  playClick();
+  claimDailyReward();
+});
+$('daily-reward-modal')?.addEventListener('click', e => {
+  // Don't close on background click - must claim
+});
+
+// Check for daily reward (after tutorial, so it doesn't stack)
+setTimeout(() => {
+  if (!$('tutorial-modal').classList.contains('active')) {
+    showDailyRewardModal();
+  }
+}, 500);
 
 // Settings modal
 $('settings-btn').addEventListener('click', openSettings);
