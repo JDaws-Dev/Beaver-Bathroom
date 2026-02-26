@@ -6,6 +6,7 @@
 <title>Beaver's Bathroom Blitz</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦫</text></svg>">
 <link rel="stylesheet" href="/src/styles.css">
+<link rel="stylesheet" href="/src/UIOverlay.css">
 </head>
 <body>
 <div id="game-container">
@@ -13,21 +14,7 @@
     <div class="title-card">
       <div class="title-header">
         <div class="title-logo">
-          <div class="title-beaver">
-            <div class="beaver-head">
-              <div class="beaver-ear left"></div>
-              <div class="beaver-ear right"></div>
-              <div class="beaver-face">
-                <div class="beaver-eye left"><div class="beaver-pupil"></div></div>
-                <div class="beaver-eye right"><div class="beaver-pupil"></div></div>
-                <div class="beaver-nose"></div>
-                <div class="beaver-mouth"></div>
-                <div class="beaver-teeth"></div>
-                <div class="beaver-cheek left"></div>
-                <div class="beaver-cheek right"></div>
-              </div>
-            </div>
-          </div>
+          <img src="/images/beaver-logo.png" alt="Beaver Mascot" class="title-beaver-img">
           <h1>Beaver's<br>Bathroom Blitz</h1>
         </div>
         <p class="title-tagline">Cleanest Restrooms in Texas!</p>
@@ -155,30 +142,18 @@
 
   <div id="game-screen" class="screen">
     <div id="hud">
-      <div id="beaver-mascot" class="beaver-idle">
-        <div class="beaver-head">
-          <div class="beaver-ear left"></div>
-          <div class="beaver-ear right"></div>
-          <div class="beaver-face">
-            <div class="beaver-eye left"><div class="beaver-pupil"></div></div>
-            <div class="beaver-eye right"><div class="beaver-pupil"></div></div>
-            <div class="beaver-nose"></div>
-            <div class="beaver-mouth"></div>
-            <div class="beaver-teeth"></div>
-            <div class="beaver-cheek left"></div>
-            <div class="beaver-cheek right"></div>
-          </div>
-        </div>
-        <div id="beaver-speech" class="beaver-speech"></div>
-      </div>
-      <div class="hud-item"><div class="label">Rating</div><div class="value" id="rating">⭐⭐⭐⭐⭐</div></div>
-      <div class="hud-item"><div class="label">Score</div><div class="value" id="score">0</div></div>
-      <div class="hud-item"><div class="label">Combo</div><div class="value" id="combo">x1</div></div>
-      <div class="hud-item"><div class="label">Dirty</div><div class="value" id="dirty-count">0</div></div>
-      <div class="hud-item" id="sinks-hud" style="display:none"><div class="label">Sinks</div><div class="value" id="dirty-sinks">0</div></div>
-      <div class="hud-item"><div class="label">Time</div><div class="value" id="timer">1:00</div></div>
+      <div class="hud-item hud-rating"><div class="label">Rating</div><div class="value" id="rating">⭐⭐⭐⭐⭐</div></div>
+      <div class="hud-item hud-score"><div class="label">Score</div><div class="value" id="score">0</div></div>
+      <div class="hud-item hud-combo"><div class="label">Combo</div><div class="value" id="combo">x1</div></div>
+      <div class="hud-item hud-time"><div class="label">Time</div><div class="value" id="timer">1:00</div></div>
+      <button id="settings-btn" aria-label="Settings">⚙️</button>
     </div>
-    <button id="settings-btn" aria-label="Settings">⚙️</button>
+    <!-- Hidden elements for JS compatibility -->
+    <div id="dirty-count" style="display:none">0</div>
+    <div id="dirty-sinks" style="display:none">0</div>
+    <div id="beaver-mascot" class="beaver-idle" style="display:none">
+      <div id="beaver-speech" class="beaver-speech"></div>
+    </div>
     <div id="play-area">
       <div id="bathroom">
         <div id="stalls-row"></div>
@@ -203,10 +178,10 @@
       </div>
     </div>
     <div id="powerups">
-      <div class="powerup disabled" id="pow-speed">🥩 Brisket <span class="count" id="cnt-speed">0</span></div>
-      <div class="powerup disabled" id="pow-slow">🧊 Icee <span class="count" id="cnt-slow">0</span></div>
-      <div class="powerup disabled" id="pow-auto">🍿 Nuggets <span class="count" id="cnt-auto">0</span></div>
-      <div class="powerup disabled" id="pow-mascot">🦫 Bucky <span class="count" id="cnt-mascot">0</span></div>
+      <div class="powerup disabled" id="pow-speed">🥩<span class="powerup-text"> Brisket</span> <span class="count" id="cnt-speed">0</span></div>
+      <div class="powerup disabled" id="pow-slow">🧊<span class="powerup-text"> Icee</span> <span class="count" id="cnt-slow">0</span></div>
+      <div class="powerup disabled" id="pow-auto">🍿<span class="powerup-text"> Nuggets</span> <span class="count" id="cnt-auto">0</span></div>
+      <div class="powerup disabled" id="pow-mascot">🦫<span class="powerup-text"> Beaver</span> <span class="count" id="cnt-mascot">0</span></div>
     </div>
   </div>
 
@@ -217,7 +192,7 @@
     <div class="grade" id="result-grade">S</div>
     <p id="result-comment"></p>
     <div id="pick-section" style="display:none">
-      <p style="font-size:0.85em;opacity:0.8;margin-bottom:10px">Choose a power-up:</p>
+      <p style="font-size:0.75em;opacity:0.7;margin-bottom:8px">You earned:</p>
       <div class="pick-row" id="pick-row"></div>
     </div>
     <div class="share-row">
@@ -261,7 +236,7 @@
     <!-- Tip jar (shown on win) -->
     <div id="tip-section" class="tip-section" style="display:none">
       <a href="https://venmo.com/u/Jeremiah-Daws" target="_blank" rel="noopener" class="tip-btn">
-        🧁 Buy Bucky a Beaver Nugget
+        🧁 Buy Beaver a Nugget
       </a>
     </div>
 
@@ -293,11 +268,11 @@
       <div class="intro-shift-num" id="intro-shift-num">SHIFT 1</div>
       <h2 class="intro-title" id="intro-title">Training Day</h2>
       <p class="intro-desc" id="intro-desc">Welcome to Beaver's Travel Stop! Time to learn the ropes.</p>
-      <div class="bucky-tip">
-        <span class="bucky-tip-icon">🦫</span>
-        <div class="bucky-tip-content">
-          <div class="bucky-tip-label">Bucky says...</div>
-          <div class="bucky-tip-text" id="intro-tip">Mash those task buttons fast! Speed is everything.</div>
+      <div class="beaver-tip">
+        <span class="beaver-tip-icon">🦫</span>
+        <div class="beaver-tip-content">
+          <div class="beaver-tip-label">Beaver says...</div>
+          <div class="beaver-tip-text" id="intro-tip">Mash those task buttons fast! Speed is everything.</div>
         </div>
       </div>
       <div class="intro-stats">

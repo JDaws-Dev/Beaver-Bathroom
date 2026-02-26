@@ -139,8 +139,8 @@ const SHIFT_NARRATIVES = [
   {name: 'Championship Sunday', desc: "FINAL SHIFT! Earn the Golden Plunger and become a legend!", progress: "Final Day"},
 ];
 
-// Bucky the Beaver mentor tips - shown on shift intro
-const BUCKY_TIPS = [
+// Beaver the Beaver mentor tips - shown on shift intro
+const BEAVER_TIPS = [
   // Shift 1 (Training Day) tips - basics
   [
     "Mash those task buttons fast! Speed is everything in this business.",
@@ -326,9 +326,9 @@ const ITEMS = [
   },
   {
     id: 'mascot',
-    name: 'Bucky Walk',
+    name: 'Beaver Walk',
     icon: '🦫',
-    desc: 'Bucky distracts customers!',
+    desc: 'Beaver distracts customers!',
     duration: 8000,  // 8s
     cost: 40,
   },
@@ -402,7 +402,7 @@ const CLEAN_MESSAGES = [
 const GAME_OVER_MESSAGES = [
   "The manager's taking your badge back...",
   "Maybe bathroom work isn't for you...",
-  "Bucky looks disappointed. Real disappointed.",
+  "Beaver looks disappointed. Real disappointed.",
   "Time to update your resume...",
   "The Golden Plunger slips away...",
 ];
@@ -410,7 +410,7 @@ const GAME_OVER_MESSAGES = [
 const WIN_MESSAGES = [
   "You did it, rookie! The Golden Plunger is yours!",
   "From new hire to bathroom legend in 6 shifts!",
-  "Bucky would be proud. Actually, Bucky IS proud!",
+  "Beaver would be proud. Actually, Beaver IS proud!",
   "The cleanest restrooms this side of Texas!",
   "You've earned your place at Beaver's Travel Stop!",
 ];
@@ -1461,7 +1461,7 @@ function playPowerup() {
   setTimeout(() => playTone(700, 0.1, 'triangle', 0.12), 120);
 }
 
-// Mascot Walk System - Bucky walks across the floor and distracts customers
+// Mascot Walk System - Beaver walks across the floor and distracts customers
 function startMascotWalk() {
   const floorArea = $('floor-area');
   const floorRect = floorArea.getBoundingClientRect();
@@ -1492,7 +1492,7 @@ function startMascotWalk() {
     }
   }
 
-  floatMessage('🦫 BUCKY ON THE FLOOR!', 400, 150, 'combo');
+  floatMessage('🦫 BEAVER ON THE FLOOR!', 400, 150, 'combo');
 }
 
 function updateMascotWalk(dt) {
@@ -1674,7 +1674,7 @@ function setBeaverMood(mood, duration = 1000) {
 }
 
 // Beaver speech bubble tips - shown at relevant moments during first shift
-const BEAVER_TIPS = {
+const BEAVER_SPEECH_TIPS = {
   dirtyStall: "Click dirty stalls to clean!",
   taskMash: "Mash the buttons faster!",
   dirtySink: "Don't forget the sinks!",
@@ -1701,7 +1701,7 @@ function showBeaverTip(tipKey, duration = 3500) {
   if (!speech) return;
 
   clearTimeout(tipTimeout);
-  speech.textContent = BEAVER_TIPS[tipKey];
+  speech.textContent = BEAVER_SPEECH_TIPS[tipKey];
   speech.classList.add('active');
   setBeaverMood('happy', duration);
 
@@ -2087,8 +2087,8 @@ function showShiftIntro() {
   $('intro-shift-num').textContent = narrative.progress || `SHIFT ${game.shift + 1}`;
   $('intro-title').textContent = narrative.name;
   $('intro-desc').textContent = narrative.desc;
-  // Pick a random tip for this shift from Bucky
-  const shiftTips = BUCKY_TIPS[game.shift] || BUCKY_TIPS[0];
+  // Pick a random tip for this shift from Beaver
+  const shiftTips = BEAVER_TIPS[game.shift] || BEAVER_TIPS[0];
   const tip = shiftTips[Math.floor(Math.random() * shiftTips.length)];
   $('intro-tip').textContent = tip;
   $('intro-stalls').textContent = cfg.stalls;
@@ -2501,7 +2501,7 @@ function updatePeople(dt) {
       if (p.distracted) {
         if (!p.distractedThought) {
           p.distractedThought = true;
-          p.thought = ['📸', '🤩', 'Is that Bucky?!', 'OMG!', '📷'][Math.floor(Math.random() * 5)];
+          p.thought = ['📸', '🤩', 'Is that Beaver?!', 'OMG!', '📷'][Math.floor(Math.random() * 5)];
           p.thoughtTimer = 10000;  // Keep showing while distracted
         }
         continue;  // Skip movement this frame
@@ -2542,7 +2542,7 @@ function updatePeople(dt) {
       if (p.distracted) {
         if (!p.distractedThought) {
           p.distractedThought = true;
-          p.thought = ['📸', '🤩', 'Is that Bucky?!', 'Wow!', '📷'][Math.floor(Math.random() * 5)];
+          p.thought = ['📸', '🤩', 'Is that Beaver?!', 'Wow!', '📷'][Math.floor(Math.random() * 5)];
           p.thoughtTimer = 10000;
         }
         continue;  // Skip finding stall this frame

@@ -1,0 +1,358 @@
+/* ===========================================
+   UIOverlay.css - Landing Page Enhancements
+   Retro-Arcade Typography, Juicy Buttons, & Polish
+   =========================================== */
+
+/* 1. WARM GOLDEN TITLE - Matches cartoon aesthetic */
+#title-screen h1 {
+  font-size: clamp(1.6rem, 6vw, 2.4rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  line-height: 1.2;
+  margin: 0;
+
+  /* Warm golden gradient like the badge */
+  background: linear-gradient(180deg,
+    #FFE082 0%,
+    #FFD54F 25%,
+    #FFCA28 50%,
+    #FFB300 75%,
+    #FF8F00 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+
+  /* Soft warm glow - no harsh outlines */
+  filter: drop-shadow(0 0 8px rgba(255,193,7,0.8))
+          drop-shadow(0 0 20px rgba(255,152,0,0.5))
+          drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+
+}
+
+/* 2. ARCADE PROGRESS BAR - Sunken 3D Glass Tube */
+.rank-progress-bar {
+  width: 100%;
+  max-width: 220px;
+  height: 32px;  /* Doubled height for arcade feel */
+  background: linear-gradient(180deg,
+    #1a1008 0%,
+    #2d1f0f 30%,
+    #3d2814 50%,
+    #2d1f0f 70%,
+    #1a1008 100%);
+  border: 4px solid #000;  /* Thick black border */
+  border-radius: 16px;
+  margin: 0 auto;
+  overflow: hidden;
+  position: relative;
+
+  /* Sunken inner shadow */
+  box-shadow:
+    inset 0 4px 12px rgba(0,0,0,0.9),
+    inset 0 -2px 6px rgba(0,0,0,0.5),
+    inset 2px 0 4px rgba(0,0,0,0.4),
+    inset -2px 0 4px rgba(0,0,0,0.4),
+    0 2px 4px rgba(0,0,0,0.6);
+}
+
+/* Glass overlay on container */
+.rank-progress-bar::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 6px;
+  right: 6px;
+  height: 10px;
+  background: linear-gradient(180deg,
+    rgba(255,255,255,0.2) 0%,
+    rgba(255,255,255,0.05) 100%);
+  border-radius: 8px 8px 4px 4px;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.rank-progress-fill {
+  height: 100%;
+  width: 0;
+  transition: width 0.4s ease-out;
+
+  /* Vibrant lime green fill */
+  background: linear-gradient(180deg,
+    rgba(255,255,255,0.5) 0%,
+    #ADFF2F 10%,
+    #7FFF00 30%,
+    #32CD32 50%,
+    #228B22 75%,
+    #006400 95%,
+    rgba(0,0,0,0.3) 100%);
+  border-radius: 12px;
+  position: relative;
+
+  /* Outer glow */
+  box-shadow:
+    0 0 10px rgba(127,255,0,0.7),
+    0 0 20px rgba(127,255,0,0.4),
+    inset 0 2px 4px rgba(255,255,255,0.5);
+}
+
+/* 3D glass shine streak */
+.rank-progress-fill::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 8px;
+  right: 8px;
+  height: 8px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,255,255,0.7) 20%,
+    rgba(255,255,255,0.9) 50%,
+    rgba(255,255,255,0.7) 80%,
+    transparent 100%);
+  border-radius: 4px;
+  opacity: 0.8;
+}
+
+
+/* 3. TACTILE "JUICY" BUTTONS - 3D Arcade Style */
+.btn-play {
+  padding: 18px 55px;
+  font-size: clamp(1.2rem, 4vw, 1.5rem);
+  letter-spacing: 4px;
+  font-weight: 900;
+  text-transform: uppercase;
+
+  /* 3D Effect - Thick bottom border */
+  background: linear-gradient(180deg,
+    #ff4060 0%,
+    #e8305a 15%,
+    #D31145 40%,
+    #b80d3a 70%,
+    #a00d35 100%);
+  border: none;
+  border-radius: 12px;
+  border-bottom: 8px solid #7a0828;
+
+  color: #fff;
+  text-shadow:
+    0 2px 0 #8a0d2e,
+    0 3px 6px rgba(0,0,0,0.5);
+
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+
+  box-shadow:
+    inset 0 4px 0 rgba(255,255,255,0.35),
+    inset 0 -2px 8px rgba(0,0,0,0.3),
+    0 4px 8px rgba(0,0,0,0.4),
+    0 0 20px rgba(211,17,69,0.4);
+
+  transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Hover - scale up 1.05 */
+.btn-play:hover {
+  transform: scale(1.05) translateY(-2px);
+  background: linear-gradient(180deg,
+    #ff5070 0%,
+    #f04060 15%,
+    #e8305a 40%,
+    #D31145 70%,
+    #b80d3a 100%);
+  border-bottom-width: 10px;
+  box-shadow:
+    inset 0 4px 0 rgba(255,255,255,0.4),
+    inset 0 -2px 8px rgba(0,0,0,0.25),
+    0 8px 16px rgba(0,0,0,0.5),
+    0 0 45px rgba(255,255,255,0.5),
+    0 0 70px rgba(211,17,69,0.6);
+}
+
+/* Active state - shrink to 0.95, darker red */
+.btn-play:active {
+  transform: scale(0.95) translateY(4px);
+  border-bottom-width: 2px;
+  background: linear-gradient(180deg,
+    #c82040 0%,
+    #a01535 15%,
+    #8a0d2e 40%,
+    #700a25 70%,
+    #5c0820 100%);
+  box-shadow:
+    inset 0 4px 8px rgba(0,0,0,0.6),
+    0 1px 2px rgba(0,0,0,0.4),
+    0 0 15px rgba(255,255,255,0.2),
+    0 0 25px rgba(211,17,69,0.4);
+}
+
+
+/* 4. CONTAINER POLISH - Enhanced Depth & Neon Border */
+.title-card {
+  background: linear-gradient(180deg,
+    rgba(61,40,20,0.9) 0%,
+    rgba(45,31,15,0.95) 50%,
+    rgba(26,16,8,0.98) 100%);
+
+  /* Increased backdrop blur for distant background */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+
+  border: 4px solid transparent;
+  border-radius: 18px;
+  padding: clamp(15px, 4vw, 25px) clamp(18px, 5vw, 30px) clamp(20px, 5vw, 30px);
+  max-width: min(380px, 90vw);
+  width: 100%;
+  position: relative;
+
+  /* Subtle gold border glow */
+  box-shadow:
+    0 0 0 4px rgba(254,241,23,0.8),
+    0 0 0 6px rgba(0,0,0,0.5),
+    0 0 40px rgba(254,241,23,0.25),
+    0 12px 40px rgba(0,0,0,0.7),
+    inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+/* Mascot with white circular border */
+.title-beaver {
+  width: 100px;
+  height: 100px;
+  position: relative;
+  background: radial-gradient(circle, #FEF117 0%, #FFEB3B 60%, #FBC02D 100%);
+  border-radius: 50%;
+
+  /* White circular border to separate from text */
+  border: 5px solid #fff;
+  outline: 3px solid #111;
+
+  box-shadow:
+    0 0 0 3px #FEF117,
+    0 0 30px rgba(254,241,23,0.6),
+    0 0 60px rgba(254,241,23,0.3),
+    0 6px 20px rgba(0,0,0,0.5),
+    inset 0 -4px 12px rgba(0,0,0,0.15);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  animation: title-beaver-bob 2s ease-in-out infinite, neon-flicker 3s ease-in-out infinite;
+}
+
+/* Responsive scaling */
+@media (max-width: 400px) {
+  #title-screen h1 {
+    letter-spacing: 2px;
+    filter: drop-shadow(0 0 6px rgba(255,193,7,0.7))
+            drop-shadow(0 0 15px rgba(255,152,0,0.4))
+            drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+  }
+
+  .rank-progress-bar {
+    height: 26px;
+    max-width: 180px;
+    border-width: 3px;
+  }
+
+  .btn-play {
+    padding: 14px 40px;
+    border-bottom-width: 6px;
+  }
+
+  .btn-play:active {
+    border-bottom-width: 2px;
+  }
+
+}
+
+@media (max-height: 600px) {
+  .title-card {
+    padding: 12px 18px 18px;
+  }
+
+  .rank-progress-bar {
+    height: 18px;
+  }
+}
+
+/* ===========================================
+   5. BEAVER MASCOT - Logo image
+   =========================================== */
+
+.title-beaver-img {
+  width: 140px;
+  height: auto;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+}
+
+/* Mobile sizing */
+@media (max-width: 400px) {
+  .title-beaver-img {
+    width: 110px;
+  }
+}
+
+@media (max-height: 600px) {
+  .title-beaver-img {
+    width: 100px;
+  }
+}
+
+/* ===========================================
+   6. RESTROOM SIGNS - Simple & Clear
+   =========================================== */
+
+.gender-toggle {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.gender-label {
+  font-size: 0.7em;
+  color: #c9a86c;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Simple button style */
+.gender-opt {
+  width: 52px;
+  height: 58px;
+  font-size: 2em;
+  border: 3px solid #5D4037;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #3d2814, #2d1f0f);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  opacity: 0.5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+/* Remove old cowboy hat */
+.gender-opt::before {
+  display: none;
+}
+
+/* Hover */
+.gender-opt:hover {
+  opacity: 0.8;
+  transform: scale(1.05);
+}
+
+/* Selected - golden border */
+.gender-opt.selected {
+  opacity: 1;
+  border-color: #FFD700;
+  background: linear-gradient(180deg, #4a3520, #2d1f0f);
+  box-shadow: 0 0 12px rgba(255,215,0,0.4);
+}
+
+.gender-opt:active {
+  transform: scale(0.95);
+}
