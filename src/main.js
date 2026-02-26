@@ -1997,10 +1997,9 @@ const perf = {
 // Check if device is likely mobile
 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-// Initialize low-perf mode from saved preference, or auto-enable on mobile
+// Initialize low-perf mode from saved preference only (auto-enables when FPS drops)
 const savedLowPerf = localStorage.getItem('beaverLowPerf');
-if (savedLowPerf === 'true' || (savedLowPerf === null && isMobile)) {
-  // Will be applied after DOM is ready
+if (savedLowPerf === 'true') {
   document.addEventListener('DOMContentLoaded', () => {
     document.body.classList.add('low-perf');
     perf.lowPerfMode = true;
