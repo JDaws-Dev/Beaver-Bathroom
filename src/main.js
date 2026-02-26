@@ -419,7 +419,7 @@ const WIN_MESSAGES = [
 const ACHIEVEMENTS = [
   // First timer achievements
   {id:'first_shift', name:'Punch In', icon:'🎉', desc:'Complete your first shift', check: (g,s) => s.shiftsCompleted >= 1},
-  {id:'golden_plunger', name:'Golden Plunger', icon:'🏆', desc:'Complete all 6 shifts', check: (g,s) => s.shiftsCompleted >= 6},
+  {id:'golden_plunger', name:'Golden Plunger', icon:'🪠', desc:'Complete all 6 shifts', check: (g,s) => s.shiftsCompleted >= 6},
 
   // Combo achievements
   {id:'combo_3', name:'On Fire', icon:'🔥', desc:'Reach a 3x combo', check: (g,s) => s.maxCombo >= 3},
