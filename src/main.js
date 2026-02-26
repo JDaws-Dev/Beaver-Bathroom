@@ -76,14 +76,16 @@ function updateAuthUI() {
 
 // Analytics tracking
 function trackEvent(type, data = {}) {
+  console.log('Tracking event:', type, data);
   try {
     convex.mutation(api.admin.logEvent, {
       type,
       deviceId,
       data,
-    }).catch(e => console.log('Track event failed:', e));
+    }).then(() => console.log('Event tracked:', type))
+      .catch(e => console.error('Track event failed:', type, e));
   } catch (e) {
-    // Silently fail - analytics shouldn't break the game
+    console.error('Track event exception:', e);
   }
 }
 
@@ -3206,7 +3208,7 @@ function startEndlessMode() {
       showPaywallModal('landing');
     } else {
       // Not unlocked yet - need to beat campaign first
-      floatText('Beat all 6 shifts first!', window.innerWidth / 2, window.innerHeight / 2, '#ff6b6b');
+      floatMessage('🔒 Beat all 6 shifts first!', window.innerWidth / 2, 150, 'bad');
     }
     return;
   }
