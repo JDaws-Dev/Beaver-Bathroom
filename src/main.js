@@ -362,6 +362,30 @@ let isMuted = localStorage.getItem('beaverMuted') === 'true';
 let sfxVolume = parseInt(localStorage.getItem('beaverSfxVolume') ?? '70') / 100;
 let musicVolume = parseInt(localStorage.getItem('beaverMusicVolume') ?? '50') / 100;
 
+// Haptics
+let hapticsEnabled = localStorage.getItem('beaverHaptics') !== 'false'; // default ON
+const canVibrate = 'vibrate' in navigator;
+
+function haptic(type = 'light') {
+  if (!canVibrate || !hapticsEnabled) return;
+  const patterns = {
+    light: 15,           // Quick tap - UI clicks
+    medium: 40,          // Task complete, coin collect
+    strong: 80,          // Stall cleaned, combo milestone
+    success: [50, 30, 50], // Shift complete, achievement
+    warning: [30, 20, 30, 20, 30], // Low patience, inspector
+    error: 150           // Customer leaves, rating drop
+  };
+  try { navigator.vibrate(patterns[type] || patterns.light); } catch(e) {}
+}
+
+function toggleHaptics() {
+  hapticsEnabled = !hapticsEnabled;
+  localStorage.setItem('beaverHaptics', hapticsEnabled);
+  updateSettingsUI();
+  if (hapticsEnabled) haptic('medium'); // Feedback that haptics are on
+}
+
 function initAudio() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 }
@@ -408,6 +432,12 @@ function updateSettingsUI() {
   if (musicSlider) {
     musicSlider.value = musicVolume * 100;
     $('music-val').textContent = Math.round(musicVolume * 100) + '%';
+  }
+  // Haptics toggle
+  const hapticsBtn = $('haptics-toggle');
+  if (hapticsBtn) {
+    hapticsBtn.textContent = hapticsEnabled ? 'ON' : 'OFF';
+    hapticsBtn.classList.toggle('active', hapticsEnabled);
   }
 }
 
@@ -987,8 +1017,9 @@ function checkComboMilestone() {
       $('play-area').classList.add('combo-flash');
       setTimeout(() => $('play-area').classList.remove('combo-flash'), 400);
 
-      // Sound
+      // Sound & haptics
       playComboMilestone(m.level);
+      haptic('strong');
 
       // Extra confetti for big milestones
       const confettiCount = m.level >= 10 ? 25 : (m.level >= 5 ? 18 : 12);
@@ -1308,6 +1339,7 @@ function update(dt) {
       game.inspectorWarning = 3000;
       $('inspector-warning').style.display = 'block';
       playInspector();
+      haptic('warning'); // Alert player to inspector
       setBeaverMood('worried', 0);
       showBeaverTip('inspectorComing');
     }
@@ -1543,6 +1575,7 @@ function updatePeople(dt) {
         game.combo = 0;
         showComboBreak(hadCombo);
         playBad();
+        haptic('error'); // Negative feedback for customer leaving
         screenShake();
         setBeaverMood('sad', 1500);
         const msg = p.vip ? '⭐ VIP LEFT! -' + ratingLoss.toFixed(1) + '⭐' : '😤 LEFT!';
@@ -2305,11 +2338,13 @@ function completeTask() {
   stall.tasks[game.activeTask].done = true;
   game.taskProgress = 0;
   playTaskComplete();
+  haptic('medium'); // Task completion feedback
 
   // Check if all done
   if (stall.tasks.every(t => t.done)) {
     const wasVip = stall.wasVip;
     stall.state = 'empty';
+    haptic('strong'); // Stall cleaned celebration
     stall.tasks = [];
     stall.wasVip = false; // Reset for next customer
     game.combo++;
@@ -2430,6 +2465,7 @@ $('pow-speed').addEventListener('click', () => {
     game.powerups.speed--;
     game.effects.speed = getItemDuration('speed');
     playClick();
+    haptic('strong'); // Powerup activation feedback
     floatMessage('⚡ SPEED BOOST!', 400, 200, 'combo');
   }
 });
@@ -2441,6 +2477,7 @@ $('pow-slow').addEventListener('click', () => {
     game.powerups.slow--;
     game.effects.slow = getItemDuration('slow');
     playClick();
+    haptic('strong'); // Powerup activation feedback
     floatMessage('🐢 SLOW MODE!', 400, 200, 'combo');
   }
 });
@@ -2475,6 +2512,7 @@ $('pow-auto').addEventListener('click', () => {
         floatMessage('✨ AUTO CLEAN!', rect.left - playRect.left, y, 'combo');
       }
       playStallClean();
+      haptic('strong'); // Powerup activation feedback
       setBeaverMood('excited', 1000);
     }
   }
@@ -2570,6 +2608,7 @@ function endShift() {
   game.running = false;
   stopMusic();
   playWin();
+  haptic('success'); // Success pattern for shift complete
 
   // Clean up inspector if still present
   game.inspector = null;
@@ -2659,6 +2698,8 @@ function endShift() {
 function gameOver() {
   game.running = false;
   stopMusic();
+  const won = game.shift >= CONFIG.shifts.length - 1;
+  haptic(won ? 'success' : 'error'); // Victory or defeat feedback
 
   // Clean up inspector if still present
   game.inspector = null;
@@ -2666,7 +2707,6 @@ function gameOver() {
   if (inspectorEl) inspectorEl.remove();
   $('inspector-warning').style.display = 'none';
 
-  const won = game.shift >= CONFIG.shifts.length - 1;
   const finalScore = Math.floor(game.score);
   const isNewRecord = finalScore > highScore;
 
@@ -2773,6 +2813,7 @@ $('settings-modal').addEventListener('click', e => {
 $('sfx-volume').addEventListener('input', e => setSfxVolume(e.target.value));
 $('music-volume').addEventListener('input', e => setMusicVolume(e.target.value));
 $('master-mute').addEventListener('click', toggleMasterMute);
+$('haptics-toggle').addEventListener('click', toggleHaptics);
 updateSettingsUI();
 
 $('start-btn').addEventListener('click', () => {

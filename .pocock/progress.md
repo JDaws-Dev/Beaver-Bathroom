@@ -9,6 +9,17 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Update Visual Style to Evoke Buc-ee's Aesthetic (b79)
+- Goal: refresh visual design to capture Buc-ee's roadside travel stop vibe (legally safe parody)
+- Added beaver pun tagline: "Dam Good Restrooms - Since 1982" (replaces generic "Cleanest Restrooms")
+- Added wall sign in floor-area: "🦫 DAM GOOD SERVICE!" - CSS styling already existed (#wall-sign)
+- Updated title-screen background: removed green tones (`#2d4a1e`→`#3d2814`), now warm brown throughout
+- Updated shift-intro background to match title-screen (consistent warm brown palette)
+- Color palette review: yellow/gold (`#FFD700`, `#F5A623`) and red (`#E53935`, `#C41E3A`) already dominant per STYLE-GUIDE.md
+- Existing assets already compliant: wood textures, checkered tiles, beaver mascot distinct from Buc-ee's
+- Key insight: wall-sign CSS existed but element was missing from HTML - added to floor-area
+- Files: index.html (2 lines), src/styles.css (2 lines)
+
 ### Persistent Settings + Pause Game (w9a)
 - Goal: settings button always visible during gameplay, pause game when modal open
 - Implementation was partially started - completed and enhanced:
@@ -37,18 +48,6 @@ This file maintains context between autonomous iterations.
 - Added: openSettings(), closeSettings(), toggleMasterMute(), setSfxVolume(), setMusicVolume(), updateSettingsUI()
 - Mobile styles: smaller settings button, larger touch targets on sliders
 - Files: index.html (~25 lines), src/styles.css (~25 lines), src/main.js (~45 lines changed)
-
-### Move Paper Towels Next to Sinks with New Customer Flow (d2n)
-- Goal: relocate towels to be adjacent to sinks, customers walk to towels after washing
-- HTML: created new #sink-towel-area container grouping #sinks-area and #towels
-- CSS: #sink-towel-area uses flexbox to position sinks and towels side-by-side at bottom center
-- Removed position:absolute from #towels, now flows naturally with sinks
-- Adjusted border-radius: sinks have left-rounded corners, towels have right-rounded
-- New customer phase: `toTowels` added between `washing` and `exit`
-- After washing, customers walk to towel dispenser (70%) or skip (30% - CONFIG.towelSkipChance)
-- Towel use logic moved from washing phase to toTowels arrival
-- Customer phases now: enter→findStall→toStall→entering→inStall→exitStall→toSink→washing→toTowels→exit
-- Files: index.html (~2 lines), src/styles.css (~4 lines), src/main.js (~40 lines), CLAUDE.md
 
 ---
 
@@ -104,6 +103,18 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Move Paper Towels Next to Sinks with New Customer Flow (d2n)
+- Goal: relocate towels to be adjacent to sinks, customers walk to towels after washing
+- HTML: created new #sink-towel-area container grouping #sinks-area and #towels
+- CSS: #sink-towel-area uses flexbox to position sinks and towels side-by-side at bottom center
+- Removed position:absolute from #towels, now flows naturally with sinks
+- Adjusted border-radius: sinks have left-rounded corners, towels have right-rounded
+- New customer phase: `toTowels` added between `washing` and `exit`
+- After washing, customers walk to towel dispenser (70%) or skip (30% - CONFIG.towelSkipChance)
+- Towel use logic moved from washing phase to toTowels arrival
+- Customer phases now: enter→findStall→toStall→entering→inStall→exitStall→toSink→washing→toTowels→exit
+- Files: index.html (~2 lines), src/styles.css (~4 lines), src/main.js (~40 lines), CLAUDE.md
 
 ### Define Visual Art Style (6yh)
 - Goal: decide on cohesive art style for the game, create style guide
