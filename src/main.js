@@ -987,8 +987,8 @@ function playDailyRewardSound() {
 // PREMIUM / PAYWALL
 // =============================================================================
 
-// Stripe publishable key (replace with production key when deploying)
-const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51T50tXKgkIT46sg7mMeQOWDGljUFlbK3dqKMvAi08d38FjRCiPwXlGMkDzOHKLLj9nBFX31JIz7y9D3z5CKzRnGY00RNX6bTXj';
+// Stripe publishable key (live)
+const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_live_51RtgcnKgkIT46sg7XmLrt97ZPHRVx7D00UEJsobuDjUmSBg8JS7cfPpF716cXtcn9xLikK29AnzH22BG3bk51XmV00cN5bpZ7G';
 
 // Stripe checkout instance
 let stripeCheckout = null;
