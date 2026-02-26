@@ -3205,3 +3205,300 @@ if (lbClose) {
     $('leaderboard-panel')?.classList.remove('active');
   });
 }
+
+// ==================== SHARE SCORE SYSTEM ====================
+
+// Store share data for canvas generation
+let shareData = {
+  score: 0,
+  grade: 'C',
+  shift: 1,
+  cleaned: 0,
+  served: 0,
+  maxCombo: 1,
+  isWin: false
+};
+
+// Generate score card on canvas (9:16 ratio for Instagram Stories)
+function generateShareCanvas() {
+  const canvas = $('share-canvas');
+  const ctx = canvas.getContext('2d');
+  const w = 540;
+  const h = 960;
+
+  // Background - wood grain texture effect
+  const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
+  bgGrad.addColorStop(0, '#5a4030');
+  bgGrad.addColorStop(0.5, '#3d2814');
+  bgGrad.addColorStop(1, '#2d1f0f');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, w, h);
+
+  // Decorative border
+  ctx.strokeStyle = '#f5a623';
+  ctx.lineWidth = 8;
+  ctx.strokeRect(20, 20, w - 40, h - 40);
+
+  // Inner decorative line
+  ctx.strokeStyle = 'rgba(245, 166, 35, 0.3)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(35, 35, w - 70, h - 70);
+
+  // Title - Beaver emoji + game name
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#f5a623';
+  ctx.font = 'bold 48px system-ui, sans-serif';
+  ctx.fillText("🦫 Beaver's", w / 2, 120);
+  ctx.fillText('Bathroom Blitz', w / 2, 175);
+
+  // Tagline
+  ctx.fillStyle = '#fdd835';
+  ctx.font = 'italic 22px system-ui, sans-serif';
+  ctx.fillText('"Dam Good Restrooms"', w / 2, 215);
+
+  // Result badge
+  const badgeY = 300;
+  const badgeRadius = 70;
+
+  // Badge glow
+  ctx.shadowColor = shareData.isWin ? 'rgba(255, 215, 0, 0.6)' : 'rgba(245, 166, 35, 0.5)';
+  ctx.shadowBlur = 30;
+
+  // Badge background
+  const badgeGrad = ctx.createRadialGradient(w / 2, badgeY, 0, w / 2, badgeY, badgeRadius);
+  if (shareData.isWin) {
+    badgeGrad.addColorStop(0, '#ffd700');
+    badgeGrad.addColorStop(1, '#b8860b');
+  } else {
+    badgeGrad.addColorStop(0, '#e53935');
+    badgeGrad.addColorStop(1, '#b71c1c');
+  }
+  ctx.fillStyle = badgeGrad;
+  ctx.beginPath();
+  ctx.arc(w / 2, badgeY, badgeRadius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // Badge border
+  ctx.strokeStyle = shareData.isWin ? '#ffd700' : '#fff';
+  ctx.lineWidth = 4;
+  ctx.stroke();
+
+  // Badge icon
+  ctx.font = '60px system-ui, sans-serif';
+  ctx.fillStyle = '#fff';
+  ctx.fillText(shareData.isWin ? '🏆' : '🚽', w / 2, badgeY + 20);
+
+  // Score display
+  ctx.shadowColor = 'rgba(255, 215, 0, 0.5)';
+  ctx.shadowBlur = 20;
+  ctx.fillStyle = '#ffd700';
+  ctx.font = 'bold 80px system-ui, sans-serif';
+  ctx.fillText(shareData.score.toLocaleString(), w / 2, 450);
+  ctx.shadowBlur = 0;
+
+  ctx.fillStyle = '#c9a86c';
+  ctx.font = '24px system-ui, sans-serif';
+  ctx.fillText('POINTS', w / 2, 485);
+
+  // Grade badge
+  const gradeColors = {
+    S: '#ffd700',
+    A: '#4caf50',
+    B: '#2196f3',
+    C: '#ff9800',
+    F: '#f44336'
+  };
+
+  ctx.fillStyle = gradeColors[shareData.grade] || '#ff9800';
+  ctx.font = 'bold 72px system-ui, sans-serif';
+  ctx.fillText(shareData.grade, w / 2, 570);
+
+  ctx.fillStyle = '#a08060';
+  ctx.font = '20px system-ui, sans-serif';
+  ctx.fillText('GRADE', w / 2, 600);
+
+  // Stats section
+  const statsY = 660;
+  const statSpacing = 85;
+
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+  roundRect(ctx, 60, statsY - 20, w - 120, 160, 15);
+  ctx.fill();
+
+  // Stat boxes
+  const stats = [
+    { icon: '🧹', value: shareData.cleaned, label: 'Cleaned' },
+    { icon: '👥', value: shareData.served, label: 'Served' },
+    { icon: '🔥', value: shareData.maxCombo + 'x', label: 'Combo' }
+  ];
+
+  stats.forEach((stat, i) => {
+    const x = 120 + i * (w - 240) / 2.5;
+    ctx.textAlign = 'center';
+    ctx.font = '32px system-ui, sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.fillText(stat.icon, x, statsY + 30);
+    ctx.font = 'bold 36px system-ui, sans-serif';
+    ctx.fillStyle = '#f5a623';
+    ctx.fillText(String(stat.value), x, statsY + 75);
+    ctx.font = '16px system-ui, sans-serif';
+    ctx.fillStyle = '#a08060';
+    ctx.fillText(stat.label, x, statsY + 100);
+  });
+
+  // Shift info
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#c9a86c';
+  ctx.font = '24px system-ui, sans-serif';
+  ctx.fillText(`Day ${shareData.shift} of 6`, w / 2, 870);
+
+  // CTA
+  ctx.fillStyle = '#f5a623';
+  ctx.font = 'bold 20px system-ui, sans-serif';
+  ctx.fillText('Play at beaverbathroomblitz.com', w / 2, 915);
+}
+
+// Helper function for rounded rectangles
+function roundRect(ctx, x, y, width, height, radius) {
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+}
+
+// Open share modal with score data
+function openShareModal(source) {
+  // Populate share data based on source
+  if (source === 'result') {
+    const ratio = game.stats.dirty / Math.max(1, game.stats.served);
+    let grade;
+    if (ratio === 0 && game.stats.abandoned === 0) grade = 'S';
+    else if (ratio <= 0.1) grade = 'A';
+    else if (ratio <= 0.2) grade = 'B';
+    else if (ratio <= 0.35) grade = 'C';
+    else grade = 'F';
+
+    shareData = {
+      score: Math.floor(game.score),
+      grade: grade,
+      shift: game.shift + 1,
+      cleaned: game.stats.cleaned,
+      served: game.stats.served,
+      maxCombo: game.maxCombo,
+      isWin: false
+    };
+  } else if (source === 'gameover') {
+    const won = game.shift >= CONFIG.shifts.length - 1;
+    const ratio = game.stats.dirty / Math.max(1, game.stats.served);
+    let grade;
+    if (ratio === 0 && game.stats.abandoned === 0) grade = 'S';
+    else if (ratio <= 0.1) grade = 'A';
+    else if (ratio <= 0.2) grade = 'B';
+    else if (ratio <= 0.35) grade = 'C';
+    else grade = 'F';
+
+    shareData = {
+      score: Math.floor(game.score),
+      grade: grade,
+      shift: game.shift + 1,
+      cleaned: game.stats.cleaned,
+      served: game.stats.served,
+      maxCombo: game.maxCombo,
+      isWin: won
+    };
+  }
+
+  generateShareCanvas();
+  $('share-modal').classList.add('active');
+
+  // Show/hide native share button based on support
+  const nativeBtn = $('share-native');
+  if (navigator.share && navigator.canShare) {
+    nativeBtn.style.display = 'block';
+  } else {
+    nativeBtn.style.display = 'none';
+  }
+}
+
+function closeShareModal() {
+  $('share-modal').classList.remove('active');
+}
+
+// Native Web Share API
+async function shareNative() {
+  const canvas = $('share-canvas');
+
+  try {
+    // Convert canvas to blob
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    const file = new File([blob], 'beaver-bathroom-score.png', { type: 'image/png' });
+
+    // Check if we can share files
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        title: "Beaver's Bathroom Blitz",
+        text: `I scored ${shareData.score} points in Beaver's Bathroom Blitz! 🦫🚽`,
+        files: [file]
+      });
+      haptic('success');
+    } else {
+      // Fall back to URL share only
+      await navigator.share({
+        title: "Beaver's Bathroom Blitz",
+        text: `I scored ${shareData.score} points in Beaver's Bathroom Blitz! 🦫🚽\nPlay at beaverbathroomblitz.com`,
+        url: 'https://beaverbathroomblitz.com'
+      });
+      haptic('success');
+    }
+  } catch (err) {
+    if (err.name !== 'AbortError') {
+      console.error('Share failed:', err);
+      // Fall back to download
+      downloadShareImage();
+    }
+  }
+}
+
+// Download image fallback
+function downloadShareImage() {
+  const canvas = $('share-canvas');
+  const link = document.createElement('a');
+  link.download = `beaver-bathroom-${shareData.score}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  haptic('medium');
+}
+
+// Share button event listeners
+$('share-result')?.addEventListener('click', () => {
+  playClick();
+  openShareModal('result');
+});
+
+$('share-gameover')?.addEventListener('click', () => {
+  playClick();
+  openShareModal('gameover');
+});
+
+$('close-share')?.addEventListener('click', closeShareModal);
+$('share-modal')?.addEventListener('click', e => {
+  if (e.target === $('share-modal')) closeShareModal();
+});
+
+$('share-native')?.addEventListener('click', () => {
+  playClick();
+  shareNative();
+});
+
+$('share-download')?.addEventListener('click', () => {
+  playClick();
+  downloadShareImage();
+});

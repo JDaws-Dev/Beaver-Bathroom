@@ -195,6 +195,9 @@
       <p style="font-size:0.85em;opacity:0.8;margin-bottom:10px">Choose a power-up:</p>
       <div class="pick-row" id="pick-row"></div>
     </div>
+    <div class="share-row">
+      <button class="btn btn-share" id="share-result">📤 Share Score</button>
+    </div>
     <button class="btn" id="next-btn">Next Shift</button>
   </div>
 
@@ -237,7 +240,27 @@
       </a>
     </div>
 
+    <div class="share-row">
+      <button class="btn btn-share" id="share-gameover">📤 Share Score</button>
+    </div>
     <button class="btn" id="retry-btn">Try Again</button>
+  </div>
+
+  <!-- Share preview modal -->
+  <div id="share-modal" class="modal">
+    <div class="modal-content share-content">
+      <div class="modal-header">
+        <span class="modal-title">📤 Share Your Score</span>
+        <button class="modal-close" id="close-share">&times;</button>
+      </div>
+      <div class="share-preview">
+        <canvas id="share-canvas" width="540" height="960"></canvas>
+      </div>
+      <div class="share-actions">
+        <button class="btn btn-share-action" id="share-native">📱 Share</button>
+        <button class="btn btn-share-action btn-secondary" id="share-download">💾 Save Image</button>
+      </div>
+    </div>
   </div>
 
   <div id="shift-intro" class="screen">

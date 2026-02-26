@@ -9,6 +9,19 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Social Sharing - Share Score to Instagram/TikTok (ok8)
+- Goal: let players share high scores to social media for viral marketing
+- Canvas-based score card generator (9:16 ratio for Instagram Stories)
+- Score card includes: game branding, score, grade, stats (cleaned/served/combo), day/shift, CTA
+- Visual design: wood grain background, gold border, badge with trophy/toilet icon, gradient text
+- Web Share API integration with fallback to download image
+- Share buttons on both result-screen and gameover-screen
+- Modal preview shows scaled canvas before sharing
+- shareData object stores: score, grade, shift, cleaned, served, maxCombo, isWin
+- Helper functions: generateShareCanvas(), roundRect(), openShareModal(), shareNative(), downloadShareImage()
+- Mobile responsive: stacked action buttons at 420px breakpoint
+- Files: src/main.js (~220 lines), src/styles.css (~15 lines), index.html (~25 lines)
+
 ### Employee Rank Progression System (0c2)
 - Goal: add Trainee → Attendant → Supervisor → Manager → Legend rank progression
 - Added EMPLOYEE_RANKS constant with 5 ranks:
@@ -44,22 +57,6 @@ This file maintains context between autonomous iterations.
 - checkAchievements() called at endShift and finishInspection
 - Mobile responsive: 2-column grid at 420px breakpoint
 - Files: src/main.js (~130 lines), src/styles.css (~25 lines), index.html (~12 lines)
-
-### Add Haptic Feedback for Mobile (680)
-- Goal: add vibration feedback to make game feel tactile on mobile
-- Added `haptic(type)` function with 6 intensity levels: light (15ms), medium (40ms), strong (80ms), success (pattern), warning (pattern), error (150ms)
-- Check `canVibrate` (navigator.vibrate) and `hapticsEnabled` before vibrating
-- localStorage key: `beaverHaptics` (defaults to ON)
-- Added toggle in settings modal: "📳 Haptics" with ON/OFF button
-- Haptic events added to:
-  - `light`: stall click, task button mash
-  - `medium`: single task complete
-  - `strong`: stall cleaned, combo milestone, powerup activated
-  - `success`: shift complete, game won
-  - `warning`: inspector arriving
-  - `error`: customer leaves unhappy, game over (lost)
-- Toggling haptics ON triggers medium pulse as confirmation
-- Files: index.html (+4 lines), src/main.js (~30 lines)
 
 ---
 
@@ -115,6 +112,22 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Add Haptic Feedback for Mobile (680)
+- Goal: add vibration feedback to make game feel tactile on mobile
+- Added `haptic(type)` function with 6 intensity levels: light (15ms), medium (40ms), strong (80ms), success (pattern), warning (pattern), error (150ms)
+- Check `canVibrate` (navigator.vibrate) and `hapticsEnabled` before vibrating
+- localStorage key: `beaverHaptics` (defaults to ON)
+- Added toggle in settings modal: "📳 Haptics" with ON/OFF button
+- Haptic events added to:
+  - `light`: stall click, task button mash
+  - `medium`: single task complete
+  - `strong`: stall cleaned, combo milestone, powerup activated
+  - `success`: shift complete, game won
+  - `warning`: inspector arriving
+  - `error`: customer leaves unhappy, game over (lost)
+- Toggling haptics ON triggers medium pulse as confirmation
+- Files: index.html (+4 lines), src/main.js (~30 lines)
 
 ### Update Visual Style to Evoke Buc-ee's Aesthetic (b79)
 - Goal: refresh visual design to capture Buc-ee's roadside travel stop vibe (legally safe parody)
