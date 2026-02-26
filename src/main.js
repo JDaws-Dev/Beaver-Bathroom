@@ -3926,7 +3926,7 @@ function generateShareCanvas() {
   // Tagline
   ctx.fillStyle = '#fdd835';
   ctx.font = 'italic 22px system-ui, sans-serif';
-  ctx.fillText('"Dam Good Restrooms"', w / 2, 215);
+  ctx.fillText('Cleanest Restrooms in Texas!', w / 2, 215);
 
   // Result badge
   const badgeY = 300;
