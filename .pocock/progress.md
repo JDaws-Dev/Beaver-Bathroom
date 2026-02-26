@@ -9,6 +9,17 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Fun Sound Effects System (86w)
+- Goal: add entertaining sound effects to enhance bathroom cleaning theme
+- Added 3 toilet flush varieties: playFlushNormal(), playFlushPowerful(), playFlushWeak()
+- Random flush selection via playFlush() - each sounds distinct
+- Customer reaction sounds: playCustomerHappy(), playCustomerDisgusted(), playCustomerImpatient()
+- Comedy sounds: playFart() (8-15% on stall exit), playSplash() (on puddles), playBloop() (high combos)
+- Additional ambient: playDoorCreak(), playSinkWater(), playVIPFanfare(), playCoinEarned()
+- All sounds use existing Web Audio synthesis - no external files
+- Hooked sounds to game events: customerLeaves, washing phase, VIP spawn, impatient thoughts, towel grab/fail
+- Files: src/main.js (~120 lines added for sound functions + ~15 lines for event hooks)
+
 ### Settings Modal with Volume Controls (voq)
 - Goal: replace floating audio buttons with single gear icon and settings modal
 - Removed: 2x audio-ctrl divs (#mute-btn, #music-btn) from HUD

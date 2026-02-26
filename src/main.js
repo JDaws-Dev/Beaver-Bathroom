@@ -518,6 +518,134 @@ function playComboBreak() {
   setTimeout(() => playSound(300, 0.2, 'triangle', 0.1), 100);
 }
 
+// === TOILET FLUSH SOUNDS (3 varieties) ===
+function playFlush() {
+  const variety = Math.floor(Math.random() * 3);
+  switch(variety) {
+    case 0: playFlushNormal(); break;
+    case 1: playFlushPowerful(); break;
+    case 2: playFlushWeak(); break;
+  }
+}
+
+function playFlushNormal() {
+  // Classic flush: whoosh down, then refill gurgle
+  playSound(200, 0.15, 'sawtooth', 0.15);
+  setTimeout(() => playSound(150, 0.2, 'sawtooth', 0.12), 50);
+  setTimeout(() => playSound(100, 0.3, 'sine', 0.1), 150);
+  // Water refill gurgle
+  for(let i=0; i<4; i++) {
+    setTimeout(() => playSound(300 + Math.random()*100, 0.05, 'sine', 0.06), 400 + i*60);
+  }
+}
+
+function playFlushPowerful() {
+  // Powerful flush: louder, deeper, more dramatic
+  playSound(180, 0.1, 'sawtooth', 0.2);
+  playSound(120, 0.2, 'sawtooth', 0.18);
+  setTimeout(() => playSound(80, 0.25, 'sine', 0.15), 100);
+  setTimeout(() => playSound(60, 0.3, 'sine', 0.12), 200);
+  // Big refill
+  for(let i=0; i<6; i++) {
+    setTimeout(() => playSound(250 + Math.random()*150, 0.06, 'sine', 0.08), 450 + i*50);
+  }
+}
+
+function playFlushWeak() {
+  // Weak flush: higher pitch, pathetic sound
+  playSound(300, 0.08, 'triangle', 0.1);
+  setTimeout(() => playSound(250, 0.1, 'triangle', 0.08), 50);
+  setTimeout(() => playSound(220, 0.15, 'sine', 0.06), 120);
+  // Tiny gurgle
+  setTimeout(() => playSound(400, 0.04, 'sine', 0.04), 300);
+  setTimeout(() => playSound(380, 0.03, 'sine', 0.03), 350);
+}
+
+// === CUSTOMER REACTION SOUNDS ===
+function playCustomerHappy() {
+  // Satisfied "ahh" - ascending pleasant tone
+  playSound(400, 0.15, 'sine', 0.12);
+  setTimeout(() => playSound(500, 0.12, 'sine', 0.1), 80);
+  setTimeout(() => playSound(600, 0.15, 'sine', 0.08), 160);
+}
+
+function playCustomerDisgusted() {
+  // "Eww" - descending dissonant tone
+  playSound(350, 0.1, 'sawtooth', 0.1);
+  setTimeout(() => playSound(280, 0.12, 'sawtooth', 0.08), 60);
+  setTimeout(() => playSound(200, 0.18, 'triangle', 0.06), 140);
+}
+
+function playCustomerImpatient() {
+  // Frustrated sigh - descending with wobble
+  playSound(500, 0.08, 'sine', 0.08);
+  setTimeout(() => playSound(450, 0.06, 'sine', 0.06), 50);
+  setTimeout(() => playSound(380, 0.1, 'sine', 0.05), 100);
+  setTimeout(() => playSound(350, 0.15, 'triangle', 0.04), 160);
+}
+
+// === FUNNY/COMEDY SOUNDS ===
+function playFart() {
+  // Comedic toot - low frequency burble
+  const baseFreq = 60 + Math.random() * 30;
+  playSound(baseFreq, 0.08, 'sawtooth', 0.12);
+  setTimeout(() => playSound(baseFreq + 10, 0.1, 'sawtooth', 0.1), 40);
+  setTimeout(() => playSound(baseFreq - 15, 0.12, 'triangle', 0.08), 100);
+}
+
+function playSplash() {
+  // Exaggerated splash - cartoon water hit
+  playSound(1200 + Math.random()*400, 0.04, 'sawtooth', 0.15);
+  for(let i=0; i<5; i++) {
+    setTimeout(() => playSound(800 + Math.random()*600, 0.03, 'sawtooth', 0.08), 30 + i*25);
+  }
+  // Water drips after
+  for(let i=0; i<3; i++) {
+    setTimeout(() => playSound(2000 + Math.random()*500, 0.02, 'sine', 0.05), 180 + i*80);
+  }
+}
+
+function playBloop() {
+  // Cartoon bloop - bubbly fun sound
+  const freq = 300 + Math.random() * 200;
+  playSound(freq, 0.08, 'sine', 0.15);
+  setTimeout(() => playSound(freq * 1.5, 0.06, 'sine', 0.12), 60);
+  setTimeout(() => playSound(freq * 2, 0.04, 'sine', 0.08), 100);
+}
+
+// === ADDITIONAL AMBIENT SOUNDS ===
+function playDoorCreak() {
+  // Door opening/closing squeak
+  playSound(800 + Math.random()*200, 0.06, 'triangle', 0.06);
+  setTimeout(() => playSound(700 + Math.random()*150, 0.08, 'triangle', 0.05), 50);
+}
+
+function playSinkWater() {
+  // Sink water running - white noise approximation
+  for(let i=0; i<4; i++) {
+    setTimeout(() => playSound(2000 + Math.random()*2000, 0.03, 'sawtooth', 0.04), i*40);
+  }
+}
+
+function playFootstep() {
+  // Quick tap footstep
+  playSound(150 + Math.random()*50, 0.03, 'sine', 0.06);
+}
+
+function playVIPFanfare() {
+  // VIP arrival - royal flourish
+  [523, 659, 784, 1047].forEach((f, i) => {
+    setTimeout(() => playSound(f, 0.12, 'triangle', 0.15), i * 60);
+  });
+}
+
+function playCoinEarned() {
+  // Coin cha-ching sound
+  playSound(1200, 0.06, 'square', 0.1);
+  setTimeout(() => playSound(1600, 0.08, 'square', 0.12), 50);
+  setTimeout(() => playSound(2000, 0.1, 'sine', 0.1), 100);
+}
+
 // Background Music System - Procedural Upbeat Theme
 let isMusicMuted = localStorage.getItem('beaverMusicMuted') === 'true';
 let musicPlaying = false;
@@ -1344,7 +1472,10 @@ function spawnCustomer() {
     specialThoughts: specialThoughts,
   });
 
-  if (isVip) showBeaverTip('vipCustomer');
+  if (isVip) {
+    showBeaverTip('vipCustomer');
+    playVIPFanfare();
+  }
 }
 
 function updatePeople(dt) {
@@ -1376,6 +1507,7 @@ function updatePeople(dt) {
         } else {
           p.thought = pick(patienceRatio < 0.15 ? THOUGHTS.desperate : THOUGHTS.impatient);
         }
+        playCustomerImpatient();
         p.thoughtTimer = 2000;
       }
 
@@ -1528,6 +1660,7 @@ function updatePeople(dt) {
             game.combo = 0;
             showComboBreak(hadCombo);
             playBad();
+            playCustomerDisgusted();
             screenShake();
             setBeaverMood('sad', 1500);
             p.thought = pick(THOUGHTS.disgusted);
@@ -1600,6 +1733,7 @@ function updatePeople(dt) {
         p.phase = 'washing';
         p.washTime = 1000;
         p.sinkIdx = sinkIdx;
+        playSinkWater();
       } else {
         p.x += (dx / dist) * speed;
         p.y += (dy / dist) * speed;
@@ -1623,6 +1757,7 @@ function updatePeople(dt) {
           } else {
             p.thought = pick(THOUGHTS.happy);
           }
+          playCustomerHappy();
           p.thoughtTimer = 1500;
           p.phase = 'exit';
         } else {
@@ -1649,6 +1784,7 @@ function updatePeople(dt) {
           } else {
             p.thought = pick(THOUGHTS.happy);
           }
+          playCustomerHappy();
           p.thoughtTimer = 1500;
         } else {
           // No towels! Customer is unhappy
@@ -1658,6 +1794,7 @@ function updatePeople(dt) {
           game.rating = Math.max(0, game.rating - penalty);
           floatMessage('No towels! -⭐', p.x, p.y - 30, 'bad');
           playBad();
+          playCustomerDisgusted();
           setBeaverMood('worried', 1500);
         }
         p.phase = 'exit';
@@ -1687,6 +1824,8 @@ function customerLeaves(stallIdx) {
   const stall = game.stalls[stallIdx];
   stall.state = 'dirty';
   stall.doorOpen = true;
+  playFlush(); // Toilet flush sound
+  playDoorCreak(); // Door opening
 
   // Generate tasks based on customer messiness
   // Clean customers (-1): lower chance of each task, min 1 task
@@ -1694,6 +1833,11 @@ function customerLeaves(stallIdx) {
   // Messy customers (1): higher chance of each task, likely 3-4 tasks
   const messiness = stall.messiness || 0;
   const chanceModifier = messiness === -1 ? 0.4 : (messiness === 1 ? 1.5 : 1);
+
+  // Occasional comedy sound (8% chance for fart, higher for messy customers)
+  if (Math.random() < (messiness === 1 ? 0.15 : 0.08)) {
+    setTimeout(() => playFart(), 150);
+  }
 
   stall.tasks = TASKS.filter(t => Math.random() < (t.chance * chanceModifier)).map(t => ({...t, done: false}));
 
@@ -1739,6 +1883,7 @@ function spawnPuddle(x, y, type) {
   game.puddles.push({ id, x, y, type, age: 0 });
   renderPuddles();
   playBad();
+  playSplash(); // Cartoon splash sound
   floatMessage(type === 'vomit' ? '🤮 MESS!' : '💦 ACCIDENT!', x, y - 20, 'bad');
 }
 
@@ -2192,6 +2337,8 @@ function completeTask() {
     }
 
     playStallClean();
+    // Extra bloop sound at high combos for extra fun
+    if (game.combo >= 5) playBloop();
     // Beaver always gets excited for a clean stall!
     if (wasVip || game.combo >= 3) {
       screenShake();
@@ -2436,6 +2583,7 @@ function endShift() {
   // Award coins based on performance
   const coinsEarned = calculateCoins(game.score, grade);
   game.coins += coinsEarned;
+  if (coinsEarned > 0) playCoinEarned();
 
   // Unlock next skill based on completed shift
   const unlockedSkill = unlockNextSkill();
