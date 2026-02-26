@@ -198,13 +198,20 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .puddle{position:absolute;width:40px;height:28px;border-radius:50%;cursor:pointer;z-index:8;transition:transform 0.15s;display:flex;align-items:center;justify-content:center;font-size:1.2em}
 .puddle:hover{transform:scale(1.15)}
 .puddle:active{transform:scale(0.9)}
-.puddle.vomit{background:radial-gradient(ellipse,#9acd32 20%,#6b8e23 60%,#556b2f 100%);box-shadow:0 2px 6px rgba(0,0,0,0.3),inset 0 -3px 6px rgba(0,0,0,0.2)}
+.puddle.vomit{background:radial-gradient(ellipse,#9acd32 20%,#6b8e23 60%,#556b2f 100%);box-shadow:0 2px 6px rgba(0,0,0,0.3),inset 0 -3px 6px rgba(0,0,0,0.2);width:48px;height:32px}
 .puddle.pee{background:radial-gradient(ellipse,#ffd54f 20%,#ffb300 60%,#ff8f00 100%);box-shadow:0 2px 6px rgba(0,0,0,0.3),inset 0 -3px 6px rgba(0,0,0,0.2)}
+.puddle.water{background:radial-gradient(ellipse,rgba(135,206,250,0.7) 20%,rgba(70,130,180,0.6) 60%,rgba(30,80,120,0.5) 100%);box-shadow:0 2px 4px rgba(0,0,0,0.15),inset 0 1px 3px rgba(255,255,255,0.4);width:35px;height:22px}
+.puddle.muddy{background:radial-gradient(ellipse,#8b6914 20%,#6b4423 60%,#4a3015 100%);box-shadow:0 2px 5px rgba(0,0,0,0.35),inset 0 -2px 4px rgba(0,0,0,0.3);width:32px;height:18px}
+.puddle .puddle-icon{font-size:0.9em;filter:drop-shadow(0 1px 1px rgba(0,0,0,0.3))}
 .puddle .puddle-stink{position:absolute;top:-12px;left:50%;transform:translateX(-50%);display:flex;gap:2px}
 .puddle .stink-line{width:3px;height:14px;background:linear-gradient(180deg,transparent 0%,rgba(100,80,20,0.6) 40%,transparent 100%);border-radius:50%;animation:stink-wave 0.8s ease-in-out infinite}
 .puddle .stink-line:nth-child(2){animation-delay:0.2s;height:18px}
 .puddle .stink-line:nth-child(3){animation-delay:0.4s}
+.puddle.mopping{animation:puddle-mop 0.3s ease-in-out infinite}
 .puddle.cleaning{animation:puddle-clean 0.3s ease-out forwards}
+.puddle .puddle-progress{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);width:36px;height:5px;background:#333;border-radius:3px;overflow:hidden}
+.puddle .puddle-progress-fill{height:100%;background:linear-gradient(90deg,#4fc3f7,#29b6f6);border-radius:3px;transition:width 0.1s}
+@keyframes puddle-mop{0%,100%{transform:scale(1) rotate(0deg)}50%{transform:scale(0.95) rotate(2deg)}}
 @keyframes puddle-clean{to{transform:scale(0);opacity:0}}
 #wall-sign{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#4a8c4a 0%,#3d7a3d 50%,#2e6b2e 100%);color:#fff;padding:6px 16px;border-radius:6px;font-size:0.7em;font-weight:bold;letter-spacing:1px;border:3px solid #2a5a2a;box-shadow:0 3px 8px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.2);z-index:5;text-shadow:0 1px 2px rgba(0,0,0,0.4)}
 #sink-towel-area{position:absolute;bottom:0;left:50%;transform:translateX(-50%);display:flex;align-items:flex-end;gap:0}

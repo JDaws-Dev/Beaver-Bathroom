@@ -204,6 +204,61 @@ const CONFIG = {
     { level: 10, speedBoost: 5000, rating: 0.3, points: 250, msg: '🌟 LEGENDARY!' },
   ],
   towelSkipChance: 0.3,  // 30% of customers skip towel drying
+  // Mess spawn chances per source
+  messChance: {
+    sinkSplash: 0.08,    // Water puddle after sink use
+    stallAccident: 0.15, // Pee puddle on angry leave
+    walkwayRandom: 0.02, // Random mess during rush
+    vomitSick: 0.10,     // Vomit from sick customers
+  },
+};
+
+// MESS_TYPES: Different mess varieties with severity and cleanup time
+const MESS_TYPES = {
+  water: {
+    icon: '💧',
+    name: 'Water Splash',
+    severity: 1,
+    cleanTime: 200,   // Quick clean
+    points: 15,
+    color: 'water',
+    stinkLines: false,
+    message: '💧 SPLASH!',
+    sound: 'splash',
+  },
+  pee: {
+    icon: '💦',
+    name: 'Accident',
+    severity: 2,
+    cleanTime: 400,   // Medium clean
+    points: 30,
+    color: 'pee',
+    stinkLines: true,
+    message: '💦 ACCIDENT!',
+    sound: 'splash',
+  },
+  vomit: {
+    icon: '🤮',
+    name: 'Vomit',
+    severity: 3,
+    cleanTime: 600,   // Long clean
+    points: 50,
+    color: 'vomit',
+    stinkLines: true,
+    message: '🤮 MESS!',
+    sound: 'splat',
+  },
+  muddy: {
+    icon: '👣',
+    name: 'Muddy Prints',
+    severity: 1,
+    cleanTime: 250,
+    points: 20,
+    color: 'muddy',
+    stinkLines: false,
+    message: '👣 MUD!',
+    sound: 'squish',
+  },
 };
 
 // SKILLS: Earned automatically as you complete shifts (not purchased)
@@ -1788,6 +1843,10 @@ function update(dt) {
   }
   if (game.rushMode) {
     game.rushDuration -= dt;
+    // Random mess spawn during rush (chaos!)
+    if (Math.random() < CONFIG.messChance.walkwayRandom * (dt / 1000)) {
+      spawnRandomMess();
+    }
     if (game.rushDuration <= 0) {
       game.rushMode = false;
       $('rush-warning').style.display = 'none';
@@ -2010,6 +2069,32 @@ function updatePeople(dt) {
 
     // Update thought timer
     if (p.thoughtTimer > 0) p.thoughtTimer -= dt;
+
+    // Check if customer steps in mess (walking phases only)
+    if (['enter', 'findStall', 'toStall', 'toSink', 'toTowels', 'exit'].includes(p.phase)) {
+      const mess = checkCustomerInMess(p);
+      if (mess && !p.steppedInMess) {
+        p.steppedInMess = mess.id;
+        p.thought = pick(THOUGHTS.disgusted);
+        p.thoughtTimer = 1500;
+        playCustomerDisgusted();
+        haptic('warning');
+        // Messy messes leave footprints
+        if (mess.type === 'muddy' || mess.type === 'vomit') {
+          p.hasMessyFeet = true;
+        }
+        // Small rating hit for letting customers step in mess
+        game.rating = clamp(game.rating - 0.05, 0, 5);
+        floatMessage('😖 Stepped in mess!', p.x, p.y - 30, 'bad');
+      }
+    }
+
+    // Messy feet leave occasional footprints
+    if (p.hasMessyFeet && Math.random() < 0.002 * (dt / 16)) {
+      spawnPuddle(p.x + rnd(-5, 5), p.y + rnd(15, 25), 'muddy');
+      // Feet get cleaner over time
+      if (Math.random() < 0.3) p.hasMessyFeet = false;
+    }
 
     // Patience - only drain when truly waiting for a stall
     // Only drain during findStall when NO empty unreserved stalls are available
@@ -2268,6 +2353,16 @@ function updatePeople(dt) {
           showBeaverTip('dirtySink');
         }
         updateSinkDOM(p.sinkIdx);
+        // Chance of water splash on floor
+        if (Math.random() < CONFIG.messChance.sinkSplash) {
+          const sinkEl = $('sinks-area').children[p.sinkIdx];
+          if (sinkEl) {
+            const sinkRect = sinkEl.getBoundingClientRect();
+            const x = sinkRect.left - floorRect.left + rnd(-15, 15);
+            const y = sinkRect.top - floorRect.top - rnd(30, 50);
+            spawnPuddle(x, y, 'water');
+          }
+        }
 
         // Customer wants to dry hands (configurable skip chance)
         const skipTowel = Math.random() < CONFIG.towelSkipChance;
@@ -2400,12 +2495,47 @@ function customerLeaves(stallIdx) {
 }
 
 function spawnPuddle(x, y, type) {
+  const messType = MESS_TYPES[type] || MESS_TYPES.water;
   const id = Date.now() + Math.random();
-  game.puddles.push({ id, x, y, type, age: 0 });
+  game.puddles.push({ id, x, y, type, age: 0, cleaning: false, cleanProgress: 0 });
   renderPuddles();
   playBad();
-  playSplash(); // Cartoon splash sound
-  floatMessage(type === 'vomit' ? '🤮 MESS!' : '💦 ACCIDENT!', x, y - 20, 'bad');
+  if (messType.sound === 'splat') {
+    playSplat();
+  } else if (messType.sound === 'squish') {
+    playSquish();
+  } else {
+    playSplash();
+  }
+  floatMessage(messType.message, x, y - 20, 'bad');
+}
+
+// Spawn random mess in bathroom area (for rush hour chaos)
+function spawnRandomMess() {
+  const floor = $('floor-area');
+  const rect = floor.getBoundingClientRect();
+  // Random walkway location (middle area of floor)
+  const x = rnd(80, rect.width - 80);
+  const y = rnd(100, rect.height - 100);
+  // Random mess type weighted by frequency
+  const roll = Math.random();
+  let type = 'water';
+  if (roll < 0.15) type = 'muddy';
+  else if (roll < 0.35) type = 'vomit';
+  else if (roll < 0.65) type = 'pee';
+  spawnPuddle(x, y, type);
+}
+
+// Spawn water splash near sinks
+function spawnSinkSplash() {
+  const sinksArea = $('sinks-area');
+  if (!sinksArea) return;
+  const floor = $('floor-area');
+  const floorRect = floor.getBoundingClientRect();
+  const sinkRect = sinksArea.getBoundingClientRect();
+  const x = sinkRect.left - floorRect.left + rnd(10, sinkRect.width - 10);
+  const y = sinkRect.top - floorRect.top - rnd(20, 50);
+  spawnPuddle(x, y, 'water');
 }
 
 function renderPuddles() {
@@ -2414,17 +2544,128 @@ function renderPuddles() {
 
   const floor = $('floor-area');
   game.puddles.forEach(puddle => {
+    const messType = MESS_TYPES[puddle.type] || MESS_TYPES.water;
     const el = document.createElement('div');
-    el.className = 'puddle ' + puddle.type;
+    el.className = 'puddle ' + puddle.type + (puddle.cleaning ? ' mopping' : '');
+    el.dataset.puddleId = puddle.id;
     el.style.left = puddle.x + 'px';
     el.style.top = puddle.y + 'px';
-    el.innerHTML = `<div class="puddle-stink"><div class="stink-line"></div><div class="stink-line"></div><div class="stink-line"></div></div>`;
+    // Add icon for muddy footprints
+    if (puddle.type === 'muddy') {
+      el.innerHTML = '<span class="puddle-icon">👣</span>';
+    } else if (messType.stinkLines) {
+      el.innerHTML = `<div class="puddle-stink"><div class="stink-line"></div><div class="stink-line"></div><div class="stink-line"></div></div>`;
+    }
+    // Progress bar for cleaning
+    if (puddle.cleaning) {
+      const pct = Math.min(100, (puddle.cleanProgress / messType.cleanTime) * 100);
+      el.innerHTML += `<div class="puddle-progress"><div class="puddle-progress-fill" style="width:${pct}%"></div></div>`;
+    }
     el.addEventListener('click', () => clickPuddle(puddle.id));
     floor.appendChild(el);
   });
 }
 
 function clickPuddle(id) {
+  const idx = game.puddles.findIndex(p => p.id === id);
+  if (idx === -1) return;
+
+  const puddle = game.puddles[idx];
+  const messType = MESS_TYPES[puddle.type] || MESS_TYPES.water;
+
+  // Start cleaning if not already
+  if (!puddle.cleaning) {
+    puddle.cleaning = true;
+    puddle.cleanProgress = 0;
+    playMop();
+    haptic('light');
+    renderPuddles();
+    return;
+  }
+
+  // Add progress on each click
+  const boost = game.effects.speed > 0 ? 80 : 50;
+  puddle.cleanProgress += boost;
+  playMop();
+  haptic('light');
+
+  // Check if cleaned
+  if (puddle.cleanProgress >= messType.cleanTime) {
+    game.score += messType.points;
+    game.stats.cleaned++;
+    game.combo++;
+
+    floatMessage('+' + messType.points + ' 🧹', puddle.x, puddle.y - 10, 'good');
+    playTaskComplete();
+    haptic('strong');
+    setBeaverMood('happy', 800);
+
+    // Animate out
+    const el = document.querySelector(`.puddle[data-puddle-id="${puddle.id}"]`);
+    if (el) el.classList.add('cleaning');
+
+    spawnSparkles(puddle.x + 20, puddle.y + 14, 6);
+
+    setTimeout(() => {
+      const newIdx = game.puddles.findIndex(p => p.id === id);
+      if (newIdx !== -1) {
+        game.puddles.splice(newIdx, 1);
+        renderPuddles();
+      }
+    }, 300);
+  } else {
+    renderPuddles();
+  }
+}
+
+// Play splat sound for vomit
+function playSplat() {
+  if (!audioCtx) initAudio();
+  const now = audioCtx.currentTime;
+  // Gross splat sound - low freq burst with wobble
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(120, now);
+  osc.frequency.exponentialRampToValueAtTime(40, now + 0.15);
+  gain.gain.setValueAtTime(0.25 * sfxVolume, now);
+  gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start(now);
+  osc.stop(now + 0.2);
+}
+
+// Play squish sound for muddy footprints
+function playSquish() {
+  if (!audioCtx) initAudio();
+  const now = audioCtx.currentTime;
+  // Squelchy mud sound
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(200, now);
+  osc.frequency.linearRampToValueAtTime(80, now + 0.1);
+  gain.gain.setValueAtTime(0.15 * sfxVolume, now);
+  gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start(now);
+  osc.stop(now + 0.12);
+}
+
+// Check if customer is stepping in a mess
+function checkCustomerInMess(person) {
+  for (const puddle of game.puddles) {
+    const dx = Math.abs(person.x - puddle.x);
+    const dy = Math.abs(person.y - puddle.y);
+    if (dx < 30 && dy < 25) {
+      return puddle;
+    }
+  }
+  return null;
+}
+
+// DEPRECATED - keeping for backwards compat
+function clickPuddleOld(id) {
   const idx = game.puddles.findIndex(p => p.id === id);
   if (idx === -1) return;
 

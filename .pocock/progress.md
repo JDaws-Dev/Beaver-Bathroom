@@ -9,50 +9,43 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Improved Puddle/Mess System (g0v)
+- Goal: expand mess variety with different types, spawn locations, and cleanup times
+- New MESS_TYPES config with 4 mess varieties:
+  - 💧 water: quick clean (200ms), 15 pts, spawns near sinks, no stink lines
+  - 💦 pee: medium clean (400ms), 30 pts, customer accidents, stink lines
+  - 🤮 vomit: long clean (600ms), 50 pts, messy customers, stink lines, larger puddle
+  - 👣 muddy: quick clean (250ms), 20 pts, tracked in by customers, footprint icon
+- Spawn locations:
+  - sinkSplash: 8% chance after washing hands (water near sinks)
+  - stallAccident: 15% chance when customer leaves angry (pee)
+  - walkwayRandom: during rush hour, random messes appear (chaos!)
+  - vomitSick: messy customers have higher vomit chance
+- Cleanup mechanic changed: click to start mopping, mash to fill progress bar
+  - Progress bar shows under puddle while cleaning
+  - Speed boost doubles click progress
+  - Triggers combo, sparkles, and beaver happy on clean
+- Customer reactions:
+  - Customers stepping in mess show disgusted thought + sound
+  - Small rating hit (-0.05) for letting them step in mess
+  - Messy messes (vomit, muddy) leave footprints on customer (hasMessyFeet)
+  - Customers with messy feet occasionally leave muddy footprints as they walk
+- New sounds: playSplat() for vomit, playSquish() for muddy
+- CSS: water/muddy puddle styles, progress bar, mopping animation
+- Files: src/main.js (~180 lines), src/styles.css (~10 lines)
+
 ### Speed Clean Challenge Mini-Game (151)
 - Goal: 30-second bonus round where player cleans as many stalls as possible
 - Triggers after shifts 2, 4, 6 (0-indexed: 1, 3, 5) for pacing variety
 - MINIGAME_CONFIG: duration 30s, 8 stalls, 300ms respawn, 5 coins per clean
 - 4 new screens: minigame-intro, minigame-screen, minigame-result (+ game flow)
-- Intro screen: blue/gold theme (different from main game), explains one-click rules
-- Play screen: 8 golden stalls, HUD shows time + cleaned count, urgent timer animation
-- Stalls: one-click to clean, flash green + shrink animation, respawn after 300ms
-- Results: show stalls cleaned, bonus coins earned, performance-based comment
-- Integration: next-btn checks shouldTriggerMinigame() before incrementing shift
-- continueFromMinigame() routes to shop or final results
-- CSS: blue gradient theme to visually distinguish bonus round, gold accents
-- Mobile responsive: 420px breakpoint styles for smaller stalls/cards
 - Files: src/main.js (~160 lines), src/styles.css (~60 lines), index.html (~50 lines)
 
 ### Social Sharing - Share Score to Instagram/TikTok (ok8)
 - Goal: let players share high scores to social media for viral marketing
 - Canvas-based score card generator (9:16 ratio for Instagram Stories)
-- Score card includes: game branding, score, grade, stats (cleaned/served/combo), day/shift, CTA
-- Visual design: wood grain background, gold border, badge with trophy/toilet icon, gradient text
 - Web Share API integration with fallback to download image
-- Share buttons on both result-screen and gameover-screen
-- Modal preview shows scaled canvas before sharing
-- shareData object stores: score, grade, shift, cleaned, served, maxCombo, isWin
-- Helper functions: generateShareCanvas(), roundRect(), openShareModal(), shareNative(), downloadShareImage()
-- Mobile responsive: stacked action buttons at 420px breakpoint
 - Files: src/main.js (~220 lines), src/styles.css (~15 lines), index.html (~25 lines)
-
-### Employee Rank Progression System (0c2)
-- Goal: add Trainee → Attendant → Supervisor → Manager → Legend rank progression
-- Added EMPLOYEE_RANKS constant with 5 ranks:
-  - Trainee (0 XP, gray): Starting rank
-  - Attendant (500 XP, tan): Rank badge display unlocked
-  - Supervisor (2000 XP, cyan): Name tag earned
-  - Manager (5000 XP, gold): Gold HUD accents
-  - Legend (10000 XP, pink): Legendary title styling
-- XP system mirrors coin system: `calculateCoins(score, grade)` for XP amount
-- localStorage key: `beaverEmployeeXP` (integer)
-- Title screen shows: rank badge, progress bar, XP counter
-- Rank-up celebration banner with sound and haptic feedback
-- CSS rank classes (rank-manager, rank-legend) add visual perks
-- XP shown in rewards row alongside coins after each shift
-- Helper functions: getCurrentRank(), getNextRank(), getRankProgress(), addEmployeeXP()
-- Files: src/main.js (~120 lines), src/styles.css (~20 lines), index.html (~5 lines)
 
 ---
 
