@@ -9,10 +9,23 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
-### Remove Wall Sign Covering Stalls (h6p) - COMPLETE
-- Goal: remove "🦫 KEEP IT CLEAN!" wall sign that was blocking stall visibility
-- Fix: removed #wall-sign element from index.html and all CSS styles
-- Files: index.html (1 line removed), src/styles.css (3 lines removed - main + 2 responsive breakpoints)
+### Update Power-ups to Buc-ee's Themed Items (mhj) - COMPLETE
+- Goal: replace generic power-ups with Buc-ee's themed items for brand consistency
+- New ITEMS array with themed names:
+  - Speed Boost → 🥩 Brisket Sandwich (2x cleaning speed, 10s)
+  - Slow-Mo → 🧊 Icee Freeze (slower spawns, 12s)
+  - Insta-Clean → 🍿 Beaver Nuggets (instant clean)
+  - NEW: 🦫 Bucky Walk (mascot distracts customers, 8s)
+- Mascot walk system implemented:
+  - `startMascotWalk()`: spawns beaver emoji walking across floor
+  - `updateMascotWalk(dt)`: moves mascot, keeps customers distracted
+  - `endMascotWalk()`: removes mascot, undistracts all customers
+  - CSS: #mascot-walk with waddle animation, .person.distracted with photo animation
+- Customer distraction: enter/findStall phases check p.distracted, show thought bubbles (📸, 🤩, etc.)
+- Updated all UI references: float messages, tips, shop inventory, daily rewards
+- Day 7 daily reward bonus renamed from 'instaClean' to 'beaverNuggets'
+- Cleanup: endMascotWalk() called in endShift() and gameOver()
+- Files: src/main.js (~90 lines), src/styles.css (~8 lines), index.html (~4 lines)
 
 ### Fix Sound System - Audio Not Playing (cyr) - IN PROGRESS
 - Goal: fix audio not playing after user interaction

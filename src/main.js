@@ -155,7 +155,7 @@ const BUCKY_TIPS = [
   ],
   // Shift 3 (Tour Bus) tips - volume handling
   [
-    "Use your items wisely - ⚡ Speed Boost and ✨ Insta-Clean are lifesavers!",
+    "Use your items wisely - 🥩 Brisket and 🍿 Nuggets are lifesavers!",
     "When it gets busy, prioritize VIPs and urgent customers.",
     "Watch for puddles on the floor - click 'em to mop 'em up!",
   ],
@@ -303,26 +303,34 @@ const SKILL_UNLOCK_ORDER = [
 const ITEMS = [
   {
     id: 'speed',
-    name: 'Speed Boost',
-    icon: '⚡',
-    desc: '2x cleaning speed',
-    duration: 12000,  // 12s
+    name: 'Brisket Sandwich',
+    icon: '🥩',
+    desc: 'Texas BBQ energy! 2x cleaning speed',
+    duration: 10000,  // 10s
     cost: 30,
   },
   {
     id: 'slow',
-    name: 'Slow-Mo',
-    icon: '🐢',
-    desc: 'Slower spawns',
+    name: 'Icee Freeze',
+    icon: '🧊',
+    desc: 'Brain freeze! Slower spawns',
     duration: 12000,
     cost: 30,
   },
   {
     id: 'auto',
-    name: 'Insta-Clean',
-    icon: '✨',
-    desc: 'Clean one stall',
+    name: 'Beaver Nuggets',
+    icon: '🍿',
+    desc: 'Instant clean one stall',
     cost: 50,
+  },
+  {
+    id: 'mascot',
+    name: 'Bucky Walk',
+    icon: '🦫',
+    desc: 'Bucky distracts customers!',
+    duration: 8000,  // 8s
+    cost: 40,
   },
 ];
 
@@ -679,7 +687,7 @@ const DAILY_REWARDS = [
   { day: 4, coins: 100, label: '100 🪙' },
   { day: 5, coins: 150, label: '150 🪙' },
   { day: 6, coins: 200, label: '200 🪙' },
-  { day: 7, coins: 300, label: '300 🪙 + ✨', bonus: 'instaClean' },
+  { day: 7, coins: 300, label: '300 🪙 + 🍿', bonus: 'beaverNuggets' },
 ];
 
 // Streak multipliers
@@ -768,7 +776,7 @@ function showDailyRewardModal() {
   // Show bonus item if day 7
   const bonusEl = $('dr-bonus');
   if (reward.bonus && bonusEl) {
-    bonusEl.textContent = '+ Free Insta-Clean!';
+    bonusEl.textContent = '+ Free Beaver Nuggets!';
     bonusEl.classList.add('visible');
   } else if (bonusEl) {
     bonusEl.classList.remove('visible');
@@ -802,6 +810,11 @@ function claimDailyReward() {
   dailyRewardState.streak = reward.streak;
   dailyRewardState.pendingCoins += reward.finalCoins;
 
+  // Apply bonus item for day 7
+  if (reward.bonus === 'beaverNuggets') {
+    dailyRewardState.pendingBonusItem = 'auto';  // Gives a free Beaver Nuggets (auto-clean)
+  }
+
   // Save to localStorage
   localStorage.setItem('beaverDailyReward', JSON.stringify(dailyRewardState));
 
@@ -813,13 +826,18 @@ function claimDailyReward() {
   showCoinCollect(reward.finalCoins);
 }
 
-// Apply pending coins to game start
+// Apply pending coins and bonus items to game start
 function applyPendingDailyCoins() {
   if (dailyRewardState.pendingCoins > 0) {
     game.coins += dailyRewardState.pendingCoins;
     dailyRewardState.pendingCoins = 0;
-    localStorage.setItem('beaverDailyReward', JSON.stringify(dailyRewardState));
   }
+  // Apply pending bonus item (Beaver Nuggets from day 7)
+  if (dailyRewardState.pendingBonusItem === 'auto') {
+    game.powerups.auto++;
+    dailyRewardState.pendingBonusItem = null;
+  }
+  localStorage.setItem('beaverDailyReward', JSON.stringify(dailyRewardState));
 }
 
 // Show coin collect animation on title
@@ -1131,24 +1149,26 @@ const soundBuffers = {}; // Cache for decoded audio buffers
 const SOUND_BASE = import.meta.env.DEV ? '/' : import.meta.env.BASE_URL;
 console.log('[Audio] SOUND_BASE:', SOUND_BASE, '(DEV:', import.meta.env.DEV, ')');
 const SOUND_FILES = {
-  click: `${SOUND_BASE}sounds/click.wav`,
-  plunge: `${SOUND_BASE}sounds/plunge.wav`,
-  scrub: `${SOUND_BASE}sounds/scrub.wav`,
-  mop: `${SOUND_BASE}sounds/mop.wav`,
-  restock: `${SOUND_BASE}sounds/restock.wav`,
-  clean: `${SOUND_BASE}sounds/clean.wav`,
-  complete: `${SOUND_BASE}sounds/complete.wav`,
-  flush: `${SOUND_BASE}sounds/flush.wav`,
-  bad: `${SOUND_BASE}sounds/bad.wav`,
-  urgent: `${SOUND_BASE}sounds/urgent.wav`,
-  happy: `${SOUND_BASE}sounds/happy.wav`,
-  disgusted: `${SOUND_BASE}sounds/disgusted.wav`,
-  door: `${SOUND_BASE}sounds/door.wav`,
-  vip: `${SOUND_BASE}sounds/vip.wav`,
-  coin: `${SOUND_BASE}sounds/coin.wav`,
-  combo: `${SOUND_BASE}sounds/combo.wav`,
-  inspector: `${SOUND_BASE}sounds/inspector.wav`,
-  powerup: `${SOUND_BASE}sounds/powerup.wav`,
+  click: `${SOUND_BASE}sounds/click.ogg`,
+  plunge: `${SOUND_BASE}sounds/plunge.ogg`,
+  scrub: `${SOUND_BASE}sounds/scrub.ogg`,
+  mop: `${SOUND_BASE}sounds/mop.ogg`,
+  restock: `${SOUND_BASE}sounds/restock.ogg`,
+  clean: `${SOUND_BASE}sounds/clean.ogg`,
+  complete: `${SOUND_BASE}sounds/complete.ogg`,
+  flush: `${SOUND_BASE}sounds/flush.ogg`,
+  bad: `${SOUND_BASE}sounds/bad.ogg`,
+  urgent: `${SOUND_BASE}sounds/urgent.ogg`,
+  happy: `${SOUND_BASE}sounds/happy.ogg`,
+  disgusted: `${SOUND_BASE}sounds/disgusted.ogg`,
+  door: `${SOUND_BASE}sounds/door.ogg`,
+  door_open: `${SOUND_BASE}sounds/door_open.ogg`,
+  door_close: `${SOUND_BASE}sounds/door_close.ogg`,
+  vip: `${SOUND_BASE}sounds/vip.ogg`,
+  coin: `${SOUND_BASE}sounds/coin.ogg`,
+  combo: `${SOUND_BASE}sounds/combo.ogg`,
+  inspector: `${SOUND_BASE}sounds/inspector.ogg`,
+  powerup: `${SOUND_BASE}sounds/powerup.ogg`,
 };
 let soundsLoaded = false;
 let soundsLoading = false;
@@ -1462,6 +1482,14 @@ function playDoorCreak() {
   playSample('door', 0.5, 0.9 + Math.random() * 0.2);
 }
 
+function playDoorOpen() {
+  playSample('door_open', 0.5, 0.95 + Math.random() * 0.1);
+}
+
+function playDoorClose() {
+  playSample('door_close', 0.6, 0.9 + Math.random() * 0.2);
+}
+
 function playSinkWater() {
   playSample('scrub', 0.3, 1.2); // High-pitch scrub as water
 }
@@ -1482,6 +1510,75 @@ function playPowerup() {
   playSample('powerup', 0.85);
 }
 
+// Mascot Walk System - Bucky walks across the floor and distracts customers
+function startMascotWalk() {
+  const floorArea = $('floor-area');
+  const floorRect = floorArea.getBoundingClientRect();
+  const mascotEl = $('mascot-walk');
+
+  // Spawn on left side, walk right
+  const startX = -60;
+  const endX = floorRect.width + 60;
+  const y = floorRect.height * 0.4;
+
+  game.mascotWalk = {
+    x: startX,
+    y: y,
+    targetX: endX,
+    speed: 100  // pixels per second
+  };
+
+  mascotEl.textContent = '🦫';
+  mascotEl.style.left = startX + 'px';
+  mascotEl.style.top = y + 'px';
+  mascotEl.classList.remove('hidden');
+  mascotEl.classList.add('walking');
+
+  // Mark all current people in enter/findStall phase as distracted
+  for (const p of game.people) {
+    if (p.phase === 'enter' || p.phase === 'findStall') {
+      p.distracted = true;
+    }
+  }
+
+  floatMessage('🦫 BUCKY ON THE FLOOR!', 400, 150, 'combo');
+}
+
+function updateMascotWalk(dt) {
+  if (!game.mascotWalk) return;
+
+  const mascotEl = $('mascot-walk');
+  game.mascotWalk.x += game.mascotWalk.speed * dt;
+  mascotEl.style.left = game.mascotWalk.x + 'px';
+
+  // Check if mascot reached the end
+  if (game.mascotWalk.x >= game.mascotWalk.targetX) {
+    endMascotWalk();
+  }
+
+  // Keep distracting customers while mascot is visible
+  for (const p of game.people) {
+    if (p.phase === 'enter' || p.phase === 'findStall') {
+      if (!p.distracted) {
+        p.distracted = true;
+      }
+    }
+  }
+}
+
+function endMascotWalk() {
+  const mascotEl = $('mascot-walk');
+  mascotEl.classList.add('hidden');
+  mascotEl.classList.remove('walking');
+  game.mascotWalk = null;
+  game.effects.mascot = 0;
+
+  // Undistract all customers
+  for (const p of game.people) {
+    p.distracted = false;
+  }
+}
+
 // Background Music System - Procedural Upbeat Theme
 let isMusicMuted = localStorage.getItem('beaverMusicMuted') === 'true';
 let musicPlaying = false;
@@ -1489,28 +1586,45 @@ let musicOscillators = [];
 let musicGain = null;
 let musicInterval = null;
 
-// Simple major scale notes (C major)
+// Simple pleasant scale - C major pentatonic for easy listening
 const MUSIC_NOTES = {
-  C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.00, A4: 440.00, B4: 493.88,
+  C4: 261.63, D4: 293.66, E4: 329.63, G4: 392.00, A4: 440.00,
   C5: 523.25, D5: 587.33, E5: 659.25, G5: 783.99
 };
 
-// Catchy melody pattern - upbeat and cartoony
+// Simple catchy melody - think elevator music meets game show
 const MELODY = [
-  ['C5', 0.2], ['E5', 0.2], ['G5', 0.2], ['E5', 0.2],
-  ['C5', 0.2], ['D5', 0.2], ['E5', 0.4],
-  ['G4', 0.2], ['A4', 0.2], ['B4', 0.2], ['C5', 0.2],
-  ['D5', 0.4], ['C5', 0.4],
-  ['E5', 0.2], ['D5', 0.2], ['C5', 0.2], ['G4', 0.2],
-  ['A4', 0.2], ['G4', 0.2], ['E4', 0.4],
-  ['F4', 0.2], ['G4', 0.2], ['A4', 0.2], ['G4', 0.2],
-  ['C5', 0.6], [null, 0.2]
+  // A section - bouncy and light
+  ['C5', 0.25], ['E5', 0.25], ['G5', 0.5],
+  ['E5', 0.25], ['C5', 0.25], ['D5', 0.5],
+  ['E5', 0.25], ['D5', 0.25], ['C5', 0.5],
+  [null, 0.5],
+
+  // B section - simple variation
+  ['G4', 0.25], ['C5', 0.25], ['E5', 0.5],
+  ['D5', 0.25], ['E5', 0.25], ['C5', 0.5],
+  ['A4', 0.25], ['G4', 0.25], ['E4', 0.5],
+  [null, 0.5],
+
+  // A section repeat
+  ['C5', 0.25], ['E5', 0.25], ['G5', 0.5],
+  ['E5', 0.25], ['D5', 0.25], ['C5', 0.5],
+  ['D5', 0.25], ['E5', 0.25], ['G5', 0.5],
+  [null, 0.5],
+
+  // Ending phrase
+  ['E5', 0.25], ['D5', 0.25], ['C5', 0.25], ['G4', 0.25],
+  ['A4', 0.5], ['G4', 0.5],
+  ['C5', 1.0],
+  [null, 0.5]
 ];
 
-// Bass pattern - simple root notes
+// Simple bass - root notes, steady rhythm
 const BASS = [
-  ['C4', 0.4], [null, 0.4], ['G4', 0.4], [null, 0.4],
-  ['F4', 0.4], [null, 0.4], ['G4', 0.4], [null, 0.4]
+  ['C4', 0.5], [null, 0.5], ['G4', 0.5], [null, 0.5],
+  ['C4', 0.5], [null, 0.5], ['E4', 0.5], [null, 0.5],
+  ['A4', 0.5], [null, 0.5], ['G4', 0.5], [null, 0.5],
+  ['C4', 0.5], [null, 0.5], ['G4', 0.5], [null, 0.5]
 ];
 
 let melodyIndex = 0;
@@ -1613,7 +1727,7 @@ const BEAVER_TIPS = {
   dirtyStall: "Click dirty stalls to clean!",
   taskMash: "Mash the buttons faster!",
   dirtySink: "Don't forget the sinks!",
-  powerupReady: "Use your items! (⚡🐢✨)",
+  powerupReady: "Use your items! (🥩🧊🍿🦫)",
   comboStart: "Keep cleaning for combos!",
   lowTime: "Hurry! Time's running out!",
   vipCustomer: "VIP customer! Clean fast for 2x bonus!",
@@ -1677,8 +1791,9 @@ function init() {
     people: [],
     puddles: [],
     towels: 10,
-    powerups: {speed: 1, slow: 1, auto: 0},
-    effects: {speed: 0, slow: 0},
+    powerups: {speed: 1, slow: 1, auto: 0, mascot: 0},
+    effects: {speed: 0, slow: 0, mascot: 0},
+    mascotWalk: null,  // Mascot walk state when active
     spawnTimer: 0,
     activeStall: -1,
     activeTask: -1,
@@ -1998,12 +2113,15 @@ function updateHUD() {
   $('cnt-speed').textContent = game.powerups.speed;
   $('cnt-slow').textContent = game.powerups.slow;
   $('cnt-auto').textContent = game.powerups.auto;
+  $('cnt-mascot').textContent = game.powerups.mascot;
 
   $('pow-speed').classList.toggle('disabled', game.powerups.speed <= 0 && game.effects.speed <= 0);
   $('pow-slow').classList.toggle('disabled', game.powerups.slow <= 0 && game.effects.slow <= 0);
   $('pow-auto').classList.toggle('disabled', game.powerups.auto <= 0);
+  $('pow-mascot').classList.toggle('disabled', game.powerups.mascot <= 0 && game.effects.mascot <= 0);
   $('pow-speed').classList.toggle('active-effect', game.effects.speed > 0);
   $('pow-slow').classList.toggle('active-effect', game.effects.slow > 0);
+  $('pow-mascot').classList.toggle('active-effect', game.effects.mascot > 0);
 
   const towelEl = $('towels');
   towelEl.classList.toggle('low', game.towels <= 2 && game.towels > 0);
@@ -2050,7 +2168,7 @@ function startShift() {
   // Powerups: start with 1 of each basic item
   // Extra items purchased with coins carry over between shifts
   if (!game.powerups) {
-    game.powerups = {speed: 1, slow: 1, auto: 0};
+    game.powerups = {speed: 1, slow: 1, auto: 0, mascot: 0};
   }
 
   // Maybe trigger inspector visit (not on first shift)
@@ -2221,6 +2339,13 @@ function update(dt) {
 
   if (game.effects.speed > 0) game.effects.speed -= dt;
   if (game.effects.slow > 0) game.effects.slow -= dt;
+  if (game.effects.mascot > 0) {
+    game.effects.mascot -= dt;
+    updateMascotWalk(dt);
+    if (game.effects.mascot <= 0) {
+      endMascotWalk();
+    }
+  }
   if (game.comboBoost > 0) game.comboBoost -= dt;
 
   if (game.rating <= 0) {
@@ -2421,6 +2546,17 @@ function updatePeople(dt) {
     }
 
     if (p.phase === 'enter') {
+      // If distracted by mascot, show thought and don't move
+      if (p.distracted) {
+        if (!p.distractedThought) {
+          p.distractedThought = true;
+          p.thought = ['📸', '🤩', 'Is that Bucky?!', 'OMG!', '📷'][Math.floor(Math.random() * 5)];
+          p.thoughtTimer = 10000;  // Keep showing while distracted
+        }
+        continue;  // Skip movement this frame
+      }
+      p.distractedThought = false;
+
       // Get sink-towel area to avoid walking through it
       const sinkTowelArea = $('sink-towel-area');
       const sinkTowelRect = sinkTowelArea ? sinkTowelArea.getBoundingClientRect() : null;
@@ -2451,6 +2587,16 @@ function updatePeople(dt) {
       }
     }
     else if (p.phase === 'findStall') {
+      // If distracted by mascot, show thought and don't search
+      if (p.distracted) {
+        if (!p.distractedThought) {
+          p.distractedThought = true;
+          p.thought = ['📸', '🤩', 'Is that Bucky?!', 'Wow!', '📷'][Math.floor(Math.random() * 5)];
+          p.thoughtTimer = 10000;
+        }
+        continue;  // Skip finding stall this frame
+      }
+      p.distractedThought = false;
       // Clear stale reservations (fix for bug where reservations weren't cleared)
       for (let j = 0; j < game.stalls.length; j++) {
         if (game.stalls[j].reservedBy && !game.people.includes(game.stalls[j].reservedBy)) {
@@ -2511,6 +2657,7 @@ function updatePeople(dt) {
         }
 
         stall.doorOpen = true;
+        playDoorOpen();
         updateStallDOM(p.target);
       } else {
         p.x += (dx / dist) * speed;
@@ -2585,6 +2732,7 @@ function updatePeople(dt) {
         if (stall.state === 'cleaning' && !p.enteredDirty) {
           stall.reservedBy = null; // Release reservation
           stall.doorOpen = false;
+          playDoorClose();
           updateStallDOM(p.target);
           p.phase = 'findStall'; // Go back to finding a stall
           p.target = -1;
@@ -2598,6 +2746,7 @@ function updatePeople(dt) {
         stall.messiness = p.messiness; // Track messiness for task generation
         stall.timer = rnd(cfg.occMin, cfg.occMax);
         stall.doorOpen = false;
+        playDoorClose();
         stall.tasks = [];
 
         if (game.activeStall === p.target) {
@@ -2743,7 +2892,7 @@ function customerLeaves(stallIdx) {
   stall.state = 'dirty';
   stall.doorOpen = true;
   playFlush(); // Toilet flush sound
-  playDoorCreak(); // Door opening
+  playDoorOpen(); // Door opening
 
   // Generate tasks based on customer messiness
   // Clean customers (-1): lower chance of each task, min 1 task
@@ -3187,11 +3336,12 @@ function renderPeople() {
     el.style.left = p.x + 'px';
     el.style.top = p.y + 'px';
 
-    const isWalking = p.phase !== 'washing' && p.phase !== 'entering';
+    const isWalking = p.phase !== 'washing' && p.phase !== 'entering' && !p.distracted;
     el.classList.toggle('walking', isWalking);
     el.classList.toggle('entering', p.phase === 'entering');
     el.classList.toggle('urgent', p.urgent);
     el.classList.toggle('vip', p.vip);
+    el.classList.toggle('distracted', p.distracted);
 
     // Add VIP badge if needed
     if (p.vip && !el.querySelector('.vip-badge')) {
@@ -3479,7 +3629,7 @@ $('pow-speed').addEventListener('click', () => {
     game.effects.speed = getItemDuration('speed');
     playPowerup();
     haptic('strong'); // Powerup activation feedback
-    floatMessage('⚡ SPEED BOOST!', 400, 200, 'combo');
+    floatMessage('🥩 BRISKET POWER!', 400, 200, 'combo');
   }
 });
 
@@ -3491,7 +3641,7 @@ $('pow-slow').addEventListener('click', () => {
     game.effects.slow = getItemDuration('slow');
     playPowerup();
     haptic('strong'); // Powerup activation feedback
-    floatMessage('🐢 SLOW MODE!', 400, 200, 'combo');
+    floatMessage('🧊 BRAIN FREEZE!', 400, 200, 'combo');
   }
 });
 
@@ -3522,12 +3672,25 @@ $('pow-auto').addEventListener('click', () => {
         const y = rect.top - playRect.top;
         spawnSparkles(x, y + 40, 12);
         spawnConfetti(x, y + 30, 10);
-        floatMessage('✨ AUTO CLEAN!', rect.left - playRect.left, y, 'combo');
+        floatMessage('🍿 NUGGET MAGIC!', rect.left - playRect.left, y, 'combo');
       }
       playStallClean();
       haptic('strong'); // Powerup activation feedback
       setBeaverMood('excited', 1000);
     }
+  }
+});
+
+$('pow-mascot').addEventListener('click', () => {
+  const el = $('pow-mascot');
+  el.classList.remove('clicked'); void el.offsetWidth; el.classList.add('clicked');
+  if (game.powerups.mascot > 0 && game.effects.mascot <= 0) {
+    game.powerups.mascot--;
+    game.effects.mascot = getItemDuration('mascot');
+    startMascotWalk();
+    playPowerup();
+    haptic('strong');
+    setBeaverMood('excited', 1500);
   }
 });
 
@@ -3565,9 +3728,10 @@ function renderSupplyShop() {
     <div class="shop-inventory">
       <div class="inv-label">Your Items:</div>
       <div class="inv-row">
-        <span class="inv-item">⚡ ${game.powerups.speed}</span>
-        <span class="inv-item">🐢 ${game.powerups.slow}</span>
-        <span class="inv-item">✨ ${game.powerups.auto}</span>
+        <span class="inv-item">🥩 ${game.powerups.speed}</span>
+        <span class="inv-item">🧊 ${game.powerups.slow}</span>
+        <span class="inv-item">🍿 ${game.powerups.auto}</span>
+        <span class="inv-item">🦫 ${game.powerups.mascot}</span>
       </div>
     </div>
   `;
@@ -3622,6 +3786,11 @@ function endShift() {
   stopMusic();
   playWin();
   haptic('success'); // Success pattern for shift complete
+
+  // Clean up mascot walk if active
+  if (game.mascotWalk || game.effects.mascot > 0) {
+    endMascotWalk();
+  }
 
   // Clean up inspector if still present
   game.inspector = null;
@@ -3737,6 +3906,11 @@ function gameOver() {
   stopMusic();
   const won = game.shift >= CONFIG.shifts.length - 1;
   haptic(won ? 'success' : 'error'); // Victory or defeat feedback
+
+  // Clean up mascot walk if active
+  if (game.mascotWalk || game.effects.mascot > 0) {
+    endMascotWalk();
+  }
 
   // Clean up inspector if still present
   game.inspector = null;
