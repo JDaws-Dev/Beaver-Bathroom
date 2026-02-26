@@ -4175,6 +4175,8 @@ if (submitBtn) {
       submitBtn.textContent = 'Submitted!';
       $('go-name-section').style.display = 'none';
       $('leaderboard-section').style.display = 'block';
+      // Refresh leaderboard to show the new score
+      await fetchLeaderboard();
     }
   });
 }
