@@ -2616,6 +2616,7 @@ function startEndlessMode() {
   game.running = true;
   showScreen('game-screen');
   startMusic();
+  startAutoSave();
   game.lastTime = performance.now();
   requestAnimationFrame(gameLoop);
 }
@@ -2623,6 +2624,8 @@ function startEndlessMode() {
 function endlessGameOver() {
   game.running = false;
   stopMusic();
+  stopAutoSave();
+  clearSavedState();
   haptic('error');
 
   // Clean up
@@ -2806,12 +2809,15 @@ function startDailyMode() {
   game.paused = false;
   game.lastTime = performance.now();
   startMusic();
+  startAutoSave();
   requestAnimationFrame(gameLoop);
 }
 
 function dailyGameOver() {
   game.running = false;
   stopMusic();
+  stopAutoSave();
+  clearSavedState();
 
   // Clean up
   if (game.mascotWalk || game.effects.mascot > 0) endMascotWalk();
@@ -2990,6 +2996,7 @@ function startShift() {
   game.paused = false;
   game.lastTime = performance.now();
   startMusic();
+  startAutoSave();
   requestAnimationFrame(gameLoop);
 }
 
@@ -4608,6 +4615,8 @@ function showUpgradeScreen() {
 function endShift() {
   game.running = false;
   stopMusic();
+  stopAutoSave();
+  clearSavedState();
   playWin();
   haptic('success'); // Success pattern for shift complete
 
@@ -4749,6 +4758,8 @@ function endShift() {
 function gameOver() {
   game.running = false;
   stopMusic();
+  stopAutoSave();
+  clearSavedState();
   const won = game.shift >= CONFIG.shifts.length - 1;
   haptic(won ? 'success' : 'error'); // Victory or defeat feedback
 
@@ -5432,3 +5443,261 @@ $('paywall-modal')?.addEventListener('click', e => {
 
 // Check for Stripe return on page load
 checkStripeReturn();
+
+// ==================== SESSION PERSISTENCE ====================
+
+const GAME_STATE_KEY = 'beaverGameState';
+const STATE_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
+
+// Save current game state to localStorage
+function saveGameState() {
+  // Only save during active gameplay
+  if (!game.running || game.paused) return;
+
+  // Don't save minigame state
+  if (minigame.active) return;
+
+  const state = {
+    timestamp: Date.now(),
+    // Core game state
+    mode: game.mode,
+    shift: game.shift,
+    score: game.score,
+    rating: game.rating,
+    combo: game.combo,
+    maxCombo: game.maxCombo,
+    time: game.time,
+    elapsed: game.elapsed,
+    coins: game.coins,
+    towels: game.towels,
+    gender: game.gender,
+    // Skills and items
+    skills: { ...game.skills },
+    powerups: { ...game.powerups },
+    effects: { ...game.effects },
+    // Stats
+    stats: { ...game.stats },
+    // Stall states (simplified - just dirty/cleaning info)
+    stalls: game.stalls.map(s => ({
+      state: s.state,
+      tasks: s.tasks.map(t => ({ id: t.id, done: t.done })),
+      wasVip: s.wasVip,
+    })),
+    // Sink states
+    sinks: game.sinks.map(s => ({
+      dirty: s.dirty,
+      cleaning: s.cleaning,
+      progress: s.progress,
+    })),
+    // Rush mode
+    rushMode: game.rushMode,
+    rushTimer: game.rushTimer,
+    // Daily mode config
+    dailyShiftOverride: game.dailyShiftOverride || null,
+  };
+
+  localStorage.setItem(GAME_STATE_KEY, JSON.stringify(state));
+}
+
+// Load saved game state from localStorage
+function loadGameState() {
+  const saved = localStorage.getItem(GAME_STATE_KEY);
+  if (!saved) return null;
+
+  try {
+    const state = JSON.parse(saved);
+
+    // Check expiry
+    if (Date.now() - state.timestamp > STATE_EXPIRY_MS) {
+      clearSavedState();
+      return null;
+    }
+
+    return state;
+  } catch (e) {
+    clearSavedState();
+    return null;
+  }
+}
+
+// Clear saved game state
+function clearSavedState() {
+  localStorage.removeItem(GAME_STATE_KEY);
+}
+
+// Check for saved state and show resume modal
+function checkForSavedGame() {
+  const state = loadGameState();
+  if (!state) return;
+
+  // Show resume modal
+  const modal = $('resume-modal');
+  if (modal) {
+    // Update modal with saved state info
+    const modeText = state.mode === 'endless' ? 'Overtime' :
+                     state.mode === 'daily' ? 'Daily Challenge' :
+                     `Shift ${state.shift + 1}`;
+    $('resume-mode').textContent = modeText;
+    $('resume-score').textContent = state.score.toLocaleString();
+    $('resume-rating').textContent = '⭐'.repeat(Math.floor(state.rating));
+
+    modal.classList.add('active');
+  }
+}
+
+// Resume game from saved state
+function resumeGame() {
+  const state = loadGameState();
+  if (!state) {
+    closeResumeModal();
+    return;
+  }
+
+  closeResumeModal();
+
+  // Set gender before init
+  selectedGender = state.gender || 'female';
+  document.querySelectorAll('.gender-opt').forEach(b => {
+    b.classList.toggle('selected', b.dataset.gender === selectedGender);
+  });
+
+  // Initialize game structure
+  init();
+
+  // Restore core state
+  game.mode = state.mode;
+  game.shift = state.shift;
+  game.score = state.score;
+  game.rating = state.rating;
+  game.combo = state.combo;
+  game.maxCombo = state.maxCombo;
+  game.time = state.time;
+  game.elapsed = state.elapsed;
+  game.coins = state.coins;
+  game.towels = state.towels;
+  game.gender = state.gender;
+  game.skills = state.skills;
+  game.powerups = state.powerups;
+  game.effects = state.effects;
+  game.stats = state.stats;
+  game.rushMode = state.rushMode;
+  game.rushTimer = state.rushTimer;
+  game.dailyShiftOverride = state.dailyShiftOverride;
+
+  // Build UI for current shift
+  buildStalls();
+  buildSinks();
+
+  // Restore stall states
+  state.stalls.forEach((savedStall, i) => {
+    if (i < game.stalls.length) {
+      game.stalls[i].state = savedStall.state;
+      game.stalls[i].wasVip = savedStall.wasVip;
+      if (savedStall.tasks && savedStall.tasks.length > 0) {
+        game.stalls[i].tasks = savedStall.tasks.map(t => ({
+          ...TASKS.find(task => task.id === t.id),
+          done: t.done,
+        }));
+      }
+      updateStallDOM(i);
+    }
+  });
+
+  // Restore sink states
+  state.sinks.forEach((savedSink, i) => {
+    if (i < game.sinks.length) {
+      game.sinks[i].dirty = savedSink.dirty;
+      game.sinks[i].cleaning = savedSink.cleaning;
+      game.sinks[i].progress = savedSink.progress;
+      updateSinkDOM(i);
+    }
+  });
+
+  // Update UI
+  updateHUD();
+
+  // Clear saved state - we've restored it
+  clearSavedState();
+
+  // Start game
+  showScreen('game-screen');
+  game.running = true;
+  game.paused = false;
+  game.lastTime = performance.now();
+  startAutoSave();
+  requestAnimationFrame(gameLoop);
+
+  if (!isMusicMuted) startMusic();
+
+  floatMessage('Game Resumed!', window.innerWidth / 2, 100, 'good');
+}
+
+// Start new game (discard saved state)
+function startNewGame() {
+  clearSavedState();
+  closeResumeModal();
+}
+
+// Close resume modal
+function closeResumeModal() {
+  const modal = $('resume-modal');
+  if (modal) modal.classList.remove('active');
+}
+
+// Auto-save interval during gameplay
+let autoSaveInterval = null;
+
+function startAutoSave() {
+  stopAutoSave();
+  autoSaveInterval = setInterval(() => {
+    if (game.running && !game.paused) {
+      saveGameState();
+    }
+  }, 30000); // Every 30 seconds
+}
+
+function stopAutoSave() {
+  if (autoSaveInterval) {
+    clearInterval(autoSaveInterval);
+    autoSaveInterval = null;
+  }
+}
+
+// beforeunload handler - warn user during active gameplay
+window.addEventListener('beforeunload', (e) => {
+  if (game.running && !game.paused) {
+    // Save state before leaving
+    saveGameState();
+    // Show browser confirmation
+    e.preventDefault();
+    return '';
+  }
+});
+
+// visibilitychange handler - save when switching tabs
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && game.running) {
+    saveGameState();
+  }
+});
+
+// Resume modal handlers
+$('resume-yes')?.addEventListener('click', () => {
+  playClick();
+  resumeGame();
+});
+
+$('resume-no')?.addEventListener('click', () => {
+  playClick();
+  startNewGame();
+});
+
+$('resume-modal')?.addEventListener('click', e => {
+  if (e.target === $('resume-modal')) {
+    // Clicking outside = start new game
+    startNewGame();
+  }
+});
+
+// Check for saved game on page load (after small delay for other init)
+setTimeout(checkForSavedGame, 300);

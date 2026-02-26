@@ -9,6 +9,39 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Session Persistence and Navigation Warning (bu6) - COMPLETE
+- Goal: prevent users from losing game progress when navigating away or returning from Stripe
+- Implementation:
+  - `saveGameState()`: saves game state to localStorage (GAME_STATE_KEY = 'beaverGameState')
+  - `loadGameState()`: loads and validates saved state (checks 1hr expiry)
+  - `clearSavedState()`: removes saved state from localStorage
+  - `checkForSavedGame()`: checks for saved state on page load, shows resume modal
+  - `resumeGame()`: restores full game state and continues gameplay
+  - `startNewGame()`: clears saved state and closes modal
+- State saved includes:
+  - Core: mode, shift, score, rating, combo, maxCombo, time, elapsed, coins, towels, gender
+  - Skills and items: skills, powerups, effects
+  - Stats: cleaned, served, dirty, abandoned, saves
+  - Stalls: state, tasks (id + done), wasVip for each stall
+  - Sinks: dirty, cleaning, progress for each sink
+  - Rush mode: rushMode, rushTimer
+  - Daily mode: dailyShiftOverride config
+- Save triggers:
+  - `beforeunload` event (shows browser confirmation during active gameplay)
+  - `visibilitychange` event (saves when switching tabs)
+  - 30-second auto-save interval via `startAutoSave()`
+- Clear triggers:
+  - `endShift()`: successful shift completion
+  - `gameOver()`: win or lose
+  - `endlessGameOver()`: endless mode end
+  - `dailyGameOver()`: daily challenge end
+  - `startNewGame()`: user declines resume
+- Resume modal UI:
+  - Shows saved game info (mode, score, rating)
+  - "Resume" button to continue, "New Game" to start fresh
+  - CSS styling matches existing modal theme
+- Files: src/main.js (~210 lines added), index.html (~19 lines added), src/styles.css (~15 lines added)
+
 ### Fix Beaver Walk Power-up Orbiting Behavior (oiu) - COMPLETE
 - Goal: customers should physically circle/orbit around the beaver mascot instead of standing frozen
 - Problem: customers just stood still with thought bubbles, no circling behavior
