@@ -3334,7 +3334,7 @@ function dailyGameOver() {
   $('go-icon').textContent = '📅';
   $('go-title').textContent = 'DAILY CHALLENGE';
   $('go-score').textContent = finalScore.toLocaleString();
-  $('go-comment').textContent = isNewRecord
+  $('go-msg').textContent = isNewRecord
     ? `🎉 New daily best! Attempt #${dailyAttempts}`
     : `Today's best: ${dailyHighScore.toLocaleString()}`;
   $('go-stats').innerHTML = `
