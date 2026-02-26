@@ -2238,6 +2238,7 @@ function spawnCustomer() {
     specialName: specialName,
     specialBadge: specialBadge,
     specialThoughts: specialThoughts,
+    enterOffsetX: rnd(-30, 30), // Random X offset for natural-looking enter paths
   });
 
   if (isVip) {
@@ -2328,15 +2329,33 @@ function updatePeople(dt) {
     }
 
     if (p.phase === 'enter') {
-      const tx = floorRect.width / 2 - 15 + rnd(-30, 30);
-      const ty = floorRect.height / 2 - 20;
-      const dx = tx - p.x, dy = ty - p.y;
-      const dist = Math.sqrt(dx*dx + dy*dy);
-      if (dist < 15) {
-        p.phase = 'findStall';
+      // Get sink-towel area to avoid walking through it
+      const sinkTowelArea = $('sink-towel-area');
+      const sinkTowelRect = sinkTowelArea ? sinkTowelArea.getBoundingClientRect() : null;
+
+      // Safe Y is above the sink-towel area
+      const safeY = sinkTowelRect
+        ? sinkTowelRect.top - floorRect.top - 45
+        : floorRect.height - 100;
+
+      // Check if customer is in the "danger zone" (could clip through sinks)
+      const inDangerZone = sinkTowelRect && p.y > safeY;
+
+      if (inDangerZone) {
+        // Walk straight up first to clear the sink area
+        p.y -= speed * 1.2;
       } else {
-        p.x += (dx / dist) * speed;
-        p.y += (dy / dist) * speed;
+        // Clear of sink area - walk to center of floor
+        const tx = floorRect.width / 2 - 15 + (p.enterOffsetX || 0);
+        const ty = floorRect.height / 2 - 20;
+        const dx = tx - p.x, dy = ty - p.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 15) {
+          p.phase = 'findStall';
+        } else {
+          p.x += (dx / dist) * speed;
+          p.y += (dy / dist) * speed;
+        }
       }
     }
     else if (p.phase === 'findStall') {

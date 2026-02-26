@@ -9,6 +9,15 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Fix Customer Walking Path Clipping (ayf) - COMPLETE
+- Goal: customers shouldn't walk through/clip sink-towel area
+- Root cause: enter phase walked customers in straight line from exit door to center, passing through sinks
+- Fix: added "danger zone" detection in enter phase - if customer Y is below safeY threshold (45px above sink-towel area), walk straight up first before proceeding to center
+- Also added enterOffsetX to customer spawn to avoid recalculating random offset each frame
+- Exit phase already had anti-clip logic (walks up before heading to exit door)
+- toSink and toTowels phases already positioned customers correctly (35px above fixtures)
+- Files: src/main.js (~15 lines changed in enter phase + 1 line in spawnCustomer)
+
 ### Buc-ee's Visual Overhaul (d3u) - COMPLETE
 - Goal: implement full retro Americana / Buc-ee's travel stop visual style
 - Color palette: golden yellow (#FFD700, #f5a623), deep red (#C41E3A, #e53935), wood brown (#5d4037, #8b6342), cream (#f5ebe0)
