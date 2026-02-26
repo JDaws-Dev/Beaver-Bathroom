@@ -23,6 +23,7 @@ This file maintains context between autonomous iterations.
   4. First-click sounds fail because samples load async - no immediate feedback
   5. Event listener order wrong - initAudio in bubbling phase, button handlers fired first
   6. Sound path wrong in dev - BASE_URL was `/Beaver-Bathroom/` even when dev server serves at root
+  7. **NEW**: playSound/playSample/startMusic don't check if context is suspended before playing
 - Fixes applied:
   1. Made initAudio() async, properly await audioCtx.resume()
   2. Added 3s timeout to preloadSounds wait loop (resets audioInitialized on timeout for retry)
@@ -31,8 +32,9 @@ This file maintains context between autonomous iterations.
   5. Changed initAudio listener to capture:true - fires before button handlers
   6. Added oscillator fallbacks for playClick() and playStallClean() when samples not yet loaded
   7. **Fixed SOUND_BASE path**: uses `/` in dev mode, BASE_URL in production (import.meta.env.DEV check)
+  8. **NEW**: Added suspended state check to playSample(), playSound(), startMusic() - tries to resume if suspended
 - Debug logging shows: SOUND_BASE path, context state, load success/failure, play attempts
-- Files: src/main.js (~60 lines changed in audio system)
+- Files: src/main.js (~75 lines changed in audio system)
 - Status: AWAITING MANUAL BROWSER TEST
 - Test instructions:
   1. Run `npm run dev` (no VERCEL=1 needed anymore!)

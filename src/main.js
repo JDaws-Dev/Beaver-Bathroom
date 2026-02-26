@@ -1207,6 +1207,11 @@ function playSample(name, volume = 1.0, playbackRate = 1.0) {
     console.log('[Audio] playSample blocked: no audioCtx');
     return;
   }
+  // Try to resume if suspended (fire-and-forget, sound might not play this time)
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+    return; // Skip this sound, will work next time
+  }
   if (isMuted) return; // Don't log muted state
   // Ensure sfxVolume is valid (default to 0.7 if NaN)
   const effectiveVolume = isNaN(sfxVolume) ? 0.7 : sfxVolume;
@@ -1312,7 +1317,12 @@ function closeSettings() {
 }
 
 function playSound(freq, duration, type = 'sine', volume = 0.25) {
-  if (!audioCtx || isMuted || sfxVolume === 0) return;
+  if (!audioCtx) return;
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+    return; // Skip this sound
+  }
+  if (isMuted || sfxVolume === 0) return;
   try {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
@@ -1511,6 +1521,11 @@ const BEAT_MS = 60000 / TEMPO;
 function startMusic() {
   const effectiveMusicVol = isNaN(musicVolume) ? 0.5 : musicVolume;
   if (!audioCtx || isMuted || isMusicMuted || effectiveMusicVol === 0 || musicPlaying) return;
+  // Resume context if suspended
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+    return;
+  }
   musicPlaying = true;
   melodyIndex = 0;
   bassIndex = 0;
