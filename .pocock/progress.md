@@ -9,6 +9,19 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Update ROADMAP.md with Current State (byg) - COMPLETE
+- Goal: update ROADMAP.md to reflect completed work and current priorities
+- Changes:
+  - Bumped version to v1.1
+  - Removed completed issues from "In Progress": cyr (sound fix), h6p (wall sign), mhj (themed items)
+  - Added new sections: Game Modes (Endless, Daily Challenge), Monetization (Stripe, coupons, restore)
+  - Updated Buc-ee's Items table with actual implemented items
+  - Added issue IDs to mini-games table for tracking
+  - Split Technical Debt into "Completed" and "Remaining"
+  - Updated Visual Style section with correct tagline ("Dam Good Restrooms")
+  - Added current In Progress items (5rl, 972, byg)
+- Files: ROADMAP.md (full rewrite ~160 lines)
+
 ### Email-based Purchase Restore via Stripe (3r8) - COMPLETE
 - Goal: allow users to restore premium purchase on any device by entering email
 - Problem: premium status only in localStorage, cleared browser = lose premium, no cross-device restore

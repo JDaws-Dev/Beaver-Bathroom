@@ -1,6 +1,6 @@
 # Beaver's Bathroom Blitz - Roadmap
 
-## Current State (v1.0)
+## Current State (v1.1)
 
 **Live at:** https://beaversbathroomblitz.com
 
@@ -13,29 +13,51 @@
 - VIP customers, messy customers, clean freaks
 - Inspector events with pass/fail consequences
 - Rush hour events (flood of customers)
+- Special named characters (Big Rig Bill, Soccer Mom, etc.)
+- Beaver mascot walk power-up (customers follow mascot)
+
+### Game Modes
+- **Story Mode:** 6 shifts to earn the Golden Plunger
+- **Endless Mode (Overtime):** Unlocks after completing all shifts, escalating difficulty
+- **Daily Challenge:** Seeded RNG so all players get the same shift each day
+- **Speed Clean Mini-Game:** 30-second bonus round after shifts 2, 4, 6
 
 ### Progression Systems
 - **Employee Ranks:** Trainee → Cleaner → Senior → Supervisor → Manager → Legend
 - **XP System:** Earn XP per shift based on performance
 - **Coins:** Earned through gameplay, used for upgrades
-- **Upgrades:** Speed boosts, auto-clean, slow customers, etc.
+- **Perks:** Permanent passive upgrades (Quick Scrub, Patience Plus, Auto-Assist)
+- **Items:** Consumable power-ups (Brisket Sandwich, Icee Freeze, Beaver Nuggets, Beaver Walk)
 
 ### Engagement Features
-- **Daily Rewards:** 7-day cycle (25→300 coins), streak multipliers (up to 3x)
+- **Daily Rewards:** 7-day cycle (25→300 coins), streak multipliers (up to 3x), bonus items
 - **Achievements:** 17 badges across categories (combos, cleaning, score, etc.)
 - **Leaderboard:** Global high scores via Convex database
 - **Social Sharing:** Canvas-based score cards for Instagram/TikTok
 
-### Mini-Games
-- **Speed Clean Challenge:** 30-second bonus round after shifts 2, 4, 6
-  - 8 stalls, tap dirty ones fast, 5 coins per clean
+### Monetization
+- **Premium Unlock ($2.99):** Unlocks Shifts 4-6, VIP customers, special characters, upgrades, daily challenge
+- **Stripe Checkout:** Embedded checkout on-page (no redirect)
+- **Purchase Restore:** Email-based restore via Stripe API lookup
+- **Coupon Codes:** Free premium access codes (e.g., DAWSFRIEND)
+- **Session Persistence:** Game saves when navigating to payment
+
+### Buc-ee's Themed Items
+| Item | Effect |
+|------|--------|
+| 🥩 Brisket Sandwich | 2x cleaning speed for 10s |
+| 🧊 Icee Freeze | Slower spawns for 12s |
+| 🍿 Beaver Nuggets | Instant clean one stall |
+| 🦫 Beaver Walk | Mascot distracts customers for 8s |
 
 ### Technical
 - Vite build system
-- Convex real-time database (leaderboard)
+- Convex real-time database (leaderboard, daily scores, coupons)
 - PWA-ready (installable)
 - Mobile-first responsive design
 - Vercel deployment with auto-deploy
+- Web Audio API procedural sounds
+- Session persistence and auto-save
 
 ---
 
@@ -43,11 +65,9 @@
 
 | Priority | Issue | Description |
 |----------|-------|-------------|
-| P0 | cyr | Fix sound system - audio not playing |
-| P1 | h6p | Remove wall sign blocking stalls |
-| P1 | mhj | Buc-ee's themed power-ups (Brisket Sandwich, Beaver Mascot) |
-| P0 | d27 | Finalize branding/domain/launch |
-| P1 | zsb | Logo and branding assets |
+| P0 | 5rl | Generate branding assets (app icon, favicon, social share) |
+| P1 | 972 | Add legal pages (privacy, terms, contact) |
+| P1 | byg | Update ROADMAP.md with current state |
 
 ---
 
@@ -55,13 +75,14 @@
 
 ### Phase 2: More Mini-Games
 
-| Mini-Game | Description | Difficulty |
-|-----------|-------------|------------|
-| **Plunger Hero** | Rhythm game - time your plunges to the beat | Medium |
-| **Towel Toss** | Aim and throw towels to customers | Easy |
-| **Inspection Prep** | Memory game - spot what's wrong before inspector arrives | Medium |
-| **Supply Run** | Catch falling supplies, avoid hazards | Easy |
-| **VIP Rush** | Only VIP customers, high stakes, big rewards | Hard |
+| Mini-Game | Issue | Description | Status |
+|-----------|-------|-------------|--------|
+| **Speed Clean Challenge** | - | 30-second bonus round | ✅ Shipped |
+| **Plunger Hero** | dzw | Rhythm game - time your plunges to the beat | Ready |
+| **Towel Toss** | 1bw | Aim and throw towels to customers | Ready |
+| **Inspection Prep** | rfn | Memory game - spot what's wrong before inspector | Ready |
+| **Supply Run** | 1vc | Catch falling supplies, avoid hazards | Ready |
+| **VIP Rush** | m50 | Only VIP customers, high stakes, big rewards | Ready |
 
 ### Phase 3: Content Expansion
 
@@ -78,7 +99,7 @@
 |---------|-------------|
 | **Battle Pass** | Free + Premium tracks, seasonal content, $5-10 price point |
 | **Ad Rewards** | Optional "watch ad for 2x coins" or extra life |
-| **Cosmetic Shop** | Skins, themes, Bucky outfits (coins or premium currency) |
+| **Cosmetic Shop** | Skins, themes, Beaver outfits (coins or premium currency) |
 | **Weekly Tournaments** | Compete for top spot, prizes for winners |
 | **Leaderboard Seasons** | Monthly resets with rewards |
 
@@ -93,40 +114,34 @@
 
 ---
 
-## Buc-ee's Theme Enhancements
+## Visual Style
 
-### Power-Ups (Planned)
-| Item | Effect |
-|------|--------|
-| Brisket Sandwich | 2x cleaning speed for 10s |
-| Beaver Mascot | Distracts customers, no new stall entries |
-| Beaver Nuggets | Instant clean one stall |
-| Icee Freeze | Slow customer arrivals |
-| Texas Pecan Pie | Double points for 30s |
-| Jerky Power | Auto-clean puddles for 15s |
+- **Aesthetic:** Retro Americana / 1950s travel stop
+- **Color Palette:** Gold (#FFD700), Red (#C41E3A), Wood Brown (#5D4037)
+- **Tagline:** "Dam Good Restrooms - Since 1982"
+- **Mascot:** Beaver (distinct from Buc-ee's, no red cap)
 
-### Visual Style
-- Retro Americana / 1950s travel stop aesthetic
-- Color palette: Gold (#FFD700), Red (#C41E3A), Wood Brown (#5D4037)
-- Tagline: "Cleanest Restrooms in Texas!"
-
-### Branding Assets Needed
-- App icon (1024x1024)
-- Bucky mascot character sheet
-- Logo (badge style)
-- Social media banners
-- Loading screen
+### Branding Assets (In Progress - 5rl)
+- App icon (1024x1024, 512x512, 192x192, 180x180)
+- Favicon (16x16, 32x32, .ico)
+- Social share image (1200x630)
+- Title logo (PNG with transparency)
 
 ---
 
-## Technical Debt / Fixes
+## Technical Improvements
 
-- [ ] Sound system not working (P0)
-- [ ] Wall sign covering stalls
-- [ ] Customer walking paths (clipping issues)
-- [ ] AudioContext warnings
-- [ ] Mobile touch optimization
-- [ ] Performance on older devices
+### Completed
+- [x] Sound system rewritten (procedural oscillators, no files)
+- [x] Customer walking paths fixed (no clipping through sinks)
+- [x] Mobile touch optimization (48px touch targets)
+- [x] Session persistence and auto-save
+- [x] AudioContext resume on user interaction
+
+### Remaining
+- [ ] Ambient bathroom audio (6bk - P3)
+- [ ] Performance profiling on older devices
+- [ ] PWA offline support
 
 ---
 
@@ -135,8 +150,8 @@
 ### Launch Goals
 - [ ] 1,000 plays in first week
 - [ ] 4+ star rating
-- [ ] < 3 second load time
-- [ ] Works on 95% of mobile browsers
+- [x] < 3 second load time
+- [x] Works on 95% of mobile browsers
 
 ### Growth Goals
 - [ ] 10,000 monthly active users
