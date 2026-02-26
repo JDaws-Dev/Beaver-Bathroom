@@ -653,7 +653,7 @@ function playAchievementSound() {
 function openAchievementsModal() {
   // Achievements are premium-only
   if (!isPremium()) {
-    showPaywallModal();
+    showPaywallModal('landing');
     return;
   }
   const modal = $('achievements-modal');
@@ -1013,7 +1013,8 @@ function setPremium() {
 }
 
 // Show paywall modal
-function showPaywallModal() {
+// context: 'milestone' (after shift 3) or 'landing' (from title screen)
+function showPaywallModal(context = 'milestone') {
   const modal = $('paywall-modal');
   if (!modal) return;
   // Reset to info view
@@ -1029,6 +1030,19 @@ function showPaywallModal() {
   if (codeToggle) codeToggle.textContent = 'Have a code?';
   if (codeInput) codeInput.value = '';
   if (codeError) codeError.classList.add('hidden');
+
+  // Update content based on context
+  const title = $('pw-title');
+  const message = $('pw-message');
+  if (context === 'landing') {
+    if (title) title.textContent = 'Go Premium!';
+    if (message) message.textContent = 'Unlock the full Beaver\'s Bathroom experience!';
+  } else {
+    // milestone context - after completing 3 shifts
+    if (title) title.textContent = "You're a Natural!";
+    if (message) message.textContent = "You've completed 3 shifts and proven yourself as a bathroom attendant!";
+  }
+
   modal.classList.add('active');
   playClick();
 }
@@ -3063,7 +3077,7 @@ function startEndlessMode() {
   if (!isEndlessUnlocked()) {
     // Show message or paywall
     if (!isPremium()) {
-      showPaywallModal();
+      showPaywallModal('landing');
     } else {
       // Not unlocked yet - need to beat campaign first
       floatText('Beat all 6 shifts first!', window.innerWidth / 2, window.innerHeight / 2, '#ff6b6b');
@@ -3219,7 +3233,7 @@ function updateDailyButton() {
 
 function startDailyMode() {
   if (!isDailyUnlocked()) {
-    showPaywallModal();
+    showPaywallModal('landing');
     return;
   }
 
@@ -5965,7 +5979,7 @@ $('pw-coupon-input')?.addEventListener('keydown', e => {
 // Unlock Premium button on title screen (opens paywall modal)
 $('unlock-premium-btn')?.addEventListener('click', () => {
   playClick();
-  showPaywallModal();
+  showPaywallModal('landing');
 });
 
 // Close paywall modal on background click (only in info view, not checkout)
