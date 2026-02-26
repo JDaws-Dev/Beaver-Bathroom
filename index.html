@@ -43,6 +43,7 @@
         <button class="btn btn-play" id="start-btn">PLAY</button>
         <button class="btn-help" id="help-btn">How to Play</button>
         <button class="btn-help" id="leaderboard-btn">🏆 Leaderboard</button>
+        <button class="btn-help" id="achievements-btn">🎖️ Badges</button>
         <button class="btn-help" id="title-settings-btn">⚙️ Settings</button>
       </div>
       <div class="title-footer">
@@ -110,6 +111,16 @@
           <button id="haptics-toggle" class="toggle-btn active">ON</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div id="achievements-modal" class="modal">
+    <div class="modal-content achievements-content">
+      <div class="modal-header">
+        <span class="modal-title">🎖️ Badges <span id="achievements-count" class="ach-counter">0/0</span></span>
+        <button class="modal-close" id="close-achievements">&times;</button>
+      </div>
+      <div id="achievements-grid" class="achievements-grid"></div>
     </div>
   </div>
 

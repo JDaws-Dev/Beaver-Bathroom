@@ -9,6 +9,25 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Achievement/Badge System (7zi)
+- Goal: award badges for milestones (first shift, 10x combo, etc.)
+- Added ACHIEVEMENTS array with 17 badges across categories:
+  - Progress: first_shift (complete 1 shift), golden_plunger (complete all 6)
+  - Combos: combo_3, combo_5, combo_10 (3x, 5x, 10x streaks)
+  - Cleaning: clean_10, clean_50, clean_100 (total stalls cleaned)
+  - Score: score_1000, score_5000, score_10000 (single shift scores)
+  - Perfect: perfect_shift (S grade), perfect_inspect (clean inspection)
+  - Saves: save_1, save_10 (just-in-time saves)
+  - Service: serve_50, serve_100 (customers served)
+- localStorage keys: `beaverAchievementStats` (JSON), `beaverAchievements` (array of IDs)
+- Stats tracked: shiftsCompleted, maxCombo, totalCleaned, totalServed, totalSaves, sGrades, perfectInspections
+- UI: achievements-modal with grid of cards (🔒 for locked, icon for unlocked)
+- "🎖️ Badges" button on title screen opens modal
+- Achievement unlock banner slides in from top with triumphant arpeggio sound
+- checkAchievements() called at endShift and finishInspection
+- Mobile responsive: 2-column grid at 420px breakpoint
+- Files: src/main.js (~130 lines), src/styles.css (~25 lines), index.html (~12 lines)
+
 ### Add Haptic Feedback for Mobile (680)
 - Goal: add vibration feedback to make game feel tactile on mobile
 - Added `haptic(type)` function with 6 intensity levels: light (15ms), medium (40ms), strong (80ms), success (pattern), warning (pattern), error (150ms)
@@ -35,19 +54,6 @@ This file maintains context between autonomous iterations.
 - Existing assets already compliant: wood textures, checkered tiles, beaver mascot distinct from Buc-ee's
 - Key insight: wall-sign CSS existed but element was missing from HTML - added to floor-area
 - Files: index.html (2 lines), src/styles.css (2 lines)
-
-### Persistent Settings + Pause Game (w9a)
-- Goal: settings button always visible during gameplay, pause game when modal open
-- Implementation was partially started - completed and enhanced:
-  - `game.paused` flag added to game state
-  - `openSettings()` sets `game.paused = true`, shows pause overlay, stops music
-  - `closeSettings()` resumes game, resets lastTime, restarts music if not muted
-  - `gameLoop()` checks `game.paused` and skips updates when true (keeps loop running)
-  - `#pause-overlay` shows "⏸️ PAUSED" over play area
-- Settings button already had fixed position (top-right, z-index:50) and mobile responsive styles
-- Settings modal already had SFX volume, music volume, and mute controls with localStorage persistence
-- Added: stopMusic() call on pause, startMusic() call on resume (respects mute state)
-- Files: src/main.js (~5 lines changed in openSettings/closeSettings)
 
 ---
 
@@ -103,6 +109,19 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Persistent Settings + Pause Game (w9a)
+- Goal: settings button always visible during gameplay, pause game when modal open
+- Implementation was partially started - completed and enhanced:
+  - `game.paused` flag added to game state
+  - `openSettings()` sets `game.paused = true`, shows pause overlay, stops music
+  - `closeSettings()` resumes game, resets lastTime, restarts music if not muted
+  - `gameLoop()` checks `game.paused` and skips updates when true (keeps loop running)
+  - `#pause-overlay` shows "⏸️ PAUSED" over play area
+- Settings button already had fixed position (top-right, z-index:50) and mobile responsive styles
+- Settings modal already had SFX volume, music volume, and mute controls with localStorage persistence
+- Added: stopMusic() call on pause, startMusic() call on resume (respects mute state)
+- Files: src/main.js (~5 lines changed in openSettings/closeSettings)
 
 ### Settings Modal with Volume Controls (voq)
 - Goal: replace floating audio buttons with single gear icon and settings modal

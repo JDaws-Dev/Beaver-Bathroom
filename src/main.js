@@ -352,6 +352,139 @@ const WIN_MESSAGES = [
   "You've earned your place at Beaver's Travel Stop!",
 ];
 
+// ACHIEVEMENTS: Badges earned for milestones
+const ACHIEVEMENTS = [
+  // First timer achievements
+  {id:'first_shift', name:'Punch In', icon:'🎉', desc:'Complete your first shift', check: (g,s) => s.shiftsCompleted >= 1},
+  {id:'golden_plunger', name:'Golden Plunger', icon:'🏆', desc:'Complete all 6 shifts', check: (g,s) => s.shiftsCompleted >= 6},
+
+  // Combo achievements
+  {id:'combo_3', name:'On Fire', icon:'🔥', desc:'Reach a 3x combo', check: (g,s) => s.maxCombo >= 3},
+  {id:'combo_5', name:'Unstoppable', icon:'⚡', desc:'Reach a 5x combo', check: (g,s) => s.maxCombo >= 5},
+  {id:'combo_10', name:'Legendary', icon:'🌟', desc:'Reach a 10x combo', check: (g,s) => s.maxCombo >= 10},
+
+  // Cleaning achievements
+  {id:'clean_10', name:'Getting Started', icon:'🧹', desc:'Clean 10 stalls total', check: (g,s) => s.totalCleaned >= 10},
+  {id:'clean_50', name:'Scrub Master', icon:'🧽', desc:'Clean 50 stalls total', check: (g,s) => s.totalCleaned >= 50},
+  {id:'clean_100', name:'Sanitation Expert', icon:'🚽', desc:'Clean 100 stalls total', check: (g,s) => s.totalCleaned >= 100},
+
+  // Score achievements
+  {id:'score_1000', name:'Point Collector', icon:'💯', desc:'Score 1,000 points in one shift', check: (g,s) => g.score >= 1000},
+  {id:'score_5000', name:'High Scorer', icon:'🎯', desc:'Score 5,000 points in one shift', check: (g,s) => g.score >= 5000},
+  {id:'score_10000', name:'Score Legend', icon:'🥇', desc:'Score 10,000 points in one shift', check: (g,s) => g.score >= 10000},
+
+  // Perfect achievements
+  {id:'perfect_shift', name:'Perfect Shift', icon:'✨', desc:'Complete a shift with S grade', check: (g,s) => s.sGrades >= 1},
+  {id:'perfect_inspect', name:'Spotless', icon:'🔍', desc:'Pass a health inspection perfectly', check: (g,s) => s.perfectInspections >= 1},
+
+  // Save achievements
+  {id:'save_1', name:'Close Call', icon:'😅', desc:'Clean a stall just in time', check: (g,s) => s.totalSaves >= 1},
+  {id:'save_10', name:'Clutch Player', icon:'💪', desc:'Make 10 "just in time" saves', check: (g,s) => s.totalSaves >= 10},
+
+  // Service achievements
+  {id:'serve_50', name:'Customer Service', icon:'👥', desc:'Serve 50 customers total', check: (g,s) => s.totalServed >= 50},
+  {id:'serve_100', name:'Lodge Legend', icon:'🦫', desc:'Serve 100 customers total', check: (g,s) => s.totalServed >= 100},
+];
+
+// Load achievement stats from localStorage
+let achievementStats = JSON.parse(localStorage.getItem('beaverAchievementStats') || 'null') || {
+  shiftsCompleted: 0,
+  maxCombo: 0,
+  totalCleaned: 0,
+  totalServed: 0,
+  totalSaves: 0,
+  sGrades: 0,
+  perfectInspections: 0,
+};
+let unlockedAchievements = JSON.parse(localStorage.getItem('beaverAchievements') || '[]');
+
+function saveAchievementData() {
+  localStorage.setItem('beaverAchievementStats', JSON.stringify(achievementStats));
+  localStorage.setItem('beaverAchievements', JSON.stringify(unlockedAchievements));
+}
+
+function checkAchievements() {
+  let newUnlocks = [];
+  for (const ach of ACHIEVEMENTS) {
+    if (unlockedAchievements.includes(ach.id)) continue;
+    if (ach.check(game, achievementStats)) {
+      unlockedAchievements.push(ach.id);
+      newUnlocks.push(ach);
+    }
+  }
+  if (newUnlocks.length > 0) {
+    saveAchievementData();
+    showAchievementUnlock(newUnlocks[0]); // Show first new unlock
+  }
+}
+
+function showAchievementUnlock(ach) {
+  const banner = document.createElement('div');
+  banner.className = 'achievement-unlock';
+  banner.innerHTML = `
+    <div class="achievement-icon">${ach.icon}</div>
+    <div class="achievement-info">
+      <div class="achievement-label">Achievement Unlocked!</div>
+      <div class="achievement-name">${ach.name}</div>
+    </div>
+  `;
+  document.body.appendChild(banner);
+  playAchievementSound();
+  haptic('success');
+  setTimeout(() => banner.classList.add('show'), 50);
+  setTimeout(() => {
+    banner.classList.remove('show');
+    setTimeout(() => banner.remove(), 500);
+  }, 3000);
+}
+
+function playAchievementSound() {
+  if (isMuted) return;
+  initAudio();
+  // Ascending triumphant arpeggio
+  const freqs = [523, 659, 784, 1047]; // C5, E5, G5, C6
+  freqs.forEach((f, i) => {
+    setTimeout(() => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = f;
+      gain.gain.value = 0.15 * sfxVolume;
+      gain.gain.exponentialDecayTo?.(0.01, 0.3) || gain.gain.setValueAtTime(0.15 * sfxVolume, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.3);
+    }, i * 80);
+  });
+}
+
+function openAchievementsModal() {
+  const modal = $('achievements-modal');
+  const grid = $('achievements-grid');
+  grid.innerHTML = ACHIEVEMENTS.map(ach => {
+    const unlocked = unlockedAchievements.includes(ach.id);
+    return `
+      <div class="achievement-card ${unlocked ? 'unlocked' : 'locked'}">
+        <div class="ach-icon">${unlocked ? ach.icon : '🔒'}</div>
+        <div class="ach-name">${ach.name}</div>
+        <div class="ach-desc">${ach.desc}</div>
+      </div>
+    `;
+  }).join('');
+
+  // Update counter
+  const counter = $('achievements-count');
+  if (counter) counter.textContent = `${unlockedAchievements.length}/${ACHIEVEMENTS.length}`;
+
+  modal.classList.add('active');
+  playClick();
+}
+
+function closeAchievementsModal() {
+  $('achievements-modal').classList.remove('active');
+}
+
 let game = {};
 let selectedGender = 'female';
 let highScore = parseInt(localStorage.getItem('beaverHighScore')) || 0;
@@ -2129,6 +2262,10 @@ function finishInspection() {
     playInspectorGood();
     spawnConfetti(400, 200, 12);
     setBeaverMood('excited', 2000);
+    // Track achievement
+    achievementStats.perfectInspections++;
+    saveAchievementData();
+    checkAchievements();
   } else {
     // Penalty based on dirty stalls
     const ratingLoss = dirtyCount * CONFIG.inspectorPenalty;
@@ -2645,6 +2782,16 @@ function endShift() {
   $('result-grade').className = 'grade ' + grade;
   $('result-comment').textContent = comment;
 
+  // Update achievement stats
+  achievementStats.shiftsCompleted++;
+  achievementStats.totalCleaned += game.stats.cleaned;
+  achievementStats.totalServed += game.stats.served;
+  achievementStats.totalSaves += game.stats.saves;
+  if (game.maxCombo > achievementStats.maxCombo) achievementStats.maxCombo = game.maxCombo;
+  if (grade === 'S') achievementStats.sGrades++;
+  saveAchievementData();
+  checkAchievements();
+
   // Award coins based on performance
   const coinsEarned = calculateCoins(game.score, grade);
   game.coins += coinsEarned;
@@ -2804,6 +2951,13 @@ function updateHighScoreDisplay() {
   }
 }
 updateHighScoreDisplay();
+
+// Achievements modal
+$('achievements-btn').addEventListener('click', openAchievementsModal);
+$('close-achievements').addEventListener('click', closeAchievementsModal);
+$('achievements-modal').addEventListener('click', e => {
+  if (e.target === $('achievements-modal')) closeAchievementsModal();
+});
 
 // Settings modal
 $('settings-btn').addEventListener('click', openSettings);
