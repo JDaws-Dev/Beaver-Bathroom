@@ -1316,8 +1316,10 @@ const MINIGAME_COMMENTS = [
 ];
 
 function shouldTriggerMinigame() {
+  // DISABLED: User wants to test mini-games before enabling
+  return false;
   // Trigger after specific shifts (0-indexed in game.shift, but we check AFTER endShift)
-  return MINIGAME_CONFIG.triggerAfterShift.includes(game.shift);
+  // return MINIGAME_CONFIG.triggerAfterShift.includes(game.shift);
 }
 
 function showMinigameIntro() {
@@ -1548,7 +1550,9 @@ const SUPPLYRUN_COMMENTS = [
 ];
 
 function shouldTriggerSupplyRun() {
-  return SUPPLYRUN_CONFIG.triggerAfterShift.includes(game.shift);
+  // DISABLED: User wants to test mini-games before enabling
+  return false;
+  // return SUPPLYRUN_CONFIG.triggerAfterShift.includes(game.shift);
 }
 
 function showSupplyRunIntro() {
@@ -2283,43 +2287,51 @@ function playPowerup() {
   setTimeout(() => playTone(700, 0.1, 'triangle', 0.12), 120);
 }
 
-// Mascot Walk System - Beaver walks across the floor and distracts customers
+// Mascot Walk System - Beaver WALKS IN from the exit door, customers freak out and swarm
 function startMascotWalk() {
-  console.log('startMascotWalk called');
   const floorArea = $('floor-area');
   const floorRect = floorArea.getBoundingClientRect();
-  const mascotEl = $('mascot-walk');
 
-  console.log('mascotEl:', mascotEl, 'floorRect:', floorRect.width, floorRect.height);
+  // Remove any existing mascot
+  const oldMascot = document.getElementById('floor-beaver');
+  if (oldMascot) oldMascot.remove();
 
-  // Spawn on left side (visible), walk right
-  const startX = 50;
-  const endX = floorRect.width - 100;
-  const y = floorRect.height * 0.4;
+  // Get exit door position (beaver enters/exits through the door)
+  const exitDoor = $('exit-door');
+  const exitRect = exitDoor.getBoundingClientRect();
+  const floorLeft = floorRect.left;
+  const startX = exitRect.left - floorLeft + exitRect.width / 2 - 25;
+  // Start inside the door (negative Y, above visible area) so beaver emerges FROM door
+  const doorY = exitRect.top - floorRect.top + exitRect.height / 2;
+  const startY = doorY - 60;  // Start hidden above door
 
+  // Create beaver character - just the emoji, no background
+  const mascotEl = document.createElement('div');
+  mascotEl.id = 'floor-beaver';
+  mascotEl.innerHTML = '🦫';
+  mascotEl.style.cssText = `
+    position: absolute;
+    left: ${startX}px;
+    top: ${startY}px;
+    z-index: 150;
+    font-size: 3.5em;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+    transition: none;
+  `;
+  floorArea.appendChild(mascotEl);
+
+  // Walk from exit door toward center, then across, then back to door
   game.mascotWalk = {
+    el: mascotEl,
     x: startX,
-    y: y,
-    targetX: endX,
-    speed: 60
+    y: startY,
+    startX: startX,  // Remember start position for exit
+    startY: startY,
+    phase: 'entering',  // 'entering' -> 'walking' -> 'exiting'
+    targetY: floorRect.height * 0.45,  // Walk down into the floor
+    targetX: floorRect.width * 0.7,    // Then walk to the right
+    speed: 80
   };
-
-  // Just the beaver emoji - CSS handles the gold circle
-  mascotEl.textContent = '🦫';
-  mascotEl.style.left = startX + 'px';
-  mascotEl.style.top = y + 'px';
-  mascotEl.style.display = 'block';
-  mascotEl.classList.remove('hidden');
-  mascotEl.classList.add('walking');
-
-  console.log('Beaver element after setup:', mascotEl.style.cssText, mascotEl.className);
-
-  // Mark all current people as distracted
-  for (const p of game.people) {
-    if (p.phase === 'enter' || p.phase === 'findStall' || p.phase === 'toStall') {
-      initDistractedCustomer(p);
-    }
-  }
 
   floatMessage('🦫 BEAVER ON THE FLOOR!', 400, 150, 'combo');
 }
@@ -2334,44 +2346,76 @@ function initDistractedCustomer(p) {
 }
 
 function updateMascotWalk(dt) {
-  if (!game.mascotWalk) return;
+  if (!game.mascotWalk || !game.mascotWalk.el) return;
 
-  const mascotEl = $('mascot-walk');
-  game.mascotWalk.x += game.mascotWalk.speed * dt;
-  mascotEl.style.left = game.mascotWalk.x + 'px';
+  const mascotEl = game.mascotWalk.el;
+  const m = game.mascotWalk;
+  const dtSec = dt / 1000;  // Convert ms to seconds
 
-  // Beaver center position
-  const beaverX = game.mascotWalk.x + 30;
-  const beaverY = game.mascotWalk.y + 40;
+  // Phase 1: Walk down from exit door into the floor
+  if (m.phase === 'entering') {
+    m.y += m.speed * dtSec;
+    if (m.y >= m.targetY) {
+      m.y = m.targetY;
+      m.phase = 'walking';
+    }
+  }
+  // Phase 2: Walk across the floor
+  else if (m.phase === 'walking') {
+    m.x += m.speed * dtSec;
+    if (m.x >= m.targetX) {
+      m.phase = 'exiting';
+    }
+  }
+  // Phase 3: Walk back to exit door
+  else if (m.phase === 'exiting') {
+    const dx = m.startX - m.x;
+    const dy = m.startY - m.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
 
-  // Check if mascot reached the end
-  if (game.mascotWalk.x >= game.mascotWalk.targetX) {
-    endMascotWalk();
-    return;
+    if (dist < 10) {
+      endMascotWalk();
+      return;
+    }
+
+    // Walk toward the exit door
+    m.x += (dx / dist) * m.speed * dtSec;
+    m.y += (dy / dist) * m.speed * dtSec;
   }
 
-  // Update distracted customers - they crowd toward the beaver
+  mascotEl.style.left = m.x + 'px';
+  mascotEl.style.top = m.y + 'px';
+
+  // Beaver center position for customer attraction
+  const beaverX = m.x + 40;
+  const beaverY = m.y + 40;
+
+  // Distract customers - they stop what they're doing and crowd toward beaver
   for (const p of game.people) {
+    // Only distract customers who are walking around (not in stalls or washing)
     if (p.phase === 'enter' || p.phase === 'findStall' || p.phase === 'toStall') {
       if (!p.distracted) {
-        initDistractedCustomer(p);
+        p.distracted = true;
+        p.savedPhase = p.phase;  // Remember what they were doing
+        p.crowdOffset = (Math.random() - 0.5) * 3;
+        p.crowdOffsetY = (Math.random() - 0.5) * 2;
+        // Show excited thought
+        p.thought = ['📸', '🤩', 'OMG!', '🦫!', 'WOW!'][Math.floor(Math.random() * 5)];
+        p.thoughtTimer = 5000;
       }
 
-      // Calculate crowd position near beaver (spread out a bit)
-      const offsetX = (p.crowdOffset || 0) * 25;
-      const offsetY = (p.crowdOffsetY || 0) * 20;
-      const targetX = beaverX + offsetX;
-      const targetY = beaverY + offsetY;
-
-      // Move toward crowd position
+      // Crowd toward beaver (but don't teleport - walk naturally)
+      const targetX = beaverX + p.crowdOffset * 30;
+      const targetY = beaverY + p.crowdOffsetY * 25;
       const dx = targetX - p.x;
       const dy = targetY - p.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      if (dist > 10) {
-        const speed = CONFIG.walkSpeed * 1.2;
-        p.x += (dx / dist) * speed * dt;
-        p.y += (dy / dist) * speed * dt;
+      if (dist > 15) {
+        // Walk toward beaver at normal speed
+        const speed = CONFIG.walkSpeed * dtSec;
+        p.x += (dx / dist) * speed;
+        p.y += (dy / dist) * speed;
       }
 
       // Show excited thought
@@ -2384,20 +2428,22 @@ function updateMascotWalk(dt) {
 }
 
 function endMascotWalk() {
-  const mascotEl = $('mascot-walk');
-  mascotEl.classList.add('hidden');
-  mascotEl.classList.remove('walking');
-  mascotEl.innerHTML = '';
+  // Remove the beaver element
+  if (game.mascotWalk && game.mascotWalk.el) {
+    game.mascotWalk.el.remove();
+  }
+  const oldBeaver = document.getElementById('floor-beaver');
+  if (oldBeaver) oldBeaver.remove();
+
   game.mascotWalk = null;
   game.effects.mascot = 0;
 
-  // Undistract all customers and clear orbit state
+  // Undistract all customers
   for (const p of game.people) {
     p.distracted = false;
     p.distractedThought = false;
-    delete p.orbitRadius;
-    delete p.orbitAngle;
-    delete p.orbitSpeed;
+    delete p.crowdOffset;
+    delete p.crowdOffsetY;
   }
 }
 
@@ -3878,6 +3924,16 @@ function updatePeople(dt) {
       }  // End of else (not distracted)
     }
     else if (p.phase === 'toStall') {
+      // If distracted by mascot, show thought (movement handled in updateMascotWalk)
+      if (p.distracted) {
+        if (!p.distractedThought) {
+          p.distractedThought = true;
+          p.thought = ['📸', '🤩', 'Is that Beaver?!', 'OMG!', '📷'][Math.floor(rand() * 5)];
+          p.thoughtTimer = 10000;
+        }
+        // Movement handled by updateMascotWalk() - skip normal toStall movement
+      } else {
+      p.distractedThought = false;
       const stallRow = $('stalls-row');
       const stallEl = stallRow.children[p.target];
       if (!stallEl) {
@@ -3919,6 +3975,7 @@ function updatePeople(dt) {
         p.x += (dx / dist) * speed;
         p.y += (dy / dist) * speed;
       }
+      }  // End of else (not distracted)
     }
     else if (p.phase === 'entering') {
       p.enterTimer -= dt;
