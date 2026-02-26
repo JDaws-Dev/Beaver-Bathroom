@@ -2645,31 +2645,16 @@ function updatePeople(dt) {
     }
     else if (p.phase === 'exit') {
       const exitDoor = $('exit-door').getBoundingClientRect();
-      const sinkTowelArea = $('sink-towel-area');
-      const sinkTowelRect = sinkTowelArea ? sinkTowelArea.getBoundingClientRect() : null;
+      const tx = exitDoor.left - floorRect.left + 15;
+      const ty = exitDoor.top - floorRect.top + 20;
+      const dx = tx - p.x, dy = ty - p.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
 
-      // Define a safe Y threshold above the sink-towel area to avoid clipping
-      const safeY = sinkTowelRect
-        ? sinkTowelRect.top - floorRect.top - 45
-        : floorRect.height - 100;
-
-      // If customer is below safe threshold (too close to sinks/towels), walk up first
-      if (p.y > safeY) {
-        // Walk straight up to clear the sink-towel area
-        p.y -= speed * 1.2;
+      if (dist < 20) {
+        game.people.splice(i, 1);
       } else {
-        // Now walk to exit door
-        const tx = exitDoor.left - floorRect.left + 15;
-        const ty = exitDoor.top - floorRect.top + 20;
-        const dx = tx - p.x, dy = ty - p.y;
-        const dist = Math.sqrt(dx*dx + dy*dy);
-
-        if (dist < 20) {
-          game.people.splice(i, 1);
-        } else {
-          p.x += (dx / dist) * speed * 1.2;
-          p.y += (dy / dist) * speed * 1.2;
-        }
+        p.x += (dx / dist) * speed * 1.2;
+        p.y += (dy / dist) * speed * 1.2;
       }
     }
   }
