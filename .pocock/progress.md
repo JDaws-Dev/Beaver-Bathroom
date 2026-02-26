@@ -9,6 +9,11 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Remove Wall Sign Covering Stalls (h6p) - COMPLETE
+- Goal: remove "🦫 KEEP IT CLEAN!" wall sign that was blocking stall visibility
+- Fix: removed #wall-sign element from index.html and all CSS styles
+- Files: index.html (1 line removed), src/styles.css (3 lines removed - main + 2 responsive breakpoints)
+
 ### Fix Sound System - Audio Not Playing (cyr) - IN PROGRESS
 - Goal: fix audio not playing after user interaction
 - Root causes identified:
@@ -34,19 +39,6 @@ This file maintains context between autonomous iterations.
 - Exit phase already had anti-clip logic (walks up before heading to exit door)
 - toSink and toTowels phases already positioned customers correctly (35px above fixtures)
 - Files: src/main.js (~15 lines changed in enter phase + 1 line in spawnCustomer)
-
-### Buc-ee's Visual Overhaul (d3u) - COMPLETE
-- Goal: implement full retro Americana / Buc-ee's travel stop visual style
-- Color palette: golden yellow (#FFD700, #f5a623), deep red (#C41E3A, #e53935), wood brown (#5d4037, #8b6342), cream (#f5ebe0)
-- Title screen: gold gradient border, warm brown wood-grain background, glowing gold title text, retro travel stop vibe
-- Buttons: chunky 3D appearance with red gradient, 3D shadow (0 6px 0 #5c0000), uppercase bold text, embossed look
-- HUD: wood panel with brass/gold trim, gradient border-image for gold bar, brass-style hud-item borders
-- Task panel: clipboard aesthetic - cream background, wood clip at top with brass rivet, dashed border header
-- Task buttons: red gradient with 3D shadow to match main buttons, green when completed
-- Shift intro: highway billboard style - green background (#2e7d32), white border, highway sign typography
-- Bucky tip boxes: updated to match highway sign theme with gold label text
-- Mobile responsive: adjusted 420px breakpoint for title-card border-radius
-- Files: src/styles.css (~50 lines changed across multiple sections)
 
 ### Fix Broken Sound System (hgo) - COMPLETE
 - Goal: fix audio not playing after sample-based audio implementation
@@ -144,6 +136,19 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Buc-ee's Visual Overhaul (d3u) - COMPLETE
+- Goal: implement full retro Americana / Buc-ee's travel stop visual style
+- Color palette: golden yellow (#FFD700, #f5a623), deep red (#C41E3A, #e53935), wood brown (#5d4037, #8b6342), cream (#f5ebe0)
+- Title screen: gold gradient border, warm brown wood-grain background, glowing gold title text, retro travel stop vibe
+- Buttons: chunky 3D appearance with red gradient, 3D shadow (0 6px 0 #5c0000), uppercase bold text, embossed look
+- HUD: wood panel with brass/gold trim, gradient border-image for gold bar, brass-style hud-item borders
+- Task panel: clipboard aesthetic - cream background, wood clip at top with brass rivet, dashed border header
+- Task buttons: red gradient with 3D shadow to match main buttons, green when completed
+- Shift intro: highway billboard style - green background (#2e7d32), white border, highway sign typography
+- Bucky tip boxes: updated to match highway sign theme with gold label text
+- Mobile responsive: adjusted 420px breakpoint for title-card border-radius
+- Files: src/styles.css (~50 lines changed across multiple sections)
 
 ### Speed Clean Challenge Mini-Game (151)
 - Goal: 30-second bonus round where player cleans as many stalls as possible
