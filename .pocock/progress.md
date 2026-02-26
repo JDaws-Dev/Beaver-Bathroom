@@ -9,6 +9,19 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Buc-ee's Visual Overhaul (d3u) - COMPLETE
+- Goal: implement full retro Americana / Buc-ee's travel stop visual style
+- Color palette: golden yellow (#FFD700, #f5a623), deep red (#C41E3A, #e53935), wood brown (#5d4037, #8b6342), cream (#f5ebe0)
+- Title screen: gold gradient border, warm brown wood-grain background, glowing gold title text, retro travel stop vibe
+- Buttons: chunky 3D appearance with red gradient, 3D shadow (0 6px 0 #5c0000), uppercase bold text, embossed look
+- HUD: wood panel with brass/gold trim, gradient border-image for gold bar, brass-style hud-item borders
+- Task panel: clipboard aesthetic - cream background, wood clip at top with brass rivet, dashed border header
+- Task buttons: red gradient with 3D shadow to match main buttons, green when completed
+- Shift intro: highway billboard style - green background (#2e7d32), white border, highway sign typography
+- Bucky tip boxes: updated to match highway sign theme with gold label text
+- Mobile responsive: adjusted 420px breakpoint for title-card border-radius
+- Files: src/styles.css (~50 lines changed across multiple sections)
+
 ### Fix Broken Sound System (hgo) - COMPLETE
 - Goal: fix audio not playing after sample-based audio implementation
 - Root cause: AudioContext starts "suspended" in modern browsers, requires user interaction to resume
