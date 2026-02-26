@@ -13,35 +13,54 @@
 <div id="game-container">
   <div id="title-screen" class="screen active">
     <div class="title-card">
-      <div class="title-header">
-        <div class="title-logo">
-          <img src="/images/beaver-logo.png" alt="Beaver Mascot" class="title-beaver-img">
-          <h1>Beaver's<br>Bathroom Blitz</h1>
-        </div>
-        <p class="title-tagline">Cleanest Restrooms in Texas!</p>
+      <!-- Hero section: beaver + title grouped tight -->
+      <div class="title-hero">
+        <img src="/images/beaver-logo.png" alt="Beaver Mascot" class="title-beaver-img">
+        <h1>BEAVER'S<br>BATHROOM BLITZ</h1>
+        <p class="title-tagline">The cleanest restrooms in Texas!</p>
+      </div>
+
+      <!-- Description + high score -->
+      <div class="title-info">
         <p class="title-subtitle">Your first day as a Beaver's Travel Stop attendant.<br>Survive 6 shifts to earn the <span class="golden-plunger">🏆 Golden Plunger</span>!</p>
         <p class="high-score" id="title-high-score">🏆 High Score: <span id="high-score-val">0</span></p>
-        <div class="player-rank-display" id="player-rank-display">
-          <div class="rank-badge" id="player-rank"><span class="rank-icon">🧹</span> Trainee</div>
-          <div class="rank-progress-bar"><div class="rank-progress-fill" id="rank-progress-fill"></div></div>
-          <div class="rank-xp" id="rank-xp">0 / 500 XP</div>
-        </div>
       </div>
-      <div class="start-section">
-        <div class="gender-toggle">
-          <span class="gender-label">Restroom:</span>
-          <button class="gender-opt" data-gender="male">🚹</button>
-          <button class="gender-opt selected" data-gender="female">🚺</button>
+
+      <!-- Slim progress bar -->
+      <div class="player-rank-display" id="player-rank-display">
+        <div class="rank-row">
+          <span class="rank-badge" id="player-rank"><span class="rank-icon">🧹</span> Trainee</span>
+          <span class="rank-xp" id="rank-xp">0 / 500 XP</span>
         </div>
-        <button class="btn btn-play" id="start-btn">PLAY</button>
-        <button class="btn-help" id="help-btn">How to Play</button>
-        <button class="btn-help" id="leaderboard-btn">🏆 Leaderboard</button>
-        <button class="btn-help" id="achievements-btn">🎖️ Badges</button>
-        <button class="btn-help" id="daily-btn">📅 Daily Challenge</button>
-        <button class="btn-help" id="overtime-btn">⏰ Overtime</button>
-        <button class="btn-help" id="title-settings-btn">⚙️ Settings</button>
+        <div class="rank-progress-bar"><div class="rank-progress-fill" id="rank-progress-fill"></div></div>
+      </div>
+
+      <!-- Restroom toggle -->
+      <div class="gender-toggle">
+        <span class="gender-label">Restroom</span>
+        <button class="gender-opt" data-gender="male">🚹</button>
+        <button class="gender-opt selected" data-gender="female">🚺</button>
+      </div>
+
+      <!-- Big PLAY button -->
+      <button class="btn btn-play" id="start-btn">PLAY</button>
+
+      <!-- Icon dock for menu items -->
+      <div class="title-dock">
+        <button class="dock-btn" id="leaderboard-btn" title="Leaderboard">🏆</button>
+        <button class="dock-btn" id="achievements-btn" title="Badges">🎖️</button>
+        <button class="dock-btn" id="daily-btn" title="Daily Challenge">📅</button>
+        <button class="dock-btn" id="overtime-btn" title="Overtime">⏰</button>
+        <button class="dock-btn" id="title-settings-btn" title="Settings">⚙️</button>
+      </div>
+
+      <!-- Premium + How to Play -->
+      <div class="title-secondary">
+        <button class="btn-help" id="help-btn">❓ How to Play</button>
         <button class="btn-help btn-unlock-premium" id="unlock-premium-btn">🔓 Unlock Premium</button>
       </div>
+
+      <!-- Legal footer -->
       <div class="title-footer">
         <div class="footer-links">
           <button class="footer-link" id="privacy-btn">Privacy</button>
@@ -50,7 +69,6 @@
           <span class="footer-sep">·</span>
           <a href="mailto:jeremiah@getsafefamily.com" class="footer-link">Contact</a>
         </div>
-        <p class="footer-copyright">© 2026 Beaver's Bathroom Blitz. All rights reserved.</p>
       </div>
     </div>
 
