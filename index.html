@@ -168,6 +168,24 @@
     </div>
   </div>
 
+  <!-- Preview Modal (for locked premium features) -->
+  <div id="preview-modal" class="modal">
+    <div class="modal-content preview-content">
+      <div class="preview-header">
+        <span class="preview-icon" id="preview-icon">🎖️</span>
+        <span class="preview-title" id="preview-title">Badges</span>
+        <span class="preview-tag">Premium</span>
+      </div>
+      <div class="preview-body">
+        <p class="preview-desc" id="preview-desc">Track your progress with achievements!</p>
+        <div class="preview-list" id="preview-list"></div>
+        <p class="preview-count" id="preview-count">17 achievements to earn!</p>
+      </div>
+      <button id="preview-unlock-btn" class="btn btn-play preview-btn">Unlock Premium - $2.99</button>
+      <button id="preview-close-btn" class="btn-help">Maybe Later</button>
+    </div>
+  </div>
+
   <div id="game-screen" class="screen">
     <div id="hud">
       <div class="hud-item hud-rating"><div class="label">Rating</div><div class="value" id="rating">⭐⭐⭐⭐⭐</div></div>
@@ -222,6 +240,11 @@
     <div id="pick-section" style="display:none">
       <p style="font-size:0.75em;opacity:0.7;margin-bottom:8px">You earned:</p>
       <div class="pick-row" id="pick-row"></div>
+    </div>
+    <!-- Premium feature buttons (shown locked for free users) -->
+    <div id="result-premium-btns" class="result-premium-btns" style="display:none">
+      <button class="btn-result-premium locked" id="result-shop-btn">🛒 Supply Shop</button>
+      <button class="btn-result-premium locked" id="result-badges-btn">🎖️ Badges</button>
     </div>
     <div class="share-row">
       <button class="btn btn-share" id="share-result">📤 Share Score</button>

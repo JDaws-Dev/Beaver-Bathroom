@@ -682,6 +682,103 @@ function closeAchievementsModal() {
 }
 
 // =============================================================================
+// PREVIEW MODAL (for locked premium features)
+// =============================================================================
+
+const PREVIEW_CONTENT = {
+  achievements: {
+    icon: '🎖️',
+    title: 'Badges',
+    desc: 'Track your progress with achievements and show off your skills!',
+    count: `${ACHIEVEMENTS.length} achievements to earn!`,
+    items: ACHIEVEMENTS.slice(0, 6).map(a => ({
+      icon: a.icon,
+      name: a.name,
+      desc: a.desc
+    }))
+  },
+  leaderboard: {
+    icon: '🏆',
+    title: 'Leaderboard',
+    desc: 'Compete with players worldwide for the highest scores!',
+    count: 'Global rankings updated in real-time!',
+    items: [
+      { icon: '🥇', name: 'Gold Trophy', desc: 'Top 1 worldwide' },
+      { icon: '🥈', name: 'Silver Trophy', desc: 'Top 2-3 worldwide' },
+      { icon: '🥉', name: 'Bronze Trophy', desc: 'Top 4-10 worldwide' },
+      { icon: '📊', name: 'Your Rank', desc: 'See where you stand' },
+      { icon: '🔄', name: 'Live Updates', desc: 'Real-time score tracking' }
+    ]
+  },
+  shop: {
+    icon: '🛒',
+    title: 'Supply Shop',
+    desc: 'Purchase permanent upgrades to boost your bathroom cleaning skills!',
+    count: '12 upgrades available!',
+    items: [
+      { icon: '🧹', name: 'Quick Scrub', desc: 'Faster cleaning speed' },
+      { icon: '🕐', name: 'Patience Plus', desc: 'Customers wait longer' },
+      { icon: '🎯', name: 'Auto-Assist', desc: 'Tasks auto-complete sometimes' },
+      { icon: '⚡', name: 'Speed Boost', desc: '2x cleaning for 10s' },
+      { icon: '🧊', name: 'Icee Freeze', desc: 'Slow down spawns' }
+    ]
+  },
+  badges: {
+    icon: '🎖️',
+    title: 'Badges',
+    desc: 'Earn badges for completing challenges and milestones!',
+    count: `${ACHIEVEMENTS.length} achievements to earn!`,
+    items: ACHIEVEMENTS.slice(0, 5).map(a => ({
+      icon: a.icon,
+      name: a.name,
+      desc: a.desc
+    }))
+  }
+};
+
+function showPreviewModal(feature) {
+  const content = PREVIEW_CONTENT[feature];
+  if (!content) return;
+
+  $('preview-icon').textContent = content.icon;
+  $('preview-title').textContent = content.title;
+  $('preview-desc').textContent = content.desc;
+  $('preview-count').textContent = content.count;
+
+  const list = $('preview-list');
+  list.innerHTML = content.items.map(item => `
+    <div class="preview-item">
+      <span class="preview-item-icon">${item.icon}</span>
+      <span class="preview-item-name">${item.name}</span>
+      <span class="preview-item-lock">🔒</span>
+    </div>
+  `).join('');
+
+  $('preview-modal').classList.add('active');
+  playClick();
+}
+
+function closePreviewModal() {
+  $('preview-modal').classList.remove('active');
+}
+
+// Update title screen buttons based on premium status
+function updateTitleButtonStates() {
+  const achievementsBtn = $('achievements-btn');
+  const leaderboardBtn = $('leaderboard-btn');
+
+  if (isPremium()) {
+    // Premium users see unlocked buttons
+    achievementsBtn?.classList.remove('locked');
+    leaderboardBtn?.classList.remove('locked');
+  } else {
+    // Free users see locked buttons
+    achievementsBtn?.classList.add('locked');
+    leaderboardBtn?.classList.add('locked');
+  }
+}
+
+// =============================================================================
 // DAILY LOGIN REWARD SYSTEM
 // =============================================================================
 
@@ -952,6 +1049,9 @@ function checkStripeReturn() {
     // Clean up URL
     const cleanUrl = window.location.origin + window.location.pathname;
     window.history.replaceState({}, document.title, cleanUrl);
+
+    // Update title screen buttons to show unlocked state
+    updateTitleButtonStates();
 
     // Show celebration on next interaction
     setTimeout(() => {
@@ -4006,6 +4106,12 @@ function endShift() {
 
   $('result-grade').textContent = grade;
   $('result-grade').className = 'grade ' + grade;
+
+  // Add Beaver premium hint after Shift 3 for free users (once per playthrough)
+  if (game.shift === 2 && !isPremium() && !localStorage.getItem('beaverPremiumHintShown')) {
+    comment = "🦫 Great progress! Premium unlocks 3 more shifts & the Golden Plunger ending!";
+    localStorage.setItem('beaverPremiumHintShown', 'true');
+  }
   $('result-comment').textContent = comment;
 
   // Update achievement stats
@@ -4079,6 +4185,21 @@ function endShift() {
       </div>
     `;
     $('next-btn').textContent = 'Final Results';
+  }
+
+  // Show locked premium buttons for free users to build aspiration
+  const premiumBtns = $('result-premium-btns');
+  if (premiumBtns) {
+    if (!isPremium()) {
+      premiumBtns.style.display = 'flex';
+      // Update button states to show locked
+      const shopBtn = $('result-shop-btn');
+      const badgesBtn = $('result-badges-btn');
+      if (shopBtn) shopBtn.classList.add('locked');
+      if (badgesBtn) badgesBtn.classList.add('locked');
+    } else {
+      premiumBtns.style.display = 'none';
+    }
   }
 
   showScreen('result-screen');
@@ -4208,12 +4329,31 @@ updateHighScoreDisplay();
 updateRankDisplay();
 updateOvertimeButton();
 
-// Achievements modal
-$('achievements-btn').addEventListener('click', openAchievementsModal);
+// Achievements modal - show preview for free users
+$('achievements-btn').addEventListener('click', () => {
+  if (isPremium()) {
+    openAchievementsModal();
+  } else {
+    showPreviewModal('achievements');
+  }
+});
 $('close-achievements').addEventListener('click', closeAchievementsModal);
 $('achievements-modal').addEventListener('click', e => {
   if (e.target === $('achievements-modal')) closeAchievementsModal();
 });
+
+// Preview modal handlers
+$('preview-close-btn')?.addEventListener('click', closePreviewModal);
+$('preview-unlock-btn')?.addEventListener('click', () => {
+  closePreviewModal();
+  handlePurchase();
+});
+$('preview-modal')?.addEventListener('click', e => {
+  if (e.target === $('preview-modal')) closePreviewModal();
+});
+
+// Update title button states on load
+updateTitleButtonStates();
 
 // Daily reward modal
 $('dr-claim-btn')?.addEventListener('click', () => {
@@ -4293,6 +4433,14 @@ $('skip-upgrades').addEventListener('click', () => {
   showShiftIntro();
 });
 
+// Result screen premium button handlers (show preview for locked features)
+$('result-shop-btn')?.addEventListener('click', () => {
+  showPreviewModal('shop');
+});
+$('result-badges-btn')?.addEventListener('click', () => {
+  showPreviewModal('badges');
+});
+
 $('retry-btn').addEventListener('click', () => {
   if (game.mode === 'endless') {
     // Restart endless mode directly
@@ -4362,9 +4510,9 @@ if (submitBtn) {
 const lbBtn = $('leaderboard-btn');
 if (lbBtn) {
   lbBtn.addEventListener('click', () => {
-    // Leaderboard is premium-only
+    // Show preview for free users
     if (!isPremium()) {
-      showPaywallModal();
+      showPreviewModal('leaderboard');
       return;
     }
     const panel = $('leaderboard-panel');

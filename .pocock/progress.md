@@ -9,6 +9,29 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Premium Upsell UI - Visible Locks and Gated Elements (o4e) - COMPLETE
+- Goal: communicate premium value to free users through visible locks without being pushy
+- Implementation:
+  - Title screen: Achievements and Leaderboard buttons show locked state for free users
+  - Preview modal: clicking locked buttons shows preview of features with list of what's included
+  - Result screen: added locked Supply Shop and Badges buttons for free users
+  - Beaver hint: after Shift 3 completion, shows one-time premium hint in result comment
+- New components:
+  - Preview modal HTML: header with icon/title/premium tag, feature list, unlock CTA, dismiss button
+  - CSS: .preview-content styles, .preview-item locked styling, .btn-result-premium locked buttons
+  - JS: PREVIEW_CONTENT object with achievements/leaderboard/shop/badges content
+  - updateTitleButtonStates(): adds/removes .locked class based on isPremium()
+- Premium user experience:
+  - Buttons appear unlocked (no .locked class)
+  - Result screen hides premium buttons entirely
+  - No hints shown about premium
+- Anti-patterns avoided:
+  - No mid-game interruptions
+  - No fake urgency
+  - Beaver hint only shown once per playthrough
+  - Preview modals are informational, not pushy
+- Files: index.html (~20 lines), src/styles.css (~25 lines), src/main.js (~90 lines)
+
 ### Verify Convex Leaderboard Works (dtk) - COMPLETE
 - Goal: test and verify Convex-powered leaderboard is functioning correctly
 - Issues found and fixed:

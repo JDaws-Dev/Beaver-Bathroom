@@ -131,6 +131,34 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .pw-btn{width:100%;font-size:1.1em;padding:14px;animation:dr-claim-pulse 1.5s ease-in-out infinite}
 .pw-restore{margin-top:12px;font-size:0.75em}
 
+/* Preview Modal (locked premium features) */
+.preview-content{max-width:340px;text-align:center}
+.preview-header{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px}
+.preview-icon{font-size:1.6em}
+.preview-title{font-size:1.3em;font-weight:bold;color:#FEF117}
+.preview-tag{font-size:0.65em;background:linear-gradient(180deg,#D31145,#8a0d2e);color:#fff;padding:3px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:0.5px}
+.preview-body{margin-bottom:16px}
+.preview-desc{color:#c9a86c;font-size:0.85em;margin-bottom:12px}
+.preview-list{background:linear-gradient(180deg,#2d1f0f,#1e1408);border-radius:10px;border:2px solid #5d4037;padding:10px;text-align:left;max-height:180px;overflow-y:auto}
+.preview-item{display:flex;align-items:center;gap:10px;padding:6px 4px;color:#888;font-size:0.8em}
+.preview-item:not(:last-child){border-bottom:1px solid rgba(93,64,55,0.3)}
+.preview-item-icon{font-size:1.1em;opacity:0.5}
+.preview-item-name{flex:1}
+.preview-item-lock{color:#666;font-size:0.9em}
+.preview-count{color:#FEF117;font-size:0.9em;margin-top:12px;font-weight:bold}
+.preview-btn{width:100%;font-size:1em;padding:12px;margin-bottom:8px}
+
+/* Locked button styling for premium features */
+.btn-help.locked{opacity:0.5;color:#888;position:relative}
+.btn-help.locked::after{content:' 🔒';font-size:0.9em;margin-left:2px}
+
+/* Result screen premium buttons */
+.result-premium-btns{display:flex;gap:10px;justify-content:center;margin:12px 0}
+.btn-result-premium{padding:10px 16px;font-size:0.85em;font-weight:bold;border:3px solid #5d4037;border-radius:8px;background:linear-gradient(180deg,#3d2814,#2d1f0f);color:#c9a86c;cursor:pointer;transition:all 0.15s}
+.btn-result-premium:hover{transform:scale(1.05);border-color:#FEF117}
+.btn-result-premium.locked{opacity:0.5;color:#888}
+.btn-result-premium.locked::after{content:' 🔒';font-size:0.85em}
+
 .player-rank-display{margin-top:10px;text-align:center}
 .rank-badge{font-size:1em;font-weight:bold;margin-bottom:6px;text-shadow:0 2px 4px rgba(0,0,0,0.5);color:#FEF117}
 .rank-icon{font-size:1.1em}
