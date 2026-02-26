@@ -1137,27 +1137,38 @@ const SOUND_FILES = {
   powerup: `${BASE_URL}sounds/powerup.wav`,
 };
 let soundsLoaded = false;
+let soundsLoading = false;
 
-// Preload all sound samples
+// Preload all sound samples (with protection against concurrent/repeated attempts)
 async function preloadSounds() {
-  if (soundsLoaded) return;
-  initAudio();
-  // Wait for AudioContext to be running before decoding
-  if (audioCtx.state === 'suspended') {
-    // Audio will be loaded later when initAudio is called on user interaction
+  if (soundsLoaded || soundsLoading) return;
+  soundsLoading = true;
+
+  if (!audioCtx) {
+    soundsLoading = false;
     return;
   }
-  const loadPromises = Object.entries(SOUND_FILES).map(async ([name, url]) => {
+
+  // Wait for AudioContext to be running before decoding
+  if (audioCtx.state === 'suspended') {
+    soundsLoading = false;
+    return;
+  }
+
+  // Load sounds sequentially to avoid overwhelming the browser
+  for (const [name, url] of Object.entries(SOUND_FILES)) {
+    if (soundBuffers[name]) continue; // Already loaded
     try {
       const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const arrayBuffer = await response.arrayBuffer();
       soundBuffers[name] = await audioCtx.decodeAudioData(arrayBuffer);
     } catch (e) {
-      console.warn(`Failed to load sound: ${name}`, e);
+      // Silently skip failed sounds - game works without them
     }
-  });
-  await Promise.all(loadPromises);
+  }
   soundsLoaded = true;
+  soundsLoading = false;
 }
 
 // Play a sample with volume control
