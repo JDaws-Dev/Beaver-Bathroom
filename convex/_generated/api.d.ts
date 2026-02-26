@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as coupons from "../coupons.js";
 import type * as scores from "../scores.js";
 import type * as stripe from "../stripe.js";
 import type * as users from "../users.js";
@@ -19,6 +20,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  coupons: typeof coupons;
   scores: typeof scores;
   stripe: typeof stripe;
   users: typeof users;

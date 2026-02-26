@@ -766,15 +766,20 @@ function closePreviewModal() {
 function updateTitleButtonStates() {
   const achievementsBtn = $('achievements-btn');
   const leaderboardBtn = $('leaderboard-btn');
+  const unlockPremiumBtn = $('unlock-premium-btn');
 
   if (isPremium()) {
     // Premium users see unlocked buttons
     achievementsBtn?.classList.remove('locked');
     leaderboardBtn?.classList.remove('locked');
+    // Hide unlock premium button
+    unlockPremiumBtn?.classList.add('hidden');
   } else {
     // Free users see locked buttons
     achievementsBtn?.classList.add('locked');
     leaderboardBtn?.classList.add('locked');
+    // Show unlock premium button
+    unlockPremiumBtn?.classList.remove('hidden');
   }
 }
 
@@ -1005,6 +1010,15 @@ function showPaywallModal() {
   // Reset to info view
   $('pw-info-view').style.display = '';
   $('pw-checkout-view').style.display = 'none';
+  // Reset coupon code input area
+  const codeArea = $('pw-code-input-area');
+  const codeToggle = $('pw-show-code-btn');
+  const codeInput = $('pw-coupon-input');
+  const codeError = $('pw-code-error');
+  if (codeArea) codeArea.classList.add('hidden');
+  if (codeToggle) codeToggle.textContent = 'Have a code?';
+  if (codeInput) codeInput.value = '';
+  if (codeError) codeError.classList.add('hidden');
   modal.classList.add('active');
   playClick();
 }
@@ -1157,6 +1171,71 @@ async function checkStripeReturn() {
       playWin();
       floatMessage('🎉 Premium Unlocked!', window.innerWidth / 2, 100, 'good');
     }, 500);
+  }
+}
+
+// Toggle coupon code input visibility
+function toggleCouponInput() {
+  const inputArea = $('pw-code-input-area');
+  const toggleBtn = $('pw-show-code-btn');
+  if (inputArea && toggleBtn) {
+    inputArea.classList.toggle('hidden');
+    toggleBtn.textContent = inputArea.classList.contains('hidden') ? 'Have a code?' : 'Hide';
+  }
+}
+
+// Redeem coupon code for premium access
+async function redeemCoupon() {
+  const input = $('pw-coupon-input');
+  const errorEl = $('pw-code-error');
+  const redeemBtn = $('pw-redeem-btn');
+
+  if (!input || !errorEl || !redeemBtn) return;
+
+  const code = input.value.trim();
+  if (!code) {
+    errorEl.textContent = 'Please enter a code';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+
+  // Show loading state
+  const originalText = redeemBtn.textContent;
+  redeemBtn.textContent = '...';
+  redeemBtn.disabled = true;
+  errorEl.classList.add('hidden');
+
+  try {
+    const result = await convex.mutation(api.coupons.redeemCode, { code });
+
+    if (result.valid) {
+      // Success! Grant premium
+      setPremium();
+      closePaywallModal();
+      playWin();
+      floatMessage('🎉 Premium Unlocked!', window.innerWidth / 2, 100, 'good');
+      updateTitleButtonStates();
+
+      // Clear input
+      input.value = '';
+    } else {
+      // Show error
+      if (result.reason === 'expired') {
+        errorEl.textContent = 'This code has expired';
+      } else {
+        errorEl.textContent = 'Invalid code';
+      }
+      errorEl.classList.remove('hidden');
+      playBad();
+    }
+  } catch (e) {
+    console.error('Coupon redemption error:', e);
+    errorEl.textContent = 'Could not verify code. Try again.';
+    errorEl.classList.remove('hidden');
+    playBad();
+  } finally {
+    redeemBtn.textContent = originalText;
+    redeemBtn.disabled = false;
   }
 }
 
@@ -5255,6 +5334,32 @@ $('pw-restore-btn')?.addEventListener('click', () => {
 $('pw-back-btn')?.addEventListener('click', () => {
   playClick();
   handleCheckoutBack();
+});
+
+// Coupon code toggle button
+$('pw-show-code-btn')?.addEventListener('click', () => {
+  playClick();
+  toggleCouponInput();
+});
+
+// Coupon code redeem button
+$('pw-redeem-btn')?.addEventListener('click', () => {
+  playClick();
+  redeemCoupon();
+});
+
+// Allow Enter key to submit coupon code
+$('pw-coupon-input')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    redeemCoupon();
+  }
+});
+
+// Unlock Premium button on title screen (opens paywall modal)
+$('unlock-premium-btn')?.addEventListener('click', () => {
+  playClick();
+  showPaywallModal();
 });
 
 // Close paywall modal on background click (only in info view, not checkout)

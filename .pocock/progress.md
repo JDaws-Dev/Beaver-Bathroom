@@ -9,6 +9,28 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Coupon Code System for Free Premium Access (953) - COMPLETE
+- Goal: allow distribution of coupon codes (DAWSFRIEND) for free premium access
+- Implementation:
+  - New `couponCodes` table in Convex schema with code, description, maxUses, currentUses, active, createdAt
+  - New `convex/coupons.ts` with redeemCode mutation and seedCodes mutation
+  - redeemCode: validates code (uppercase normalized), checks active/maxUses, increments currentUses
+  - seedCodes: creates initial DAWSFRIEND code (unlimited uses)
+- Frontend changes:
+  - Added coupon code section to paywall modal with toggle "Have a code?"
+  - Input field with Enter key support, redeem button
+  - Error/success messages with appropriate styling
+  - Added "Unlock Premium" button to title screen (hidden for premium users)
+  - updateTitleButtonStates() now manages unlock button visibility
+  - showPaywallModal() resets coupon input state on open
+- UI styling:
+  - .pw-code-section with dashed border separator
+  - .pw-code-input with uppercase transform
+  - .pw-code-error for red error messages
+  - .btn-unlock-premium with red gradient and gold border
+- Tested: redeemCode works with uppercase/lowercase input, invalid codes return proper error
+- Files: convex/schema.ts (~8 lines), convex/coupons.ts (new ~45 lines), index.html (~20 lines), src/styles.css (~20 lines), src/main.js (~80 lines)
+
 ### Embedded Stripe Checkout via Convex (a9e) - COMPLETE
 - Goal: replace redirect-to-Stripe flow with embedded checkout on page
 - Implementation:
@@ -81,22 +103,6 @@ This file maintains context between autonomous iterations.
   - Beaver hint only shown once per playthrough
   - Preview modals are informational, not pushy
 - Files: index.html (~20 lines), src/styles.css (~25 lines), src/main.js (~90 lines)
-
-### Verify Convex Leaderboard Works (dtk) - COMPLETE
-- Goal: test and verify Convex-powered leaderboard is functioning correctly
-- Issues found and fixed:
-  - `.env.local` had `\n` appended to VITE_CONVEX_URL - broke Convex connection
-  - Game over screen showed leaderboard submission form for free users (should be premium-only)
-- Verification performed:
-  - Convex API direct testing: getTopScores and submitScore both work
-  - Leaderboard displays scores correctly (tested via curl)
-  - Title screen leaderboard button already gated with isPremium() check
-  - Achievements button already gated with isPremium() check
-- Fix applied:
-  - Added isPremium() check to game over screen name input section
-  - Free users now see hidden name input, cannot submit scores
-  - Leaderboard section only shows after successful premium submission
-- Files: .env.local (1 line), src/main.js (~5 lines changed)
 
 ### Implement Stripe Paywall After Shift 3 (56w) - COMPLETE
 - Goal: implement free-to-paid conversion flow using Stripe Payment Links

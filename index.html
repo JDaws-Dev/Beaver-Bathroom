@@ -40,6 +40,7 @@
         <button class="btn-help" id="daily-btn">📅 Daily Challenge</button>
         <button class="btn-help" id="overtime-btn">⏰ Overtime</button>
         <button class="btn-help" id="title-settings-btn">⚙️ Settings</button>
+        <button class="btn-help btn-unlock-premium" id="unlock-premium-btn">🔓 Unlock Premium</button>
       </div>
       <div class="title-footer">
         <a href="https://venmo.com/u/Jeremiah-Daws" target="_blank" rel="noopener" class="tip-link">
@@ -168,6 +169,17 @@
           <span class="pw-once">one-time purchase</span>
         </div>
         <button id="pw-purchase-btn" class="btn btn-play pw-btn">Unlock Full Game</button>
+        <!-- Coupon code section -->
+        <div class="pw-code-section">
+          <button id="pw-show-code-btn" class="btn-help pw-code-toggle">Have a code?</button>
+          <div id="pw-code-input-area" class="pw-code-input-area hidden">
+            <div class="pw-code-row">
+              <input type="text" id="pw-coupon-input" class="pw-code-input" placeholder="Enter code" maxlength="20">
+              <button id="pw-redeem-btn" class="btn btn-small pw-redeem-btn">Redeem</button>
+            </div>
+            <p id="pw-code-error" class="pw-code-error hidden"></p>
+          </div>
+        </div>
         <button id="pw-restore-btn" class="btn-help pw-restore">Already purchased? Restore</button>
       </div>
       <!-- Checkout view (shown during Stripe checkout) -->

@@ -31,4 +31,14 @@ export default defineSchema({
     timestamp: v.number(),
   }).index("by_date_score", ["date", "score"])
     .index("by_date", ["date"]),
+
+  // Coupon codes for free premium access
+  couponCodes: defineTable({
+    code: v.string(),
+    description: v.string(),
+    maxUses: v.optional(v.number()), // undefined = unlimited
+    currentUses: v.number(),
+    active: v.boolean(),
+    createdAt: v.number(),
+  }).index("by_code", ["code"]),
 });
