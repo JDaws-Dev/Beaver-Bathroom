@@ -499,6 +499,7 @@ function addEmployeeXP(amount) {
 // Notification queue system - show banners one at a time
 const notificationQueue = [];
 let notificationShowing = false;
+let paymentModalActive = false; // Block notifications while payment modal is showing
 
 function queueNotification(type, data) {
   notificationQueue.push({ type, data });
@@ -506,7 +507,8 @@ function queueNotification(type, data) {
 }
 
 function processNotificationQueue() {
-  if (notificationShowing || notificationQueue.length === 0) return;
+  // Don't show notifications while payment modal is active
+  if (notificationShowing || paymentModalActive || notificationQueue.length === 0) return;
 
   notificationShowing = true;
   const notif = notificationQueue.shift();
@@ -5614,10 +5616,14 @@ function closeTermsModal() { $('terms-modal').classList.remove('active'); }
 
 // Payment success modal
 function showPaymentSuccessModal() {
+  paymentModalActive = true; // Block other notifications
   $('payment-success-modal')?.classList.add('active');
 }
 function closePaymentSuccessModal() {
   $('payment-success-modal')?.classList.remove('active');
+  paymentModalActive = false;
+  // Process any queued notifications now
+  processNotificationQueue();
 }
 
 $('payment-success-close')?.addEventListener('click', closePaymentSuccessModal);
