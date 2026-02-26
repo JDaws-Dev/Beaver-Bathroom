@@ -284,6 +284,56 @@
     </div>
   </div>
 
+  <!-- Speed Clean Challenge Mini-Game -->
+  <div id="minigame-intro" class="screen">
+    <div class="minigame-card">
+      <div class="minigame-badge">⚡ BONUS ROUND ⚡</div>
+      <h2 class="minigame-title">Speed Clean Challenge!</h2>
+      <p class="minigame-desc">Clean as many stalls as possible in 30 seconds!</p>
+      <div class="minigame-rules">
+        <div class="minigame-rule"><span class="rule-icon">🚽</span> Stalls spawn dirty - click to clean!</div>
+        <div class="minigame-rule"><span class="rule-icon">⚡</span> One-click cleaning - no mashing!</div>
+        <div class="minigame-rule"><span class="rule-icon">🪙</span> Earn bonus coins for each clean!</div>
+      </div>
+      <button class="btn btn-play minigame-start-btn" id="minigame-start-btn">GO!</button>
+    </div>
+  </div>
+
+  <div id="minigame-screen" class="screen">
+    <div id="minigame-hud">
+      <div class="minigame-hud-item">
+        <div class="minigame-label">TIME</div>
+        <div class="minigame-value minigame-timer" id="minigame-timer">30</div>
+      </div>
+      <div class="minigame-hud-item">
+        <div class="minigame-label">CLEANED</div>
+        <div class="minigame-value minigame-score" id="minigame-cleaned">0</div>
+      </div>
+    </div>
+    <div id="minigame-area">
+      <div id="minigame-stalls"></div>
+    </div>
+  </div>
+
+  <div id="minigame-result" class="screen">
+    <div class="minigame-result-card">
+      <div class="minigame-result-badge">⚡ BONUS COMPLETE ⚡</div>
+      <h2 class="minigame-result-title">Speed Clean Results!</h2>
+      <div class="minigame-result-stats">
+        <div class="minigame-stat">
+          <div class="minigame-stat-val" id="minigame-final-cleaned">0</div>
+          <div class="minigame-stat-lbl">Stalls Cleaned</div>
+        </div>
+        <div class="minigame-stat">
+          <div class="minigame-stat-val" id="minigame-bonus-coins">0</div>
+          <div class="minigame-stat-lbl">Bonus Coins</div>
+        </div>
+      </div>
+      <p class="minigame-comment" id="minigame-comment">Great job!</p>
+      <button class="btn" id="minigame-continue-btn">Continue →</button>
+    </div>
+  </div>
+
 </div>
 
 <script type="module" src="/src/main.js"></script>

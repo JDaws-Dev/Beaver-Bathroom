@@ -9,6 +9,21 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Speed Clean Challenge Mini-Game (151)
+- Goal: 30-second bonus round where player cleans as many stalls as possible
+- Triggers after shifts 2, 4, 6 (0-indexed: 1, 3, 5) for pacing variety
+- MINIGAME_CONFIG: duration 30s, 8 stalls, 300ms respawn, 5 coins per clean
+- 4 new screens: minigame-intro, minigame-screen, minigame-result (+ game flow)
+- Intro screen: blue/gold theme (different from main game), explains one-click rules
+- Play screen: 8 golden stalls, HUD shows time + cleaned count, urgent timer animation
+- Stalls: one-click to clean, flash green + shrink animation, respawn after 300ms
+- Results: show stalls cleaned, bonus coins earned, performance-based comment
+- Integration: next-btn checks shouldTriggerMinigame() before incrementing shift
+- continueFromMinigame() routes to shop or final results
+- CSS: blue gradient theme to visually distinguish bonus round, gold accents
+- Mobile responsive: 420px breakpoint styles for smaller stalls/cards
+- Files: src/main.js (~160 lines), src/styles.css (~60 lines), index.html (~50 lines)
+
 ### Social Sharing - Share Score to Instagram/TikTok (ok8)
 - Goal: let players share high scores to social media for viral marketing
 - Canvas-based score card generator (9:16 ratio for Instagram Stories)
@@ -38,25 +53,6 @@ This file maintains context between autonomous iterations.
 - XP shown in rewards row alongside coins after each shift
 - Helper functions: getCurrentRank(), getNextRank(), getRankProgress(), addEmployeeXP()
 - Files: src/main.js (~120 lines), src/styles.css (~20 lines), index.html (~5 lines)
-
-### Achievement/Badge System (7zi)
-- Goal: award badges for milestones (first shift, 10x combo, etc.)
-- Added ACHIEVEMENTS array with 17 badges across categories:
-  - Progress: first_shift (complete 1 shift), golden_plunger (complete all 6)
-  - Combos: combo_3, combo_5, combo_10 (3x, 5x, 10x streaks)
-  - Cleaning: clean_10, clean_50, clean_100 (total stalls cleaned)
-  - Score: score_1000, score_5000, score_10000 (single shift scores)
-  - Perfect: perfect_shift (S grade), perfect_inspect (clean inspection)
-  - Saves: save_1, save_10 (just-in-time saves)
-  - Service: serve_50, serve_100 (customers served)
-- localStorage keys: `beaverAchievementStats` (JSON), `beaverAchievements` (array of IDs)
-- Stats tracked: shiftsCompleted, maxCombo, totalCleaned, totalServed, totalSaves, sGrades, perfectInspections
-- UI: achievements-modal with grid of cards (🔒 for locked, icon for unlocked)
-- "🎖️ Badges" button on title screen opens modal
-- Achievement unlock banner slides in from top with triumphant arpeggio sound
-- checkAchievements() called at endShift and finishInspection
-- Mobile responsive: 2-column grid at 420px breakpoint
-- Files: src/main.js (~130 lines), src/styles.css (~25 lines), index.html (~12 lines)
 
 ---
 
@@ -112,6 +108,25 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Achievement/Badge System (7zi)
+- Goal: award badges for milestones (first shift, 10x combo, etc.)
+- Added ACHIEVEMENTS array with 17 badges across categories:
+  - Progress: first_shift (complete 1 shift), golden_plunger (complete all 6)
+  - Combos: combo_3, combo_5, combo_10 (3x, 5x, 10x streaks)
+  - Cleaning: clean_10, clean_50, clean_100 (total stalls cleaned)
+  - Score: score_1000, score_5000, score_10000 (single shift scores)
+  - Perfect: perfect_shift (S grade), perfect_inspect (clean inspection)
+  - Saves: save_1, save_10 (just-in-time saves)
+  - Service: serve_50, serve_100 (customers served)
+- localStorage keys: `beaverAchievementStats` (JSON), `beaverAchievements` (array of IDs)
+- Stats tracked: shiftsCompleted, maxCombo, totalCleaned, totalServed, totalSaves, sGrades, perfectInspections
+- UI: achievements-modal with grid of cards (🔒 for locked, icon for unlocked)
+- "🎖️ Badges" button on title screen opens modal
+- Achievement unlock banner slides in from top with triumphant arpeggio sound
+- checkAchievements() called at endShift and finishInspection
+- Mobile responsive: 2-column grid at 420px breakpoint
+- Files: src/main.js (~130 lines), src/styles.css (~25 lines), index.html (~12 lines)
 
 ### Add Haptic Feedback for Mobile (680)
 - Goal: add vibration feedback to make game feel tactile on mobile

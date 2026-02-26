@@ -623,3 +623,57 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .btn-share-action{padding:12px 20px;font-size:0.9em;flex:1;max-width:140px}
 .btn-secondary{background:linear-gradient(180deg,#5a4030 0%,#3d2814 50%,#2d1f0f 100%);border-color:#5d4037}
 .btn-secondary:hover{background:linear-gradient(180deg,#6a5040 0%,#4d3824 50%,#3d2814 100%)}
+
+/* === MINI-GAME: Speed Clean Challenge === */
+#minigame-intro,#minigame-result{background:linear-gradient(180deg,#1a237e 0%,#0d1442 50%,#000 100%)}
+.minigame-card,.minigame-result-card{background:linear-gradient(180deg,#283593 0%,#1a237e 50%,#0d1442 100%);border:5px solid #ffd700;border-radius:20px;padding:24px 28px;max-width:380px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,0.6),0 0 40px rgba(255,215,0,0.2)}
+.minigame-badge,.minigame-result-badge{color:#ffd700;font-size:0.9em;font-weight:bold;letter-spacing:3px;text-shadow:0 0 15px rgba(255,215,0,0.6);margin-bottom:8px;animation:badge-pulse 1.5s ease-in-out infinite}
+@keyframes badge-pulse{0%,100%{text-shadow:0 0 15px rgba(255,215,0,0.6)}50%{text-shadow:0 0 30px rgba(255,215,0,0.9)}}
+.minigame-title,.minigame-result-title{color:#fff;font-size:1.8em;margin-bottom:12px;text-shadow:0 3px 0 #1a237e,-1px -1px 0 #1a237e}
+.minigame-desc{color:#b3e5fc;font-size:1em;margin-bottom:20px}
+.minigame-rules{text-align:left;margin-bottom:20px}
+.minigame-rule{display:flex;gap:10px;align-items:center;margin:8px 0;font-size:0.9em;color:#e3f2fd}
+.rule-icon{font-size:1.3em}
+.minigame-start-btn{animation:start-glow 1s ease-in-out infinite alternate}
+@keyframes start-glow{0%{box-shadow:inset 0 3px 0 rgba(255,255,255,0.25),0 4px 8px rgba(0,0,0,0.35),0 0 20px rgba(255,215,0,0.4)}100%{box-shadow:inset 0 3px 0 rgba(255,255,255,0.25),0 4px 8px rgba(0,0,0,0.35),0 0 40px rgba(255,215,0,0.7)}}
+
+/* Mini-game play screen */
+#minigame-screen{background:linear-gradient(180deg,#0d1442 0%,#000 100%);padding:0;gap:0}
+#minigame-hud{display:flex;justify-content:center;gap:40px;padding:16px;background:linear-gradient(180deg,#1a237e,#0d1442);border-bottom:4px solid #ffd700}
+.minigame-hud-item{text-align:center}
+.minigame-label{font-size:0.75em;color:#b3e5fc;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.minigame-value{font-size:2em;font-weight:bold;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,0.5)}
+.minigame-timer{color:#ffd700;animation:timer-pulse 1s ease-in-out infinite}
+@keyframes timer-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.minigame-timer.urgent{color:#ff5252;animation:timer-urgent 0.3s ease-in-out infinite}
+@keyframes timer-urgent{0%,100%{transform:scale(1);color:#ff5252}50%{transform:scale(1.1);color:#ff8a80}}
+.minigame-score{color:#69f0ae}
+#minigame-area{flex:1;position:relative;padding:20px}
+#minigame-stalls{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:flex-start;max-width:500px;margin:0 auto}
+.minigame-stall{width:72px;height:90px;background:linear-gradient(180deg,#ffd700 0%,#ffc107 50%,#ff9800 100%);border:4px solid #fff;border-radius:14px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:2em;box-shadow:0 4px 12px rgba(0,0,0,0.4),0 0 15px rgba(255,215,0,0.3);transition:all 0.15s cubic-bezier(0.34,1.56,0.64,1);position:relative}
+.minigame-stall:hover{transform:scale(1.08);box-shadow:0 6px 16px rgba(0,0,0,0.5),0 0 25px rgba(255,215,0,0.5)}
+.minigame-stall:active{transform:scale(0.95)}
+.minigame-stall.cleaned{animation:stall-clean-flash 0.4s ease-out forwards;pointer-events:none}
+@keyframes stall-clean-flash{0%{transform:scale(1);background:linear-gradient(180deg,#69f0ae,#00e676);border-color:#00c853}50%{transform:scale(1.2)}100%{transform:scale(0);opacity:0}}
+.minigame-stall-label{font-size:0.4em;color:#5d4037;font-weight:bold;margin-top:4px}
+
+/* Mini-game results */
+.minigame-result-stats{display:flex;gap:24px;justify-content:center;margin:20px 0}
+.minigame-stat{text-align:center}
+.minigame-stat-val{font-size:2.5em;font-weight:bold;color:#ffd700;text-shadow:0 2px 4px rgba(0,0,0,0.5)}
+.minigame-stat-lbl{font-size:0.75em;color:#b3e5fc;text-transform:uppercase;letter-spacing:1px}
+.minigame-comment{color:#e3f2fd;font-size:0.95em;margin-bottom:20px;font-style:italic}
+
+/* Mini-game responsive */
+@media(max-width:420px){
+.minigame-card,.minigame-result-card{padding:18px 16px;max-width:95%}
+.minigame-title,.minigame-result-title{font-size:1.4em}
+.minigame-desc{font-size:0.85em}
+.minigame-rule{font-size:0.8em;gap:8px}
+#minigame-hud{gap:24px;padding:12px}
+.minigame-value{font-size:1.6em}
+#minigame-stalls{gap:8px}
+.minigame-stall{width:60px;height:76px;font-size:1.6em}
+.minigame-result-stats{gap:16px}
+.minigame-stat-val{font-size:2em}
+}

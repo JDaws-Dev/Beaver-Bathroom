@@ -613,6 +613,209 @@ function closeAchievementsModal() {
   $('achievements-modal').classList.remove('active');
 }
 
+// =============================================================================
+// MINI-GAME: SPEED CLEAN CHALLENGE
+// =============================================================================
+
+// Mini-game configuration
+const MINIGAME_CONFIG = {
+  duration: 30,           // 30 seconds
+  stallCount: 8,          // Number of stalls to show
+  respawnDelay: 300,      // ms before new stall appears after cleaning
+  coinsPerClean: 5,       // Coins earned per stall cleaned
+  triggerAfterShift: [1, 3, 5], // Trigger after shifts 2, 4, 6 (0-indexed)
+};
+
+// Mini-game state
+let minigame = {
+  active: false,
+  time: 0,
+  cleaned: 0,
+  stalls: [],
+  lastTime: 0,
+};
+
+// Mini-game comments based on performance
+const MINIGAME_COMMENTS = [
+  { min: 0, msg: "Keep practicing, rookie!" },
+  { min: 5, msg: "Getting the hang of it!" },
+  { min: 10, msg: "Nice cleaning skills!" },
+  { min: 15, msg: "Speed demon! 🔥" },
+  { min: 20, msg: "Unstoppable cleaner! ⚡" },
+  { min: 25, msg: "LEGENDARY SPEED! 🌟" },
+];
+
+function shouldTriggerMinigame() {
+  // Trigger after specific shifts (0-indexed in game.shift, but we check AFTER endShift)
+  return MINIGAME_CONFIG.triggerAfterShift.includes(game.shift);
+}
+
+function showMinigameIntro() {
+  playClick();
+  showScreen('minigame-intro');
+}
+
+function startMinigame() {
+  minigame = {
+    active: true,
+    time: MINIGAME_CONFIG.duration,
+    cleaned: 0,
+    stalls: [],
+    lastTime: performance.now(),
+  };
+
+  // Build initial stalls
+  buildMinigameStalls();
+  updateMinigameHUD();
+  showScreen('minigame-screen');
+
+  // Start mini-game loop
+  requestAnimationFrame(minigameLoop);
+  playClick();
+  haptic('strong');
+}
+
+function buildMinigameStalls() {
+  const container = $('minigame-stalls');
+  container.innerHTML = '';
+  minigame.stalls = [];
+
+  for (let i = 0; i < MINIGAME_CONFIG.stallCount; i++) {
+    const stall = document.createElement('div');
+    stall.className = 'minigame-stall';
+    stall.dataset.index = i;
+    stall.innerHTML = `
+      <span class="stall-icon">🚽</span>
+      <span class="minigame-stall-label">DIRTY</span>
+    `;
+    stall.addEventListener('click', () => cleanMinigameStall(i));
+    container.appendChild(stall);
+    minigame.stalls.push({ element: stall, dirty: true, respawnTimer: 0 });
+  }
+}
+
+function cleanMinigameStall(index) {
+  const stall = minigame.stalls[index];
+  if (!stall || !stall.dirty || !minigame.active) return;
+
+  stall.dirty = false;
+  stall.element.classList.add('cleaned');
+  stall.respawnTimer = MINIGAME_CONFIG.respawnDelay;
+  minigame.cleaned++;
+
+  // Effects
+  playStallClean();
+  haptic('medium');
+  updateMinigameHUD();
+
+  // Spawn sparkles at stall position
+  const rect = stall.element.getBoundingClientRect();
+  spawnSparkles(rect.left + rect.width/2, rect.top + rect.height/2, 8);
+}
+
+function respawnMinigameStall(index) {
+  const stall = minigame.stalls[index];
+  if (!stall) return;
+
+  // Create new stall element
+  const newStall = document.createElement('div');
+  newStall.className = 'minigame-stall';
+  newStall.dataset.index = index;
+  newStall.innerHTML = `
+    <span class="stall-icon">🚽</span>
+    <span class="minigame-stall-label">DIRTY</span>
+  `;
+  newStall.addEventListener('click', () => cleanMinigameStall(index));
+
+  // Replace in container
+  const container = $('minigame-stalls');
+  container.replaceChild(newStall, stall.element);
+
+  // Update state
+  stall.element = newStall;
+  stall.dirty = true;
+  stall.respawnTimer = 0;
+}
+
+function minigameLoop(now) {
+  if (!minigame.active) return;
+
+  const dt = Math.min(now - minigame.lastTime, 100);
+  minigame.lastTime = now;
+
+  // Update timer
+  minigame.time -= dt / 1000;
+
+  // Update respawn timers
+  minigame.stalls.forEach((stall, i) => {
+    if (!stall.dirty && stall.respawnTimer > 0) {
+      stall.respawnTimer -= dt;
+      if (stall.respawnTimer <= 0) {
+        respawnMinigameStall(i);
+      }
+    }
+  });
+
+  // Check for urgent timer styling
+  const timerEl = $('minigame-timer');
+  if (minigame.time <= 10) {
+    timerEl.classList.add('urgent');
+  } else {
+    timerEl.classList.remove('urgent');
+  }
+
+  updateMinigameHUD();
+
+  // Check for end
+  if (minigame.time <= 0) {
+    endMinigame();
+    return;
+  }
+
+  requestAnimationFrame(minigameLoop);
+}
+
+function updateMinigameHUD() {
+  $('minigame-timer').textContent = Math.max(0, Math.ceil(minigame.time));
+  $('minigame-cleaned').textContent = minigame.cleaned;
+}
+
+function endMinigame() {
+  minigame.active = false;
+
+  // Calculate rewards
+  const bonusCoins = minigame.cleaned * MINIGAME_CONFIG.coinsPerClean;
+  game.coins += bonusCoins;
+
+  // Find appropriate comment
+  let comment = MINIGAME_COMMENTS[0].msg;
+  for (const c of MINIGAME_COMMENTS) {
+    if (minigame.cleaned >= c.min) comment = c.msg;
+  }
+
+  // Update results screen
+  $('minigame-final-cleaned').textContent = minigame.cleaned;
+  $('minigame-bonus-coins').textContent = '+' + bonusCoins;
+  $('minigame-comment').textContent = comment;
+
+  // Play celebration
+  playWin();
+  haptic('success');
+
+  showScreen('minigame-result');
+}
+
+function continueFromMinigame() {
+  // Continue to shop or final results
+  // game.shift was already incremented when next-btn was clicked
+  playClick();
+  if (game.shift < CONFIG.shifts.length) {
+    showUpgradeScreen();
+  } else {
+    gameOver();
+  }
+}
+
 let game = {};
 let selectedGender = 'female';
 let highScore = parseInt(localStorage.getItem('beaverHighScore')) || 0;
@@ -3126,11 +3329,24 @@ $('shift-start-btn').addEventListener('click', () => {
 });
 
 $('next-btn').addEventListener('click', () => {
+  // Check for mini-game trigger BEFORE incrementing shift
+  const shouldMinigame = shouldTriggerMinigame();
   game.shift++;
+
   if (game.shift >= CONFIG.shifts.length) {
-    gameOver();
+    // Last shift completed - check minigame before final results
+    if (shouldMinigame) {
+      showMinigameIntro();
+    } else {
+      gameOver();
+    }
   } else {
-    showUpgradeScreen();
+    // More shifts to go
+    if (shouldMinigame) {
+      showMinigameIntro();
+    } else {
+      showUpgradeScreen();
+    }
   }
 });
 
@@ -3140,6 +3356,15 @@ $('skip-upgrades').addEventListener('click', () => {
 
 $('retry-btn').addEventListener('click', () => {
   showScreen('title-screen');
+});
+
+// Mini-game buttons
+$('minigame-start-btn').addEventListener('click', () => {
+  startMinigame();
+});
+
+$('minigame-continue-btn').addEventListener('click', () => {
+  continueFromMinigame();
 });
 
 // Keyboard
