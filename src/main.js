@@ -1097,11 +1097,20 @@ function initAudio() {
   // Resume AudioContext on user interaction (required by browser autoplay policy)
   if (audioCtx.state === 'suspended') {
     audioCtx.resume().then(() => {
-      // Reload sounds if they failed to load initially (AudioContext was suspended)
+      // Load sounds once AudioContext is running
       if (!soundsLoaded) preloadSounds();
     });
+  } else if (!soundsLoaded) {
+    // AudioContext already running, preload sounds
+    preloadSounds();
   }
 }
+
+// Initialize audio on first user interaction (any click/touch)
+document.addEventListener('click', function initOnFirstClick() {
+  initAudio();
+  document.removeEventListener('click', initOnFirstClick);
+}, { once: true });
 
 // === SAMPLE-BASED AUDIO SYSTEM ===
 const soundBuffers = {}; // Cache for decoded audio buffers
@@ -1170,8 +1179,7 @@ function playSample(name, volume = 1.0, playbackRate = 1.0) {
   } catch (e) {}
 }
 
-// Start preloading sounds immediately
-preloadSounds();
+// Sounds will be preloaded on first user interaction via initAudio()
 
 function toggleMasterMute() {
   isMuted = !isMuted;
