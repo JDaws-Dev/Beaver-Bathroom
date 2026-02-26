@@ -1092,25 +1092,26 @@ function toggleHaptics() {
   if (hapticsEnabled) haptic('medium'); // Feedback that haptics are on
 }
 
+let audioInitialized = false;
+
 function initAudio() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
   // Resume AudioContext on user interaction (required by browser autoplay policy)
   if (audioCtx.state === 'suspended') {
-    audioCtx.resume().then(() => {
-      // Load sounds once AudioContext is running
-      if (!soundsLoaded) preloadSounds();
-    });
-  } else if (!soundsLoaded) {
-    // AudioContext already running, preload sounds
+    audioCtx.resume();
+  }
+  // Load sounds if not yet done
+  if (!audioInitialized && !soundsLoading && !soundsLoaded) {
+    audioInitialized = true;
     preloadSounds();
   }
 }
 
-// Initialize audio on first user interaction (any click/touch)
-document.addEventListener('click', function initOnFirstClick() {
-  initAudio();
-  document.removeEventListener('click', initOnFirstClick);
-}, { once: true });
+// Initialize audio on ANY user interaction (multiple calls are safe)
+document.addEventListener('click', initAudio);
+document.addEventListener('touchstart', initAudio);
 
 // === SAMPLE-BASED AUDIO SYSTEM ===
 const soundBuffers = {}; // Cache for decoded audio buffers
@@ -1141,18 +1142,12 @@ let soundsLoading = false;
 
 // Preload all sound samples (with protection against concurrent/repeated attempts)
 async function preloadSounds() {
-  if (soundsLoaded || soundsLoading) return;
+  if (soundsLoaded || soundsLoading || !audioCtx) return;
   soundsLoading = true;
 
-  if (!audioCtx) {
-    soundsLoading = false;
-    return;
-  }
-
-  // Wait for AudioContext to be running before decoding
-  if (audioCtx.state === 'suspended') {
-    soundsLoading = false;
-    return;
+  // Wait for AudioContext to be ready
+  while (audioCtx.state === 'suspended') {
+    await new Promise(r => setTimeout(r, 100));
   }
 
   // Load sounds sequentially to avoid overwhelming the browser
