@@ -9,14 +9,17 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
-### Mobile-First Upgrade Screen Redesign (97o.1)
-- Goal: fix upgrade screen overflow/cutoff on mobile (320-420px)
-- Problem: upgrade screen lacked 420px breakpoint styles, causing items to be too large
-- Fix: added comprehensive 420px responsive styles for all upgrade screen elements
-- Changes: smaller padding, font sizes, gaps for mobile viewport
-- Key elements: #upgrade-screen, .upgrades-grid, .shop-item, .shop-inventory, rewards
-- Added max-width:100% to upgrades-grid at 420px (was fixed 340px causing centering issues)
-- Files: src/styles.css (~21 lines added in 420px media query)
+### Move Paper Towels Next to Sinks with New Customer Flow (d2n)
+- Goal: relocate towels to be adjacent to sinks, customers walk to towels after washing
+- HTML: created new #sink-towel-area container grouping #sinks-area and #towels
+- CSS: #sink-towel-area uses flexbox to position sinks and towels side-by-side at bottom center
+- Removed position:absolute from #towels, now flows naturally with sinks
+- Adjusted border-radius: sinks have left-rounded corners, towels have right-rounded
+- New customer phase: `toTowels` added between `washing` and `exit`
+- After washing, customers walk to towel dispenser (70%) or skip (30% - CONFIG.towelSkipChance)
+- Towel use logic moved from washing phase to toTowels arrival
+- Customer phases now: enter→findStall→toStall→entering→inStall→exitStall→toSink→washing→toTowels→exit
+- Files: index.html (~2 lines), src/styles.css (~4 lines), src/main.js (~40 lines), CLAUDE.md
 
 ### Fix Blue Cleaning Stall - Block Customer Entry (4z8)
 - Goal: customers shouldn't enter stalls in 'cleaning' state
@@ -29,19 +32,6 @@ This file maintains context between autonomous iterations.
 - Key insight: existing findStall logic already excludes cleaning stalls (only matches empty/dirty)
 - The save mechanic still works: player starts cleaning during grace period → instant save + bonus
 - Files: src/main.js (~15 lines changed in updatePeople entering phase)
-
-### Simplify and Unify Upgrade/Powerup System (lxh)
-- Goal: fix confusing dual-system (upgrades + powerups) with icon overlap (⚡ used twice)
-- Solution: Option A from issue - PERKS (passive) + ITEMS (consumables) with clear separation
-- Changed UPGRADES array → PERKS + ITEMS arrays
-- PERKS (always active): 🧹 Quick Scrub (was ⚡ Speed Scrub), 🕐 Patience Plus, 🎯 Auto-Assist
-- ITEMS (consumables): ⚡ Speed Boost, 🐢 Slow-Mo, ✨ Insta-Clean - upgrades enhance duration/count
-- Removed confusing "Better Supplies" upgrade that gave powerups
-- game.upgrades → game.perks + game.items
-- getUpgradeEffect() → getPerkEffect(), added getItemDuration(), getItemCount()
-- Shop UI now shows two sections: 🛡️ PERKS, 🎒 ITEMS with clear section headers
-- Item cards show current effect (e.g., "12s", "0/shift") that scales with level
-- Files: src/main.js (~90 lines changed), src/styles.css (~10 lines)
 
 ---
 
@@ -97,6 +87,28 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Mobile-First Upgrade Screen Redesign (97o.1)
+- Goal: fix upgrade screen overflow/cutoff on mobile (320-420px)
+- Problem: upgrade screen lacked 420px breakpoint styles, causing items to be too large
+- Fix: added comprehensive 420px responsive styles for all upgrade screen elements
+- Changes: smaller padding, font sizes, gaps for mobile viewport
+- Key elements: #upgrade-screen, .upgrades-grid, .shop-item, .shop-inventory, rewards
+- Added max-width:100% to upgrades-grid at 420px (was fixed 340px causing centering issues)
+- Files: src/styles.css (~21 lines added in 420px media query)
+
+### Simplify and Unify Upgrade/Powerup System (lxh)
+- Goal: fix confusing dual-system (upgrades + powerups) with icon overlap (⚡ used twice)
+- Solution: Option A from issue - PERKS (passive) + ITEMS (consumables) with clear separation
+- Changed UPGRADES array → PERKS + ITEMS arrays
+- PERKS (always active): 🧹 Quick Scrub (was ⚡ Speed Scrub), 🕐 Patience Plus, 🎯 Auto-Assist
+- ITEMS (consumables): ⚡ Speed Boost, 🐢 Slow-Mo, ✨ Insta-Clean - upgrades enhance duration/count
+- Removed confusing "Better Supplies" upgrade that gave powerups
+- game.upgrades → game.perks + game.items
+- getUpgradeEffect() → getPerkEffect(), added getItemDuration(), getItemCount()
+- Shop UI now shows two sections: 🛡️ PERKS, 🎒 ITEMS with clear section headers
+- Item cards show current effect (e.g., "12s", "0/shift") that scales with level
+- Files: src/main.js (~90 lines changed), src/styles.css (~10 lines)
 
 ### Remove Blocking Tutorial System (etg)
 - Goal: remove buggy interactive tutorial that blocked gameplay

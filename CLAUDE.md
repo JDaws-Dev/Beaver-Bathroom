@@ -111,7 +111,8 @@ clickBoost: 80,       // Each click reduces task time
 ```
 
 ### Customer Phases
-`enter` → `findStall` → `toStall` → `entering` → `inStall` → `exitStall` → `toSink` → `washing` → `exit`
+`enter` → `findStall` → `toStall` → `entering` → `inStall` → `exitStall` → `toSink` → `washing` → `toTowels` → `exit`
+Note: ~30% of customers skip `toTowels` phase (CONFIG.towelSkipChance)
 
 ### Audio System
 Uses Web Audio API with procedural sounds:

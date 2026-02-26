@@ -203,6 +203,7 @@ const CONFIG = {
     { level: 5, speedBoost: 4000, rating: 0.1, points: 100, msg: '⚡ UNSTOPPABLE!' },
     { level: 10, speedBoost: 5000, rating: 0.3, points: 250, msg: '🌟 LEGENDARY!' },
   ],
+  towelSkipChance: 0.3,  // 30% of customers skip towel drying
 };
 
 // SKILLS: Earned automatically as you complete shifts (not purchased)
@@ -1588,29 +1589,9 @@ function updatePeople(dt) {
         }
         updateSinkDOM(p.sinkIdx);
 
-        // Customer wants to dry hands (70% chance)
-        const wantsTowel = Math.random() < 0.7;
-        if (wantsTowel) {
-          if (game.towels > 0) {
-            game.towels--;
-            // Happy - got a towel
-            if (p.specialThoughts && p.specialThoughts.happy) {
-              p.thought = p.specialThoughts.happy;
-            } else {
-              p.thought = pick(THOUGHTS.happy);
-            }
-            p.thoughtTimer = 1500;
-          } else {
-            // No towels! Customer is unhappy
-            p.thought = pick(['No towels?!', 'Wet hands...', 'Seriously?', 'Ugh, drip dry...']);
-            p.thoughtTimer = 2000;
-            const penalty = p.vip ? 0.3 : 0.15;
-            game.rating = Math.max(0, game.rating - penalty);
-            floatMessage('No towels! -⭐', p.x, p.y - 30, 'bad');
-            playBad();
-            setBeaverMood('worried', 1500);
-          }
-        } else {
+        // Customer wants to dry hands (configurable skip chance)
+        const skipTowel = Math.random() < CONFIG.towelSkipChance;
+        if (skipTowel) {
           // Didn't need towel, still happy
           if (p.specialThoughts && p.specialThoughts.happy) {
             p.thought = p.specialThoughts.happy;
@@ -1618,8 +1599,46 @@ function updatePeople(dt) {
             p.thought = pick(THOUGHTS.happy);
           }
           p.thoughtTimer = 1500;
+          p.phase = 'exit';
+        } else {
+          // Walk to towel dispenser
+          p.phase = 'toTowels';
+        }
+      }
+    }
+    else if (p.phase === 'toTowels') {
+      const towelEl = $('towels');
+      const towelRect = towelEl.getBoundingClientRect();
+      const tx = towelRect.left - floorRect.left + towelRect.width/2;
+      const ty = towelRect.top - floorRect.top;
+      const dx = tx - p.x, dy = ty - p.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+
+      if (dist < 15) {
+        // Arrived at towels
+        if (game.towels > 0) {
+          game.towels--;
+          // Happy - got a towel
+          if (p.specialThoughts && p.specialThoughts.happy) {
+            p.thought = p.specialThoughts.happy;
+          } else {
+            p.thought = pick(THOUGHTS.happy);
+          }
+          p.thoughtTimer = 1500;
+        } else {
+          // No towels! Customer is unhappy
+          p.thought = pick(['No towels?!', 'Wet hands...', 'Seriously?', 'Ugh, drip dry...']);
+          p.thoughtTimer = 2000;
+          const penalty = p.vip ? 0.3 : 0.15;
+          game.rating = Math.max(0, game.rating - penalty);
+          floatMessage('No towels! -⭐', p.x, p.y - 30, 'bad');
+          playBad();
+          setBeaverMood('worried', 1500);
         }
         p.phase = 'exit';
+      } else {
+        p.x += (dx / dist) * speed;
+        p.y += (dy / dist) * speed;
       }
     }
     else if (p.phase === 'exit') {
