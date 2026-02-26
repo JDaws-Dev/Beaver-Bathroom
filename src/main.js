@@ -1110,8 +1110,9 @@ function initAudio() {
 }
 
 // Initialize audio on ANY user interaction (multiple calls are safe)
-document.addEventListener('click', initAudio);
-document.addEventListener('touchstart', initAudio);
+['click', 'touchstart', 'keydown'].forEach(evt => {
+  document.addEventListener(evt, initAudio, { passive: true });
+});
 
 // === SAMPLE-BASED AUDIO SYSTEM ===
 const soundBuffers = {}; // Cache for decoded audio buffers
