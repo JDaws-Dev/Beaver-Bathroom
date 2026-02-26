@@ -210,9 +210,19 @@
   </div>
 
   <script type="module">
-    import { ConvexClient } from "https://cdn.jsdelivr.net/npm/convex@1.17.4/+esm";
+    const CONVEX_URL = "https://neat-salamander-885.convex.cloud";
 
-    const client = new ConvexClient("https://neat-salamander-885.convex.cloud");
+    // Simple Convex HTTP query function
+    async function convexQuery(functionPath, args = {}) {
+      const response = await fetch(`${CONVEX_URL}/api/query`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path: functionPath, args, format: "json" })
+      });
+      const result = await response.json();
+      if (result.status === "error") throw new Error(result.errorMessage);
+      return result.value;
+    }
 
     let currentFilter = "";
 
@@ -236,7 +246,7 @@
     // Load stats
     async function loadStats() {
       try {
-        const stats = await client.query("admin:getStats", {});
+        const stats = await convexQuery("admin:getStats", {});
         document.getElementById('stats-grid').innerHTML = `
           <div class="stat-card revenue">
             <div class="stat-value">$${stats.totalRevenue.toFixed(2)}</div>
@@ -280,7 +290,7 @@
     // Load purchases
     async function loadPurchases() {
       try {
-        const purchases = await client.query("admin:getPurchases", {});
+        const purchases = await convexQuery("admin:getPurchases", {});
         if (purchases.length === 0) {
           document.getElementById('purchases-table').innerHTML = `<div class="empty">No purchases yet</div>`;
           return;
@@ -312,7 +322,7 @@
     // Load users
     async function loadUsers() {
       try {
-        const users = await client.query("admin:getUsers", {});
+        const users = await convexQuery("admin:getUsers", {});
         if (users.length === 0) {
           document.getElementById('users-table').innerHTML = `<div class="empty">No users yet</div>`;
           return;
@@ -345,7 +355,7 @@
         const args = { limit: 100 };
         if (filter) args.type = filter;
 
-        const events = await client.query("admin:getGameEvents", args);
+        const events = await convexQuery("admin:getGameEvents", args);
         if (events.length === 0) {
           document.getElementById('events-table').innerHTML = `<div class="empty">No events yet</div>`;
           return;
