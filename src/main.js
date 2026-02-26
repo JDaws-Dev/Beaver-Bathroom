@@ -1269,11 +1269,11 @@ async function checkStripeReturn() {
         updateTitleButtonStates();
         updatePremiumUI();
 
-        // Show celebration
+        // Show payment success modal
         setTimeout(() => {
           playWin();
           haptic('success');
-          floatMessage('🎉 Premium Unlocked! Thank you!', window.innerWidth / 2, 100, 'good');
+          showPaymentSuccessModal();
         }, 500);
       } else {
         console.log('Payment not confirmed yet');
@@ -1293,7 +1293,7 @@ async function checkStripeReturn() {
     updateTitleButtonStates();
     setTimeout(() => {
       playWin();
-      floatMessage('🎉 Premium Unlocked!', window.innerWidth / 2, 100, 'good');
+      showPaymentSuccessModal();
     }, 500);
   }
 }
@@ -5611,6 +5611,19 @@ function openPrivacyModal() { $('privacy-modal').classList.add('active'); }
 function closePrivacyModal() { $('privacy-modal').classList.remove('active'); }
 function openTermsModal() { $('terms-modal').classList.add('active'); }
 function closeTermsModal() { $('terms-modal').classList.remove('active'); }
+
+// Payment success modal
+function showPaymentSuccessModal() {
+  $('payment-success-modal')?.classList.add('active');
+}
+function closePaymentSuccessModal() {
+  $('payment-success-modal')?.classList.remove('active');
+}
+
+$('payment-success-close')?.addEventListener('click', closePaymentSuccessModal);
+$('payment-success-modal')?.addEventListener('click', e => {
+  if (e.target === $('payment-success-modal')) closePaymentSuccessModal();
+});
 
 $('privacy-btn').addEventListener('click', openPrivacyModal);
 $('close-privacy').addEventListener('click', closePrivacyModal);

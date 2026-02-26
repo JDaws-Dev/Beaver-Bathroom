@@ -280,6 +280,15 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .btn-help.locked{opacity:0.5;color:#888;position:relative}
 .btn-help.locked::after{content:' 🔒';font-size:0.9em;margin-left:2px}
 
+/* Payment Success Modal */
+.payment-success-content{max-width:320px;text-align:center}
+.payment-success-header{margin-bottom:16px}
+.payment-success-icon{font-size:3em;display:block;margin-bottom:8px;animation:dr-bounce 0.6s ease-out}
+.payment-success-title{font-size:1.5em;font-weight:bold;color:#FEF117;text-shadow:0 0 20px rgba(254,241,23,0.5)}
+.payment-success-message{font-size:0.85em;color:#c9a86c;line-height:1.5;margin-bottom:16px}
+.payment-success-features{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
+.ps-feature{background:linear-gradient(180deg,#2e7d32,#1b5e20);color:#a5d6a7;padding:8px 12px;border-radius:8px;font-size:0.8em;font-weight:bold;border:2px solid #4caf50}
+
 /* Daily Challenge button */
 .daily-date{display:block;font-size:0.75em;opacity:0.7;margin-top:2px}
 
