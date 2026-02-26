@@ -3200,14 +3200,11 @@ function updateDailyButton() {
 
   checkDailyReset();
 
+  // Just toggle locked class - don't replace innerHTML (button now uses SVG icon)
   if (!isDailyUnlocked()) {
     btn.classList.add('locked');
-    btn.innerHTML = '🔒 Daily Challenge';
   } else {
     btn.classList.remove('locked');
-    const today = new Date();
-    const dateStr = today.toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
-    btn.innerHTML = `📅 Daily Challenge<span class="daily-date">${dateStr}</span>`;
   }
 }
 
