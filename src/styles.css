@@ -276,10 +276,10 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .rank-up-label{font-size:0.8em;color:#FEF117;text-transform:uppercase;letter-spacing:2px;font-weight:bold;text-shadow:0 0 10px rgba(254,241,23,0.5)}
 .rank-up-name{font-size:1.5em;font-weight:bold;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,0.5)}
 .rank-up-perk{font-size:0.75em;color:#b5944a;margin-top:2px;font-style:italic}
-#game-container.rank-manager .hud-item{border-color:#FEF117}
-#game-container.rank-manager #hud{border-bottom-color:#FEF117}
-#game-container.rank-legend .title-card{border-color:#D31145;box-shadow:0 8px 30px rgba(0,0,0,0.5),0 0 30px rgba(211,17,69,0.3)}
-#game-container.rank-legend #hud{border-bottom-color:#D31145}
+/* Premium status - gold glow border */
+#game-container.is-premium .title-card{border-color:#FEF117;box-shadow:0 0 0 2px rgba(0,0,0,0.5),0 0 40px rgba(254,241,23,0.4),0 0 80px rgba(254,241,23,0.2),0 12px 40px rgba(0,0,0,0.7)}
+/* Free user - red border */
+#game-container:not(.is-premium) .title-card{border-color:#D31145}
 .setting-row{display:flex;flex-direction:column;gap:8px}
 .setting-label{display:flex;align-items:center;gap:8px;font-size:0.95em;color:#FEF117;font-weight:bold}
 .setting-icon{font-size:1.2em}

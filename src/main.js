@@ -998,9 +998,18 @@ function isPremium() {
   return localStorage.getItem('beaverPremium') === 'true';
 }
 
+// Update premium UI indicator (border color)
+function updatePremiumUI() {
+  const container = $('game-container');
+  if (container) {
+    container.classList.toggle('is-premium', isPremium());
+  }
+}
+
 // Set premium status (called after successful Stripe payment)
 function setPremium() {
   localStorage.setItem('beaverPremium', 'true');
+  updatePremiumUI();
 }
 
 // Show paywall modal
@@ -5352,6 +5361,7 @@ updateHighScoreDisplay();
 updateRankDisplay();
 updateOvertimeButton();
 updateDailyButton();
+updatePremiumUI();
 
 // Achievements modal - show preview for free users
 $('achievements-btn').addEventListener('click', () => {
