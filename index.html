@@ -36,11 +36,16 @@
         <div class="rank-progress-bar"><div class="rank-progress-fill" id="rank-progress-fill"></div></div>
       </div>
 
-      <!-- Restroom toggle -->
-      <div class="gender-toggle">
-        <span class="gender-label">Restroom</span>
-        <button class="gender-opt" data-gender="male">🚹</button>
-        <button class="gender-opt selected" data-gender="female">🚺</button>
+      <!-- Restroom selector - segmented control -->
+      <div class="restroom-selector">
+        <button class="restroom-btn" data-gender="male">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C13.1 2 14 2.9 14 4S13.1 6 12 6 10 5.1 10 4 10.9 2 12 2ZM10.5 7H13.5C14.6 7 15.5 7.9 15.5 9V14.5H14V22H10V14.5H8.5V9C8.5 7.9 9.4 7 10.5 7Z"/></svg>
+          <span>Men's</span>
+        </button>
+        <button class="restroom-btn selected" data-gender="female">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C13.1 2 14 2.9 14 4S13.1 6 12 6 10 5.1 10 4 10.9 2 12 2ZM14.5 7H9.5C8.4 7 7.5 7.9 7.5 9V14.5H9.5V16H8V18H9.5V22H11V18H13V22H14.5V18H16V16H14.5V14.5H16.5V9C16.5 7.9 15.6 7 14.5 7Z"/></svg>
+          <span>Women's</span>
+        </button>
       </div>
 
       <!-- Big PLAY button -->

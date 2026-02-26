@@ -5307,10 +5307,10 @@ function gameOver() {
   showScreen('gameover-screen');
 }
 
-// Gender toggle
-document.querySelectorAll('.gender-opt').forEach(btn => {
+// Restroom selector
+document.querySelectorAll('.restroom-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.gender-opt').forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('.restroom-btn').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
     selectedGender = btn.dataset.gender;
     playClick();
@@ -6081,7 +6081,7 @@ function resumeGame() {
 
   // Set gender before init
   selectedGender = state.gender || 'female';
-  document.querySelectorAll('.gender-opt').forEach(b => {
+  document.querySelectorAll('.restroom-btn').forEach(b => {
     b.classList.toggle('selected', b.dataset.gender === selectedGender);
   });
 
