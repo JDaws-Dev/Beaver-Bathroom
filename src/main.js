@@ -1096,6 +1096,71 @@ function initAudio() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 }
 
+// === SAMPLE-BASED AUDIO SYSTEM ===
+const soundBuffers = {}; // Cache for decoded audio buffers
+// Use Vite's base URL to work in both dev and production
+const BASE_URL = import.meta.env.BASE_URL;
+const SOUND_FILES = {
+  click: `${BASE_URL}sounds/click.wav`,
+  plunge: `${BASE_URL}sounds/plunge.wav`,
+  scrub: `${BASE_URL}sounds/scrub.wav`,
+  mop: `${BASE_URL}sounds/mop.wav`,
+  restock: `${BASE_URL}sounds/restock.wav`,
+  clean: `${BASE_URL}sounds/clean.wav`,
+  complete: `${BASE_URL}sounds/complete.wav`,
+  flush: `${BASE_URL}sounds/flush.wav`,
+  bad: `${BASE_URL}sounds/bad.wav`,
+  urgent: `${BASE_URL}sounds/urgent.wav`,
+  happy: `${BASE_URL}sounds/happy.wav`,
+  disgusted: `${BASE_URL}sounds/disgusted.wav`,
+  door: `${BASE_URL}sounds/door.wav`,
+  vip: `${BASE_URL}sounds/vip.wav`,
+  coin: `${BASE_URL}sounds/coin.wav`,
+  combo: `${BASE_URL}sounds/combo.wav`,
+  inspector: `${BASE_URL}sounds/inspector.wav`,
+  powerup: `${BASE_URL}sounds/powerup.wav`,
+};
+let soundsLoaded = false;
+
+// Preload all sound samples
+async function preloadSounds() {
+  if (soundsLoaded) return;
+  initAudio();
+  const loadPromises = Object.entries(SOUND_FILES).map(async ([name, url]) => {
+    try {
+      const response = await fetch(url);
+      const arrayBuffer = await response.arrayBuffer();
+      soundBuffers[name] = await audioCtx.decodeAudioData(arrayBuffer);
+    } catch (e) {
+      console.log(`Failed to load sound: ${name}`, e);
+    }
+  });
+  await Promise.all(loadPromises);
+  soundsLoaded = true;
+}
+
+// Play a sample with volume control
+function playSample(name, volume = 1.0, playbackRate = 1.0) {
+  if (!audioCtx || isMuted || sfxVolume === 0) return;
+  const buffer = soundBuffers[name];
+  if (!buffer) {
+    // Fallback: try to load on demand, but don't block
+    return;
+  }
+  try {
+    const source = audioCtx.createBufferSource();
+    source.buffer = buffer;
+    source.playbackRate.value = playbackRate;
+    const gainNode = audioCtx.createGain();
+    gainNode.gain.value = volume * sfxVolume;
+    source.connect(gainNode).connect(audioCtx.destination);
+    source.start(0);
+  } catch (e) {}
+}
+
+// Start preloading sounds immediately
+preloadSounds();
+
 function toggleMasterMute() {
   isMuted = !isMuted;
   localStorage.setItem('beaverMuted', isMuted);
@@ -1189,36 +1254,25 @@ function playSound(freq, duration, type = 'sine', volume = 0.25) {
   } catch(e) {}
 }
 
-function playClick() { playSound(500, 0.05, 'square', 0.15); }
-function playTaskComplete() { playSound(700, 0.08); setTimeout(() => playSound(900, 0.1), 60); }
+function playClick() { playSample('click', 0.6); }
+function playTaskComplete() { playSample('complete', 0.8); }
 
-// Task-specific sounds for cartoony feel
+// Task-specific sounds - now using samples
 function playPlunge() {
-  // Comedic 'plop' - low burst with pop
-  playSound(80 + Math.random()*20, 0.12, 'sine', 0.3);
-  setTimeout(() => playSound(200 + Math.random()*50, 0.06, 'triangle', 0.2), 80);
+  // Slight pitch variation for variety
+  playSample('plunge', 0.9, 0.95 + Math.random() * 0.1);
 }
 
 function playScrub() {
-  // Satisfying spray/scrub - layered high freq bursts
-  const base = 1800 + Math.random()*400;
-  playSound(base, 0.04, 'sawtooth', 0.08);
-  setTimeout(() => playSound(base + 200, 0.03, 'sawtooth', 0.06), 20);
-  setTimeout(() => playSound(base - 100, 0.05, 'sawtooth', 0.07), 40);
+  playSample('scrub', 0.8, 0.98 + Math.random() * 0.04);
 }
 
 function playMop() {
-  // Squeaky clean - high pitch wobble
-  const freq = 800 + Math.random()*200;
-  playSound(freq, 0.06, 'sine', 0.12);
-  setTimeout(() => playSound(freq + 150, 0.05, 'sine', 0.1), 50);
+  playSample('mop', 0.85, 0.96 + Math.random() * 0.08);
 }
 
 function playRestock() {
-  // Paper rustle - quick random crinkle bursts
-  for(let i=0; i<3; i++) {
-    setTimeout(() => playSound(3000 + Math.random()*2000, 0.02, 'sawtooth', 0.05), i*25);
-  }
+  playSample('restock', 0.8, 0.97 + Math.random() * 0.06);
 }
 
 // Map task ID to sound function
@@ -1232,44 +1286,30 @@ function playTaskSound(taskId) {
   }
 }
 function playStallClean() {
-  // Layered celebration: base arpeggio + sparkle shimmer
-  playSound(523, 0.12, 'sine', 0.25);
-  setTimeout(() => playSound(659, 0.12, 'sine', 0.25), 70);
-  setTimeout(() => playSound(784, 0.14, 'sine', 0.25), 140);
-  setTimeout(() => playSound(1047, 0.25, 'sine', 0.3), 220);
-  // Add sparkle overlay (high frequency shimmer)
-  setTimeout(() => playSound(2093, 0.08, 'sine', 0.12), 180);
-  setTimeout(() => playSound(2349, 0.06, 'sine', 0.1), 240);
-  setTimeout(() => playSound(2637, 0.05, 'sine', 0.08), 280);
+  playSample('clean', 1.0);
 }
-function playBad() { playSound(200, 0.25, 'sawtooth', 0.2); }
-function playUrgent() { playSound(800, 0.08, 'square', 0.1); setTimeout(() => playSound(600, 0.08, 'square', 0.1), 100); }
-function playRush() { for(let i=0;i<3;i++) setTimeout(() => playSound(1000, 0.1, 'square', 0.2), i*100); }
-function playInspector() { playSound(600, 0.15, 'sine', 0.2); setTimeout(() => playSound(800, 0.15, 'sine', 0.2), 150); setTimeout(() => playSound(1000, 0.2, 'sine', 0.25), 300); }
-function playInspectorBad() { playSound(300, 0.3, 'sawtooth', 0.25); setTimeout(() => playSound(200, 0.4, 'sawtooth', 0.2), 200); }
-function playInspectorGood() { [784, 988, 1175, 1319].forEach((f,i) => setTimeout(() => playSound(f, 0.12, 'sine', 0.2), i*80)); }
-function playWin() {
-  [523,659,784,1047].forEach((f,i) => setTimeout(() => playSound(f, 0.15), i*120));
-}
+function playBad() { playSample('bad', 0.8); }
+function playUrgent() { playSample('urgent', 0.7); }
+function playRush() { playSample('urgent', 0.9, 1.2); } // Faster urgent for rush
+function playInspector() { playSample('inspector', 0.85); }
+function playInspectorBad() { playSample('bad', 0.9, 0.8); } // Lower pitch bad sound
+function playInspectorGood() { playSample('clean', 1.0, 1.1); } // Higher pitch clean
+function playWin() { playSample('clean', 1.0, 0.9); }
 // Combo milestone sounds - escalating intensity
 function playComboMilestone(level) {
   if (level >= 10) {
-    // Legendary: grand fanfare
-    [523, 659, 784, 1047, 1319].forEach((f, i) => setTimeout(() => playSound(f, 0.2, 'sine', 0.3), i * 60));
+    playSample('combo', 1.0, 1.2); // Higher pitch for legendary
   } else if (level >= 5) {
-    // Unstoppable: power chord
-    [392, 523, 659, 784].forEach((f, i) => setTimeout(() => playSound(f, 0.15, 'sine', 0.25), i * 70));
+    playSample('combo', 0.9, 1.1);
   } else {
-    // On fire: quick hit
-    [523, 659, 784].forEach((f, i) => setTimeout(() => playSound(f, 0.1, 'sine', 0.2), i * 60));
+    playSample('combo', 0.8, 1.0);
   }
 }
 function playComboBreak() {
-  playSound(400, 0.15, 'triangle', 0.15);
-  setTimeout(() => playSound(300, 0.2, 'triangle', 0.1), 100);
+  playSample('bad', 0.5, 1.3); // Quick high bad sound
 }
 
-// === TOILET FLUSH SOUNDS (3 varieties) ===
+// === TOILET FLUSH SOUNDS (3 varieties via pitch) ===
 function playFlush() {
   const variety = Math.floor(Math.random() * 3);
   switch(variety) {
@@ -1280,121 +1320,68 @@ function playFlush() {
 }
 
 function playFlushNormal() {
-  // Classic flush: whoosh down, then refill gurgle
-  playSound(200, 0.15, 'sawtooth', 0.15);
-  setTimeout(() => playSound(150, 0.2, 'sawtooth', 0.12), 50);
-  setTimeout(() => playSound(100, 0.3, 'sine', 0.1), 150);
-  // Water refill gurgle
-  for(let i=0; i<4; i++) {
-    setTimeout(() => playSound(300 + Math.random()*100, 0.05, 'sine', 0.06), 400 + i*60);
-  }
+  playSample('flush', 0.8, 1.0);
 }
 
 function playFlushPowerful() {
-  // Powerful flush: louder, deeper, more dramatic
-  playSound(180, 0.1, 'sawtooth', 0.2);
-  playSound(120, 0.2, 'sawtooth', 0.18);
-  setTimeout(() => playSound(80, 0.25, 'sine', 0.15), 100);
-  setTimeout(() => playSound(60, 0.3, 'sine', 0.12), 200);
-  // Big refill
-  for(let i=0; i<6; i++) {
-    setTimeout(() => playSound(250 + Math.random()*150, 0.06, 'sine', 0.08), 450 + i*50);
-  }
+  playSample('flush', 1.0, 0.85); // Lower pitch, louder
 }
 
 function playFlushWeak() {
-  // Weak flush: higher pitch, pathetic sound
-  playSound(300, 0.08, 'triangle', 0.1);
-  setTimeout(() => playSound(250, 0.1, 'triangle', 0.08), 50);
-  setTimeout(() => playSound(220, 0.15, 'sine', 0.06), 120);
-  // Tiny gurgle
-  setTimeout(() => playSound(400, 0.04, 'sine', 0.04), 300);
-  setTimeout(() => playSound(380, 0.03, 'sine', 0.03), 350);
+  playSample('flush', 0.5, 1.25); // Higher pitch, quieter
 }
 
 // === CUSTOMER REACTION SOUNDS ===
 function playCustomerHappy() {
-  // Satisfied "ahh" - ascending pleasant tone
-  playSound(400, 0.15, 'sine', 0.12);
-  setTimeout(() => playSound(500, 0.12, 'sine', 0.1), 80);
-  setTimeout(() => playSound(600, 0.15, 'sine', 0.08), 160);
+  playSample('happy', 0.7, 0.95 + Math.random() * 0.1);
 }
 
 function playCustomerDisgusted() {
-  // "Eww" - descending dissonant tone
-  playSound(350, 0.1, 'sawtooth', 0.1);
-  setTimeout(() => playSound(280, 0.12, 'sawtooth', 0.08), 60);
-  setTimeout(() => playSound(200, 0.18, 'triangle', 0.06), 140);
+  playSample('disgusted', 0.75, 0.9 + Math.random() * 0.2);
 }
 
 function playCustomerImpatient() {
-  // Frustrated sigh - descending with wobble
-  playSound(500, 0.08, 'sine', 0.08);
-  setTimeout(() => playSound(450, 0.06, 'sine', 0.06), 50);
-  setTimeout(() => playSound(380, 0.1, 'sine', 0.05), 100);
-  setTimeout(() => playSound(350, 0.15, 'triangle', 0.04), 160);
+  playSample('urgent', 0.5, 1.4); // Higher pitch urgent as impatient
 }
 
 // === FUNNY/COMEDY SOUNDS ===
 function playFart() {
-  // Comedic toot - low frequency burble
-  const baseFreq = 60 + Math.random() * 30;
-  playSound(baseFreq, 0.08, 'sawtooth', 0.12);
-  setTimeout(() => playSound(baseFreq + 10, 0.1, 'sawtooth', 0.1), 40);
-  setTimeout(() => playSound(baseFreq - 15, 0.12, 'triangle', 0.08), 100);
+  // Use low-pitch plunge as comedic toot
+  playSample('plunge', 0.4, 0.6 + Math.random() * 0.2);
 }
 
 function playSplash() {
-  // Exaggerated splash - cartoon water hit
-  playSound(1200 + Math.random()*400, 0.04, 'sawtooth', 0.15);
-  for(let i=0; i<5; i++) {
-    setTimeout(() => playSound(800 + Math.random()*600, 0.03, 'sawtooth', 0.08), 30 + i*25);
-  }
-  // Water drips after
-  for(let i=0; i<3; i++) {
-    setTimeout(() => playSound(2000 + Math.random()*500, 0.02, 'sine', 0.05), 180 + i*80);
-  }
+  // Use mop sound pitched up for splash
+  playSample('mop', 0.6, 1.3 + Math.random() * 0.2);
 }
 
 function playBloop() {
-  // Cartoon bloop - bubbly fun sound
-  const freq = 300 + Math.random() * 200;
-  playSound(freq, 0.08, 'sine', 0.15);
-  setTimeout(() => playSound(freq * 1.5, 0.06, 'sine', 0.12), 60);
-  setTimeout(() => playSound(freq * 2, 0.04, 'sine', 0.08), 100);
+  playSample('coin', 0.5, 0.8 + Math.random() * 0.3);
 }
 
 // === ADDITIONAL AMBIENT SOUNDS ===
 function playDoorCreak() {
-  // Door opening/closing squeak
-  playSound(800 + Math.random()*200, 0.06, 'triangle', 0.06);
-  setTimeout(() => playSound(700 + Math.random()*150, 0.08, 'triangle', 0.05), 50);
+  playSample('door', 0.5, 0.9 + Math.random() * 0.2);
 }
 
 function playSinkWater() {
-  // Sink water running - white noise approximation
-  for(let i=0; i<4; i++) {
-    setTimeout(() => playSound(2000 + Math.random()*2000, 0.03, 'sawtooth', 0.04), i*40);
-  }
+  playSample('scrub', 0.3, 1.2); // High-pitch scrub as water
 }
 
 function playFootstep() {
-  // Quick tap footstep
-  playSound(150 + Math.random()*50, 0.03, 'sine', 0.06);
+  playSample('click', 0.2, 0.7 + Math.random() * 0.2);
 }
 
 function playVIPFanfare() {
-  // VIP arrival - royal flourish
-  [523, 659, 784, 1047].forEach((f, i) => {
-    setTimeout(() => playSound(f, 0.12, 'triangle', 0.15), i * 60);
-  });
+  playSample('vip', 0.9);
 }
 
 function playCoinEarned() {
-  // Coin cha-ching sound
-  playSound(1200, 0.06, 'square', 0.1);
-  setTimeout(() => playSound(1600, 0.08, 'square', 0.12), 50);
-  setTimeout(() => playSound(2000, 0.1, 'sine', 0.1), 100);
+  playSample('coin', 0.8, 1.0 + Math.random() * 0.1);
+}
+
+function playPowerup() {
+  playSample('powerup', 0.85);
 }
 
 // Background Music System - Procedural Upbeat Theme
@@ -3365,7 +3352,7 @@ $('pow-speed').addEventListener('click', () => {
   if (game.powerups.speed > 0 && game.effects.speed <= 0) {
     game.powerups.speed--;
     game.effects.speed = getItemDuration('speed');
-    playClick();
+    playPowerup();
     haptic('strong'); // Powerup activation feedback
     floatMessage('⚡ SPEED BOOST!', 400, 200, 'combo');
   }
@@ -3377,7 +3364,7 @@ $('pow-slow').addEventListener('click', () => {
   if (game.powerups.slow > 0 && game.effects.slow <= 0) {
     game.powerups.slow--;
     game.effects.slow = getItemDuration('slow');
-    playClick();
+    playPowerup();
     haptic('strong'); // Powerup activation feedback
     floatMessage('🐢 SLOW MODE!', 400, 200, 'combo');
   }

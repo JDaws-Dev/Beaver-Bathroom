@@ -9,6 +9,24 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Replace Synthesized Sounds with Samples (ysj)
+- Goal: replace oscillator beeps with actual sound effects for polished cartoony feel
+- Generated 18 WAV sounds using jsfxr-style synthesis (scripts/generate-sounds.cjs)
+- Total size: 99.4 KB (under 100KB target)
+- Sound categories:
+  - UI: click (snappy)
+  - Cleaning: plunge (splop), scrub (spray), mop (squeak), restock (rustle)
+  - Stall: flush (whoosh), clean (fanfare), complete (positive)
+  - Feedback: combo (ascending), bad (warning), urgent (beep)
+  - Customer: happy (pleasant), disgusted (descending)
+  - Events: inspector (alert), vip (royal), coin (cha-ching), powerup (rising), door (creak)
+- Sound loading: preloadSounds() fetches all WAVs on page load via Web Audio API
+- playSample(name, volume, playbackRate) replaces playSound oscillators
+- Variety: pitch randomization via playbackRate (e.g., 0.95-1.05) for natural variation
+- 3 flush varieties: normal (1.0 pitch), powerful (0.85 pitch), weak (1.25 pitch)
+- Mute/volume: respects isMuted, sfxVolume, scales gain accordingly
+- Files: scripts/generate-sounds.cjs (new), public/sounds/*.wav (18 files), src/main.js (~60 lines changed)
+
 ### Daily Login Reward System (8oh)
 - Goal: daily rewards for returning players with streak bonuses
 - 7-day reward cycle: 25→50→75→100→150→200→300 coins (day 7 also gives free Insta-Clean)
@@ -31,17 +49,11 @@ This file maintains context between autonomous iterations.
 - Cleanup mechanic changed: click to start mopping, mash to fill progress bar
 - Files: src/main.js (~180 lines), src/styles.css (~10 lines)
 
-### Speed Clean Challenge Mini-Game (151)
-- Goal: 30-second bonus round where player cleans as many stalls as possible
-- Triggers after shifts 2, 4, 6 (0-indexed: 1, 3, 5) for pacing variety
-- MINIGAME_CONFIG: duration 30s, 8 stalls, 300ms respawn, 5 coins per clean
-- Files: src/main.js (~160 lines), src/styles.css (~60 lines), index.html (~50 lines)
-
 ---
 
 ## Active Roadblocks
 
-- No external assets: everything generated via CSS/SVG/Web Audio
+- Sound files in public/sounds/ (~100KB) - keep total small
 - Must work offline in browser (Convex will add online features)
 
 ---
@@ -91,6 +103,12 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Speed Clean Challenge Mini-Game (151)
+- Goal: 30-second bonus round where player cleans as many stalls as possible
+- Triggers after shifts 2, 4, 6 (0-indexed: 1, 3, 5) for pacing variety
+- MINIGAME_CONFIG: duration 30s, 8 stalls, 300ms respawn, 5 coins per clean
+- Files: src/main.js (~160 lines), src/styles.css (~60 lines), index.html (~50 lines)
 
 ### Social Sharing - Share Score to Instagram/TikTok (ok8)
 - Goal: let players share high scores to social media for viral marketing
