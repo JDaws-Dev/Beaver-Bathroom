@@ -2520,7 +2520,8 @@ function updatePeople(dt) {
 
       const sinkRect = sinkEl.getBoundingClientRect();
       const tx = sinkRect.left - floorRect.left + sinkRect.width/2 - 12;
-      const ty = sinkRect.top - floorRect.top - 30;
+      // Stand in front of sink (above it), not inside it
+      const ty = sinkRect.top - floorRect.top - 35;
       const dx = tx - p.x, dy = ty - p.y;
       const dist = Math.sqrt(dx*dx + dy*dy);
 
@@ -2575,7 +2576,8 @@ function updatePeople(dt) {
       const towelEl = $('towels');
       const towelRect = towelEl.getBoundingClientRect();
       const tx = towelRect.left - floorRect.left + towelRect.width/2;
-      const ty = towelRect.top - floorRect.top;
+      // Stand in front of towels (above them), not inside them
+      const ty = towelRect.top - floorRect.top - 35;
       const dx = tx - p.x, dy = ty - p.y;
       const dist = Math.sqrt(dx*dx + dy*dy);
 
@@ -2610,16 +2612,31 @@ function updatePeople(dt) {
     }
     else if (p.phase === 'exit') {
       const exitDoor = $('exit-door').getBoundingClientRect();
-      const tx = exitDoor.left - floorRect.left + 15;
-      const ty = exitDoor.top - floorRect.top + 20;
-      const dx = tx - p.x, dy = ty - p.y;
-      const dist = Math.sqrt(dx*dx + dy*dy);
+      const sinkTowelArea = $('sink-towel-area');
+      const sinkTowelRect = sinkTowelArea ? sinkTowelArea.getBoundingClientRect() : null;
 
-      if (dist < 20) {
-        game.people.splice(i, 1);
+      // Define a safe Y threshold above the sink-towel area to avoid clipping
+      const safeY = sinkTowelRect
+        ? sinkTowelRect.top - floorRect.top - 45
+        : floorRect.height - 100;
+
+      // If customer is below safe threshold (too close to sinks/towels), walk up first
+      if (p.y > safeY) {
+        // Walk straight up to clear the sink-towel area
+        p.y -= speed * 1.2;
       } else {
-        p.x += (dx / dist) * speed * 1.2;
-        p.y += (dy / dist) * speed * 1.2;
+        // Now walk to exit door
+        const tx = exitDoor.left - floorRect.left + 15;
+        const ty = exitDoor.top - floorRect.top + 20;
+        const dx = tx - p.x, dy = ty - p.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+
+        if (dist < 20) {
+          game.people.splice(i, 1);
+        } else {
+          p.x += (dx / dist) * speed * 1.2;
+          p.y += (dy / dist) * speed * 1.2;
+        }
       }
     }
   }
