@@ -43,6 +43,7 @@
         <button class="btn btn-play" id="start-btn">PLAY</button>
         <button class="btn-help" id="help-btn">How to Play</button>
         <button class="btn-help" id="leaderboard-btn">🏆 Leaderboard</button>
+        <button class="btn-help" id="title-settings-btn">⚙️ Settings</button>
       </div>
       <div class="title-footer">
         <a href="https://venmo.com/u/Jeremiah-Daws" target="_blank" rel="noopener" class="tip-link">
@@ -79,6 +80,35 @@
     </div>
   </div>
 
+  <div id="settings-modal" class="modal">
+    <div class="modal-content settings-content">
+      <div class="modal-header">
+        <span class="modal-title">⚙️ Settings</span>
+        <button class="modal-close" id="close-settings">&times;</button>
+      </div>
+      <div class="settings-body">
+        <div class="setting-row">
+          <label class="setting-label"><span class="setting-icon">🔊</span> Sound Effects</label>
+          <div class="slider-wrap">
+            <input type="range" id="sfx-volume" min="0" max="100" value="70" class="volume-slider">
+            <span class="volume-val" id="sfx-val">70%</span>
+          </div>
+        </div>
+        <div class="setting-row">
+          <label class="setting-label"><span class="setting-icon">🎵</span> Music</label>
+          <div class="slider-wrap">
+            <input type="range" id="music-volume" min="0" max="100" value="50" class="volume-slider">
+            <span class="volume-val" id="music-val">50%</span>
+          </div>
+        </div>
+        <div class="setting-row setting-toggle">
+          <label class="setting-label"><span class="setting-icon">🔇</span> Mute All</label>
+          <button id="master-mute" class="toggle-btn">OFF</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="game-screen" class="screen">
     <div id="hud">
       <div id="beaver-mascot" class="beaver-idle">
@@ -103,9 +133,8 @@
       <div class="hud-item"><div class="label">Dirty</div><div class="value" id="dirty-count">0</div></div>
       <div class="hud-item" id="sinks-hud" style="display:none"><div class="label">Sinks</div><div class="value" id="dirty-sinks">0</div></div>
       <div class="hud-item"><div class="label">Time</div><div class="value" id="timer">1:00</div></div>
-      <div class="audio-ctrl"><button id="mute-btn" class="mute-btn" aria-label="Toggle sound effects">🔊</button><span class="audio-label">SFX</span></div>
-      <div class="audio-ctrl"><button id="music-btn" class="mute-btn" aria-label="Toggle music">🎵</button><span class="audio-label">Music</span></div>
     </div>
+    <button id="settings-btn" aria-label="Settings">⚙️</button>
     <div id="play-area">
       <div id="bathroom">
         <div id="stalls-row"></div>

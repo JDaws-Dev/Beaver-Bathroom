@@ -9,6 +9,22 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Settings Modal with Volume Controls (voq)
+- Goal: replace floating audio buttons with single gear icon and settings modal
+- Removed: 2x audio-ctrl divs (#mute-btn, #music-btn) from HUD
+- Added: #settings-btn (fixed position, top-right corner) in game-screen
+- Added: #title-settings-btn as btn-help on title screen for consistency
+- New settings-modal with wood/gold theme matching game aesthetic
+- Volume sliders: sfxVolume (0-100%), musicVolume (0-100%) with real-time update
+- Master mute toggle button (styled as red when active)
+- localStorage keys: beaverSfxVolume, beaverMusicVolume (integers), beaverMuted (boolean)
+- playSound() now scales volume by sfxVolume, startMusic() scales by musicVolume
+- setMusicVolume() updates musicGain.gain.value live during playback
+- Removed old toggleMute(), updateMuteButton(), toggleMusic(), updateMusicButton()
+- Added: openSettings(), closeSettings(), toggleMasterMute(), setSfxVolume(), setMusicVolume(), updateSettingsUI()
+- Mobile styles: smaller settings button, larger touch targets on sliders
+- Files: index.html (~25 lines), src/styles.css (~25 lines), src/main.js (~45 lines changed)
+
 ### Move Paper Towels Next to Sinks with New Customer Flow (d2n)
 - Goal: relocate towels to be adjacent to sinks, customers walk to towels after washing
 - HTML: created new #sink-towel-area container grouping #sinks-area and #towels
@@ -20,18 +36,6 @@ This file maintains context between autonomous iterations.
 - Towel use logic moved from washing phase to toTowels arrival
 - Customer phases now: enter→findStall→toStall→entering→inStall→exitStall→toSink→washing→toTowels→exit
 - Files: index.html (~2 lines), src/styles.css (~4 lines), src/main.js (~40 lines), CLAUDE.md
-
-### Fix Blue Cleaning Stall - Block Customer Entry (4z8)
-- Goal: customers shouldn't enter stalls in 'cleaning' state
-- Root cause: customers who reserved a dirty stall kept walking even after player started cleaning
-- Fix approach: redirect customers when they arrive at a cleaning stall
-- Changes at arrival (toStall→entering): if stall is `cleaning`, release reservation, redirect to findStall
-- Changes at entry completion (enterTimer<=0): same check, but respect `enteredDirty` flag
-- Grace period logic preserved: if customer arrives at dirty, grace period gives 200ms for save
-- Added `p.enteredDirty` flag: set when grace period expires, prevents redirect after penalty applied
-- Key insight: existing findStall logic already excludes cleaning stalls (only matches empty/dirty)
-- The save mechanic still works: player starts cleaning during grace period → instant save + bonus
-- Files: src/main.js (~15 lines changed in updatePeople entering phase)
 
 ---
 
@@ -87,6 +91,18 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Fix Blue Cleaning Stall - Block Customer Entry (4z8)
+- Goal: customers shouldn't enter stalls in 'cleaning' state
+- Root cause: customers who reserved a dirty stall kept walking even after player started cleaning
+- Fix approach: redirect customers when they arrive at a cleaning stall
+- Changes at arrival (toStall→entering): if stall is `cleaning`, release reservation, redirect to findStall
+- Changes at entry completion (enterTimer<=0): same check, but respect `enteredDirty` flag
+- Grace period logic preserved: if customer arrives at dirty, grace period gives 200ms for save
+- Added `p.enteredDirty` flag: set when grace period expires, prevents redirect after penalty applied
+- Key insight: existing findStall logic already excludes cleaning stalls (only matches empty/dirty)
+- The save mechanic still works: player starts cleaning during grace period → instant save + bonus
+- Files: src/main.js (~15 lines changed in updatePeople entering phase)
 
 ### Mobile-First Upgrade Screen Redesign (97o.1)
 - Goal: fix upgrade screen overflow/cutoff on mobile (320-420px)

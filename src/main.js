@@ -359,27 +359,70 @@ let highScore = parseInt(localStorage.getItem('beaverHighScore')) || 0;
 // Audio
 let audioCtx = null;
 let isMuted = localStorage.getItem('beaverMuted') === 'true';
+let sfxVolume = parseInt(localStorage.getItem('beaverSfxVolume') ?? '70') / 100;
+let musicVolume = parseInt(localStorage.getItem('beaverMusicVolume') ?? '50') / 100;
 
 function initAudio() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 }
 
-function toggleMute() {
+function toggleMasterMute() {
   isMuted = !isMuted;
   localStorage.setItem('beaverMuted', isMuted);
-  updateMuteButton();
-}
-
-function updateMuteButton() {
-  const btn = $('mute-btn');
-  if (btn) {
-    btn.textContent = isMuted ? '🔇' : '🔊';
-    btn.classList.toggle('muted', isMuted);
+  updateSettingsUI();
+  if (isMuted) {
+    stopMusic();
+  } else if (game.running && !isMusicMuted) {
+    startMusic();
   }
 }
 
+function setSfxVolume(val) {
+  sfxVolume = val / 100;
+  localStorage.setItem('beaverSfxVolume', val);
+  const valEl = $('sfx-val');
+  if (valEl) valEl.textContent = val + '%';
+}
+
+function setMusicVolume(val) {
+  musicVolume = val / 100;
+  localStorage.setItem('beaverMusicVolume', val);
+  const valEl = $('music-val');
+  if (valEl) valEl.textContent = val + '%';
+  // Update live music volume
+  if (musicGain) musicGain.gain.value = 0.08 * musicVolume;
+}
+
+function updateSettingsUI() {
+  const muteBtn = $('master-mute');
+  if (muteBtn) {
+    muteBtn.textContent = isMuted ? 'ON' : 'OFF';
+    muteBtn.classList.toggle('active', isMuted);
+  }
+  const sfxSlider = $('sfx-volume');
+  const musicSlider = $('music-volume');
+  if (sfxSlider) {
+    sfxSlider.value = sfxVolume * 100;
+    $('sfx-val').textContent = Math.round(sfxVolume * 100) + '%';
+  }
+  if (musicSlider) {
+    musicSlider.value = musicVolume * 100;
+    $('music-val').textContent = Math.round(musicVolume * 100) + '%';
+  }
+}
+
+function openSettings() {
+  initAudio();
+  updateSettingsUI();
+  $('settings-modal').classList.add('active');
+}
+
+function closeSettings() {
+  $('settings-modal').classList.remove('active');
+}
+
 function playSound(freq, duration, type = 'sine', volume = 0.25) {
-  if (!audioCtx || isMuted) return;
+  if (!audioCtx || isMuted || sfxVolume === 0) return;
   try {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
@@ -387,7 +430,8 @@ function playSound(freq, duration, type = 'sine', volume = 0.25) {
     gain.connect(audioCtx.destination);
     osc.frequency.value = freq;
     osc.type = type;
-    gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+    const scaledVol = volume * sfxVolume;
+    gain.gain.setValueAtTime(scaledVol, audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
     osc.start();
     osc.stop(audioCtx.currentTime + duration);
@@ -510,34 +554,15 @@ let bassIndex = 0;
 const TEMPO = 180; // BPM - upbeat pace
 const BEAT_MS = 60000 / TEMPO;
 
-function toggleMusic() {
-  isMusicMuted = !isMusicMuted;
-  localStorage.setItem('beaverMusicMuted', isMusicMuted);
-  updateMusicButton();
-  if (isMusicMuted) {
-    stopMusic();
-  } else if (game.running) {
-    startMusic();
-  }
-}
-
-function updateMusicButton() {
-  const btn = $('music-btn');
-  if (btn) {
-    btn.textContent = '🎵';
-    btn.classList.toggle('muted', isMusicMuted);
-  }
-}
-
 function startMusic() {
-  if (!audioCtx || isMusicMuted || musicPlaying) return;
+  if (!audioCtx || isMuted || isMusicMuted || musicVolume === 0 || musicPlaying) return;
   musicPlaying = true;
   melodyIndex = 0;
   bassIndex = 0;
 
-  // Create master gain for music (lower than SFX)
+  // Create master gain for music (lower than SFX, scaled by musicVolume)
   musicGain = audioCtx.createGain();
-  musicGain.gain.value = 0.08;
+  musicGain.gain.value = 0.08 * musicVolume;
   musicGain.connect(audioCtx.destination);
 
   // Start the music loop
@@ -2566,19 +2591,17 @@ function updateHighScoreDisplay() {
 }
 updateHighScoreDisplay();
 
-// Mute button
-$('mute-btn').addEventListener('click', () => {
-  initAudio();
-  toggleMute();
+// Settings modal
+$('settings-btn').addEventListener('click', openSettings);
+$('title-settings-btn').addEventListener('click', openSettings);
+$('close-settings').addEventListener('click', closeSettings);
+$('settings-modal').addEventListener('click', e => {
+  if (e.target === $('settings-modal')) closeSettings();
 });
-updateMuteButton();
-
-// Music button
-$('music-btn').addEventListener('click', () => {
-  initAudio();
-  toggleMusic();
-});
-updateMusicButton();
+$('sfx-volume').addEventListener('input', e => setSfxVolume(e.target.value));
+$('music-volume').addEventListener('input', e => setMusicVolume(e.target.value));
+$('master-mute').addEventListener('click', toggleMasterMute);
+updateSettingsUI();
 
 $('start-btn').addEventListener('click', () => {
   initAudio();
