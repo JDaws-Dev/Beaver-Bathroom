@@ -245,7 +245,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .resume-stat{display:flex;justify-content:space-between;padding:6px 0;color:#c9a86c;font-size:0.9em}
 .resume-stat:not(:last-child){border-bottom:1px solid rgba(93,64,55,0.4)}
 .resume-label{color:#8d6e63}
-.resume-buttons{display:flex;flex-direction:column;gap:10px;align-items:center;width:100%;margin-top:16px}
+.resume-buttons{display:flex;flex-direction:column;gap:6px;align-items:center;width:100%;margin-top:14px}
 .resume-buttons .btn,.resume-buttons .btn-help{width:90%;max-width:220px;padding:12px 16px;font-size:0.95em;border-radius:10px;cursor:pointer;text-align:center;box-sizing:border-box}
 .resume-buttons .btn-help{background:linear-gradient(180deg,#5a4a38,#3d2814);border:2px solid #6d5a48;color:#e0d4b8}
 
