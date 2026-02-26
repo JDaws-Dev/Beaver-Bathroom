@@ -1111,29 +1111,15 @@ function toggleHaptics() {
   if (hapticsEnabled) haptic('medium'); // Feedback that haptics are on
 }
 
-let audioInitialized = false;
-
 async function initAudio() {
-  console.log('[Audio] initAudio called, audioCtx:', audioCtx ? audioCtx.state : 'null');
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    console.log('[Audio] Created AudioContext, state:', audioCtx.state);
   }
   // Resume AudioContext on user interaction (required by browser autoplay policy)
   if (audioCtx.state === 'suspended') {
-    console.log('[Audio] Resuming suspended context...');
     try {
       await audioCtx.resume();
-      console.log('[Audio] Context resumed, state:', audioCtx.state);
-    } catch (e) {
-      console.error('[Audio] Resume failed:', e);
-    }
-  }
-  // Load sounds if not yet done
-  if (!audioInitialized && !soundsLoading && !soundsLoaded) {
-    audioInitialized = true;
-    console.log('[Audio] Starting preloadSounds...');
-    preloadSounds();
+    } catch (e) {}
   }
 }
 
@@ -1143,122 +1129,54 @@ async function initAudio() {
   document.addEventListener(evt, initAudio, { capture: true, passive: true });
 });
 
-// === SAMPLE-BASED AUDIO SYSTEM ===
-const soundBuffers = {}; // Cache for decoded audio buffers
-// Vite serves public files at root in dev, but at BASE_URL in production
-const SOUND_BASE = import.meta.env.DEV ? '/' : import.meta.env.BASE_URL;
-console.log('[Audio] SOUND_BASE:', SOUND_BASE, '(DEV:', import.meta.env.DEV, ')');
-const SOUND_FILES = {
-  click: `${SOUND_BASE}sounds/click.ogg`,
-  plunge: `${SOUND_BASE}sounds/plunge.ogg`,
-  scrub: `${SOUND_BASE}sounds/scrub.ogg`,
-  mop: `${SOUND_BASE}sounds/mop.ogg`,
-  restock: `${SOUND_BASE}sounds/restock.ogg`,
-  clean: `${SOUND_BASE}sounds/clean.ogg`,
-  complete: `${SOUND_BASE}sounds/complete.ogg`,
-  flush: `${SOUND_BASE}sounds/flush.ogg`,
-  bad: `${SOUND_BASE}sounds/bad.ogg`,
-  urgent: `${SOUND_BASE}sounds/urgent.ogg`,
-  happy: `${SOUND_BASE}sounds/happy.ogg`,
-  disgusted: `${SOUND_BASE}sounds/disgusted.ogg`,
-  door: `${SOUND_BASE}sounds/door.ogg`,
-  door_open: `${SOUND_BASE}sounds/door_open.ogg`,
-  door_close: `${SOUND_BASE}sounds/door_close.ogg`,
-  vip: `${SOUND_BASE}sounds/vip.ogg`,
-  coin: `${SOUND_BASE}sounds/coin.ogg`,
-  combo: `${SOUND_BASE}sounds/combo.ogg`,
-  inspector: `${SOUND_BASE}sounds/inspector.ogg`,
-  powerup: `${SOUND_BASE}sounds/powerup.ogg`,
-};
-let soundsLoaded = false;
-let soundsLoading = false;
+// === SIMPLE OSCILLATOR-BASED SOUND SYSTEM ===
+// All sounds use Web Audio oscillators - no external files needed
+// Design: short, cartoony, satisfying sounds with low frequencies to avoid shrillness
 
-// Preload all sound samples (with protection against concurrent/repeated attempts)
-async function preloadSounds() {
-  console.log('[Audio] preloadSounds called, state:', { soundsLoaded, soundsLoading, audioCtx: audioCtx?.state });
-  if (soundsLoaded || soundsLoading || !audioCtx) {
-    console.log('[Audio] preloadSounds early return');
-    return;
-  }
-  soundsLoading = true;
-
-  // Wait for AudioContext to be ready (with timeout)
-  let waitAttempts = 0;
-  while (audioCtx.state === 'suspended' && waitAttempts < 30) {
-    console.log('[Audio] Waiting for context... attempt', waitAttempts);
-    await new Promise(r => setTimeout(r, 100));
-    waitAttempts++;
-  }
-  if (audioCtx.state === 'suspended') {
-    console.error('[Audio] Context still suspended after 3s, aborting');
-    soundsLoading = false;
-    audioInitialized = false; // Allow retry on next user interaction
-    return;
-  }
-  console.log('[Audio] Context ready, loading sounds...');
-
-  // Load sounds sequentially to avoid overwhelming the browser
-  let loadedCount = 0;
-  for (const [name, url] of Object.entries(SOUND_FILES)) {
-    if (soundBuffers[name]) continue; // Already loaded
-    try {
-      console.log('[Audio] Loading:', name);
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const arrayBuffer = await response.arrayBuffer();
-      soundBuffers[name] = await audioCtx.decodeAudioData(arrayBuffer);
-      loadedCount++;
-    } catch (e) {
-      console.error('[Audio] Failed to load:', name, url, e.message);
-    }
-  }
-  if (loadedCount === 0) {
-    console.error('[Audio] No sounds loaded! Check paths. SOUND_BASE:', SOUND_BASE);
-  } else {
-    console.log('[Audio] Successfully loaded', loadedCount, 'sounds');
-  }
-  soundsLoaded = true;
-  soundsLoading = false;
-}
-
-// Play a sample with volume control
-function playSample(name, volume = 1.0, playbackRate = 1.0) {
-  if (!audioCtx) {
-    console.log('[Audio] playSample blocked: no audioCtx');
-    return;
-  }
-  // Try to resume if suspended (fire-and-forget, sound might not play this time)
+// Helper: play a simple tone with envelope
+function playTone(freq, duration, type = 'sine', volume = 0.2) {
+  if (!audioCtx || isMuted) return;
   if (audioCtx.state === 'suspended') {
     audioCtx.resume();
-    return; // Skip this sound, will work next time
-  }
-  if (isMuted) return; // Don't log muted state
-  // Ensure sfxVolume is valid (default to 0.7 if NaN)
-  const effectiveVolume = isNaN(sfxVolume) ? 0.7 : sfxVolume;
-  if (effectiveVolume === 0) {
-    console.log('[Audio] playSample blocked: sfxVolume=0');
     return;
   }
-  const buffer = soundBuffers[name];
-  if (!buffer) {
-    console.log('[Audio] playSample: no buffer for', name, '- loaded:', Object.keys(soundBuffers).length);
-    return;
-  }
+  const vol = volume * (isNaN(sfxVolume) ? 0.7 : sfxVolume);
+  if (vol === 0) return;
   try {
-    const source = audioCtx.createBufferSource();
-    source.buffer = buffer;
-    source.playbackRate.value = playbackRate;
-    const gainNode = audioCtx.createGain();
-    gainNode.gain.value = volume * effectiveVolume;
-    source.connect(gainNode).connect(audioCtx.destination);
-    source.start(0);
-    console.log('[Audio] Playing:', name, 'vol:', (volume * effectiveVolume).toFixed(2));
-  } catch (e) {
-    console.error('[Audio] playSample error:', e);
-  }
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  } catch(e) {}
 }
 
-// Sounds will be preloaded on first user interaction via initAudio()
+// Helper: play a quick frequency sweep (for cartoony effects)
+function playSweep(startFreq, endFreq, duration, type = 'sine', volume = 0.2) {
+  if (!audioCtx || isMuted) return;
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+    return;
+  }
+  const vol = volume * (isNaN(sfxVolume) ? 0.7 : sfxVolume);
+  if (vol === 0) return;
+  try {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(startFreq, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(endFreq, audioCtx.currentTime + duration * 0.8);
+    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  } catch(e) {}
+}
 
 function toggleMasterMute() {
   isMuted = !isMuted;
@@ -1284,7 +1202,7 @@ function setMusicVolume(val) {
   const valEl = $('music-val');
   if (valEl) valEl.textContent = val + '%';
   // Update live music volume
-  if (musicGain) musicGain.gain.value = 0.08 * musicVolume;
+  if (musicGain) musicGain.gain.value = 0.05 * musicVolume;
 }
 
 function updateSettingsUI() {
@@ -1336,57 +1254,40 @@ function closeSettings() {
   }
 }
 
-function playSound(freq, duration, type = 'sine', volume = 0.25) {
-  if (!audioCtx) return;
-  if (audioCtx.state === 'suspended') {
-    audioCtx.resume();
-    return; // Skip this sound
-  }
-  if (isMuted || sfxVolume === 0) return;
-  try {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.frequency.value = freq;
-    osc.type = type;
-    const scaledVol = volume * sfxVolume;
-    gain.gain.setValueAtTime(scaledVol, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-    osc.start();
-    osc.stop(audioCtx.currentTime + duration);
-  } catch(e) {}
-}
-
+// === UI SOUNDS ===
 function playClick() {
-  // Use sample if loaded, else fallback to oscillator beep
-  if (soundBuffers['click']) {
-    playSample('click', 0.6);
-  } else {
-    playSound(800, 0.08, 'square', 0.15); // Quick beep fallback
-  }
+  // Quick, snappy click - 400Hz short burst
+  playTone(400, 0.06, 'square', 0.12);
 }
-function playTaskComplete() { playSample('complete', 0.8); }
 
-// Task-specific sounds - now using samples
+function playTaskComplete() {
+  // Pleasant two-tone completion
+  playTone(330, 0.1, 'triangle', 0.15);
+  setTimeout(() => playTone(440, 0.12, 'triangle', 0.18), 70);
+}
+
+// === TASK SOUNDS ===
 function playPlunge() {
-  // Slight pitch variation for variety
-  playSample('plunge', 0.9, 0.95 + Math.random() * 0.1);
+  // Low "bloop" sound - satisfying plunger pop
+  playSweep(150 + Math.random() * 30, 80, 0.12, 'sine', 0.2);
 }
 
 function playScrub() {
-  playSample('scrub', 0.8, 0.98 + Math.random() * 0.04);
+  // Quick spray/scrub sound - noise-like
+  playTone(300 + Math.random() * 100, 0.08, 'sawtooth', 0.08);
 }
 
 function playMop() {
-  playSample('mop', 0.85, 0.96 + Math.random() * 0.08);
+  // Squeaky mop - rising pitch
+  playSweep(200, 350 + Math.random() * 50, 0.1, 'triangle', 0.12);
 }
 
 function playRestock() {
-  playSample('restock', 0.8, 0.97 + Math.random() * 0.06);
+  // Rustling paper/plastic sound
+  playTone(400 + Math.random() * 200, 0.06, 'sawtooth', 0.06);
+  setTimeout(() => playTone(500 + Math.random() * 150, 0.05, 'sawtooth', 0.05), 40);
 }
 
-// Map task ID to sound function
 function playTaskSound(taskId) {
   switch(taskId) {
     case 'plunge': playPlunge(); break;
@@ -1396,118 +1297,168 @@ function playTaskSound(taskId) {
     default: playClick();
   }
 }
+
+// === STALL CLEAN - BIG REWARD SOUND ===
 function playStallClean() {
-  if (soundBuffers['clean']) {
-    playSample('clean', 1.0);
-  } else {
-    // Ascending arpeggio fallback
-    playSound(523, 0.1, 'triangle', 0.2);
-    setTimeout(() => playSound(659, 0.1, 'triangle', 0.2), 80);
-    setTimeout(() => playSound(784, 0.15, 'triangle', 0.25), 160);
-  }
+  // Ascending arpeggio - C-E-G major chord
+  playTone(262, 0.1, 'triangle', 0.15);
+  setTimeout(() => playTone(330, 0.1, 'triangle', 0.15), 60);
+  setTimeout(() => playTone(392, 0.15, 'triangle', 0.18), 120);
 }
-function playBad() { playSample('bad', 0.8); }
-function playUrgent() { playSample('urgent', 0.7); }
-function playRush() { playSample('urgent', 0.9, 1.2); } // Faster urgent for rush
-function playInspector() { playSample('inspector', 0.85); }
-function playInspectorBad() { playSample('bad', 0.9, 0.8); } // Lower pitch bad sound
-function playInspectorGood() { playSample('clean', 1.0, 1.1); } // Higher pitch clean
-function playWin() { playSample('clean', 1.0, 0.9); }
-// Combo milestone sounds - escalating intensity
+
+// === FEEDBACK SOUNDS ===
+function playBad() {
+  // Quick descending buzz - something went wrong
+  playSweep(300, 150, 0.15, 'sawtooth', 0.12);
+}
+
+function playUrgent() {
+  // Two-tone alert beep
+  playTone(400, 0.08, 'square', 0.1);
+  setTimeout(() => playTone(350, 0.08, 'square', 0.1), 100);
+}
+
+function playRush() {
+  // Faster, higher urgent
+  playTone(500, 0.06, 'square', 0.12);
+  setTimeout(() => playTone(450, 0.06, 'square', 0.12), 80);
+}
+
+function playInspector() {
+  // Official-sounding alert
+  playTone(440, 0.1, 'sine', 0.15);
+  setTimeout(() => playTone(550, 0.1, 'sine', 0.15), 120);
+  setTimeout(() => playTone(440, 0.15, 'sine', 0.12), 240);
+}
+
+function playInspectorBad() {
+  // Low failure buzz
+  playSweep(250, 100, 0.2, 'sawtooth', 0.15);
+}
+
+function playInspectorGood() {
+  // Happy passing sound
+  playTone(392, 0.08, 'triangle', 0.15);
+  setTimeout(() => playTone(494, 0.08, 'triangle', 0.15), 80);
+  setTimeout(() => playTone(587, 0.12, 'triangle', 0.18), 160);
+}
+
+function playWin() {
+  // Victory fanfare
+  playTone(392, 0.12, 'triangle', 0.18);
+  setTimeout(() => playTone(494, 0.12, 'triangle', 0.18), 100);
+  setTimeout(() => playTone(587, 0.15, 'triangle', 0.2), 200);
+  setTimeout(() => playTone(784, 0.2, 'triangle', 0.22), 320);
+}
+
+// === COMBO SOUNDS ===
 function playComboMilestone(level) {
   if (level >= 10) {
-    playSample('combo', 1.0, 1.2); // Higher pitch for legendary
+    // Legendary - big ascending chord
+    playTone(392, 0.1, 'triangle', 0.2);
+    setTimeout(() => playTone(494, 0.1, 'triangle', 0.2), 60);
+    setTimeout(() => playTone(587, 0.1, 'triangle', 0.2), 120);
+    setTimeout(() => playTone(784, 0.15, 'triangle', 0.25), 180);
   } else if (level >= 5) {
-    playSample('combo', 0.9, 1.1);
+    // Intense - three note chord
+    playTone(350, 0.1, 'triangle', 0.18);
+    setTimeout(() => playTone(440, 0.1, 'triangle', 0.18), 70);
+    setTimeout(() => playTone(550, 0.12, 'triangle', 0.2), 140);
   } else {
-    playSample('combo', 0.8, 1.0);
+    // Fire - two note
+    playTone(330, 0.1, 'triangle', 0.15);
+    setTimeout(() => playTone(440, 0.12, 'triangle', 0.18), 80);
   }
 }
+
 function playComboBreak() {
-  playSample('bad', 0.5, 1.3); // Quick high bad sound
+  // Sad descending blip
+  playSweep(400, 200, 0.1, 'sine', 0.1);
 }
 
-// === TOILET FLUSH SOUNDS (3 varieties via pitch) ===
+// === TOILET FLUSH ===
 function playFlush() {
   const variety = Math.floor(Math.random() * 3);
-  switch(variety) {
-    case 0: playFlushNormal(); break;
-    case 1: playFlushPowerful(); break;
-    case 2: playFlushWeak(); break;
-  }
+  const baseFreq = variety === 0 ? 120 : variety === 1 ? 100 : 140;
+  const vol = variety === 1 ? 0.18 : 0.12;
+  playSweep(baseFreq + 30, baseFreq - 20, 0.25, 'sine', vol);
 }
 
-function playFlushNormal() {
-  playSample('flush', 0.8, 1.0);
-}
-
-function playFlushPowerful() {
-  playSample('flush', 1.0, 0.85); // Lower pitch, louder
-}
-
-function playFlushWeak() {
-  playSample('flush', 0.5, 1.25); // Higher pitch, quieter
-}
-
-// === CUSTOMER REACTION SOUNDS ===
+// === CUSTOMER REACTIONS ===
 function playCustomerHappy() {
-  playSample('happy', 0.7, 0.95 + Math.random() * 0.1);
+  // Pleasant ascending tone
+  playSweep(300, 450 + Math.random() * 50, 0.12, 'triangle', 0.1);
 }
 
 function playCustomerDisgusted() {
-  playSample('disgusted', 0.75, 0.9 + Math.random() * 0.2);
+  // Descending grumpy sound
+  playSweep(350, 180, 0.15, 'sawtooth', 0.08);
 }
 
 function playCustomerImpatient() {
-  playSample('urgent', 0.5, 1.4); // Higher pitch urgent as impatient
+  // Quick impatient blip
+  playTone(450 + Math.random() * 50, 0.06, 'square', 0.08);
 }
 
-// === FUNNY/COMEDY SOUNDS ===
+// === COMEDY SOUNDS ===
 function playFart() {
-  // Use low-pitch plunge as comedic toot
-  playSample('plunge', 0.4, 0.6 + Math.random() * 0.2);
+  // Low rumble - comedic
+  playSweep(100 + Math.random() * 30, 60, 0.12, 'sawtooth', 0.1);
 }
 
 function playSplash() {
-  // Use mop sound pitched up for splash
-  playSample('mop', 0.6, 1.3 + Math.random() * 0.2);
+  // Quick splash effect
+  playSweep(400, 200, 0.08, 'sine', 0.1);
+  setTimeout(() => playTone(300, 0.06, 'sine', 0.08), 50);
 }
 
 function playBloop() {
-  playSample('coin', 0.5, 0.8 + Math.random() * 0.3);
+  // Cute bloop
+  playSweep(300, 400 + Math.random() * 100, 0.1, 'sine', 0.12);
 }
 
-// === ADDITIONAL AMBIENT SOUNDS ===
+// === DOOR SOUNDS ===
 function playDoorCreak() {
-  playSample('door', 0.5, 0.9 + Math.random() * 0.2);
+  playSweep(150 + Math.random() * 50, 200, 0.1, 'triangle', 0.08);
 }
 
 function playDoorOpen() {
-  playSample('door_open', 0.5, 0.95 + Math.random() * 0.1);
+  playSweep(180, 250 + Math.random() * 30, 0.12, 'triangle', 0.1);
 }
 
 function playDoorClose() {
-  playSample('door_close', 0.6, 0.9 + Math.random() * 0.2);
+  playSweep(200 + Math.random() * 30, 120, 0.1, 'sine', 0.1);
 }
 
+// === AMBIENT SOUNDS ===
 function playSinkWater() {
-  playSample('scrub', 0.3, 1.2); // High-pitch scrub as water
+  // Quick water sound
+  playTone(600 + Math.random() * 200, 0.08, 'sine', 0.05);
 }
 
 function playFootstep() {
-  playSample('click', 0.2, 0.7 + Math.random() * 0.2);
+  // Very quiet tap
+  playTone(200 + Math.random() * 50, 0.04, 'sine', 0.03);
 }
 
+// === SPECIAL SOUNDS ===
 function playVIPFanfare() {
-  playSample('vip', 0.9);
+  // Royal fanfare
+  playTone(392, 0.1, 'triangle', 0.18);
+  setTimeout(() => playTone(494, 0.1, 'triangle', 0.18), 100);
+  setTimeout(() => playTone(587, 0.15, 'triangle', 0.2), 200);
 }
 
 function playCoinEarned() {
-  playSample('coin', 0.8, 1.0 + Math.random() * 0.1);
+  // Coin cha-ching
+  playTone(800 + Math.random() * 100, 0.08, 'sine', 0.12);
+  setTimeout(() => playTone(1000, 0.1, 'sine', 0.15), 60);
 }
 
 function playPowerup() {
-  playSample('powerup', 0.85);
+  // Rising powerup sound
+  playSweep(300, 600, 0.15, 'triangle', 0.15);
+  setTimeout(() => playTone(700, 0.1, 'triangle', 0.12), 120);
 }
 
 // Mascot Walk System - Bucky walks across the floor and distracts customers
@@ -1629,7 +1580,7 @@ const BASS = [
 
 let melodyIndex = 0;
 let bassIndex = 0;
-const TEMPO = 180; // BPM - upbeat pace
+const TEMPO = 140; // BPM - moderate pace (was 180)
 const BEAT_MS = 60000 / TEMPO;
 
 function startMusic() {
@@ -1644,9 +1595,9 @@ function startMusic() {
   melodyIndex = 0;
   bassIndex = 0;
 
-  // Create master gain for music (lower than SFX, scaled by musicVolume)
+  // Create master gain for music (quiet background, scaled by musicVolume)
   musicGain = audioCtx.createGain();
-  musicGain.gain.value = 0.08 * effectiveMusicVol;
+  musicGain.gain.value = 0.05 * effectiveMusicVol; // Quieter than before
   musicGain.connect(audioCtx.destination);
 
   // Start the music loop
@@ -2085,15 +2036,15 @@ function updateHUD() {
   $('dirty-count').textContent = dirtyCount > 0 ? `⚠️ ${dirtyCount}` : '✓';
   $('dirty-count').style.color = dirtyCount > 2 ? '#e53935' : (dirtyCount > 0 ? '#fdd835' : '#43a047');
 
-  // Dirty sinks indicator
+  // Dirty sinks indicator - always show to prevent layout shift
   const dirtySinks = game.sinks ? game.sinks.filter(s => s.dirty).length : 0;
-  const sinksHud = $('sinks-hud');
+  const sinksEl = $('dirty-sinks');
   if (dirtySinks > 0) {
-    sinksHud.style.display = '';
-    $('dirty-sinks').textContent = `🚿 ${dirtySinks}`;
-    $('dirty-sinks').style.color = dirtySinks >= game.sinks.length ? '#e53935' : '#64b5f6';
+    sinksEl.textContent = `🚿 ${dirtySinks}`;
+    sinksEl.style.color = dirtySinks >= game.sinks.length ? '#e53935' : '#64b5f6';
   } else {
-    sinksHud.style.display = 'none';
+    sinksEl.textContent = '✓';
+    sinksEl.style.color = '#4caf50';
   }
 
   const sec = Math.max(0, Math.ceil(game.time));
@@ -3071,36 +3022,14 @@ function clickPuddle(id) {
 
 // Play splat sound for vomit
 function playSplat() {
-  if (!audioCtx) initAudio();
-  const now = audioCtx.currentTime;
-  // Gross splat sound - low freq burst with wobble
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.type = 'sawtooth';
-  osc.frequency.setValueAtTime(120, now);
-  osc.frequency.exponentialRampToValueAtTime(40, now + 0.15);
-  gain.gain.setValueAtTime(0.25 * sfxVolume, now);
-  gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-  osc.connect(gain).connect(audioCtx.destination);
-  osc.start(now);
-  osc.stop(now + 0.2);
+  // Gross splat sound - low freq burst
+  playSweep(120, 40, 0.15, 'sawtooth', 0.2);
 }
 
 // Play squish sound for muddy footprints
 function playSquish() {
-  if (!audioCtx) initAudio();
-  const now = audioCtx.currentTime;
   // Squelchy mud sound
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.type = 'sine';
-  osc.frequency.setValueAtTime(200, now);
-  osc.frequency.linearRampToValueAtTime(80, now + 0.1);
-  gain.gain.setValueAtTime(0.15 * sfxVolume, now);
-  gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
-  osc.connect(gain).connect(audioCtx.destination);
-  osc.start(now);
-  osc.stop(now + 0.12);
+  playSweep(200, 80, 0.1, 'sine', 0.12);
 }
 
 // Check if customer is stepping in a mess

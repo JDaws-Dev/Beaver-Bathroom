@@ -9,6 +9,37 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Simplify and Fix Sound System - Fresh Approach (i66) - COMPLETE
+- Goal: completely rewrite audio system to be simple, reliable, and cartoony
+- Approach: **Option D - Simple oscillator-based sounds** (no external files)
+- Removed:
+  - All 20 OGG sound files from public/sounds/
+  - generate-sounds.cjs script
+  - playSample() function and SOUND_FILES map
+  - preloadSounds() async loader
+  - soundBuffers cache and loading state variables
+  - Debug logging (no longer needed)
+- New system:
+  - Two helper functions: `playTone()` and `playSweep()`
+  - All sounds generated procedurally with Web Audio oscillators
+  - Short durations (50-150ms) for snappy feel
+  - Low frequencies (100-600Hz) to avoid shrillness
+  - Simple sine/triangle/square waves with proper gain envelopes
+- Sound categories rewritten:
+  - UI: playClick() - 400Hz square burst
+  - Tasks: playPlunge() (bloop), playScrub() (noise), playMop() (squeaky), playRestock() (rustle)
+  - Rewards: playStallClean() (C-E-G arpeggio), playWin() (victory fanfare)
+  - Feedback: playBad() (descending buzz), playUrgent() (two-tone alert)
+  - Combos: playComboMilestone() (escalating arpeggios)
+  - Customer: playCustomerHappy() (ascending), playCustomerDisgusted() (descending)
+  - Doors: playDoorOpen(), playDoorClose() (pitch sweeps)
+  - Special: playVIPFanfare(), playCoinEarned(), playPowerup()
+- Music system simplified:
+  - Tempo reduced 180→140 BPM for less frantic feel
+  - Master volume reduced 0.08→0.05 for quieter background
+- Files changed: src/main.js (~250 lines rewritten)
+- Files deleted: public/sounds/*.ogg (20 files), scripts/generate-sounds.cjs
+
 ### Update Power-ups to Buc-ee's Themed Items (mhj) - COMPLETE
 - Goal: replace generic power-ups with Buc-ee's themed items for brand consistency
 - New ITEMS array with themed names:
@@ -26,38 +57,6 @@ This file maintains context between autonomous iterations.
 - Day 7 daily reward bonus renamed from 'instaClean' to 'beaverNuggets'
 - Cleanup: endMascotWalk() called in endShift() and gameOver()
 - Files: src/main.js (~90 lines), src/styles.css (~8 lines), index.html (~4 lines)
-
-### Fix Sound System - Audio Not Playing (cyr) - IN PROGRESS
-- Goal: fix audio not playing after user interaction
-- Root causes identified:
-  1. `audioCtx.resume()` not awaited - preloadSounds could start before context ready
-  2. No timeout in preloadSounds - could hang forever if context never resumes
-  3. Silent failures - no logging to diagnose issues
-  4. First-click sounds fail because samples load async - no immediate feedback
-  5. Event listener order wrong - initAudio in bubbling phase, button handlers fired first
-  6. Sound path wrong in dev - BASE_URL was `/Beaver-Bathroom/` even when dev server serves at root
-  7. **NEW**: playSound/playSample/startMusic don't check if context is suspended before playing
-- Fixes applied:
-  1. Made initAudio() async, properly await audioCtx.resume()
-  2. Added 3s timeout to preloadSounds wait loop (resets audioInitialized on timeout for retry)
-  3. Added comprehensive console.log debugging with [Audio] prefix
-  4. Added `isNaN()` checks with fallback values in playSample() and startMusic()
-  5. Changed initAudio listener to capture:true - fires before button handlers
-  6. Added oscillator fallbacks for playClick() and playStallClean() when samples not yet loaded
-  7. **Fixed SOUND_BASE path**: uses `/` in dev mode, BASE_URL in production (import.meta.env.DEV check)
-  8. **NEW**: Added suspended state check to playSample(), playSound(), startMusic() - tries to resume if suspended
-- Debug logging shows: SOUND_BASE path, context state, load success/failure, play attempts
-- Files: src/main.js (~75 lines changed in audio system)
-- Status: AWAITING MANUAL BROWSER TEST
-- Test instructions:
-  1. Run `npm run dev` (no VERCEL=1 needed anymore!)
-  2. Open http://localhost:5173
-  3. Open browser console (F12)
-  4. Click any button - should hear beep immediately (oscillator fallback)
-  5. Console should show `[Audio] SOUND_BASE: / (DEV: true)`
-  6. Console should show `[Audio] Successfully loaded 18 sounds`
-  7. After load, clicks should play proper samples
-  8. Safari iOS: ensure ringer is not on vibrate (blocks all Web Audio)
 
 ### Fix Customer Walking Path Clipping (ayf) - COMPLETE
 - Goal: customers shouldn't walk through/clip sink-towel area
