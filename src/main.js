@@ -1245,12 +1245,21 @@ async function checkStripeReturn() {
   const sessionId = params.get('session_id');
 
   if (sessionId) {
+    console.log('Stripe return detected, session:', sessionId);
     try {
       // Verify the session with backend
       const result = await convex.action(api.stripe.verifyCheckoutSession, { sessionId });
+      console.log('Verification result:', result, 'Local deviceId:', deviceId);
 
-      if (result.paid && result.deviceId === deviceId) {
+      if (result.paid) {
+        // Payment confirmed - set premium regardless of deviceId match
+        // (deviceId mismatch can happen if user cleared localStorage)
         setPremium();
+
+        // Store email for future restore
+        if (result.customerEmail) {
+          localStorage.setItem('beaverPurchaseEmail', result.customerEmail);
+        }
 
         // Clean up URL
         const cleanUrl = window.location.origin + window.location.pathname;
@@ -1258,15 +1267,21 @@ async function checkStripeReturn() {
 
         // Update title screen buttons to show unlocked state
         updateTitleButtonStates();
+        updatePremiumUI();
 
         // Show celebration
         setTimeout(() => {
           playWin();
-          floatMessage('🎉 Premium Unlocked!', window.innerWidth / 2, 100, 'good');
+          haptic('success');
+          floatMessage('🎉 Premium Unlocked! Thank you!', window.innerWidth / 2, 100, 'good');
         }, 500);
+      } else {
+        console.log('Payment not confirmed yet');
       }
     } catch (e) {
       console.error('Stripe return verification failed:', e);
+      // Still try to show something to user
+      floatMessage('Verifying payment...', window.innerWidth / 2, 100, 'good');
     }
   }
 
