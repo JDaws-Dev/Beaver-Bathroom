@@ -1062,3 +1062,34 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .supplyrun-result-stats{gap:16px}
 .supplyrun-stat-val{font-size:2em}
 }
+
+/* ==========================================
+   LOW PERFORMANCE MODE
+   Reduces visual effects for better mobile FPS
+   ========================================== */
+
+/* Disable expensive animations */
+.low-perf *{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.1s !important}
+
+/* Remove box shadows */
+.low-perf .stall,.low-perf .sink,.low-perf .task-panel,.low-perf .btn,.low-perf .powerup{box-shadow:none !important}
+
+/* Simplify customer rendering */
+.low-perf .person{filter:none !important}
+.low-perf .person-body::before,.low-perf .person-body::after{display:none}
+
+/* Remove glows */
+.low-perf .stall-light{box-shadow:none !important;filter:none !important}
+.low-perf #hud,.low-perf .combo-display{text-shadow:none !important}
+
+/* Reduce floating message count - hide after 3 */
+.low-perf .float-msg:nth-child(n+4){display:none}
+
+/* Disable backdrop blur */
+.low-perf .modal-content,.low-perf .title-card{backdrop-filter:none !important;-webkit-backdrop-filter:none !important}
+
+/* Simplify progress bars */
+.low-perf .task-progress-fill,.low-perf .rank-progress-fill{background:linear-gradient(90deg,#4CAF50,#8BC34A) !important}
+
+/* Hide non-essential visual elements during gameplay */
+.low-perf .stall-wood-grain,.low-perf .floor-tile::before{display:none}

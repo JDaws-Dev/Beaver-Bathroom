@@ -1980,6 +1980,61 @@ let dailyHighScore = parseInt(localStorage.getItem('beaverDailyHighScore')) || 0
 let dailyDate = localStorage.getItem('beaverDailyDate') || '';
 let dailyAttempts = parseInt(localStorage.getItem('beaverDailyAttempts')) || 0;
 
+// Performance monitoring for mobile optimization
+const perf = {
+  frameTimes: [],
+  lastHudUpdate: 0,
+  hudUpdateInterval: 50, // Update HUD every 50ms instead of every frame
+  lowPerfMode: false,
+  lowPerfThreshold: 24, // FPS below this triggers low-perf mode
+  frameCount: 0,
+  lastFpsCheck: 0,
+  currentFps: 60,
+};
+
+// Check if device is likely mobile
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+// Initialize low-perf mode from saved preference, or auto-enable on mobile
+const savedLowPerf = localStorage.getItem('beaverLowPerf');
+if (savedLowPerf === 'true' || (savedLowPerf === null && isMobile)) {
+  // Will be applied after DOM is ready
+  document.addEventListener('DOMContentLoaded', () => {
+    document.body.classList.add('low-perf');
+    perf.lowPerfMode = true;
+    perf.hudUpdateInterval = 100;
+  });
+}
+
+// Enable low performance mode (reduces visual effects)
+function setLowPerfMode(enabled) {
+  perf.lowPerfMode = enabled;
+  document.body.classList.toggle('low-perf', enabled);
+  if (enabled) {
+    perf.hudUpdateInterval = 100; // Even less frequent HUD updates
+  } else {
+    perf.hudUpdateInterval = 50;
+  }
+}
+
+// Monitor FPS and auto-enable low-perf mode if needed
+function updatePerfMonitor(now) {
+  perf.frameCount++;
+
+  // Check FPS every second
+  if (now - perf.lastFpsCheck >= 1000) {
+    perf.currentFps = perf.frameCount;
+    perf.frameCount = 0;
+    perf.lastFpsCheck = now;
+
+    // Auto-enable low-perf mode if FPS drops
+    if (perf.currentFps < perf.lowPerfThreshold && !perf.lowPerfMode) {
+      setLowPerfMode(true);
+    }
+    // Don't auto-disable to avoid flicker - user can refresh to reset
+  }
+}
+
 // Seeded RNG for daily challenge (mulberry32)
 let seededRngState = 0;
 function seededRng() {
@@ -2158,6 +2213,13 @@ function updateSettingsUI() {
     hapticsBtn.textContent = hapticsEnabled ? 'ON' : 'OFF';
     hapticsBtn.classList.toggle('active', hapticsEnabled);
   }
+
+  // Performance mode toggle
+  const perfBtn = $('perf-toggle');
+  if (perfBtn) {
+    perfBtn.textContent = perf.lowPerfMode ? 'ON' : 'OFF';
+    perfBtn.classList.toggle('active', perf.lowPerfMode);
+  }
 }
 
 function toggleSfx() {
@@ -2174,6 +2236,12 @@ function toggleMusic() {
   } else if (game.running && !game.paused) {
     startMusic();
   }
+  updateSettingsUI();
+}
+
+function togglePerfMode() {
+  setLowPerfMode(!perf.lowPerfMode);
+  localStorage.setItem('beaverLowPerf', perf.lowPerfMode);
   updateSettingsUI();
 }
 
@@ -3620,6 +3688,9 @@ function startShift() {
 function gameLoop(now) {
   if (!game.running) return;
 
+  // Monitor performance
+  updatePerfMonitor(now);
+
   // Skip game logic when paused but keep loop running
   if (game.paused) {
     game.lastTime = now;
@@ -3631,7 +3702,13 @@ function gameLoop(now) {
   game.lastTime = now;
 
   update(dt);
-  updateHUD();
+
+  // Throttle HUD updates for better mobile performance
+  if (now - perf.lastHudUpdate >= perf.hudUpdateInterval) {
+    updateHUD();
+    perf.lastHudUpdate = now;
+  }
+
   renderPeople();
 
   requestAnimationFrame(gameLoop);
@@ -5584,6 +5661,7 @@ $('music-volume').addEventListener('input', e => setMusicVolume(e.target.value))
 $('sfx-toggle')?.addEventListener('click', toggleSfx);
 $('music-toggle')?.addEventListener('click', toggleMusic);
 $('haptics-toggle').addEventListener('click', toggleHaptics);
+$('perf-toggle')?.addEventListener('click', togglePerfMode);
 $('reset-progress')?.addEventListener('click', resetProgress);
 
 // Pause menu buttons
