@@ -9,6 +9,22 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Define Visual Art Style (6yh)
+- Goal: decide on cohesive art style for the game, create style guide
+- Decision: **Retro Americana Arcade** - hybrid of vintage travel stop + modern vector rendering
+- Why: matches Texas travel stop theme, differentiates from competitors, AI tools handle well, mobile readable
+- Created STYLE-GUIDE.md (~300 lines) documenting:
+  - Art style pillars: Retro Americana Foundation + Modern Arcade Execution + Bathroom Comedy Tone
+  - Complete color palette with hex codes and usage
+  - Typography hierarchy and text effects
+  - Character design specs (Bucky, customers)
+  - UI element CSS patterns (panels, buttons, wood grain)
+  - Environment art specs (stalls, floor, walls)
+  - Animation guidelines with easing curves
+  - Asset production roadmap (Phase 1: CSS art → Phase 2: AI-generated → Phase 3: sprites)
+  - Mobile readability guidelines
+- Files: STYLE-GUIDE.md (new, ~300 lines)
+
 ### Fun Sound Effects System (86w)
 - Goal: add entertaining sound effects to enhance bathroom cleaning theme
 - Added 3 toilet flush varieties: playFlushNormal(), playFlushPowerful(), playFlushWeak()
