@@ -3220,8 +3220,10 @@ function startEndlessMode() {
   game.time = 0; // Will count up
 
   // Build bathroom with Shift 6 config
-  const cfg = CONFIG.shifts[5];
-  buildBathroom(cfg.stalls, cfg.sinks);
+  buildStalls();
+  buildSinks();
+  hideTaskPanel();
+  updateHUD();
 
   // Start with full powerups
   game.powerups = {speed: 2, slow: 2, auto: 1, mascot: 1};
