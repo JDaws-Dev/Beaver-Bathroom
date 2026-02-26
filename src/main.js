@@ -1167,6 +1167,8 @@ function continueFromMinigame() {
 let game = {};
 let selectedGender = 'female';
 let highScore = parseInt(localStorage.getItem('beaverHighScore')) || 0;
+let endlessHighScore = parseInt(localStorage.getItem('beaverEndlessHighScore')) || 0;
+let endlessUnlocked = localStorage.getItem('beaverEndlessUnlocked') === 'true';
 
 // Audio
 let audioCtx = null;
@@ -1818,12 +1820,14 @@ function bumpValue(id) {
 
 function init() {
   game = {
+    mode: 'campaign',         // 'campaign' or 'endless'
     shift: 0,
     score: 0,
     rating: 5,
     combo: 0,
     maxCombo: 0,
     time: 0,
+    elapsed: 0,               // Total elapsed time (for endless mode)
     running: false,
     stalls: [],
     sinks: [],
@@ -1876,7 +1880,14 @@ function getEffectiveTaskTime() {
 function getEffectivePatience() {
   // Patience skill increases customer patience
   const patienceBonus = getSkillEffect('patience');
-  return CONFIG.patience * (1 + patienceBonus);
+  let patience = CONFIG.patience * (1 + patienceBonus);
+  // Endless mode: patience decreases 5% per minute
+  if (game.mode === 'endless') {
+    const minutesPlayed = Math.floor(game.elapsed / 60000);
+    const patienceMultiplier = Math.max(0.3, 1 - minutesPlayed * 0.05); // Min 30% patience
+    patience *= patienceMultiplier;
+  }
+  return patience;
 }
 
 function getSkillEffect(skillId) {
@@ -2135,17 +2146,28 @@ function updateHUD() {
     sinksEl.style.color = '#4caf50';
   }
 
-  const sec = Math.max(0, Math.ceil(game.time));
-  $('timer').textContent = `${Math.floor(sec/60)}:${(sec%60).toString().padStart(2,'0')}`;
-  $('timer').style.color = sec <= 10 ? '#e53935' : (sec <= 20 ? '#fdd835' : '#43a047');
-  $('timer').style.animation = sec <= 10 ? 'blink 0.5s infinite' : '';
+  // Timer display - counts up in endless, down in campaign
+  if (game.mode === 'endless') {
+    const sec = Math.floor(game.time);
+    $('timer').textContent = `${Math.floor(sec/60)}:${(sec%60).toString().padStart(2,'0')}`;
+    $('timer').style.color = '#64b5f6'; // Blue for endless
+    $('timer').style.animation = '';
+  } else {
+    const sec = Math.max(0, Math.ceil(game.time));
+    $('timer').textContent = `${Math.floor(sec/60)}:${(sec%60).toString().padStart(2,'0')}`;
+    $('timer').style.color = sec <= 10 ? '#e53935' : (sec <= 20 ? '#fdd835' : '#43a047');
+    $('timer').style.animation = sec <= 10 ? 'blink 0.5s infinite' : '';
+  }
 
-  // Urgent beeping when time is low
-  if (sec <= 10 && sec > 0 && game.running) {
-    const now = Date.now();
-    if (now - game.lastUrgentBeep > 1000) {
-      playUrgent();
-      game.lastUrgentBeep = now;
+  // Urgent beeping when time is low (campaign only)
+  if (game.mode !== 'endless') {
+    const sec = Math.max(0, Math.ceil(game.time));
+    if (sec <= 10 && sec > 0 && game.running) {
+      const now = Date.now();
+      if (now - game.lastUrgentBeep > 1000) {
+        playUrgent();
+        game.lastUrgentBeep = now;
+      }
     }
   }
 
@@ -2167,6 +2189,121 @@ function updateHUD() {
   towelEl.classList.toggle('empty', game.towels === 0);
   towelEl.children[0].textContent = game.towels > 5 ? '📄📄📄' : (game.towels > 2 ? '📄📄' : (game.towels > 0 ? '📄' : '❌'));
   towelEl.children[1].textContent = game.towels === 0 ? 'EMPTY!' : 'TOWELS';
+}
+
+// ============ ENDLESS MODE ============
+
+function isEndlessUnlocked() {
+  return endlessUnlocked && isPremium();
+}
+
+function unlockEndless() {
+  endlessUnlocked = true;
+  localStorage.setItem('beaverEndlessUnlocked', 'true');
+  updateOvertimeButton();
+}
+
+function updateOvertimeButton() {
+  const btn = $('overtime-btn');
+  if (!btn) return;
+  if (isEndlessUnlocked()) {
+    btn.classList.remove('locked');
+    btn.textContent = '⏰ Overtime';
+  } else {
+    btn.classList.add('locked');
+    btn.textContent = '🔒 Overtime';
+  }
+}
+
+function startEndlessMode() {
+  if (!isEndlessUnlocked()) {
+    // Show message or paywall
+    if (!isPremium()) {
+      showPaywallModal();
+    } else {
+      // Not unlocked yet - need to beat campaign first
+      floatText('Beat all 6 shifts first!', window.innerWidth / 2, window.innerHeight / 2, '#ff6b6b');
+    }
+    return;
+  }
+
+  init();
+  game.mode = 'endless';
+  game.shift = 5; // Use Shift 6 config (hardest)
+  game.elapsed = 0;
+  game.time = 0; // Will count up
+
+  // Build bathroom with Shift 6 config
+  const cfg = CONFIG.shifts[5];
+  buildBathroom(cfg.stalls, cfg.sinks);
+
+  // Start with full powerups
+  game.powerups = {speed: 2, slow: 2, auto: 1, mascot: 1};
+
+  // Max out skills for endless
+  game.skills = {scrub: 3, patience: 3, tips: 3};
+
+  game.running = true;
+  showScreen('game-screen');
+  startMusic();
+  lastTime = performance.now();
+  requestAnimationFrame(gameLoop);
+}
+
+function endlessGameOver() {
+  game.running = false;
+  stopMusic();
+  haptic('error');
+
+  // Clean up
+  if (game.mascotWalk || game.effects.mascot > 0) endMascotWalk();
+  game.inspector = null;
+  const inspectorEl = $('floor-area').querySelector('.inspector');
+  if (inspectorEl) inspectorEl.remove();
+  $('inspector-warning').style.display = 'none';
+
+  const finalScore = Math.floor(game.score);
+  const minutesSurvived = Math.floor(game.elapsed / 60000);
+  const secondsSurvived = Math.floor((game.elapsed % 60000) / 1000);
+  const isNewRecord = finalScore > endlessHighScore;
+
+  if (isNewRecord) {
+    endlessHighScore = finalScore;
+    localStorage.setItem('beaverEndlessHighScore', finalScore.toString());
+    playWin();
+  } else {
+    playBad();
+  }
+
+  // Show game over screen with endless stats
+  $('go-icon').textContent = '⏰';
+  $('go-title').textContent = 'OVERTIME OVER!';
+  $('go-score').textContent = finalScore.toLocaleString();
+  $('go-comment').textContent = `You survived ${minutesSurvived}m ${secondsSurvived}s!`;
+  $('go-stats').innerHTML = `
+    <div class="stat"><div class="num">${game.stats.cleaned}</div><div class="lbl">Stalls Cleaned</div></div>
+    <div class="stat"><div class="num">${game.stats.served}</div><div class="lbl">Customers Served</div></div>
+    <div class="stat"><div class="num">${minutesSurvived}:${secondsSurvived.toString().padStart(2, '0')}</div><div class="lbl">Time Survived</div></div>
+  `;
+
+  // High score display
+  const goHighScore = $('go-high-score');
+  if (goHighScore) {
+    goHighScore.textContent = `Endless High Score: ${endlessHighScore.toLocaleString()}`;
+    goHighScore.classList.add('visible');
+  }
+  if (isNewRecord) {
+    const recordEl = document.createElement('div');
+    recordEl.className = 'new-record';
+    recordEl.textContent = '🎉 NEW ENDLESS RECORD!';
+    $('go-stats').appendChild(recordEl);
+  }
+
+  // Hide name input for endless (use existing name)
+  $('go-name-section').style.display = 'none';
+  $('retry-btn').textContent = 'Play Again';
+
+  showScreen('gameover-screen');
 }
 
 function showShiftIntro() {
@@ -2259,13 +2396,26 @@ function gameLoop(now) {
 function update(dt) {
   const cfg = getShiftConfig();
 
-  game.time -= dt / 1000;
-  if (game.time <= 0) {
-    endShift();
-    return;
+  // Endless mode: count up, end on rating 0
+  if (game.mode === 'endless') {
+    game.elapsed += dt;
+    game.time += dt / 1000; // Count up for display
+    // End game when rating hits 0
+    if (game.rating <= 0) {
+      game.rating = 0;
+      endlessGameOver();
+      return;
+    }
+  } else {
+    // Campaign mode: count down
+    game.time -= dt / 1000;
+    if (game.time <= 0) {
+      endShift();
+      return;
+    }
+    // Low time warning at 15 seconds
+    if (game.time <= 15 && game.time > 14.5) showBeaverTip('lowTime');
   }
-  // Low time warning at 15 seconds
-  if (game.time <= 15 && game.time > 14.5) showBeaverTip('lowTime');
 
   // Rush hour logic
   if (game.rushTimer > 0) {
@@ -2325,6 +2475,12 @@ function update(dt) {
     let interval = rnd(cfg.spawnMin, cfg.spawnMax);
     if (game.effects.slow > 0) interval *= 2;
     if (game.rushMode) interval *= 0.3; // Much faster during rush
+    // Endless mode: spawn faster over time (15% faster per minute)
+    if (game.mode === 'endless') {
+      const minutesPlayed = Math.floor(game.elapsed / 60000);
+      const spawnMultiplier = 1 / (1 + minutesPlayed * 0.15);
+      interval *= spawnMultiplier;
+    }
     game.spawnTimer = interval;
   }
 
@@ -3963,6 +4119,11 @@ function gameOver() {
     updateHighScoreDisplay();
   }
 
+  // Unlock endless mode when beating the campaign
+  if (won && !endlessUnlocked) {
+    unlockEndless();
+  }
+
   $('go-icon').textContent = won ? '🏆' : '📦';
   $('go-title').textContent = won ? 'GOLDEN PLUNGER EARNED!' : 'FIRED!';
   $('go-msg').textContent = won ? pick(WIN_MESSAGES) : pick(GAME_OVER_MESSAGES);
@@ -4045,6 +4206,7 @@ function updateHighScoreDisplay() {
 }
 updateHighScoreDisplay();
 updateRankDisplay();
+updateOvertimeButton();
 
 // Achievements modal
 $('achievements-btn').addEventListener('click', openAchievementsModal);
@@ -4088,6 +4250,12 @@ $('start-btn').addEventListener('click', () => {
   showShiftIntro();
 });
 
+$('overtime-btn').addEventListener('click', () => {
+  initAudio();
+  playClick();
+  startEndlessMode();
+});
+
 $('shift-start-btn').addEventListener('click', () => {
   startShift();
 });
@@ -4126,7 +4294,12 @@ $('skip-upgrades').addEventListener('click', () => {
 });
 
 $('retry-btn').addEventListener('click', () => {
-  showScreen('title-screen');
+  if (game.mode === 'endless') {
+    // Restart endless mode directly
+    startEndlessMode();
+  } else {
+    showScreen('title-screen');
+  }
 });
 
 // Mini-game buttons
