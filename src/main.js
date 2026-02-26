@@ -1905,47 +1905,38 @@ function startMascotWalk() {
   const floorRect = floorArea.getBoundingClientRect();
   const mascotEl = $('mascot-walk');
 
-  // Spawn on left side, walk right
-  const startX = -80;
-  const endX = floorRect.width + 80;
-  const y = floorRect.height * 0.4;
+  // Spawn on left side (visible), walk right
+  const startX = 20;
+  const endX = floorRect.width - 60;
+  const y = floorRect.height * 0.35;
 
   game.mascotWalk = {
     x: startX,
     y: y,
-    centerY: y + 40,  // Center of the beaver for orbit calculations
     targetX: endX,
-    speed: 70  // pixels per second (slower so customers can follow)
+    speed: 50  // pixels per second (slow stroll)
   };
 
-  // Create CSS art beaver structure instead of emoji
+  // Simple emoji beaver like other characters
   mascotEl.innerHTML = `
-    <div class="floor-beaver">
-      <div class="beaver-body"></div>
-      <div class="beaver-tail"></div>
-      <div class="beaver-face">
-        <div class="beaver-ear left"></div>
-        <div class="beaver-ear right"></div>
-        <div class="beaver-eye left"><div class="beaver-pupil"></div></div>
-        <div class="beaver-eye right"><div class="beaver-pupil"></div></div>
-        <div class="beaver-nose"></div>
-        <div class="beaver-teeth">
-          <div class="beaver-tooth"></div>
-          <div class="beaver-tooth"></div>
-        </div>
-        <div class="beaver-cheek left"></div>
-        <div class="beaver-cheek right"></div>
+    <div class="person-body mascot-body">
+      <div class="person-shirt" style="background:linear-gradient(180deg,#b5803a,#8b6342);border-color:#5d4037"></div>
+      <div class="person-legs">
+        <div class="person-leg"></div>
+        <div class="person-leg"></div>
       </div>
     </div>
+    <div class="person-icon" style="font-size:2.5em">🦫</div>
+    <div class="mascot-label">BEAVER!</div>
   `;
   mascotEl.style.left = startX + 'px';
   mascotEl.style.top = y + 'px';
   mascotEl.classList.remove('hidden');
   mascotEl.classList.add('walking');
 
-  // Mark all current people in enter/findStall phase as distracted with orbit params
+  // Mark all current people as distracted - they'll crowd toward beaver
   for (const p of game.people) {
-    if (p.phase === 'enter' || p.phase === 'findStall') {
+    if (p.phase === 'enter' || p.phase === 'findStall' || p.phase === 'toStall') {
       initDistractedCustomer(p);
     }
   }
@@ -1953,14 +1944,13 @@ function startMascotWalk() {
   floatMessage('🦫 BEAVER ON THE FLOOR!', 400, 150, 'combo');
 }
 
-// Initialize a customer for orbiting behavior
+// Initialize a customer for crowding behavior
 function initDistractedCustomer(p) {
   if (p.distracted) return;  // Already initialized
   p.distracted = true;
-  // Give each customer a random orbit radius and angle offset for variety
-  p.orbitRadius = 50 + Math.random() * 40;  // 50-90px from beaver
-  p.orbitAngle = Math.random() * Math.PI * 2;  // Random starting angle
-  p.orbitSpeed = 0.8 + Math.random() * 0.6;  // 0.8-1.4 radians per second
+  // Random offset so customers spread around beaver
+  p.crowdOffset = (Math.random() - 0.5) * 4;  // -2 to 2
+  p.crowdOffsetY = (Math.random() - 0.5) * 3;  // -1.5 to 1.5
 }
 
 function updateMascotWalk(dt) {
@@ -1970,9 +1960,9 @@ function updateMascotWalk(dt) {
   game.mascotWalk.x += game.mascotWalk.speed * dt;
   mascotEl.style.left = game.mascotWalk.x + 'px';
 
-  // Update the center position for orbit calculations
-  const mascotCenterX = game.mascotWalk.x + 40;  // Center of 80px wide beaver
-  const mascotCenterY = game.mascotWalk.centerY;
+  // Beaver center position
+  const beaverX = game.mascotWalk.x + 30;
+  const beaverY = game.mascotWalk.y + 40;
 
   // Check if mascot reached the end
   if (game.mascotWalk.x >= game.mascotWalk.targetX) {
@@ -1980,29 +1970,34 @@ function updateMascotWalk(dt) {
     return;
   }
 
-  // Update distracted customers - make them orbit around the beaver
+  // Update distracted customers - they crowd toward the beaver
   for (const p of game.people) {
-    if (p.phase === 'enter' || p.phase === 'findStall') {
+    if (p.phase === 'enter' || p.phase === 'findStall' || p.phase === 'toStall') {
       if (!p.distracted) {
         initDistractedCustomer(p);
       }
 
-      // Update orbit angle
-      p.orbitAngle += p.orbitSpeed * dt;
+      // Calculate crowd position near beaver (spread out a bit)
+      const offsetX = (p.crowdOffset || 0) * 25;
+      const offsetY = (p.crowdOffsetY || 0) * 20;
+      const targetX = beaverX + offsetX;
+      const targetY = beaverY + offsetY;
 
-      // Calculate target orbit position around the beaver
-      const targetX = mascotCenterX + Math.cos(p.orbitAngle) * p.orbitRadius - 15;
-      const targetY = mascotCenterY + Math.sin(p.orbitAngle) * p.orbitRadius * 0.6 - 20;  // Squash vertically for perspective
-
-      // Move toward orbit position (not instant - smooth following)
+      // Move toward crowd position
       const dx = targetX - p.x;
       const dy = targetY - p.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      const followSpeed = CONFIG.walkSpeed * 1.5;  // Move faster than normal to keep up
 
-      if (dist > 3) {
-        p.x += (dx / dist) * followSpeed * dt;
-        p.y += (dy / dist) * followSpeed * dt;
+      if (dist > 10) {
+        const speed = CONFIG.walkSpeed * 1.2;
+        p.x += (dx / dist) * speed * dt;
+        p.y += (dy / dist) * speed * dt;
+      }
+
+      // Show excited thought
+      if (!p.thought || p.thoughtTimer <= 0) {
+        p.thought = ['📸', '🤩', 'OMG!', '🦫!', 'WOW!'][Math.floor(Math.random() * 5)];
+        p.thoughtTimer = 2000;
       }
     }
   }

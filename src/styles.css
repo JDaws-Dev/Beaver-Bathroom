@@ -357,10 +357,13 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 #floor-area::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08) 39px,rgba(0,0,0,0.08) 41px),repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08) 39px,rgba(0,0,0,0.08) 41px);pointer-events:none}
 #floor-area::after{content:'';position:absolute;bottom:0;left:0;right:0;height:8px;background:linear-gradient(180deg,#5d4037 0%,#3e2723 100%);box-shadow:inset 0 2px 0 rgba(255,255,255,0.1),0 -2px 4px rgba(0,0,0,0.2);pointer-events:none}
 /* Floor mascot beaver - larger CSS art version for Beaver Walk power-up */
-#mascot-walk{position:absolute;width:80px;height:80px;z-index:100;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.4));transition:none}
+#mascot-walk{position:absolute;width:60px;height:90px;z-index:100;display:flex;flex-direction:column;align-items:center}
 #mascot-walk.hidden{display:none}
-#mascot-walk.walking{animation:mascot-walk-waddle 0.25s ease-in-out infinite}
-@keyframes mascot-walk-waddle{0%,100%{transform:rotate(-8deg) translateY(0)}50%{transform:rotate(8deg) translateY(-4px)}}
+#mascot-walk.walking .person-icon{animation:head-bob 0.3s infinite}
+#mascot-walk.walking .person-leg:first-child{animation:leg-walk-l 0.3s infinite}
+#mascot-walk.walking .person-leg:last-child{animation:leg-walk-r 0.3s infinite}
+#mascot-walk .mascot-body{transform:scale(1.3)}
+#mascot-walk .mascot-label{background:#FFD700;color:#5d4037;font-size:0.6em;font-weight:bold;padding:2px 6px;border-radius:8px;margin-top:2px;white-space:nowrap;border:2px solid #b5803a;box-shadow:0 2px 4px rgba(0,0,0,0.3)}
 /* Floor beaver body structure */
 .floor-beaver{width:100%;height:100%;position:relative}
 .floor-beaver .beaver-body{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:50px;height:35px;background:linear-gradient(180deg,#b5803a 0%,#8b6342 100%);border-radius:50% 50% 40% 40%;border:3px solid #5d4037}
