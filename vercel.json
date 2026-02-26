@@ -1,5 +1,18 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "framework": "vite"
+  "framework": "vite",
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "beaverbathroomblitz.com"
+        }
+      ],
+      "destination": "https://beaversbathroomblitz.com/:path*",
+      "permanent": true
+    }
+  ]
 }
