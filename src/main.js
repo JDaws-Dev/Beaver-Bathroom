@@ -1120,34 +1120,35 @@ async function initAudio() {
 }
 
 // Initialize audio on ANY user interaction (multiple calls are safe)
+// Use capture:true so initAudio runs BEFORE button handlers (creates audioCtx first)
 ['click', 'touchstart', 'keydown'].forEach(evt => {
-  document.addEventListener(evt, initAudio, { passive: true });
+  document.addEventListener(evt, initAudio, { capture: true, passive: true });
 });
 
 // === SAMPLE-BASED AUDIO SYSTEM ===
 const soundBuffers = {}; // Cache for decoded audio buffers
-// Use Vite's base URL to work in both dev and production
-const BASE_URL = import.meta.env.BASE_URL;
-console.log('[Audio] BASE_URL:', BASE_URL);
+// Vite serves public files at root in dev, but at BASE_URL in production
+const SOUND_BASE = import.meta.env.DEV ? '/' : import.meta.env.BASE_URL;
+console.log('[Audio] SOUND_BASE:', SOUND_BASE, '(DEV:', import.meta.env.DEV, ')');
 const SOUND_FILES = {
-  click: `${BASE_URL}sounds/click.wav`,
-  plunge: `${BASE_URL}sounds/plunge.wav`,
-  scrub: `${BASE_URL}sounds/scrub.wav`,
-  mop: `${BASE_URL}sounds/mop.wav`,
-  restock: `${BASE_URL}sounds/restock.wav`,
-  clean: `${BASE_URL}sounds/clean.wav`,
-  complete: `${BASE_URL}sounds/complete.wav`,
-  flush: `${BASE_URL}sounds/flush.wav`,
-  bad: `${BASE_URL}sounds/bad.wav`,
-  urgent: `${BASE_URL}sounds/urgent.wav`,
-  happy: `${BASE_URL}sounds/happy.wav`,
-  disgusted: `${BASE_URL}sounds/disgusted.wav`,
-  door: `${BASE_URL}sounds/door.wav`,
-  vip: `${BASE_URL}sounds/vip.wav`,
-  coin: `${BASE_URL}sounds/coin.wav`,
-  combo: `${BASE_URL}sounds/combo.wav`,
-  inspector: `${BASE_URL}sounds/inspector.wav`,
-  powerup: `${BASE_URL}sounds/powerup.wav`,
+  click: `${SOUND_BASE}sounds/click.wav`,
+  plunge: `${SOUND_BASE}sounds/plunge.wav`,
+  scrub: `${SOUND_BASE}sounds/scrub.wav`,
+  mop: `${SOUND_BASE}sounds/mop.wav`,
+  restock: `${SOUND_BASE}sounds/restock.wav`,
+  clean: `${SOUND_BASE}sounds/clean.wav`,
+  complete: `${SOUND_BASE}sounds/complete.wav`,
+  flush: `${SOUND_BASE}sounds/flush.wav`,
+  bad: `${SOUND_BASE}sounds/bad.wav`,
+  urgent: `${SOUND_BASE}sounds/urgent.wav`,
+  happy: `${SOUND_BASE}sounds/happy.wav`,
+  disgusted: `${SOUND_BASE}sounds/disgusted.wav`,
+  door: `${SOUND_BASE}sounds/door.wav`,
+  vip: `${SOUND_BASE}sounds/vip.wav`,
+  coin: `${SOUND_BASE}sounds/coin.wav`,
+  combo: `${SOUND_BASE}sounds/combo.wav`,
+  inspector: `${SOUND_BASE}sounds/inspector.wav`,
+  powerup: `${SOUND_BASE}sounds/powerup.wav`,
 };
 let soundsLoaded = false;
 let soundsLoading = false;
@@ -1181,6 +1182,7 @@ async function preloadSounds() {
   for (const [name, url] of Object.entries(SOUND_FILES)) {
     if (soundBuffers[name]) continue; // Already loaded
     try {
+      console.log('[Audio] Loading:', name);
       const response = await fetch(url);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const arrayBuffer = await response.arrayBuffer();
@@ -1191,7 +1193,7 @@ async function preloadSounds() {
     }
   }
   if (loadedCount === 0) {
-    console.error('[Audio] No sounds loaded! Check paths. BASE_URL:', BASE_URL);
+    console.error('[Audio] No sounds loaded! Check paths. SOUND_BASE:', SOUND_BASE);
   } else {
     console.log('[Audio] Successfully loaded', loadedCount, 'sounds');
   }
@@ -1326,7 +1328,14 @@ function playSound(freq, duration, type = 'sine', volume = 0.25) {
   } catch(e) {}
 }
 
-function playClick() { playSample('click', 0.6); }
+function playClick() {
+  // Use sample if loaded, else fallback to oscillator beep
+  if (soundBuffers['click']) {
+    playSample('click', 0.6);
+  } else {
+    playSound(800, 0.08, 'square', 0.15); // Quick beep fallback
+  }
+}
 function playTaskComplete() { playSample('complete', 0.8); }
 
 // Task-specific sounds - now using samples
@@ -1358,7 +1367,14 @@ function playTaskSound(taskId) {
   }
 }
 function playStallClean() {
-  playSample('clean', 1.0);
+  if (soundBuffers['clean']) {
+    playSample('clean', 1.0);
+  } else {
+    // Ascending arpeggio fallback
+    playSound(523, 0.1, 'triangle', 0.2);
+    setTimeout(() => playSound(659, 0.1, 'triangle', 0.2), 80);
+    setTimeout(() => playSound(784, 0.15, 'triangle', 0.25), 160);
+  }
 }
 function playBad() { playSample('bad', 0.8); }
 function playUrgent() { playSample('urgent', 0.7); }

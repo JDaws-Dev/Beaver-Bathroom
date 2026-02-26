@@ -20,16 +20,29 @@ This file maintains context between autonomous iterations.
   1. `audioCtx.resume()` not awaited - preloadSounds could start before context ready
   2. No timeout in preloadSounds - could hang forever if context never resumes
   3. Silent failures - no logging to diagnose issues
+  4. First-click sounds fail because samples load async - no immediate feedback
+  5. Event listener order wrong - initAudio in bubbling phase, button handlers fired first
+  6. Sound path wrong in dev - BASE_URL was `/Beaver-Bathroom/` even when dev server serves at root
 - Fixes applied:
   1. Made initAudio() async, properly await audioCtx.resume()
   2. Added 3s timeout to preloadSounds wait loop (resets audioInitialized on timeout for retry)
   3. Added comprehensive console.log debugging with [Audio] prefix
   4. Added `isNaN()` checks with fallback values in playSample() and startMusic()
-  5. Log BASE_URL at load time to verify path correctness
-- Debug logging will help identify: context state, load success/failure, play attempts
-- Files: src/main.js (~40 lines changed in audio system)
+  5. Changed initAudio listener to capture:true - fires before button handlers
+  6. Added oscillator fallbacks for playClick() and playStallClean() when samples not yet loaded
+  7. **Fixed SOUND_BASE path**: uses `/` in dev mode, BASE_URL in production (import.meta.env.DEV check)
+- Debug logging shows: SOUND_BASE path, context state, load success/failure, play attempts
+- Files: src/main.js (~60 lines changed in audio system)
 - Status: AWAITING MANUAL BROWSER TEST
-- Test by: Open http://localhost:5173, click around, check console for [Audio] logs
+- Test instructions:
+  1. Run `npm run dev` (no VERCEL=1 needed anymore!)
+  2. Open http://localhost:5173
+  3. Open browser console (F12)
+  4. Click any button - should hear beep immediately (oscillator fallback)
+  5. Console should show `[Audio] SOUND_BASE: / (DEV: true)`
+  6. Console should show `[Audio] Successfully loaded 18 sounds`
+  7. After load, clicks should play proper samples
+  8. Safari iOS: ensure ringer is not on vibrate (blocks all Web Audio)
 
 ### Fix Customer Walking Path Clipping (ayf) - COMPLETE
 - Goal: customers shouldn't walk through/clip sink-towel area
