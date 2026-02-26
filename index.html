@@ -193,6 +193,50 @@
     </div>
   </div>
 
+  <!-- Daily Challenge Modal -->
+  <div id="daily-challenge-modal" class="modal">
+    <div class="modal-content daily-challenge-content">
+      <div class="modal-header">
+        <span class="modal-title">📅 Daily Challenge</span>
+        <button class="modal-close" id="close-daily-challenge">&times;</button>
+      </div>
+      <div class="dc-body">
+        <p class="dc-desc">Same challenge for everyone today. Compete for the best score!</p>
+        <div class="dc-stats">
+          <div class="dc-stat">
+            <span class="dc-stat-icon">🚽</span>
+            <span class="dc-stat-val" id="dc-stalls">7</span>
+            <span class="dc-stat-label">Stalls</span>
+          </div>
+          <div class="dc-stat">
+            <span class="dc-stat-icon">⏱️</span>
+            <span class="dc-stat-val" id="dc-duration">90s</span>
+            <span class="dc-stat-label">Duration</span>
+          </div>
+          <div class="dc-stat">
+            <span class="dc-stat-icon">🚿</span>
+            <span class="dc-stat-val" id="dc-sinks">2</span>
+            <span class="dc-stat-label">Sinks</span>
+          </div>
+        </div>
+        <div class="dc-modifiers" id="dc-modifiers">
+          <!-- Filled dynamically -->
+        </div>
+        <div class="dc-record">
+          <div class="dc-record-row">
+            <span>🏆 Your Best Today:</span>
+            <span id="dc-high-score" class="dc-high">0</span>
+          </div>
+          <div class="dc-record-row">
+            <span>🎮 Attempts Today:</span>
+            <span id="dc-attempts">0</span>
+          </div>
+        </div>
+      </div>
+      <button id="dc-start-btn" class="btn btn-play">Start Challenge!</button>
+    </div>
+  </div>
+
   <!-- Paywall Modal -->
   <div id="paywall-modal" class="modal">
     <div class="modal-content paywall-content">

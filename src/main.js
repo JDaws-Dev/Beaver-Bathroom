@@ -5465,6 +5465,54 @@ $('overtime-btn').addEventListener('click', () => {
 $('daily-btn').addEventListener('click', () => {
   initAudio();
   playClick();
+  showDailyChallengeModal();
+});
+
+// Daily Challenge Modal
+function showDailyChallengeModal() {
+  if (!isDailyUnlocked()) {
+    showPaywallModal('landing');
+    return;
+  }
+
+  checkDailyReset();
+
+  // Generate today's config to show info
+  const seed = getDailySeed();
+  const config = generateDailyConfig(seed);
+
+  // Populate stats
+  $('dc-stalls').textContent = config.stalls;
+  $('dc-duration').textContent = config.duration + 's';
+  $('dc-sinks').textContent = config.sinks;
+  $('dc-high-score').textContent = dailyHighScore;
+  $('dc-attempts').textContent = dailyAttempts;
+
+  // Show modifiers
+  const modifiers = [];
+  modifiers.push({ name: '🔍 Inspector', active: config.hasInspector });
+  modifiers.push({ name: '🏃 Rush Hour', active: config.hasRushHour });
+  modifiers.push({ name: '👑 VIP Boost', active: config.vipBoost });
+
+  $('dc-modifiers').innerHTML = modifiers.map(m =>
+    `<div class="dc-mod ${m.active ? 'active' : 'inactive'}">${m.name}</div>`
+  ).join('');
+
+  $('daily-challenge-modal').classList.add('active');
+}
+
+function closeDailyChallengeModal() {
+  $('daily-challenge-modal').classList.remove('active');
+}
+
+$('close-daily-challenge')?.addEventListener('click', closeDailyChallengeModal);
+$('daily-challenge-modal')?.addEventListener('click', e => {
+  if (e.target === $('daily-challenge-modal')) closeDailyChallengeModal();
+});
+
+$('dc-start-btn')?.addEventListener('click', () => {
+  playClick();
+  closeDailyChallengeModal();
   startDailyMode();
 });
 
