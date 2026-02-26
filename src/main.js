@@ -1065,8 +1065,9 @@ let highScore = parseInt(localStorage.getItem('beaverHighScore')) || 0;
 // Audio
 let audioCtx = null;
 let isMuted = localStorage.getItem('beaverMuted') === 'true';
-let sfxVolume = parseInt(localStorage.getItem('beaverSfxVolume') ?? '70') / 100;
-let musicVolume = parseInt(localStorage.getItem('beaverMusicVolume') ?? '50') / 100;
+// parseInt returns NaN for null/empty, || handles that with default values
+let sfxVolume = (parseInt(localStorage.getItem('beaverSfxVolume')) || 70) / 100;
+let musicVolume = (parseInt(localStorage.getItem('beaverMusicVolume')) || 50) / 100;
 
 // Haptics
 let hapticsEnabled = localStorage.getItem('beaverHaptics') !== 'false'; // default ON
@@ -1094,17 +1095,26 @@ function toggleHaptics() {
 
 let audioInitialized = false;
 
-function initAudio() {
+async function initAudio() {
+  console.log('[Audio] initAudio called, audioCtx:', audioCtx ? audioCtx.state : 'null');
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    console.log('[Audio] Created AudioContext, state:', audioCtx.state);
   }
   // Resume AudioContext on user interaction (required by browser autoplay policy)
   if (audioCtx.state === 'suspended') {
-    audioCtx.resume();
+    console.log('[Audio] Resuming suspended context...');
+    try {
+      await audioCtx.resume();
+      console.log('[Audio] Context resumed, state:', audioCtx.state);
+    } catch (e) {
+      console.error('[Audio] Resume failed:', e);
+    }
   }
   // Load sounds if not yet done
   if (!audioInitialized && !soundsLoading && !soundsLoaded) {
     audioInitialized = true;
+    console.log('[Audio] Starting preloadSounds...');
     preloadSounds();
   }
 }
@@ -1118,6 +1128,7 @@ function initAudio() {
 const soundBuffers = {}; // Cache for decoded audio buffers
 // Use Vite's base URL to work in both dev and production
 const BASE_URL = import.meta.env.BASE_URL;
+console.log('[Audio] BASE_URL:', BASE_URL);
 const SOUND_FILES = {
   click: `${BASE_URL}sounds/click.wav`,
   plunge: `${BASE_URL}sounds/plunge.wav`,
@@ -1143,15 +1154,30 @@ let soundsLoading = false;
 
 // Preload all sound samples (with protection against concurrent/repeated attempts)
 async function preloadSounds() {
-  if (soundsLoaded || soundsLoading || !audioCtx) return;
+  console.log('[Audio] preloadSounds called, state:', { soundsLoaded, soundsLoading, audioCtx: audioCtx?.state });
+  if (soundsLoaded || soundsLoading || !audioCtx) {
+    console.log('[Audio] preloadSounds early return');
+    return;
+  }
   soundsLoading = true;
 
-  // Wait for AudioContext to be ready
-  while (audioCtx.state === 'suspended') {
+  // Wait for AudioContext to be ready (with timeout)
+  let waitAttempts = 0;
+  while (audioCtx.state === 'suspended' && waitAttempts < 30) {
+    console.log('[Audio] Waiting for context... attempt', waitAttempts);
     await new Promise(r => setTimeout(r, 100));
+    waitAttempts++;
   }
+  if (audioCtx.state === 'suspended') {
+    console.error('[Audio] Context still suspended after 3s, aborting');
+    soundsLoading = false;
+    audioInitialized = false; // Allow retry on next user interaction
+    return;
+  }
+  console.log('[Audio] Context ready, loading sounds...');
 
   // Load sounds sequentially to avoid overwhelming the browser
+  let loadedCount = 0;
   for (const [name, url] of Object.entries(SOUND_FILES)) {
     if (soundBuffers[name]) continue; // Already loaded
     try {
@@ -1159,9 +1185,15 @@ async function preloadSounds() {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const arrayBuffer = await response.arrayBuffer();
       soundBuffers[name] = await audioCtx.decodeAudioData(arrayBuffer);
+      loadedCount++;
     } catch (e) {
-      // Silently skip failed sounds - game works without them
+      console.error('[Audio] Failed to load:', name, url, e.message);
     }
+  }
+  if (loadedCount === 0) {
+    console.error('[Audio] No sounds loaded! Check paths. BASE_URL:', BASE_URL);
+  } else {
+    console.log('[Audio] Successfully loaded', loadedCount, 'sounds');
   }
   soundsLoaded = true;
   soundsLoading = false;
@@ -1169,10 +1201,20 @@ async function preloadSounds() {
 
 // Play a sample with volume control
 function playSample(name, volume = 1.0, playbackRate = 1.0) {
-  if (!audioCtx || isMuted || sfxVolume === 0) return;
+  if (!audioCtx) {
+    console.log('[Audio] playSample blocked: no audioCtx');
+    return;
+  }
+  if (isMuted) return; // Don't log muted state
+  // Ensure sfxVolume is valid (default to 0.7 if NaN)
+  const effectiveVolume = isNaN(sfxVolume) ? 0.7 : sfxVolume;
+  if (effectiveVolume === 0) {
+    console.log('[Audio] playSample blocked: sfxVolume=0');
+    return;
+  }
   const buffer = soundBuffers[name];
   if (!buffer) {
-    // Fallback: try to load on demand, but don't block
+    console.log('[Audio] playSample: no buffer for', name, '- loaded:', Object.keys(soundBuffers).length);
     return;
   }
   try {
@@ -1180,10 +1222,13 @@ function playSample(name, volume = 1.0, playbackRate = 1.0) {
     source.buffer = buffer;
     source.playbackRate.value = playbackRate;
     const gainNode = audioCtx.createGain();
-    gainNode.gain.value = volume * sfxVolume;
+    gainNode.gain.value = volume * effectiveVolume;
     source.connect(gainNode).connect(audioCtx.destination);
     source.start(0);
-  } catch (e) {}
+    console.log('[Audio] Playing:', name, 'vol:', (volume * effectiveVolume).toFixed(2));
+  } catch (e) {
+    console.error('[Audio] playSample error:', e);
+  }
 }
 
 // Sounds will be preloaded on first user interaction via initAudio()
@@ -1448,14 +1493,15 @@ const TEMPO = 180; // BPM - upbeat pace
 const BEAT_MS = 60000 / TEMPO;
 
 function startMusic() {
-  if (!audioCtx || isMuted || isMusicMuted || musicVolume === 0 || musicPlaying) return;
+  const effectiveMusicVol = isNaN(musicVolume) ? 0.5 : musicVolume;
+  if (!audioCtx || isMuted || isMusicMuted || effectiveMusicVol === 0 || musicPlaying) return;
   musicPlaying = true;
   melodyIndex = 0;
   bassIndex = 0;
 
   // Create master gain for music (lower than SFX, scaled by musicVolume)
   musicGain = audioCtx.createGain();
-  musicGain.gain.value = 0.08 * musicVolume;
+  musicGain.gain.value = 0.08 * effectiveMusicVol;
   musicGain.connect(audioCtx.destination);
 
   // Start the music loop

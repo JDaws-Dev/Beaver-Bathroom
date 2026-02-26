@@ -9,6 +9,23 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Fix Sound System - Audio Not Playing (cyr) - IN PROGRESS
+- Goal: fix audio not playing after user interaction
+- Root causes identified:
+  1. `audioCtx.resume()` not awaited - preloadSounds could start before context ready
+  2. No timeout in preloadSounds - could hang forever if context never resumes
+  3. Silent failures - no logging to diagnose issues
+- Fixes applied:
+  1. Made initAudio() async, properly await audioCtx.resume()
+  2. Added 3s timeout to preloadSounds wait loop (resets audioInitialized on timeout for retry)
+  3. Added comprehensive console.log debugging with [Audio] prefix
+  4. Added `isNaN()` checks with fallback values in playSample() and startMusic()
+  5. Log BASE_URL at load time to verify path correctness
+- Debug logging will help identify: context state, load success/failure, play attempts
+- Files: src/main.js (~40 lines changed in audio system)
+- Status: AWAITING MANUAL BROWSER TEST
+- Test by: Open http://localhost:5173, click around, check console for [Audio] logs
+
 ### Fix Customer Walking Path Clipping (ayf) - COMPLETE
 - Goal: customers shouldn't walk through/clip sink-towel area
 - Root cause: enter phase walked customers in straight line from exit door to center, passing through sinks
