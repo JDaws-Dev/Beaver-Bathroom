@@ -311,7 +311,13 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .setting-toggle{flex-direction:row;justify-content:space-between;align-items:center}
 .toggle-btn{padding:8px 18px;font-size:0.9em;font-weight:bold;border:3px solid #5d4037;border-radius:8px;background:linear-gradient(180deg,#3d2814,#2d1f0f);color:#888;cursor:pointer;transition:all 0.15s cubic-bezier(0.34,1.56,0.64,1)}
 .toggle-btn:hover{transform:scale(1.05)}
-.toggle-btn.active{background:linear-gradient(180deg,#D31145,#8a0d2e);color:#fff;border-color:#FEF117;box-shadow:0 0 10px rgba(211,17,69,0.5)}
+.toggle-btn.active{background:linear-gradient(180deg,#4caf50,#2e7d32);color:#fff;border-color:#81c784;box-shadow:0 0 10px rgba(76,175,80,0.5)}
+.toggle-btn.danger{background:linear-gradient(180deg,#e53935,#b71c1c);color:#fff;border-color:#ef5350}
+.toggle-btn.danger:hover{box-shadow:0 0 12px rgba(229,57,53,0.6)}
+.setting-controls{display:flex;align-items:center;gap:10px}
+.setting-controls .toggle-btn{padding:6px 12px;font-size:0.8em;min-width:50px}
+.setting-controls .volume-slider{flex:1}
+.setting-divider{border:none;border-top:1px solid #5d4037;margin:12px 0}
 #settings-btn{width:32px;height:32px;font-size:1.1em;background:none;border:2px solid rgba(254,241,23,0.4);border-radius:8px;color:#FEF117;cursor:pointer;transition:all 0.15s;flex-shrink:0}
 #settings-btn:hover{background:rgba(254,241,23,0.15);border-color:#FEF117}
 #settings-btn:active{transform:scale(0.95)}
@@ -675,9 +681,12 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 @keyframes rush-warning{0%,100%{opacity:1}50%{opacity:0.5}}
 #rush-warning{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(213,0,0,0.9);color:#fff;padding:15px 30px;border-radius:10px;font-size:1.3em;font-weight:bold;display:none;z-index:100;animation:rush-warning 0.3s infinite}
 #inspector-warning{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(180deg,rgba(33,150,243,0.95),rgba(25,118,210,0.95));color:#fff;padding:15px 30px;border-radius:10px;font-size:1.3em;font-weight:bold;display:none;z-index:100;animation:rush-warning 0.3s infinite;border:3px solid #1565c0;box-shadow:0 0 20px rgba(33,150,243,0.5)}
-#pause-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:150}
+#pause-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.8);display:none;align-items:center;justify-content:center;z-index:150}
 #pause-overlay.active{display:flex}
-#pause-overlay span{font-size:2em;color:#f5a623;font-weight:bold;text-shadow:0 4px 8px rgba(0,0,0,0.6);letter-spacing:2px}
+.pause-menu{display:flex;flex-direction:column;align-items:center;gap:12px;background:linear-gradient(180deg,#4a3520,#2d1f0f);padding:24px 32px;border-radius:16px;border:3px solid #FEF117;box-shadow:0 8px 30px rgba(0,0,0,0.5)}
+.pause-title{font-size:1.8em;color:#FEF117;font-weight:bold;text-shadow:0 2px 6px rgba(0,0,0,0.5);margin-bottom:8px}
+.pause-btn{width:160px;padding:12px 16px;font-size:0.95em;border-radius:8px;cursor:pointer}
+.pause-btn.btn-help{background:linear-gradient(180deg,#5a4a38,#3d2814);border:2px solid #6d5a48;color:#c9a86c}
 .inspector{position:absolute;z-index:25;font-size:1.6em;transition:opacity 0.3s}
 .inspector-body{display:flex;flex-direction:column;align-items:center}
 .inspector-icon{filter:drop-shadow(0 0 8px rgba(33,150,243,0.8)) drop-shadow(0 2px 3px rgba(0,0,0,0.4))}

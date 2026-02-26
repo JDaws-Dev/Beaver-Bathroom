@@ -135,25 +135,26 @@
       <div class="settings-body">
         <div class="setting-row">
           <label class="setting-label"><span class="setting-icon">🔊</span> Sound Effects</label>
-          <div class="slider-wrap">
+          <div class="setting-controls">
+            <button id="sfx-toggle" class="toggle-btn active">ON</button>
             <input type="range" id="sfx-volume" min="0" max="100" value="70" class="volume-slider">
-            <span class="volume-val" id="sfx-val">70%</span>
           </div>
         </div>
         <div class="setting-row">
           <label class="setting-label"><span class="setting-icon">🎵</span> Music</label>
-          <div class="slider-wrap">
+          <div class="setting-controls">
+            <button id="music-toggle" class="toggle-btn active">ON</button>
             <input type="range" id="music-volume" min="0" max="100" value="50" class="volume-slider">
-            <span class="volume-val" id="music-val">50%</span>
           </div>
-        </div>
-        <div class="setting-row setting-toggle">
-          <label class="setting-label"><span class="setting-icon">🔇</span> Mute All</label>
-          <button id="master-mute" class="toggle-btn">OFF</button>
         </div>
         <div class="setting-row setting-toggle">
           <label class="setting-label"><span class="setting-icon">📳</span> Haptics</label>
           <button id="haptics-toggle" class="toggle-btn active">ON</button>
+        </div>
+        <hr class="setting-divider">
+        <div class="setting-row setting-toggle">
+          <label class="setting-label"><span class="setting-icon">🗑️</span> Reset Progress</label>
+          <button id="reset-progress" class="toggle-btn danger">RESET</button>
         </div>
       </div>
     </div>
@@ -375,7 +376,13 @@
       </div>
       <div id="rush-warning">🚌 TOUR BUS ARRIVING! 🚌</div>
       <div id="inspector-warning">🔍 HEALTH INSPECTOR! 🔍</div>
-      <div id="pause-overlay"><span>⏸️ PAUSED</span></div>
+      <div id="pause-overlay">
+        <div class="pause-menu">
+          <span class="pause-title">⏸️ PAUSED</span>
+          <button id="pause-resume" class="btn pause-btn">▶️ Resume</button>
+          <button id="pause-menu" class="btn-help pause-btn">🏠 Main Menu</button>
+        </div>
+      </div>
       <div id="combo-milestone"></div>
       <div id="combo-break">COMBO LOST!</div>
       <div id="task-panel">

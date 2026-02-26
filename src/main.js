@@ -1932,6 +1932,7 @@ function seedRng(seed) {
 // Audio
 let audioCtx = null;
 let isMuted = localStorage.getItem('beaverMuted') === 'true';
+let isSfxMuted = localStorage.getItem('beaverSfxMuted') === 'true';
 // parseInt returns NaN for null/empty, || handles that with default values
 let sfxVolume = (parseInt(localStorage.getItem('beaverSfxVolume')) || 70) / 100;
 let musicVolume = (parseInt(localStorage.getItem('beaverMusicVolume')) || 50) / 100;
@@ -1984,7 +1985,7 @@ async function initAudio() {
 
 // Helper: play a simple tone with envelope
 function playTone(freq, duration, type = 'sine', volume = 0.2) {
-  if (!audioCtx || isMuted) return;
+  if (!audioCtx || isMuted || isSfxMuted) return;
   if (audioCtx.state === 'suspended') {
     audioCtx.resume();
     return;
@@ -2055,26 +2056,72 @@ function setMusicVolume(val) {
 }
 
 function updateSettingsUI() {
-  const muteBtn = $('master-mute');
-  if (muteBtn) {
-    muteBtn.textContent = isMuted ? 'ON' : 'OFF';
-    muteBtn.classList.toggle('active', isMuted);
-  }
+  // SFX toggle and slider
+  const sfxToggle = $('sfx-toggle');
   const sfxSlider = $('sfx-volume');
-  const musicSlider = $('music-volume');
+  if (sfxToggle) {
+    sfxToggle.textContent = isSfxMuted ? 'OFF' : 'ON';
+    sfxToggle.classList.toggle('active', !isSfxMuted);
+  }
   if (sfxSlider) {
     sfxSlider.value = sfxVolume * 100;
-    $('sfx-val').textContent = Math.round(sfxVolume * 100) + '%';
+    sfxSlider.disabled = isSfxMuted;
+  }
+
+  // Music toggle and slider
+  const musicToggle = $('music-toggle');
+  const musicSlider = $('music-volume');
+  if (musicToggle) {
+    musicToggle.textContent = isMusicMuted ? 'OFF' : 'ON';
+    musicToggle.classList.toggle('active', !isMusicMuted);
   }
   if (musicSlider) {
     musicSlider.value = musicVolume * 100;
-    $('music-val').textContent = Math.round(musicVolume * 100) + '%';
+    musicSlider.disabled = isMusicMuted;
   }
+
   // Haptics toggle
   const hapticsBtn = $('haptics-toggle');
   if (hapticsBtn) {
     hapticsBtn.textContent = hapticsEnabled ? 'ON' : 'OFF';
     hapticsBtn.classList.toggle('active', hapticsEnabled);
+  }
+}
+
+function toggleSfx() {
+  isSfxMuted = !isSfxMuted;
+  localStorage.setItem('beaverSfxMuted', isSfxMuted);
+  updateSettingsUI();
+}
+
+function toggleMusic() {
+  isMusicMuted = !isMusicMuted;
+  localStorage.setItem('beaverMusicMuted', isMusicMuted);
+  if (isMusicMuted) {
+    stopMusic();
+  } else if (game.running && !game.paused) {
+    startMusic();
+  }
+  updateSettingsUI();
+}
+
+function resetProgress() {
+  if (confirm('Are you sure you want to reset ALL progress? This cannot be undone!')) {
+    // Clear all game data
+    localStorage.removeItem('beaverHighScore');
+    localStorage.removeItem('beaverCoins');
+    localStorage.removeItem('beaverAchievements');
+    localStorage.removeItem('beaverAchievementStats');
+    localStorage.removeItem('beaverDailyHighScore');
+    localStorage.removeItem('beaverDailyDate');
+    localStorage.removeItem('beaverDailyAttempts');
+    localStorage.removeItem('beaverPremiumHintShown');
+    localStorage.removeItem('beaverEmployeeRank');
+    localStorage.removeItem('beaverEmployeeXP');
+    localStorage.removeItem('beaverDailyReward');
+    localStorage.removeItem('beaverSavedGame');
+    // Reload the page to reset state
+    location.reload();
   }
 }
 
@@ -5428,8 +5475,34 @@ $('settings-modal').addEventListener('click', e => {
 });
 $('sfx-volume').addEventListener('input', e => setSfxVolume(e.target.value));
 $('music-volume').addEventListener('input', e => setMusicVolume(e.target.value));
-$('master-mute').addEventListener('click', toggleMasterMute);
+$('sfx-toggle')?.addEventListener('click', toggleSfx);
+$('music-toggle')?.addEventListener('click', toggleMusic);
 $('haptics-toggle').addEventListener('click', toggleHaptics);
+$('reset-progress')?.addEventListener('click', resetProgress);
+
+// Pause menu buttons
+$('pause-resume')?.addEventListener('click', () => {
+  playClick();
+  if (game.running && game.paused) {
+    game.paused = false;
+    $('pause-overlay').classList.remove('active');
+    game.lastTime = performance.now();
+    if (!isMuted && !isMusicMuted) startMusic();
+  }
+});
+$('pause-menu')?.addEventListener('click', () => {
+  playClick();
+  if (game.running) {
+    game.running = false;
+    game.paused = false;
+    stopMusic();
+    stopAutoSave();
+    clearSavedState();
+    $('pause-overlay').classList.remove('active');
+    showScreen('title-screen');
+  }
+});
+
 updateSettingsUI();
 
 // Legal modals
