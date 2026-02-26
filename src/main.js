@@ -386,6 +386,134 @@ const ACHIEVEMENTS = [
   {id:'serve_100', name:'Lodge Legend', icon:'🦫', desc:'Serve 100 customers total', check: (g,s) => s.totalServed >= 100},
 ];
 
+// EMPLOYEE RANKS: Progression system
+// XP earned = score * grade multiplier (same as coins)
+const EMPLOYEE_RANKS = [
+  {id:'trainee', name:'Trainee', icon:'🧹', xp:0, perk:'Starting your journey', color:'#888'},
+  {id:'attendant', name:'Attendant', icon:'🪠', xp:500, perk:'Unlocked rank badge display', color:'#c9a86c'},
+  {id:'supervisor', name:'Supervisor', icon:'📋', xp:2000, perk:'Earned a name tag', color:'#4fc3f7'},
+  {id:'manager', name:'Manager', icon:'🎩', xp:5000, perk:'Gold HUD accents unlocked', color:'#ffd700'},
+  {id:'legend', name:'Legend', icon:'👑', xp:10000, perk:'Legendary title styling', color:'#ff4081'},
+];
+
+// Load employee rank data from localStorage
+let employeeXP = parseInt(localStorage.getItem('beaverEmployeeXP')) || 0;
+
+function getCurrentRank() {
+  // Find highest rank the player qualifies for
+  for (let i = EMPLOYEE_RANKS.length - 1; i >= 0; i--) {
+    if (employeeXP >= EMPLOYEE_RANKS[i].xp) return EMPLOYEE_RANKS[i];
+  }
+  return EMPLOYEE_RANKS[0];
+}
+
+function getNextRank() {
+  const current = getCurrentRank();
+  const idx = EMPLOYEE_RANKS.findIndex(r => r.id === current.id);
+  return idx < EMPLOYEE_RANKS.length - 1 ? EMPLOYEE_RANKS[idx + 1] : null;
+}
+
+function getRankProgress() {
+  const current = getCurrentRank();
+  const next = getNextRank();
+  if (!next) return 1; // Max rank
+  const rangeXP = next.xp - current.xp;
+  const progressXP = employeeXP - current.xp;
+  return Math.min(1, progressXP / rangeXP);
+}
+
+function addEmployeeXP(amount) {
+  const oldRank = getCurrentRank();
+  employeeXP += amount;
+  localStorage.setItem('beaverEmployeeXP', employeeXP);
+  const newRank = getCurrentRank();
+  if (newRank.id !== oldRank.id) {
+    showRankUp(newRank);
+  }
+  updateRankDisplay();
+}
+
+function showRankUp(rank) {
+  const banner = document.createElement('div');
+  banner.className = 'rank-up-banner';
+  banner.innerHTML = `
+    <div class="rank-up-icon">${rank.icon}</div>
+    <div class="rank-up-info">
+      <div class="rank-up-label">PROMOTED!</div>
+      <div class="rank-up-name">${rank.name}</div>
+      <div class="rank-up-perk">${rank.perk}</div>
+    </div>
+  `;
+  document.body.appendChild(banner);
+  playRankUpSound();
+  haptic('success');
+  setTimeout(() => banner.classList.add('show'), 50);
+  setTimeout(() => {
+    banner.classList.remove('show');
+    setTimeout(() => banner.remove(), 500);
+  }, 4000);
+}
+
+function playRankUpSound() {
+  if (isMuted) return;
+  initAudio();
+  // Grand fanfare for promotion
+  const freqs = [392, 523, 659, 784, 1047]; // G4, C5, E5, G5, C6
+  freqs.forEach((f, i) => {
+    setTimeout(() => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = f;
+      gain.gain.value = 0.2 * sfxVolume;
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.4);
+    }, i * 100);
+  });
+}
+
+function updateRankDisplay() {
+  const rankBadge = $('player-rank');
+  const rankProgress = $('rank-progress-fill');
+  const rankXP = $('rank-xp');
+
+  if (!rankBadge) return;
+
+  const rank = getCurrentRank();
+  const next = getNextRank();
+
+  rankBadge.innerHTML = `<span class="rank-icon">${rank.icon}</span> ${rank.name}`;
+  rankBadge.style.color = rank.color;
+
+  if (rankProgress) {
+    rankProgress.style.width = (getRankProgress() * 100) + '%';
+    rankProgress.style.background = rank.color;
+  }
+
+  if (rankXP) {
+    if (next) {
+      rankXP.textContent = `${employeeXP.toLocaleString()} / ${next.xp.toLocaleString()} XP`;
+    } else {
+      rankXP.textContent = `${employeeXP.toLocaleString()} XP (MAX)`;
+    }
+  }
+
+  // Apply rank-based styling
+  applyRankStyling(rank);
+}
+
+function applyRankStyling(rank) {
+  const container = $('game-container');
+  if (!container) return;
+
+  // Remove old rank classes
+  EMPLOYEE_RANKS.forEach(r => container.classList.remove('rank-' + r.id));
+  // Add current rank class
+  container.classList.add('rank-' + rank.id);
+}
+
 // Load achievement stats from localStorage
 let achievementStats = JSON.parse(localStorage.getItem('beaverAchievementStats') || 'null') || {
   shiftsCompleted: 0,
@@ -2797,6 +2925,10 @@ function endShift() {
   game.coins += coinsEarned;
   if (coinsEarned > 0) playCoinEarned();
 
+  // Award XP for rank progression (same formula as coins)
+  const xpEarned = calculateCoins(game.score, grade);
+  addEmployeeXP(xpEarned);
+
   // Unlock next skill based on completed shift
   const unlockedSkill = unlockNextSkill();
 
@@ -2810,6 +2942,11 @@ function endShift() {
           <div class="reward-icon">🪙</div>
           <div class="reward-val">+${coinsEarned}</div>
           <div class="reward-lbl">Coins</div>
+        </div>
+        <div class="reward-item xp-reward">
+          <div class="reward-icon">⭐</div>
+          <div class="reward-val">+${xpEarned}</div>
+          <div class="reward-lbl">XP</div>
         </div>
     `;
 
@@ -2835,6 +2972,11 @@ function endShift() {
           <div class="reward-icon">🪙</div>
           <div class="reward-val">+${coinsEarned}</div>
           <div class="reward-lbl">Final Bonus</div>
+        </div>
+        <div class="reward-item xp-reward">
+          <div class="reward-icon">⭐</div>
+          <div class="reward-val">+${xpEarned}</div>
+          <div class="reward-lbl">XP</div>
         </div>
       </div>
     `;
@@ -2951,6 +3093,7 @@ function updateHighScoreDisplay() {
   }
 }
 updateHighScoreDisplay();
+updateRankDisplay();
 
 // Achievements modal
 $('achievements-btn').addEventListener('click', openAchievementsModal);

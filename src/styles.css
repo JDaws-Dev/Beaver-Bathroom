@@ -64,6 +64,23 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .achievement-info{text-align:left}
 .achievement-label{font-size:0.7em;color:#c9a86c;text-transform:uppercase;letter-spacing:1px}
 .achievement-name{font-size:1.1em;font-weight:bold;color:#f5a623}
+.player-rank-display{margin-top:10px;text-align:center}
+.rank-badge{font-size:1em;font-weight:bold;margin-bottom:6px;text-shadow:0 2px 4px rgba(0,0,0,0.5)}
+.rank-icon{font-size:1.1em}
+.rank-progress-bar{width:100%;max-width:160px;height:8px;background:linear-gradient(90deg,#2d1f0f,#3d2814);border:2px solid #5d4037;border-radius:4px;margin:0 auto;overflow:hidden}
+.rank-progress-fill{height:100%;width:0;transition:width 0.4s ease-out,background 0.3s}
+.rank-xp{font-size:0.65em;color:#a08060;margin-top:4px}
+.rank-up-banner{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-120px) scale(0.9);background:linear-gradient(180deg,#5a4030,#3d2814);border:5px solid #ffd700;border-radius:16px;padding:18px 28px;display:flex;gap:16px;align-items:center;z-index:2000;box-shadow:0 8px 30px rgba(0,0,0,0.6),0 0 40px rgba(255,215,0,0.3);opacity:0;transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1)}
+.rank-up-banner.show{transform:translateX(-50%) translateY(0) scale(1);opacity:1}
+.rank-up-icon{font-size:3em;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))}
+.rank-up-info{text-align:left}
+.rank-up-label{font-size:0.8em;color:#ffd700;text-transform:uppercase;letter-spacing:2px;font-weight:bold;text-shadow:0 0 10px rgba(255,215,0,0.5)}
+.rank-up-name{font-size:1.5em;font-weight:bold;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,0.5)}
+.rank-up-perk{font-size:0.75em;color:#c9a86c;margin-top:2px;font-style:italic}
+#game-container.rank-manager .hud-item{border-color:#ffd700}
+#game-container.rank-manager #hud{border-bottom-color:#ffd700}
+#game-container.rank-legend .title-card{border-color:#ff4081;box-shadow:0 8px 30px rgba(0,0,0,0.5),0 0 30px rgba(255,64,129,0.3)}
+#game-container.rank-legend #hud{border-bottom-color:#ff4081}
 .setting-row{display:flex;flex-direction:column;gap:8px}
 .setting-label{display:flex;align-items:center;gap:8px;font-size:0.95em;color:#f5a623;font-weight:bold}
 .setting-icon{font-size:1.2em}
@@ -318,6 +335,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .rewards-row{display:flex;justify-content:center;gap:16px;flex-wrap:wrap}
 .reward-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 16px;background:linear-gradient(180deg,rgba(0,0,0,0.2),rgba(0,0,0,0.35));border-radius:12px;min-width:80px}
 .reward-item.coins-reward{border:2px solid #f5a623}
+.reward-item.xp-reward{border:2px solid #4fc3f7}
 .reward-item.skill-reward{border:2px solid #4caf50;animation:skill-unlock 0.5s cubic-bezier(0.34,1.56,0.64,1)}
 .reward-icon{font-size:1.8em}
 .reward-val{font-size:1em;font-weight:bold;color:#fff}

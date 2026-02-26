@@ -9,6 +9,23 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Employee Rank Progression System (0c2)
+- Goal: add Trainee → Attendant → Supervisor → Manager → Legend rank progression
+- Added EMPLOYEE_RANKS constant with 5 ranks:
+  - Trainee (0 XP, gray): Starting rank
+  - Attendant (500 XP, tan): Rank badge display unlocked
+  - Supervisor (2000 XP, cyan): Name tag earned
+  - Manager (5000 XP, gold): Gold HUD accents
+  - Legend (10000 XP, pink): Legendary title styling
+- XP system mirrors coin system: `calculateCoins(score, grade)` for XP amount
+- localStorage key: `beaverEmployeeXP` (integer)
+- Title screen shows: rank badge, progress bar, XP counter
+- Rank-up celebration banner with sound and haptic feedback
+- CSS rank classes (rank-manager, rank-legend) add visual perks
+- XP shown in rewards row alongside coins after each shift
+- Helper functions: getCurrentRank(), getNextRank(), getRankProgress(), addEmployeeXP()
+- Files: src/main.js (~120 lines), src/styles.css (~20 lines), index.html (~5 lines)
+
 ### Achievement/Badge System (7zi)
 - Goal: award badges for milestones (first shift, 10x combo, etc.)
 - Added ACHIEVEMENTS array with 17 badges across categories:
@@ -43,17 +60,6 @@ This file maintains context between autonomous iterations.
   - `error`: customer leaves unhappy, game over (lost)
 - Toggling haptics ON triggers medium pulse as confirmation
 - Files: index.html (+4 lines), src/main.js (~30 lines)
-
-### Update Visual Style to Evoke Buc-ee's Aesthetic (b79)
-- Goal: refresh visual design to capture Buc-ee's roadside travel stop vibe (legally safe parody)
-- Added beaver pun tagline: "Dam Good Restrooms - Since 1982" (replaces generic "Cleanest Restrooms")
-- Added wall sign in floor-area: "🦫 DAM GOOD SERVICE!" - CSS styling already existed (#wall-sign)
-- Updated title-screen background: removed green tones (`#2d4a1e`→`#3d2814`), now warm brown throughout
-- Updated shift-intro background to match title-screen (consistent warm brown palette)
-- Color palette review: yellow/gold (`#FFD700`, `#F5A623`) and red (`#E53935`, `#C41E3A`) already dominant per STYLE-GUIDE.md
-- Existing assets already compliant: wood textures, checkered tiles, beaver mascot distinct from Buc-ee's
-- Key insight: wall-sign CSS existed but element was missing from HTML - added to floor-area
-- Files: index.html (2 lines), src/styles.css (2 lines)
 
 ---
 
@@ -109,6 +115,17 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Update Visual Style to Evoke Buc-ee's Aesthetic (b79)
+- Goal: refresh visual design to capture Buc-ee's roadside travel stop vibe (legally safe parody)
+- Added beaver pun tagline: "Dam Good Restrooms - Since 1982" (replaces generic "Cleanest Restrooms")
+- Added wall sign in floor-area: "🦫 DAM GOOD SERVICE!" - CSS styling already existed (#wall-sign)
+- Updated title-screen background: removed green tones (`#2d4a1e`→`#3d2814`), now warm brown throughout
+- Updated shift-intro background to match title-screen (consistent warm brown palette)
+- Color palette review: yellow/gold (`#FFD700`, `#F5A623`) and red (`#E53935`, `#C41E3A`) already dominant per STYLE-GUIDE.md
+- Existing assets already compliant: wood textures, checkered tiles, beaver mascot distinct from Buc-ee's
+- Key insight: wall-sign CSS existed but element was missing from HTML - added to floor-area
+- Files: index.html (2 lines), src/styles.css (2 lines)
 
 ### Persistent Settings + Pause Game (w9a)
 - Goal: settings button always visible during gameplay, pause game when modal open
