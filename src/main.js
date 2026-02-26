@@ -5512,6 +5512,21 @@ $('pause-menu')?.addEventListener('click', () => {
 
 updateSettingsUI();
 
+// Main menu button in settings
+$('settings-main-menu')?.addEventListener('click', () => {
+  playClick();
+  closeSettings();
+  if (game.running) {
+    game.running = false;
+    game.paused = false;
+    stopMusic();
+    stopAutoSave();
+    clearSavedState();
+    $('pause-overlay').classList.remove('active');
+  }
+  showScreen('title-screen');
+});
+
 // Legal modals
 function openPrivacyModal() { $('privacy-modal').classList.add('active'); }
 function closePrivacyModal() { $('privacy-modal').classList.remove('active'); }
