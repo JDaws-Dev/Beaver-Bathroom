@@ -5305,12 +5305,6 @@ function gameOver() {
   // Store score info for submission
   window.pendingScore = { score: finalScore, shift: game.shift + 1, grade };
 
-  // Show tip jar on win
-  const tipSection = $('tip-section');
-  if (tipSection) {
-    tipSection.style.display = won ? 'block' : 'none';
-  }
-
   if (won) playWin();
   else playBad();
   showScreen('gameover-screen');
