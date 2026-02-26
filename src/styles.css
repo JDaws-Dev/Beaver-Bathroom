@@ -244,7 +244,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 @keyframes puddle-mop{0%,100%{transform:scale(1) rotate(0deg)}50%{transform:scale(0.95) rotate(2deg)}}
 @keyframes puddle-clean{to{transform:scale(0);opacity:0}}
 #wall-sign{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#4a8c4a 0%,#3d7a3d 50%,#2e6b2e 100%);color:#fff;padding:6px 16px;border-radius:6px;font-size:0.7em;font-weight:bold;letter-spacing:1px;border:3px solid #2a5a2a;box-shadow:0 3px 8px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.2);z-index:5;text-shadow:0 1px 2px rgba(0,0,0,0.4)}
-#sink-towel-area{position:absolute;bottom:0;left:50%;transform:translateX(-50%);display:flex;align-items:flex-end;gap:0}
+#sink-towel-area{position:absolute;bottom:0;left:50%;transform:translateX(-50%);display:flex;align-items:flex-end;gap:0;z-index:15}
 #sinks-area{display:flex;gap:12px;padding:8px 15px;background:linear-gradient(#5a4a38,#4a3a28);border-radius:10px 0 0 0;border:2px solid #6a5a48;border-bottom:none;border-right:none}
 .sink{width:48px;height:42px;background:linear-gradient(#e8e8e8,#c0c0c0);border:3px solid #888;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:transform 0.15s cubic-bezier(0.34,1.56,0.64,1)}
 .sink:hover{transform:scale(1.1)}
@@ -255,7 +255,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .sink-label{font-size:0.45em;color:#333;font-weight:bold;margin-top:2px}
 #exit-door{position:absolute;bottom:0;right:10px;width:55px;height:75px;background:linear-gradient(#5a4a3a,#3a2a1a);border:3px solid #2a1a0a;border-bottom:none;border-radius:8px 8px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:1.4em}
 #exit-door::after{content:'EXIT';font-size:0.35em;color:#aaa;margin-top:2px}
-#towels{width:50px;height:58px;background:linear-gradient(#a67c52,#8b6342);border:3px solid #6d4c2a;border-bottom:none;border-radius:0 10px 0 0;border-left:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:0.7em;transition:transform 0.15s cubic-bezier(0.34,1.56,0.64,1)}
+#towels{width:50px;height:58px;background:repeating-linear-gradient(90deg,#c9a86c 0px,#d4b87a 2px,#bf9b5c 4px,#c9a86c 6px),linear-gradient(180deg,#d4b87a 0%,#a67c52 50%,#8b6342 100%);background-blend-mode:overlay;border:3px solid #6d4c2a;border-bottom:none;border-radius:0 10px 0 0;border-left:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:0.7em;transition:transform 0.15s cubic-bezier(0.34,1.56,0.64,1);box-shadow:inset 0 2px 4px rgba(255,200,100,0.15),inset 0 -4px 8px rgba(0,0,0,0.2)}
 #towels:hover{transform:scale(1.08)}
 #towels:active{transform:scale(0.95)}
 #towels.low{background:linear-gradient(#d4a23a,#b8860b);animation:pulse-danger 0.5s infinite alternate}

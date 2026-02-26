@@ -9,10 +9,10 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
-### Replace Synthesized Sounds with Samples (ysj)
+### Replace Synthesized Sounds with Samples (ysj) - COMPLETE
 - Goal: replace oscillator beeps with actual sound effects for polished cartoony feel
 - Generated 18 WAV sounds using jsfxr-style synthesis (scripts/generate-sounds.cjs)
-- Total size: 99.4 KB (under 100KB target)
+- Total size: ~100 KB (meets <100KB target)
 - Sound categories:
   - UI: click (snappy)
   - Cleaning: plunge (splop), scrub (spray), mop (squeak), restock (rustle)
@@ -21,11 +21,14 @@ This file maintains context between autonomous iterations.
   - Customer: happy (pleasant), disgusted (descending)
   - Events: inspector (alert), vip (royal), coin (cha-ching), powerup (rising), door (creak)
 - Sound loading: preloadSounds() fetches all WAVs on page load via Web Audio API
-- playSample(name, volume, playbackRate) replaces playSound oscillators
+- playSample(name, volume, playbackRate) replaces old oscillator-based functions
+- Replaced all playSound() calls: playPlunge, playScrub, playMop, playRestock, playStallClean, etc.
 - Variety: pitch randomization via playbackRate (e.g., 0.95-1.05) for natural variation
 - 3 flush varieties: normal (1.0 pitch), powerful (0.85 pitch), weak (1.25 pitch)
-- Mute/volume: respects isMuted, sfxVolume, scales gain accordingly
-- Files: scripts/generate-sounds.cjs (new), public/sounds/*.wav (18 files), src/main.js (~60 lines changed)
+- Mute/volume: respects isMuted, sfxVolume, scales gain via gainNode
+- Added playPowerup() for item activations (speed boost, slow mode)
+- Fix: use import.meta.env.BASE_URL for sound paths (works in both dev/prod)
+- Files: scripts/generate-sounds.cjs, public/sounds/*.wav (18 files), src/main.js (~80 lines changed)
 
 ### Daily Login Reward System (8oh)
 - Goal: daily rewards for returning players with streak bonuses
@@ -53,7 +56,6 @@ This file maintains context between autonomous iterations.
 
 ## Active Roadblocks
 
-- Sound files in public/sounds/ (~100KB) - keep total small
 - Must work offline in browser (Convex will add online features)
 
 ---
