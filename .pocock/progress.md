@@ -9,6 +9,33 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Email-based Purchase Restore via Stripe (3r8) - COMPLETE
+- Goal: allow users to restore premium purchase on any device by entering email
+- Problem: premium status only in localStorage, cleared browser = lose premium, no cross-device restore
+- Implementation:
+  - New Convex action `checkPurchaseByEmail` in stripe.ts
+  - Queries Stripe API for completed checkout sessions by customer email
+  - Returns found:true if valid paid session found for our price
+- Frontend changes:
+  - New restore view in paywall modal (pw-restore-view)
+  - Email input field with validation
+  - Check Purchase button triggers backend query
+  - Success/error status messages
+  - Back button returns to info view
+  - Enter key support for quick submit
+- UI components:
+  - .pw-restore-body, .pw-restore-desc, .pw-restore-email-input
+  - .pw-restore-status with error/success variants
+  - .pw-restore-help with support link
+- New JS functions:
+  - showRestoreView(), hideRestoreView(): view switching
+  - showRestoreStatus(), hideRestoreStatus(): status message display
+  - isValidEmail(): basic email format validation
+  - handleRestoreCheck(): main restore logic - validates, queries backend, grants premium
+- Event listeners: pw-restore-btn, pw-restore-back-btn, pw-restore-check-btn, pw-restore-email keydown
+- showPaywallModal() now also hides restore view on open
+- Files: convex/stripe.ts (~50 lines), index.html (~14 lines), src/styles.css (~14 lines), src/main.js (~80 lines)
+
 ### Session Persistence and Navigation Warning (bu6) - COMPLETE
 - Goal: prevent users from losing game progress when navigating away or returning from Stripe
 - Implementation:
@@ -65,28 +92,6 @@ This file maintains context between autonomous iterations.
   - Updated `isWalking` check to not exclude distracted customers (they ARE walking while orbiting)
 - `endMascotWalk()` now clears innerHTML and deletes orbit properties from customers
 - Files: src/main.js (~90 lines changed), src/styles.css (~30 lines added)
-
-### Coupon Code System for Free Premium Access (953) - COMPLETE
-- Goal: allow distribution of coupon codes (DAWSFRIEND) for free premium access
-- Implementation:
-  - New `couponCodes` table in Convex schema with code, description, maxUses, currentUses, active, createdAt
-  - New `convex/coupons.ts` with redeemCode mutation and seedCodes mutation
-  - redeemCode: validates code (uppercase normalized), checks active/maxUses, increments currentUses
-  - seedCodes: creates initial DAWSFRIEND code (unlimited uses)
-- Frontend changes:
-  - Added coupon code section to paywall modal with toggle "Have a code?"
-  - Input field with Enter key support, redeem button
-  - Error/success messages with appropriate styling
-  - Added "Unlock Premium" button to title screen (hidden for premium users)
-  - updateTitleButtonStates() now manages unlock button visibility
-  - showPaywallModal() resets coupon input state on open
-- UI styling:
-  - .pw-code-section with dashed border separator
-  - .pw-code-input with uppercase transform
-  - .pw-code-error for red error messages
-  - .btn-unlock-premium with red gradient and gold border
-- Tested: redeemCode works with uppercase/lowercase input, invalid codes return proper error
-- Files: convex/schema.ts (~8 lines), convex/coupons.ts (new ~45 lines), index.html (~20 lines), src/styles.css (~20 lines), src/main.js (~80 lines)
 
 ### Embedded Stripe Checkout via Convex (a9e) - COMPLETE
 - Goal: replace redirect-to-Stripe flow with embedded checkout on page
@@ -343,6 +348,28 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Coupon Code System for Free Premium Access (953) - COMPLETE
+- Goal: allow distribution of coupon codes (DAWSFRIEND) for free premium access
+- Implementation:
+  - New `couponCodes` table in Convex schema with code, description, maxUses, currentUses, active, createdAt
+  - New `convex/coupons.ts` with redeemCode mutation and seedCodes mutation
+  - redeemCode: validates code (uppercase normalized), checks active/maxUses, increments currentUses
+  - seedCodes: creates initial DAWSFRIEND code (unlimited uses)
+- Frontend changes:
+  - Added coupon code section to paywall modal with toggle "Have a code?"
+  - Input field with Enter key support, redeem button
+  - Error/success messages with appropriate styling
+  - Added "Unlock Premium" button to title screen (hidden for premium users)
+  - updateTitleButtonStates() now manages unlock button visibility
+  - showPaywallModal() resets coupon input state on open
+- UI styling:
+  - .pw-code-section with dashed border separator
+  - .pw-code-input with uppercase transform
+  - .pw-code-error for red error messages
+  - .btn-unlock-premium with red gradient and gold border
+- Tested: redeemCode works with uppercase/lowercase input, invalid codes return proper error
+- Files: convex/schema.ts (~8 lines), convex/coupons.ts (new ~45 lines), index.html (~20 lines), src/styles.css (~20 lines), src/main.js (~80 lines)
 
 ### Buc-ee's Visual Overhaul (d3u) - COMPLETE
 - Goal: implement full retro Americana / Buc-ee's travel stop visual style

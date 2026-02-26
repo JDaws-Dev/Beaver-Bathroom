@@ -182,6 +182,22 @@
         </div>
         <button id="pw-restore-btn" class="btn-help pw-restore">Already purchased? Restore</button>
       </div>
+      <!-- Restore view (shown when restoring purchase) -->
+      <div id="pw-restore-view" style="display:none;">
+        <div class="pw-checkout-header">
+          <button id="pw-restore-back-btn" class="btn-help pw-back">← Back</button>
+          <span class="pw-checkout-title">Restore Purchase</span>
+        </div>
+        <div class="pw-restore-body">
+          <p class="pw-restore-desc">Enter the email you used when purchasing to restore your premium access.</p>
+          <div class="pw-restore-input-row">
+            <input type="email" id="pw-restore-email" class="pw-restore-email-input" placeholder="your@email.com" autocomplete="email">
+          </div>
+          <button id="pw-restore-check-btn" class="btn btn-play pw-btn">Check Purchase</button>
+          <p id="pw-restore-status" class="pw-restore-status hidden"></p>
+          <p class="pw-restore-help">If you're having trouble, contact <a href="mailto:support@example.com">support</a>.</p>
+        </div>
+      </div>
       <!-- Checkout view (shown during Stripe checkout) -->
       <div id="pw-checkout-view" style="display:none;">
         <div class="pw-checkout-header">

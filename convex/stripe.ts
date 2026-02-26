@@ -78,3 +78,60 @@ export const verifyCheckoutSession = action({
     };
   },
 });
+
+// Check if a purchase exists for a given email
+export const checkPurchaseByEmail = action({
+  args: {
+    email: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeSecretKey) {
+      throw new Error("STRIPE_SECRET_KEY not configured");
+    }
+
+    // Normalize email to lowercase
+    const email = args.email.toLowerCase().trim();
+
+    // List checkout sessions and filter by customer email
+    // Stripe API doesn't support direct email filter on sessions, so we fetch recent ones
+    const response = await fetch(
+      "https://api.stripe.com/v1/checkout/sessions?" + new URLSearchParams({
+        limit: "100",
+        status: "complete",
+      }),
+      {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${stripeSecretKey}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error("Stripe sessions list error:", error);
+      throw new Error("Failed to check purchases");
+    }
+
+    const data = await response.json();
+
+    // Find a completed session with matching email and our price
+    const validSession = data.data.find((session: any) => {
+      const sessionEmail = session.customer_details?.email?.toLowerCase();
+      return (
+        sessionEmail === email &&
+        session.payment_status === "paid"
+      );
+    });
+
+    if (validSession) {
+      return {
+        found: true,
+        purchaseDate: new Date(validSession.created * 1000).toISOString(),
+      };
+    }
+
+    return { found: false };
+  },
+});

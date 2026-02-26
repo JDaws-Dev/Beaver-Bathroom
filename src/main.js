@@ -1010,6 +1010,7 @@ function showPaywallModal() {
   // Reset to info view
   $('pw-info-view').style.display = '';
   $('pw-checkout-view').style.display = 'none';
+  $('pw-restore-view').style.display = 'none';
   // Reset coupon code input area
   const codeArea = $('pw-code-input-area');
   const codeToggle = $('pw-show-code-btn');
@@ -1085,44 +1086,87 @@ function handleCheckoutBack() {
   $('pw-checkout-view').style.display = 'none';
 }
 
-// Handle restore button - verify purchase with backend
-async function handleRestore() {
+// Show restore view when restore button is clicked
+function showRestoreView() {
+  $('pw-info-view').style.display = 'none';
+  $('pw-restore-view').style.display = '';
+  $('pw-restore-email').value = '';
+  $('pw-restore-email').focus();
+  hideRestoreStatus();
+}
+
+// Hide restore view and go back to info view
+function hideRestoreView() {
+  $('pw-restore-view').style.display = 'none';
+  $('pw-info-view').style.display = '';
+  hideRestoreStatus();
+}
+
+// Show restore status message
+function showRestoreStatus(msg, isError) {
+  const status = $('pw-restore-status');
+  status.textContent = msg;
+  status.classList.remove('hidden', 'error', 'success');
+  status.classList.add(isError ? 'error' : 'success');
+}
+
+// Hide restore status message
+function hideRestoreStatus() {
+  const status = $('pw-restore-status');
+  status.classList.add('hidden');
+  status.classList.remove('error', 'success');
+}
+
+// Validate email format
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+// Handle restore check - verify purchase by email
+async function handleRestoreCheck() {
+  const email = $('pw-restore-email').value.trim();
+
+  // Validate email
+  if (!email) {
+    showRestoreStatus('Please enter your email address.', true);
+    return;
+  }
+  if (!isValidEmail(email)) {
+    showRestoreStatus('Please enter a valid email address.', true);
+    return;
+  }
+
   // Show loading state
-  const btn = $('pw-restore-btn');
+  const btn = $('pw-restore-check-btn');
   const originalText = btn.textContent;
   btn.textContent = 'Checking...';
   btn.disabled = true;
+  hideRestoreStatus();
 
   try {
-    // Check if we just completed a checkout session
-    const params = new URLSearchParams(window.location.search);
-    const sessionId = params.get('session_id');
+    // Check for purchase with backend
+    const result = await convex.action(api.stripe.checkPurchaseByEmail, { email });
 
-    if (sessionId) {
-      // Verify the session with backend
-      const result = await convex.action(api.stripe.verifyCheckoutSession, { sessionId });
+    if (result.found) {
+      setPremium();
+      showRestoreStatus('Purchase found! Premium unlocked.', false);
+      playWin();
 
-      if (result.paid && result.deviceId === deviceId) {
-        setPremium();
+      // Close modal after brief delay
+      setTimeout(() => {
         closePaywallModal();
-        playWin();
-        floatMessage('🎉 Premium Unlocked!', window.innerWidth / 2, 100, 'good');
-
-        // Clean up URL
-        const cleanUrl = window.location.origin + window.location.pathname;
-        window.history.replaceState({}, document.title, cleanUrl);
+        floatMessage('🎉 Premium Restored!', window.innerWidth / 2, 100, 'good');
         updateTitleButtonStates();
-        return true;
-      }
+      }, 1500);
+      return true;
+    } else {
+      showRestoreStatus('No purchase found for this email. Make sure you\'re using the same email you used to pay.', true);
+      return false;
     }
 
-    // No valid session found
-    alert('No previous purchase found. If you believe this is an error, please contact support.');
-    return false;
-
   } catch (e) {
-    console.error('Restore error:', e);
-    alert('Could not verify purchase. Please try again later.');
+    console.error('Restore check error:', e);
+    showRestoreStatus('Could not verify purchase. Please try again later.', true);
     return false;
   } finally {
     btn.textContent = originalText;
@@ -5399,13 +5443,34 @@ $('pw-purchase-btn')?.addEventListener('click', () => {
 
 $('pw-restore-btn')?.addEventListener('click', () => {
   playClick();
-  handleRestore();
+  showRestoreView();
 });
 
 // Back button in checkout view
 $('pw-back-btn')?.addEventListener('click', () => {
   playClick();
   handleCheckoutBack();
+});
+
+// Restore view - back button
+$('pw-restore-back-btn')?.addEventListener('click', () => {
+  playClick();
+  hideRestoreView();
+});
+
+// Restore view - check button
+$('pw-restore-check-btn')?.addEventListener('click', () => {
+  playClick();
+  handleRestoreCheck();
+});
+
+// Restore view - Enter key to submit
+$('pw-restore-email')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    playClick();
+    handleRestoreCheck();
+  }
 });
 
 // Coupon code toggle button
