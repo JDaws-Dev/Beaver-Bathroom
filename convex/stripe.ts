@@ -1,5 +1,6 @@
 import { action } from "./_generated/server";
 import { v } from "convex/values";
+import { api } from "./_generated/api";
 
 // Create a Stripe Checkout Session for embedded checkout
 export const createCheckoutSession = action({
@@ -70,6 +71,16 @@ export const verifyCheckoutSession = action({
     }
 
     const session = await response.json();
+
+    // Record the purchase if paid
+    if (session.payment_status === "paid" && session.customer_details?.email) {
+      await ctx.runMutation(api.admin.recordPurchase, {
+        email: session.customer_details.email,
+        deviceId: session.client_reference_id || undefined,
+        stripeSessionId: args.sessionId,
+        amount: session.amount_total || 299,
+      });
+    }
 
     return {
       paid: session.payment_status === "paid",

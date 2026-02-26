@@ -41,4 +41,23 @@ export default defineSchema({
     active: v.boolean(),
     createdAt: v.number(),
   }).index("by_code", ["code"]),
+
+  // Purchases - track Stripe payments
+  purchases: defineTable({
+    email: v.string(),
+    deviceId: v.optional(v.string()),
+    stripeSessionId: v.string(),
+    amount: v.number(), // in cents
+    createdAt: v.number(),
+  }).index("by_email", ["email"])
+    .index("by_date", ["createdAt"]),
+
+  // Game events - track player activity
+  gameEvents: defineTable({
+    type: v.string(), // "game_start", "shift_complete", "game_over", "daily_start"
+    deviceId: v.optional(v.string()),
+    data: v.optional(v.any()), // Flexible data payload
+    createdAt: v.number(),
+  }).index("by_type", ["type"])
+    .index("by_date", ["createdAt"]),
 });

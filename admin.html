@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beaver's Bathroom Blitz - Admin</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #FFD54F;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    h1 span { font-size: 1.5em; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: linear-gradient(180deg, #2d2d44, #1f1f33);
+      border-radius: 12px;
+      padding: 20px;
+      border: 2px solid #3d3d5c;
+    }
+
+    .stat-card.highlight {
+      border-color: #4CAF50;
+      background: linear-gradient(180deg, #1b3d1b, #142814);
+    }
+
+    .stat-card.revenue {
+      border-color: #FFD54F;
+      background: linear-gradient(180deg, #3d3520, #2d2818);
+    }
+
+    .stat-value {
+      font-size: 2em;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .stat-label {
+      color: #aaa;
+      font-size: 0.9em;
+      margin-top: 4px;
+    }
+
+    .section {
+      background: #2d2d44;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .section h2 {
+      color: #FFD54F;
+      margin-bottom: 16px;
+      font-size: 1.2em;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #3d3d5c;
+    }
+
+    th {
+      color: #FFD54F;
+      font-weight: 600;
+    }
+
+    tr:hover {
+      background: rgba(255,255,255,0.05);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.8em;
+      font-weight: bold;
+    }
+
+    .badge.game-start { background: #2196F3; }
+    .badge.shift-complete { background: #4CAF50; }
+    .badge.game-over { background: #f44336; }
+    .badge.daily-start { background: #9C27B0; }
+    .badge.purchase { background: #FFD54F; color: #000; }
+
+    .loading {
+      color: #888;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .refresh-btn {
+      background: #4CAF50;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-left: auto;
+    }
+
+    .refresh-btn:hover {
+      background: #45a049;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .tab {
+      padding: 8px 16px;
+      background: #3d3d5c;
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      background: #FFD54F;
+      color: #000;
+    }
+
+    .time-ago {
+      color: #888;
+      font-size: 0.85em;
+    }
+
+    .empty {
+      color: #666;
+      padding: 40px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1><span>🦫</span> Admin Dashboard</h1>
+    <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid" id="stats-grid">
+    <div class="loading">Loading stats...</div>
+  </div>
+
+  <!-- Purchases Section -->
+  <div class="section">
+    <h2>💰 Purchases</h2>
+    <div id="purchases-table">
+      <div class="loading">Loading purchases...</div>
+    </div>
+  </div>
+
+  <!-- Users Section -->
+  <div class="section">
+    <h2>👥 Registered Users</h2>
+    <div id="users-table">
+      <div class="loading">Loading users...</div>
+    </div>
+  </div>
+
+  <!-- Recent Events Section -->
+  <div class="section">
+    <h2>📊 Recent Events</h2>
+    <div class="tabs">
+      <button class="tab active" data-filter="">All</button>
+      <button class="tab" data-filter="game_start">Game Starts</button>
+      <button class="tab" data-filter="shift_complete">Shift Complete</button>
+      <button class="tab" data-filter="game_over">Game Over</button>
+      <button class="tab" data-filter="daily_start">Daily Challenge</button>
+    </div>
+    <div id="events-table">
+      <div class="loading">Loading events...</div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { ConvexClient } from "https://cdn.jsdelivr.net/npm/convex@1.17.4/+esm";
+
+    const client = new ConvexClient("https://neat-salamander-885.convex.cloud");
+
+    let currentFilter = "";
+
+    // Time ago helper
+    function timeAgo(timestamp) {
+      const seconds = Math.floor((Date.now() - timestamp) / 1000);
+      if (seconds < 60) return `${seconds}s ago`;
+      const minutes = Math.floor(seconds / 60);
+      if (minutes < 60) return `${minutes}m ago`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours}h ago`;
+      const days = Math.floor(hours / 24);
+      return `${days}d ago`;
+    }
+
+    // Format date
+    function formatDate(timestamp) {
+      return new Date(timestamp).toLocaleString();
+    }
+
+    // Load stats
+    async function loadStats() {
+      try {
+        const stats = await client.query("admin:getStats", {});
+        document.getElementById('stats-grid').innerHTML = `
+          <div class="stat-card revenue">
+            <div class="stat-value">$${stats.totalRevenue.toFixed(2)}</div>
+            <div class="stat-label">Total Revenue</div>
+          </div>
+          <div class="stat-card highlight">
+            <div class="stat-value">${stats.totalPurchases}</div>
+            <div class="stat-label">Total Purchases</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${stats.totalUsers}</div>
+            <div class="stat-label">Registered Users</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${stats.totalGameStarts}</div>
+            <div class="stat-label">Total Game Starts</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${stats.gameStartsToday}</div>
+            <div class="stat-label">Games Today</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${stats.gameStartsThisWeek}</div>
+            <div class="stat-label">Games This Week</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${stats.totalScoresSubmitted}</div>
+            <div class="stat-label">Scores Submitted</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${stats.totalDailyChallenges}</div>
+            <div class="stat-label">Daily Challenges</div>
+          </div>
+        `;
+      } catch (e) {
+        console.error('Failed to load stats:', e);
+        document.getElementById('stats-grid').innerHTML = `<div class="loading">Failed to load stats</div>`;
+      }
+    }
+
+    // Load purchases
+    async function loadPurchases() {
+      try {
+        const purchases = await client.query("admin:getPurchases", {});
+        if (purchases.length === 0) {
+          document.getElementById('purchases-table').innerHTML = `<div class="empty">No purchases yet</div>`;
+          return;
+        }
+        document.getElementById('purchases-table').innerHTML = `
+          <table>
+            <tr>
+              <th>Email</th>
+              <th>Amount</th>
+              <th>Device ID</th>
+              <th>Date</th>
+            </tr>
+            ${purchases.map(p => `
+              <tr>
+                <td>${p.email}</td>
+                <td>$${(p.amount / 100).toFixed(2)}</td>
+                <td><code>${p.deviceId ? p.deviceId.slice(0, 8) + '...' : 'N/A'}</code></td>
+                <td>${formatDate(p.createdAt)} <span class="time-ago">(${timeAgo(p.createdAt)})</span></td>
+              </tr>
+            `).join('')}
+          </table>
+        `;
+      } catch (e) {
+        console.error('Failed to load purchases:', e);
+        document.getElementById('purchases-table').innerHTML = `<div class="loading">Failed to load purchases</div>`;
+      }
+    }
+
+    // Load users
+    async function loadUsers() {
+      try {
+        const users = await client.query("admin:getUsers", {});
+        if (users.length === 0) {
+          document.getElementById('users-table').innerHTML = `<div class="empty">No users yet</div>`;
+          return;
+        }
+        document.getElementById('users-table').innerHTML = `
+          <table>
+            <tr>
+              <th>Name</th>
+              <th>Device ID</th>
+              <th>Joined</th>
+            </tr>
+            ${users.map(u => `
+              <tr>
+                <td>${u.name}</td>
+                <td><code>${u.deviceId.slice(0, 12)}...</code></td>
+                <td>${formatDate(u.createdAt)} <span class="time-ago">(${timeAgo(u.createdAt)})</span></td>
+              </tr>
+            `).join('')}
+          </table>
+        `;
+      } catch (e) {
+        console.error('Failed to load users:', e);
+        document.getElementById('users-table').innerHTML = `<div class="loading">Failed to load users</div>`;
+      }
+    }
+
+    // Load events
+    async function loadEvents(filter = "") {
+      try {
+        const args = { limit: 100 };
+        if (filter) args.type = filter;
+
+        const events = await client.query("admin:getGameEvents", args);
+        if (events.length === 0) {
+          document.getElementById('events-table').innerHTML = `<div class="empty">No events yet</div>`;
+          return;
+        }
+
+        document.getElementById('events-table').innerHTML = `
+          <table>
+            <tr>
+              <th>Type</th>
+              <th>Device</th>
+              <th>Data</th>
+              <th>Time</th>
+            </tr>
+            ${events.map(e => `
+              <tr>
+                <td><span class="badge ${e.type.replace('_', '-')}">${e.type}</span></td>
+                <td><code>${e.deviceId ? e.deviceId.slice(0, 8) + '...' : 'N/A'}</code></td>
+                <td>${e.data ? JSON.stringify(e.data).slice(0, 50) : '-'}</td>
+                <td><span class="time-ago">${timeAgo(e.createdAt)}</span></td>
+              </tr>
+            `).join('')}
+          </table>
+        `;
+      } catch (e) {
+        console.error('Failed to load events:', e);
+        document.getElementById('events-table').innerHTML = `<div class="loading">Failed to load events</div>`;
+      }
+    }
+
+    // Load all data
+    window.loadData = async function() {
+      await Promise.all([
+        loadStats(),
+        loadPurchases(),
+        loadUsers(),
+        loadEvents(currentFilter),
+      ]);
+    };
+
+    // Tab filtering
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentFilter = tab.dataset.filter;
+        loadEvents(currentFilter);
+      });
+    });
+
+    // Initial load
+    loadData();
+
+    // Auto-refresh every 30 seconds
+    setInterval(loadData, 30000);
+  </script>
+</body>
+</html>

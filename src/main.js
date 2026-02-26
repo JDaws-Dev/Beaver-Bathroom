@@ -74,6 +74,19 @@ function updateAuthUI() {
   }
 }
 
+// Analytics tracking
+function trackEvent(type, data = {}) {
+  try {
+    convex.mutation(api.admin.logEvent, {
+      type,
+      deviceId,
+      data,
+    }).catch(e => console.log('Track event failed:', e));
+  } catch (e) {
+    // Silently fail - analytics shouldn't break the game
+  }
+}
+
 // Leaderboard state
 let leaderboardData = [];
 
@@ -3403,6 +3416,9 @@ function startDailyMode() {
   $('inspector-warning').style.display = 'none';
   $('pause-overlay').classList.remove('active');
 
+  // Track daily challenge start
+  trackEvent('daily_start', { seed: getDailySeed(), attempt: dailyAttempts });
+
   game.running = true;
   game.paused = false;
   game.lastTime = performance.now();
@@ -3547,6 +3563,9 @@ function showShiftIntro() {
 }
 
 function startShift() {
+  // Track game start
+  trackEvent('game_start', { mode: game.mode, shift: game.shift, gender: game.gender });
+
   const cfg = getShiftConfig();
   game.time = cfg.duration;
   game.spawnTimer = rnd(300, 800);
@@ -5277,6 +5296,17 @@ function endShift() {
   }
   $('result-comment').textContent = comment;
 
+  // Track shift completion
+  trackEvent('shift_complete', {
+    mode: game.mode,
+    shift: game.shift + 1,
+    score: Math.floor(game.score),
+    grade,
+    cleaned: game.stats.cleaned,
+    served: game.stats.served,
+    maxCombo: game.maxCombo,
+  });
+
   // Update achievement stats
   achievementStats.shiftsCompleted++;
   achievementStats.totalCleaned += game.stats.cleaned;
@@ -5398,6 +5428,16 @@ function gameOver() {
   else if (ratio <= 0.2) grade = 'B';
   else if (ratio <= 0.35) grade = 'C';
   else grade = 'F';
+
+  // Track game over
+  trackEvent('game_over', {
+    mode: game.mode,
+    won,
+    finalShift: game.shift + 1,
+    score: finalScore,
+    grade,
+    isNewRecord,
+  });
 
   if (isNewRecord) {
     highScore = finalScore;
