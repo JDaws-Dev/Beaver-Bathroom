@@ -9,6 +9,30 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Fix Beaver Walk Power-up Orbiting Behavior (oiu) - COMPLETE
+- Goal: customers should physically circle/orbit around the beaver mascot instead of standing frozen
+- Problem: customers just stood still with thought bubbles, no circling behavior
+- Implementation:
+  - Replaced emoji (🦫) with full CSS art beaver character (80x80px)
+  - New `.floor-beaver` CSS structure: face, ears, eyes, pupils, nose, teeth, cheeks, body, tail
+  - `mascot-walk-waddle` animation for walking beaver
+  - Added `initDistractedCustomer(p)` function to assign orbit params when distracted:
+    - `p.orbitRadius`: 50-90px random distance from beaver
+    - `p.orbitAngle`: random starting angle (0-2π)
+    - `p.orbitSpeed`: 0.8-1.4 radians/sec random orbit speed
+  - `updateMascotWalk(dt)` now moves customers toward orbit positions around beaver center
+  - Orbit is elliptical (squashed 0.6x vertically) for perspective
+  - Customers move at 1.5x normal walk speed to keep up with beaver
+- Phase handling changes:
+  - Removed `continue;` statements in enter/findStall phases when distracted
+  - Wrapped normal movement logic in `else` block (movement now handled by updateMascotWalk)
+  - Thoughts still show but customers also move
+- CSS animation fix:
+  - Added `.person.walking.distracted` rules to allow both photo-pulse and leg walking animations
+  - Updated `isWalking` check to not exclude distracted customers (they ARE walking while orbiting)
+- `endMascotWalk()` now clears innerHTML and deletes orbit properties from customers
+- Files: src/main.js (~90 lines changed), src/styles.css (~30 lines added)
+
 ### Coupon Code System for Free Premium Access (953) - COMPLETE
 - Goal: allow distribution of coupon codes (DAWSFRIEND) for free premium access
 - Implementation:

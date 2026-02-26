@@ -327,12 +327,36 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 #floor-area{flex:1;position:relative;background:repeating-conic-gradient(from 0deg at 50% 50%,#c4b89a 0deg 90deg,#d8cdb5 90deg 180deg,#c4b89a 180deg 270deg,#d8cdb5 270deg 360deg);background-size:40px 40px;box-shadow:inset 0 40px 60px -20px rgba(0,0,0,0.15)}
 #floor-area::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08) 39px,rgba(0,0,0,0.08) 41px),repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08) 39px,rgba(0,0,0,0.08) 41px);pointer-events:none}
 #floor-area::after{content:'';position:absolute;bottom:0;left:0;right:0;height:8px;background:linear-gradient(180deg,#5d4037 0%,#3e2723 100%);box-shadow:inset 0 2px 0 rgba(255,255,255,0.1),0 -2px 4px rgba(0,0,0,0.2);pointer-events:none}
-#mascot-walk{position:absolute;font-size:4em;z-index:100;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.4));transition:none}
+/* Floor mascot beaver - larger CSS art version for Beaver Walk power-up */
+#mascot-walk{position:absolute;width:80px;height:80px;z-index:100;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.4));transition:none}
 #mascot-walk.hidden{display:none}
-#mascot-walk.walking{animation:mascot-waddle 0.3s ease-in-out infinite}
-@keyframes mascot-waddle{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+#mascot-walk.walking{animation:mascot-walk-waddle 0.25s ease-in-out infinite}
+@keyframes mascot-walk-waddle{0%,100%{transform:rotate(-8deg) translateY(0)}50%{transform:rotate(8deg) translateY(-4px)}}
+/* Floor beaver body structure */
+.floor-beaver{width:100%;height:100%;position:relative}
+.floor-beaver .beaver-body{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:50px;height:35px;background:linear-gradient(180deg,#b5803a 0%,#8b6342 100%);border-radius:50% 50% 40% 40%;border:3px solid #5d4037}
+.floor-beaver .beaver-tail{position:absolute;bottom:5px;left:-12px;width:20px;height:12px;background:linear-gradient(90deg,#5d4037,#3e2723);border-radius:8px 2px 2px 8px;border:2px solid #3e2723;transform:rotate(-15deg)}
+.floor-beaver .beaver-face{width:55px;height:50px;background:linear-gradient(180deg,#c9a86c 0%,#a67c52 60%,#8b6342 100%);border-radius:50% 50% 45% 45%;position:absolute;left:50%;top:8px;transform:translateX(-50%);border:3px solid #5d4037;box-shadow:inset 0 -4px 8px rgba(0,0,0,0.2),0 3px 6px rgba(0,0,0,0.3)}
+.floor-beaver .beaver-ear{width:14px;height:14px;background:linear-gradient(180deg,#8b6342,#6d4c2a);border-radius:50%;position:absolute;top:2px;border:2px solid #5d4037}
+.floor-beaver .beaver-ear.left{left:6px}
+.floor-beaver .beaver-ear.right{right:6px}
+.floor-beaver .beaver-eye{width:12px;height:12px;background:#fff;border-radius:50%;position:absolute;top:16px;border:2px solid #333;overflow:hidden}
+.floor-beaver .beaver-eye.left{left:12px}
+.floor-beaver .beaver-eye.right{right:12px}
+.floor-beaver .beaver-pupil{width:6px;height:6px;background:#333;border-radius:50%;position:absolute;top:2px;left:2px}
+.floor-beaver .beaver-nose{width:14px;height:10px;background:linear-gradient(180deg,#2d1810,#1a0f0a);border-radius:40% 40% 50% 50%;position:absolute;top:26px;left:50%;transform:translateX(-50%);border:1px solid #000}
+.floor-beaver .beaver-teeth{position:absolute;top:36px;left:50%;transform:translateX(-50%);display:flex;gap:1px}
+.floor-beaver .beaver-tooth{width:7px;height:10px;background:linear-gradient(180deg,#fff,#f5f0e0);border-radius:0 0 3px 3px;border:1px solid #ccc}
+.floor-beaver .beaver-cheek{width:10px;height:8px;background:rgba(255,150,150,0.4);border-radius:50%;position:absolute;top:28px}
+.floor-beaver .beaver-cheek.left{left:6px}
+.floor-beaver .beaver-cheek.right{right:6px}
 .person.distracted{animation:person-photo 0.6s ease-in-out infinite}
 .person.distracted .thought{display:block!important}
+/* When distracted AND walking (orbiting beaver), keep walking animations on legs/head */
+.person.walking.distracted{animation:person-photo 0.6s ease-in-out infinite}
+.person.walking.distracted .person-icon{animation:head-bob 0.25s infinite}
+.person.walking.distracted .person-leg:first-child{animation:leg-walk-l 0.25s infinite}
+.person.walking.distracted .person-leg:last-child{animation:leg-walk-r 0.25s infinite}
 @keyframes person-photo{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
 .puddle{position:absolute;width:40px;height:28px;border-radius:50%;cursor:pointer;z-index:8;transition:transform 0.15s;display:flex;align-items:center;justify-content:center;font-size:1.2em}
 .puddle:hover{transform:scale(1.15)}
