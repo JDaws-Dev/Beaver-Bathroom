@@ -9,6 +9,34 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Implement Stripe Paywall After Shift 3 (56w) - COMPLETE
+- Goal: implement free-to-paid conversion flow using Stripe Payment Links
+- Stripe Details (from memory):
+  - Product ID: prod_U3CGvUPaEKIO70
+  - Price ID: price_1T55raKgkIT46sg7WUjRuseI
+  - Price: $2.99 one-time
+- New paywall modal added:
+  - HTML: paywall-modal with beaver mascot, feature list, price display, purchase/restore buttons
+  - CSS: .paywall-content styles matching daily-reward-modal theme
+  - Shown after completing Shift 3 for non-premium users
+- Premium check system:
+  - `isPremium()`: checks localStorage.beaverPremium === 'true'
+  - `setPremium()`: sets localStorage flag on purchase
+  - `showPaywallModal()`, `closePaywallModal()`: modal controls
+  - `handlePurchase()`: redirects to Stripe Payment Link with success URL
+  - `handleRestore()`: checks URL params for returning customers
+  - `checkStripeReturn()`: runs on page load to detect ?premium=success
+- Feature gating implemented:
+  - Shift 4-6: blocked in next-btn handler when game.shift === 3
+  - VIP customers: gated in spawnCustomer() with isPremium() check
+  - Special characters: gated in spawnCustomer() eligibleSpecials loop
+  - Upgrade shop: showUpgradeScreen() skips to showShiftIntro() for free users
+  - Daily rewards: showDailyRewardModal() returns early for non-premium
+  - Achievements modal: redirects to paywall for non-premium
+  - Leaderboard: redirects to paywall for non-premium
+- Stripe URL handling: success URL includes ?premium=success, cleaned up on load
+- Files: index.html (~25 lines), src/styles.css (~20 lines), src/main.js (~100 lines)
+
 ### Simplify and Fix Sound System - Fresh Approach (i66) - COMPLETE
 - Goal: completely rewrite audio system to be simple, reliable, and cartoony
 - Approach: **Option D - Simple oscillator-based sounds** (no external files)

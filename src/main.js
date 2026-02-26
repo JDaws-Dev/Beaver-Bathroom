@@ -651,6 +651,11 @@ function playAchievementSound() {
 }
 
 function openAchievementsModal() {
+  // Achievements are premium-only
+  if (!isPremium()) {
+    showPaywallModal();
+    return;
+  }
   const modal = $('achievements-modal');
   const grid = $('achievements-grid');
   grid.innerHTML = ACHIEVEMENTS.map(ach => {
@@ -753,6 +758,9 @@ function checkDailyReward() {
 
 // Show the daily reward modal
 function showDailyRewardModal() {
+  // Daily rewards are premium-only
+  if (!isPremium()) return false;
+
   const reward = checkDailyReward();
   if (!reward) return false;
 
@@ -871,6 +879,86 @@ function playDailyRewardSound() {
       osc.stop(audioCtx.currentTime + 0.25);
     }, i * 60);
   });
+}
+
+// =============================================================================
+// PREMIUM / PAYWALL
+// =============================================================================
+
+// Stripe Payment Link URL (replace with actual link when deploying)
+const STRIPE_PAYMENT_LINK = 'https://buy.stripe.com/test_00g5lD7vP0Bd5QQ000'; // TODO: Replace with production link
+
+// Check if user has premium
+function isPremium() {
+  return localStorage.getItem('beaverPremium') === 'true';
+}
+
+// Set premium status (called after successful Stripe payment)
+function setPremium() {
+  localStorage.setItem('beaverPremium', 'true');
+}
+
+// Show paywall modal
+function showPaywallModal() {
+  const modal = $('paywall-modal');
+  if (!modal) return;
+  modal.classList.add('active');
+  playClick();
+}
+
+// Close paywall modal
+function closePaywallModal() {
+  const modal = $('paywall-modal');
+  if (modal) modal.classList.remove('active');
+}
+
+// Handle purchase button click - redirect to Stripe
+function handlePurchase() {
+  // Build success URL that returns to game with premium flag
+  const successUrl = window.location.origin + window.location.pathname + '?premium=success';
+  const cancelUrl = window.location.origin + window.location.pathname;
+
+  // Stripe Payment Links support client_reference_id and success/cancel URLs
+  const paymentUrl = STRIPE_PAYMENT_LINK +
+    '?client_reference_id=' + encodeURIComponent(deviceId) +
+    '&redirect_url=' + encodeURIComponent(successUrl);
+
+  window.location.href = paymentUrl;
+}
+
+// Handle restore button - check if payment exists (simplified: just set premium for testing)
+function handleRestore() {
+  // In production, this would verify with Stripe backend
+  // For now, check URL params or localStorage
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('premium') === 'success') {
+    setPremium();
+    closePaywallModal();
+    playWin();
+    floatMessage('🎉 Premium Unlocked!', window.innerWidth / 2, 100, 'good');
+    return true;
+  }
+
+  // Show message that no purchase found
+  alert('No previous purchase found. If you believe this is an error, please contact support.');
+  return false;
+}
+
+// Check URL params on page load for returning from Stripe
+function checkStripeReturn() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('premium') === 'success') {
+    setPremium();
+    // Clean up URL
+    const cleanUrl = window.location.origin + window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl);
+
+    // Show celebration on next interaction
+    setTimeout(() => {
+      playWin();
+      floatMessage('🎉 Premium Unlocked!', window.innerWidth / 2, 100, 'good');
+    }, 500);
+  }
 }
 
 // =============================================================================
@@ -2311,14 +2399,18 @@ function spawnCustomer() {
   const rect = floor.getBoundingClientRect();
   const exitDoor = $('exit-door').getBoundingClientRect();
 
-  // Check for special character spawn first
+  // Check for special character spawn first (premium only)
   const genderFilter = game.gender === 'male' ? 'male' : 'female';
-  const eligibleSpecials = SPECIAL_CUSTOMERS.filter(c => c.gender === genderFilter);
   let special = null;
-  for (const sc of eligibleSpecials) {
-    if (Math.random() < sc.chance) {
-      special = sc;
-      break;
+
+  // Special characters only for premium users
+  if (isPremium()) {
+    const eligibleSpecials = SPECIAL_CUSTOMERS.filter(c => c.gender === genderFilter);
+    for (const sc of eligibleSpecials) {
+      if (Math.random() < sc.chance) {
+        special = sc;
+        break;
+      }
     }
   }
 
@@ -2341,7 +2433,8 @@ function spawnCustomer() {
     specialThoughts = null;
     icon = pick(getCustomers());
     isUrgent = Math.random() < 0.2; // 20% chance of urgent customer
-    isVip = !isUrgent && Math.random() < 0.12; // 12% chance of VIP (not if urgent)
+    // VIP customers only for premium users
+    isVip = isPremium() && !isUrgent && Math.random() < 0.12; // 12% chance of VIP (not if urgent)
 
     // Messiness: 0 = average, -1 = clean (sparkle), 1 = messy (more tasks)
     const messRoll = Math.random();
@@ -3706,6 +3799,11 @@ function purchaseItem(itemId) {
 }
 
 function showUpgradeScreen() {
+  // Upgrade shop is premium-only - free users skip directly to next shift
+  if (!isPremium()) {
+    showShiftIntro();
+    return;
+  }
   renderSupplyShop();
   showScreen('upgrade-screen');
 }
@@ -3995,6 +4093,13 @@ $('next-btn').addEventListener('click', () => {
   const shouldMinigame = shouldTriggerMinigame();
   game.shift++;
 
+  // Paywall after Shift 3 (game.shift is now 3, about to start Shift 4)
+  // Only show for non-premium users
+  if (game.shift === 3 && !isPremium()) {
+    showPaywallModal();
+    return;
+  }
+
   if (game.shift >= CONFIG.shifts.length) {
     // Last shift completed - check minigame before final results
     if (shouldMinigame) {
@@ -4078,6 +4183,11 @@ if (submitBtn) {
 const lbBtn = $('leaderboard-btn');
 if (lbBtn) {
   lbBtn.addEventListener('click', () => {
+    // Leaderboard is premium-only
+    if (!isPremium()) {
+      showPaywallModal();
+      return;
+    }
     const panel = $('leaderboard-panel');
     if (panel) {
       panel.classList.toggle('active');
@@ -4389,3 +4499,24 @@ $('share-download')?.addEventListener('click', () => {
   playClick();
   downloadShareImage();
 });
+
+// ==================== PAYWALL / PREMIUM ====================
+
+// Paywall button handlers
+$('pw-purchase-btn')?.addEventListener('click', () => {
+  playClick();
+  handlePurchase();
+});
+
+$('pw-restore-btn')?.addEventListener('click', () => {
+  playClick();
+  handleRestore();
+});
+
+// Close paywall modal on background click (allow escape)
+$('paywall-modal')?.addEventListener('click', e => {
+  if (e.target === $('paywall-modal')) closePaywallModal();
+});
+
+// Check for Stripe return on page load
+checkStripeReturn();
