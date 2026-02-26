@@ -496,7 +496,39 @@ function addEmployeeXP(amount) {
   updateRankDisplay();
 }
 
+// Notification queue system - show banners one at a time
+const notificationQueue = [];
+let notificationShowing = false;
+
+function queueNotification(type, data) {
+  notificationQueue.push({ type, data });
+  processNotificationQueue();
+}
+
+function processNotificationQueue() {
+  if (notificationShowing || notificationQueue.length === 0) return;
+
+  notificationShowing = true;
+  const notif = notificationQueue.shift();
+
+  if (notif.type === 'rank') {
+    showRankUpBanner(notif.data);
+  } else if (notif.type === 'achievement') {
+    showAchievementBanner(notif.data);
+  }
+}
+
+function onNotificationDone() {
+  notificationShowing = false;
+  // Small delay before showing next
+  setTimeout(() => processNotificationQueue(), 300);
+}
+
 function showRankUp(rank) {
+  queueNotification('rank', rank);
+}
+
+function showRankUpBanner(rank) {
   const banner = document.createElement('div');
   banner.className = 'rank-up-banner';
   banner.innerHTML = `
@@ -513,8 +545,11 @@ function showRankUp(rank) {
   setTimeout(() => banner.classList.add('show'), 50);
   setTimeout(() => {
     banner.classList.remove('show');
-    setTimeout(() => banner.remove(), 500);
-  }, 4000);
+    setTimeout(() => {
+      banner.remove();
+      onNotificationDone();
+    }, 500);
+  }, 3500);
 }
 
 function playRankUpSound() {
@@ -610,6 +645,10 @@ function checkAchievements() {
 }
 
 function showAchievementUnlock(ach) {
+  queueNotification('achievement', ach);
+}
+
+function showAchievementBanner(ach) {
   const banner = document.createElement('div');
   banner.className = 'achievement-unlock';
   banner.innerHTML = `
@@ -625,8 +664,11 @@ function showAchievementUnlock(ach) {
   setTimeout(() => banner.classList.add('show'), 50);
   setTimeout(() => {
     banner.classList.remove('show');
-    setTimeout(() => banner.remove(), 500);
-  }, 3000);
+    setTimeout(() => {
+      banner.remove();
+      onNotificationDone();
+    }, 500);
+  }, 2500);
 }
 
 function playAchievementSound() {
@@ -5497,34 +5539,56 @@ $('pause-resume')?.addEventListener('click', () => {
     if (!isMuted && !isMusicMuted) startMusic();
   }
 });
-$('pause-menu')?.addEventListener('click', () => {
+// Pause menu quit now uses confirmation modal (see below)
+
+updateSettingsUI();
+
+// Main menu button in settings - with confirmation if game is running
+$('settings-main-menu')?.addEventListener('click', () => {
   playClick();
   if (game.running) {
-    game.running = false;
-    game.paused = false;
-    stopMusic();
-    stopAutoSave();
-    clearSavedState();
-    $('pause-overlay').classList.remove('active');
+    // Show quit confirmation
+    $('quit-modal').classList.add('active');
+  } else {
+    // Not in game, just go to title
+    closeSettings();
     showScreen('title-screen');
   }
 });
 
-updateSettingsUI();
+// Quit confirmation modal handlers
+function closeQuitModal() {
+  $('quit-modal').classList.remove('active');
+}
 
-// Main menu button in settings
-$('settings-main-menu')?.addEventListener('click', () => {
-  playClick();
+function confirmQuit() {
+  closeQuitModal();
   closeSettings();
-  if (game.running) {
-    game.running = false;
-    game.paused = false;
-    stopMusic();
-    stopAutoSave();
-    clearSavedState();
-    $('pause-overlay').classList.remove('active');
-  }
+  game.running = false;
+  game.paused = false;
+  stopMusic();
+  stopAutoSave();
+  clearSavedState();
+  $('pause-overlay').classList.remove('active');
   showScreen('title-screen');
+}
+
+$('quit-cancel')?.addEventListener('click', () => {
+  playClick();
+  closeQuitModal();
+});
+$('quit-confirm')?.addEventListener('click', () => {
+  playClick();
+  confirmQuit();
+});
+$('quit-modal')?.addEventListener('click', e => {
+  if (e.target === $('quit-modal')) closeQuitModal();
+});
+
+// Also update pause menu to use confirmation
+$('pause-menu')?.addEventListener('click', () => {
+  playClick();
+  $('quit-modal').classList.add('active');
 });
 
 // Legal modals
