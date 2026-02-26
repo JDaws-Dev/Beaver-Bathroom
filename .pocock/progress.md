@@ -9,6 +9,15 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Mobile-First Upgrade Screen Redesign (97o.1)
+- Goal: fix upgrade screen overflow/cutoff on mobile (320-420px)
+- Problem: upgrade screen lacked 420px breakpoint styles, causing items to be too large
+- Fix: added comprehensive 420px responsive styles for all upgrade screen elements
+- Changes: smaller padding, font sizes, gaps for mobile viewport
+- Key elements: #upgrade-screen, .upgrades-grid, .shop-item, .shop-inventory, rewards
+- Added max-width:100% to upgrades-grid at 420px (was fixed 340px causing centering issues)
+- Files: src/styles.css (~21 lines added in 420px media query)
+
 ### Fix Blue Cleaning Stall - Block Customer Entry (4z8)
 - Goal: customers shouldn't enter stalls in 'cleaning' state
 - Root cause: customers who reserved a dirty stall kept walking even after player started cleaning
@@ -33,15 +42,6 @@ This file maintains context between autonomous iterations.
 - Shop UI now shows two sections: 🛡️ PERKS, 🎒 ITEMS with clear section headers
 - Item cards show current effect (e.g., "12s", "0/shift") that scales with level
 - Files: src/main.js (~90 lines changed), src/styles.css (~10 lines)
-
-### Remove Blocking Tutorial System (etg)
-- Goal: remove buggy interactive tutorial that blocked gameplay
-- Decision: kept "How to Play" modal (non-blocking), removed interactive overlay
-- Why: game teaches itself, Shift 1 is slow (4300-6400ms spawns), Bucky tips provide guidance
-- Removed: tutorial-overlay HTML, 18 lines of tutorial CSS, ~150 lines of tutorial JS
-- Removed: TUTORIAL_STEPS array, tutorialActive/tutorialStep/tutorialHighlight state
-- Kept: tutorial-modal (How to Play), beaverTutorialSeen localStorage, Bucky tips system
-- Files: index.html (~10 lines), src/styles.css (~18 lines), src/main.js (~150 lines)
 
 ---
 
@@ -97,6 +97,15 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Remove Blocking Tutorial System (etg)
+- Goal: remove buggy interactive tutorial that blocked gameplay
+- Decision: kept "How to Play" modal (non-blocking), removed interactive overlay
+- Why: game teaches itself, Shift 1 is slow (4300-6400ms spawns), Bucky tips provide guidance
+- Removed: tutorial-overlay HTML, 18 lines of tutorial CSS, ~150 lines of tutorial JS
+- Removed: TUTORIAL_STEPS array, tutorialActive/tutorialStep/tutorialHighlight state
+- Kept: tutorial-modal (How to Play), beaverTutorialSeen localStorage, Bucky tips system
+- Files: index.html (~10 lines), src/styles.css (~18 lines), src/main.js (~150 lines)
 
 ### Beaver Speech Bubbles for Tips (3ud)
 - Goal: have beaver mascot show speech bubble tips during first shift at relevant moments
