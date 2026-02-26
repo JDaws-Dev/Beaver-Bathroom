@@ -11,36 +11,42 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .title-card{background:linear-gradient(180deg,rgba(61,40,20,0.85) 0%,rgba(45,31,15,0.9) 50%,rgba(26,16,8,0.95) 100%);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:4px solid #FEF117;border-radius:16px;padding:18px 22px 16px;max-width:380px;width:100%;box-shadow:0 0 0 2px rgba(0,0,0,0.5),0 0 80px rgba(254,241,23,0.3),0 12px 40px rgba(0,0,0,0.7),inset 0 1px 0 rgba(255,255,255,0.1);position:relative;display:flex;flex-direction:column}
 .title-card::before{content:'';position:absolute;top:-2px;left:-2px;right:-2px;bottom:-2px;background:linear-gradient(180deg,rgba(254,241,23,0.12),transparent 25%,transparent 75%,rgba(254,241,23,0.08));pointer-events:none;border-radius:18px}
 .title-card::after{content:'';position:absolute;top:12px;left:15px;right:15px;height:2px;background:linear-gradient(90deg,transparent,rgba(254,241,23,0.4),transparent);border-radius:2px}
-/* Hero section - beaver + title tight */
-.title-hero{text-align:center;margin-bottom:8px}
-.title-hero .title-beaver-img{width:90px;height:90px;margin-bottom:6px}
-.title-hero h1{font-size:1.5em;line-height:1.1;margin:0;letter-spacing:1px}
-.title-info{text-align:center;margin-bottom:10px}
-.title-info .title-subtitle{font-size:0.75em;line-height:1.4;margin:0}
-.title-info .high-score{margin-top:6px}
-/* Slim progress bar */
-.player-rank-display{margin-bottom:12px}
-.rank-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
-.rank-row .rank-badge{font-size:0.8em}
-.rank-row .rank-xp{font-size:0.7em;color:#b5944a}
-.rank-progress-bar{height:6px;background:rgba(0,0,0,0.4);border-radius:3px;overflow:hidden;border:1px solid rgba(254,241,23,0.3)}
-.rank-progress-fill{height:100%;background:linear-gradient(90deg,#D31145,#e8305a);border-radius:3px;transition:width 0.3s}
-/* Gender toggle compact */
-.gender-toggle{display:flex;gap:8px;align-items:center;justify-content:center;margin-bottom:12px}
-.gender-label{font-size:0.65em;color:#b5944a;text-transform:uppercase;letter-spacing:1px}
-/* Big PLAY button */
-.btn-play{width:100%;padding:18px;font-size:1.5em;letter-spacing:4px;margin-bottom:14px;animation:start-pulse 1.5s ease-in-out infinite;position:relative;overflow:hidden}
-/* Icon dock */
-.title-dock{display:flex;justify-content:center;gap:12px;margin-bottom:12px}
-.dock-item{display:flex;flex-direction:column;align-items:center;gap:4px}
-.dock-btn{width:44px;height:44px;border-radius:50%;background:linear-gradient(180deg,#c9a86c,#8b7355);border:3px solid #FEF117;cursor:pointer;transition:all 0.15s;box-shadow:0 3px 8px rgba(0,0,0,0.4),inset 0 2px 0 rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;color:#3d2814}
-.dock-btn svg{width:22px;height:22px}
+/* Hero section - beaver + title scaled up 15% */
+.title-hero{text-align:center;margin-bottom:10px}
+.title-hero .title-beaver-img{width:105px;height:105px;margin-bottom:8px}
+.title-hero h1{font-size:1.75em;line-height:1.1;margin:0;letter-spacing:1.5px}
+/* Orientation intro */
+.title-info{text-align:center;margin-bottom:12px}
+.title-welcome{font-size:0.9em;color:#FEF117;font-weight:bold;margin-bottom:4px;text-shadow:0 0 8px rgba(254,241,23,0.4)}
+.title-info .title-subtitle{font-size:0.82em;line-height:1.5;margin:0;color:#f0e8d8}
+.title-info .high-score{margin-top:8px}
+/* Progress bar - thicker with glow */
+.player-rank-display{margin-bottom:14px}
+.rank-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.rank-row .rank-badge{font-size:0.85em;color:#FEF117}
+.rank-row .rank-xp{font-size:0.75em;color:#c9a86c}
+.rank-progress-bar{height:10px;background:rgba(0,0,0,0.5);border-radius:5px;overflow:hidden;border:1px solid rgba(254,241,23,0.4);box-shadow:inset 0 2px 4px rgba(0,0,0,0.3)}
+.rank-progress-fill{height:100%;background:linear-gradient(90deg,#D31145,#e8305a,#ff6b8a);border-radius:5px;transition:width 0.3s;box-shadow:0 0 8px rgba(211,17,69,0.6)}
+/* Gender toggle - grouped with play */
+.gender-toggle{display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:10px}
+.gender-label{font-size:0.7em;color:#c9a86c;text-transform:uppercase;letter-spacing:1px}
+/* Big PLAY button - gloss effect */
+.btn-play{width:100%;padding:18px;font-size:1.6em;letter-spacing:4px;margin-bottom:14px;animation:start-pulse 1.5s ease-in-out infinite;position:relative;overflow:hidden;background:linear-gradient(180deg,#ff6b8a 0%,#e8305a 15%,#D31145 50%,#b80d3a 85%,#8a0d2e 100%)}
+.btn-play::before{content:'';position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(180deg,rgba(255,255,255,0.25),rgba(255,255,255,0.05));pointer-events:none}
+/* Icon dock - more breathing room */
+.title-dock{display:flex;justify-content:center;gap:18px;margin-bottom:12px}
+.dock-item{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:50px}
+.dock-btn{width:40px;height:40px;border-radius:50%;background:linear-gradient(180deg,#c9a86c,#8b7355);border:3px solid #FEF117;cursor:pointer;transition:all 0.15s;box-shadow:0 3px 8px rgba(0,0,0,0.4),inset 0 2px 0 rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;color:#3d2814}
+.dock-btn svg{width:20px;height:20px}
 .dock-btn:hover{transform:scale(1.1);box-shadow:0 0 15px rgba(254,241,23,0.5),0 4px 10px rgba(0,0,0,0.4)}
 .dock-btn:active{transform:scale(0.95)}
-.dock-label{font-size:0.55em;color:#c9a86c;text-transform:uppercase;letter-spacing:0.5px}
+.dock-label{font-size:0.5em;color:#c9a86c;text-transform:uppercase;letter-spacing:0.3px;white-space:nowrap}
 /* Secondary links */
-.title-secondary{display:flex;gap:16px;justify-content:center;margin-bottom:10px}
-.title-secondary .btn-help{font-size:0.8em}
+.title-secondary{display:flex;gap:12px;justify-content:center;margin-bottom:10px;flex-wrap:wrap}
+.title-secondary .btn-help{font-size:0.75em}
+/* Premium button - gold shimmer instead of red */
+.btn-unlock-premium{color:#FEF117;font-weight:bold;background:linear-gradient(90deg,rgba(254,241,23,0.1),rgba(254,241,23,0.2),rgba(254,241,23,0.1));border:1px solid rgba(254,241,23,0.4);border-radius:6px;padding:6px 12px;animation:gold-shimmer 2s ease-in-out infinite}
+@keyframes gold-shimmer{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
 /* Footer */
 .title-footer{margin-top:auto;padding-top:8px}
 /* Legacy - keep for compatibility */
@@ -73,7 +79,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 #title-screen h1{font-size:1.5em;margin:0;font-weight:900;text-transform:uppercase;line-height:1.1}
 .title-tagline{color:#FEF117;font-style:italic;font-size:0.85em;margin-top:6px;text-shadow:0 0 10px rgba(254,241,23,0.5),0 2px 4px rgba(0,0,0,0.8);font-weight:600}
 .title-subtitle{font-size:0.78em;color:#e0d4b8;margin-top:8px;line-height:1.5;text-shadow:0 1px 3px rgba(0,0,0,0.6)}
-.golden-plunger{color:#FEF117;text-shadow:0 0 10px rgba(254,241,23,0.7);font-weight:bold}
+.golden-plunger{color:#FEF117;text-shadow:0 0 12px rgba(254,241,23,0.8),0 0 20px rgba(254,241,23,0.4);font-weight:bold;letter-spacing:0.5px}
 .high-score{font-size:0.85em;color:#FEF117;margin-top:6px;font-weight:bold}
 .high-score.visible{display:block}
 @keyframes title-beaver-bob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-4px) rotate(2deg)}}
