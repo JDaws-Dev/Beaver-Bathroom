@@ -982,8 +982,11 @@ function playDailyRewardSound() {
 // PREMIUM / PAYWALL
 // =============================================================================
 
-// Stripe Payment Link URL (replace with actual link when deploying)
-const STRIPE_PAYMENT_LINK = 'https://buy.stripe.com/test_00g5lD7vP0Bd5QQ000'; // TODO: Replace with production link
+// Stripe publishable key (replace with production key when deploying)
+const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51T50tXKgkIT46sg7mMeQOWDGljUFlbK3dqKMvAi08d38FjRCiPwXlGMkDzOHKLLj9nBFX31JIz7y9D3z5CKzRnGY00RNX6bTXj';
+
+// Stripe checkout instance
+let stripeCheckout = null;
 
 // Check if user has premium
 function isPremium() {
@@ -999,6 +1002,9 @@ function setPremium() {
 function showPaywallModal() {
   const modal = $('paywall-modal');
   if (!modal) return;
+  // Reset to info view
+  $('pw-info-view').style.display = '';
+  $('pw-checkout-view').style.display = 'none';
   modal.classList.add('active');
   playClick();
 }
@@ -1007,53 +1013,146 @@ function showPaywallModal() {
 function closePaywallModal() {
   const modal = $('paywall-modal');
   if (modal) modal.classList.remove('active');
-}
-
-// Handle purchase button click - redirect to Stripe
-function handlePurchase() {
-  // Build success URL that returns to game with premium flag
-  const successUrl = window.location.origin + window.location.pathname + '?premium=success';
-  const cancelUrl = window.location.origin + window.location.pathname;
-
-  // Stripe Payment Links support client_reference_id and success/cancel URLs
-  const paymentUrl = STRIPE_PAYMENT_LINK +
-    '?client_reference_id=' + encodeURIComponent(deviceId) +
-    '&redirect_url=' + encodeURIComponent(successUrl);
-
-  window.location.href = paymentUrl;
-}
-
-// Handle restore button - check if payment exists (simplified: just set premium for testing)
-function handleRestore() {
-  // In production, this would verify with Stripe backend
-  // For now, check URL params or localStorage
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('premium') === 'success') {
-    setPremium();
-    closePaywallModal();
-    playWin();
-    floatMessage('🎉 Premium Unlocked!', window.innerWidth / 2, 100, 'good');
-    return true;
+  // Clean up checkout if exists
+  if (stripeCheckout) {
+    stripeCheckout.destroy();
+    stripeCheckout = null;
   }
+}
 
-  // Show message that no purchase found
-  alert('No previous purchase found. If you believe this is an error, please contact support.');
-  return false;
+// Handle purchase button click - start embedded checkout
+async function handlePurchase() {
+  // Switch to checkout view
+  $('pw-info-view').style.display = 'none';
+  $('pw-checkout-view').style.display = '';
+  $('checkout-loading').style.display = 'flex';
+  $('checkout-container').innerHTML = '';
+
+  try {
+    // Get checkout session from Convex
+    const returnUrl = window.location.origin + window.location.pathname + '?session_id={CHECKOUT_SESSION_ID}';
+    const { clientSecret } = await convex.action(api.stripe.createCheckoutSession, {
+      deviceId,
+      returnUrl,
+    });
+
+    // Initialize Stripe
+    const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+
+    // Create embedded checkout
+    stripeCheckout = await stripe.initEmbeddedCheckout({
+      clientSecret,
+    });
+
+    // Hide loading, mount checkout
+    $('checkout-loading').style.display = 'none';
+    stripeCheckout.mount('#checkout-container');
+
+  } catch (e) {
+    console.error('Checkout error:', e);
+    // Show error, go back to info view
+    $('checkout-loading').innerHTML = '<p style="color:#e53935">Failed to load checkout. Please try again.</p>';
+    setTimeout(() => {
+      $('pw-info-view').style.display = '';
+      $('pw-checkout-view').style.display = 'none';
+    }, 2000);
+  }
+}
+
+// Handle back button in checkout view
+function handleCheckoutBack() {
+  // Clean up checkout
+  if (stripeCheckout) {
+    stripeCheckout.destroy();
+    stripeCheckout = null;
+  }
+  // Switch back to info view
+  $('pw-info-view').style.display = '';
+  $('pw-checkout-view').style.display = 'none';
+}
+
+// Handle restore button - verify purchase with backend
+async function handleRestore() {
+  // Show loading state
+  const btn = $('pw-restore-btn');
+  const originalText = btn.textContent;
+  btn.textContent = 'Checking...';
+  btn.disabled = true;
+
+  try {
+    // Check if we just completed a checkout session
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('session_id');
+
+    if (sessionId) {
+      // Verify the session with backend
+      const result = await convex.action(api.stripe.verifyCheckoutSession, { sessionId });
+
+      if (result.paid && result.deviceId === deviceId) {
+        setPremium();
+        closePaywallModal();
+        playWin();
+        floatMessage('🎉 Premium Unlocked!', window.innerWidth / 2, 100, 'good');
+
+        // Clean up URL
+        const cleanUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+        updateTitleButtonStates();
+        return true;
+      }
+    }
+
+    // No valid session found
+    alert('No previous purchase found. If you believe this is an error, please contact support.');
+    return false;
+
+  } catch (e) {
+    console.error('Restore error:', e);
+    alert('Could not verify purchase. Please try again later.');
+    return false;
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
 }
 
 // Check URL params on page load for returning from Stripe
-function checkStripeReturn() {
+async function checkStripeReturn() {
   const params = new URLSearchParams(window.location.search);
+  const sessionId = params.get('session_id');
+
+  if (sessionId) {
+    try {
+      // Verify the session with backend
+      const result = await convex.action(api.stripe.verifyCheckoutSession, { sessionId });
+
+      if (result.paid && result.deviceId === deviceId) {
+        setPremium();
+
+        // Clean up URL
+        const cleanUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+
+        // Update title screen buttons to show unlocked state
+        updateTitleButtonStates();
+
+        // Show celebration
+        setTimeout(() => {
+          playWin();
+          floatMessage('🎉 Premium Unlocked!', window.innerWidth / 2, 100, 'good');
+        }, 500);
+      }
+    } catch (e) {
+      console.error('Stripe return verification failed:', e);
+    }
+  }
+
+  // Also check legacy ?premium=success for backwards compatibility
   if (params.get('premium') === 'success') {
     setPremium();
-    // Clean up URL
     const cleanUrl = window.location.origin + window.location.pathname;
     window.history.replaceState({}, document.title, cleanUrl);
-
-    // Update title screen buttons to show unlocked state
     updateTitleButtonStates();
-
-    // Show celebration on next interaction
     setTimeout(() => {
       playWin();
       floatMessage('🎉 Premium Unlocked!', window.innerWidth / 2, 100, 'good');
@@ -5152,9 +5251,17 @@ $('pw-restore-btn')?.addEventListener('click', () => {
   handleRestore();
 });
 
-// Close paywall modal on background click (allow escape)
+// Back button in checkout view
+$('pw-back-btn')?.addEventListener('click', () => {
+  playClick();
+  handleCheckoutBack();
+});
+
+// Close paywall modal on background click (only in info view, not checkout)
 $('paywall-modal')?.addEventListener('click', e => {
-  if (e.target === $('paywall-modal')) closePaywallModal();
+  if (e.target === $('paywall-modal') && $('pw-info-view').style.display !== 'none') {
+    closePaywallModal();
+  }
 });
 
 // Check for Stripe return on page load

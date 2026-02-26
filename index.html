@@ -7,6 +7,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦫</text></svg>">
 <link rel="stylesheet" href="/src/styles.css">
 <link rel="stylesheet" href="/src/UIOverlay.css">
+<script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
 <div id="game-container">
@@ -145,27 +146,42 @@
   <!-- Paywall Modal -->
   <div id="paywall-modal" class="modal">
     <div class="modal-content paywall-content">
-      <div class="pw-header">
-        <div class="pw-mascot">🦫</div>
-        <div class="pw-title">You're a Natural!</div>
+      <!-- Info view (shown before checkout) -->
+      <div id="pw-info-view">
+        <div class="pw-header">
+          <div class="pw-mascot">🦫</div>
+          <div class="pw-title">You're a Natural!</div>
+        </div>
+        <div class="pw-body">
+          <p class="pw-message">You've completed 3 shifts and proven yourself as a bathroom attendant!</p>
+          <p class="pw-unlock">Unlock the full game to continue your journey to the <span class="golden-plunger">🏆 Golden Plunger</span>!</p>
+          <div class="pw-features">
+            <div class="pw-feature"><span class="pw-icon">🚽</span> Shifts 4-6 with increasing challenge</div>
+            <div class="pw-feature"><span class="pw-icon">👑</span> VIP customers with 2x rewards</div>
+            <div class="pw-feature"><span class="pw-icon">🛒</span> Supply Shop upgrades</div>
+            <div class="pw-feature"><span class="pw-icon">🎁</span> Daily login rewards</div>
+            <div class="pw-feature"><span class="pw-icon">🎖️</span> Badges & leaderboard</div>
+          </div>
+        </div>
+        <div class="pw-price">
+          <span class="pw-amount">$2.99</span>
+          <span class="pw-once">one-time purchase</span>
+        </div>
+        <button id="pw-purchase-btn" class="btn btn-play pw-btn">Unlock Full Game</button>
+        <button id="pw-restore-btn" class="btn-help pw-restore">Already purchased? Restore</button>
       </div>
-      <div class="pw-body">
-        <p class="pw-message">You've completed 3 shifts and proven yourself as a bathroom attendant!</p>
-        <p class="pw-unlock">Unlock the full game to continue your journey to the <span class="golden-plunger">🏆 Golden Plunger</span>!</p>
-        <div class="pw-features">
-          <div class="pw-feature"><span class="pw-icon">🚽</span> Shifts 4-6 with increasing challenge</div>
-          <div class="pw-feature"><span class="pw-icon">👑</span> VIP customers with 2x rewards</div>
-          <div class="pw-feature"><span class="pw-icon">🛒</span> Supply Shop upgrades</div>
-          <div class="pw-feature"><span class="pw-icon">🎁</span> Daily login rewards</div>
-          <div class="pw-feature"><span class="pw-icon">🎖️</span> Badges & leaderboard</div>
+      <!-- Checkout view (shown during Stripe checkout) -->
+      <div id="pw-checkout-view" style="display:none;">
+        <div class="pw-checkout-header">
+          <button id="pw-back-btn" class="btn-help pw-back">← Back</button>
+          <span class="pw-checkout-title">Complete Purchase</span>
+        </div>
+        <div id="checkout-container"></div>
+        <div id="checkout-loading" class="pw-loading">
+          <div class="loading-spinner"></div>
+          <p>Loading secure checkout...</p>
         </div>
       </div>
-      <div class="pw-price">
-        <span class="pw-amount">$2.99</span>
-        <span class="pw-once">one-time purchase</span>
-      </div>
-      <button id="pw-purchase-btn" class="btn btn-play pw-btn">Unlock Full Game</button>
-      <button id="pw-restore-btn" class="btn-help pw-restore">Already purchased? Restore</button>
     </div>
   </div>
 

@@ -9,6 +9,7 @@
  */
 
 import type * as scores from "../scores.js";
+import type * as stripe from "../stripe.js";
 import type * as users from "../users.js";
 
 import type {
@@ -19,6 +20,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   scores: typeof scores;
+  stripe: typeof stripe;
   users: typeof users;
 }>;
 

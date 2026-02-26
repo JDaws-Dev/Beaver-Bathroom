@@ -9,6 +9,30 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Embedded Stripe Checkout via Convex (a9e) - COMPLETE
+- Goal: replace redirect-to-Stripe flow with embedded checkout on page
+- Implementation:
+  - Convex action `stripe.ts` with createCheckoutSession and verifyCheckoutSession
+  - Uses Stripe API directly via fetch (no SDK for smaller bundle)
+  - Embedded checkout UI_MODE keeps user on game page
+  - Return URL includes session_id for verification
+- Frontend changes:
+  - Added Stripe.js script to index.html
+  - Paywall modal now has two views: info view and checkout view
+  - handlePurchase() creates session via Convex, mounts embedded checkout
+  - handleCheckoutBack() returns to info view
+  - checkStripeReturn() verifies session_id on page load
+  - handleRestore() also verifies sessions
+- UI components:
+  - .pw-checkout-header with back button
+  - #checkout-container for Stripe embedded checkout
+  - .pw-loading with spinner while session loads
+- Environment:
+  - VITE_STRIPE_PUBLISHABLE_KEY in .env.local (frontend)
+  - STRIPE_SECRET_KEY needed in Convex dashboard (backend)
+- Backwards compat: still checks ?premium=success for old links
+- Files: convex/stripe.ts (new ~70 lines), src/main.js (~150 lines changed), index.html (~20 lines), src/styles.css (~10 lines), .env.local.example (updated)
+
 ### Daily Challenge Mode (72r) - COMPLETE
 - Goal: daily challenge with seeded RNG so all players get same shift each day
 - Implementation:
