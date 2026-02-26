@@ -2106,23 +2106,30 @@ function toggleMusic() {
 }
 
 function resetProgress() {
-  if (confirm('Are you sure you want to reset ALL progress? This cannot be undone!')) {
-    // Clear all game data
-    localStorage.removeItem('beaverHighScore');
-    localStorage.removeItem('beaverCoins');
-    localStorage.removeItem('beaverAchievements');
-    localStorage.removeItem('beaverAchievementStats');
-    localStorage.removeItem('beaverDailyHighScore');
-    localStorage.removeItem('beaverDailyDate');
-    localStorage.removeItem('beaverDailyAttempts');
-    localStorage.removeItem('beaverPremiumHintShown');
-    localStorage.removeItem('beaverEmployeeRank');
-    localStorage.removeItem('beaverEmployeeXP');
-    localStorage.removeItem('beaverDailyReward');
-    localStorage.removeItem('beaverSavedGame');
-    // Reload the page to reset state
-    location.reload();
-  }
+  // Show in-game confirmation modal
+  $('reset-modal').classList.add('active');
+}
+
+function confirmReset() {
+  // Clear all game data
+  localStorage.removeItem('beaverHighScore');
+  localStorage.removeItem('beaverCoins');
+  localStorage.removeItem('beaverAchievements');
+  localStorage.removeItem('beaverAchievementStats');
+  localStorage.removeItem('beaverDailyHighScore');
+  localStorage.removeItem('beaverDailyDate');
+  localStorage.removeItem('beaverDailyAttempts');
+  localStorage.removeItem('beaverPremiumHintShown');
+  localStorage.removeItem('beaverEmployeeRank');
+  localStorage.removeItem('beaverEmployeeXP');
+  localStorage.removeItem('beaverDailyReward');
+  localStorage.removeItem('beaverSavedGame');
+  // Reload the page to reset state
+  location.reload();
+}
+
+function closeResetModal() {
+  $('reset-modal').classList.remove('active');
 }
 
 function openSettings() {
@@ -5521,6 +5528,13 @@ $('terms-btn').addEventListener('click', openTermsModal);
 $('close-terms').addEventListener('click', closeTermsModal);
 $('terms-modal').addEventListener('click', e => {
   if (e.target === $('terms-modal')) closeTermsModal();
+});
+
+// Reset confirmation modal
+$('reset-cancel')?.addEventListener('click', closeResetModal);
+$('reset-confirm')?.addEventListener('click', confirmReset);
+$('reset-modal')?.addEventListener('click', e => {
+  if (e.target === $('reset-modal')) closeResetModal();
 });
 
 $('start-btn').addEventListener('click', () => {
