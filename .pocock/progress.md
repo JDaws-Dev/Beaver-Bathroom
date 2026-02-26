@@ -9,6 +9,22 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Add Legal Pages and Site Requirements (972) - COMPLETE
+- Goal: add standard legal pages required for commercial game (privacy, terms, contact, refund)
+- Implementation:
+  - Privacy Policy modal: data collection, third-party services (Stripe, Convex), GDPR/CCPA, children's privacy
+  - Terms of Service modal: agreement, premium purchase terms, refund policy (7 days), acceptable use, disclaimer
+  - Footer on title screen: Privacy | Terms | Contact links + copyright notice
+  - Updated paywall modal: changed support@example.com to beaverbathroomblitz@gmail.com
+  - Added "7-day refund guarantee • Secure payment via Stripe" below price
+- New CSS classes:
+  - .legal-content, .legal-body, .legal-updated (modal styling with scroll)
+  - .footer-links, .footer-link, .footer-sep, .footer-copyright (footer layout)
+  - .pw-refund-note (paywall refund text)
+- New JS functions: openPrivacyModal, closePrivacyModal, openTermsModal, closeTermsModal
+- Mobile responsive: smaller fonts and padding at 420px breakpoint
+- Files: index.html (~80 lines), src/styles.css (~25 lines), src/main.js (~18 lines)
+
 ### Update ROADMAP.md with Current State (byg) - COMPLETE
 - Goal: update ROADMAP.md to reflect completed work and current priorities
 - Changes:

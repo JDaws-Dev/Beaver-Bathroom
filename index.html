@@ -43,6 +43,14 @@
         <button class="btn-help btn-unlock-premium" id="unlock-premium-btn">🔓 Unlock Premium</button>
       </div>
       <div class="title-footer">
+        <div class="footer-links">
+          <button class="footer-link" id="privacy-btn">Privacy</button>
+          <span class="footer-sep">·</span>
+          <button class="footer-link" id="terms-btn">Terms</button>
+          <span class="footer-sep">·</span>
+          <a href="mailto:beaverbathroomblitz@gmail.com" class="footer-link">Contact</a>
+        </div>
+        <p class="footer-copyright">© 2026 Beaver's Bathroom Blitz. All rights reserved.</p>
         <a href="https://venmo.com/u/Jeremiah-Daws" target="_blank" rel="noopener" class="tip-link">
           ☕ Support the dev
         </a>
@@ -168,6 +176,7 @@
           <span class="pw-amount">$2.99</span>
           <span class="pw-once">one-time purchase</span>
         </div>
+        <p class="pw-refund-note">7-day refund guarantee • Secure payment via Stripe</p>
         <button id="pw-purchase-btn" class="btn btn-play pw-btn">Unlock Full Game</button>
         <!-- Coupon code section -->
         <div class="pw-code-section">
@@ -195,7 +204,7 @@
           </div>
           <button id="pw-restore-check-btn" class="btn btn-play pw-btn">Check Purchase</button>
           <p id="pw-restore-status" class="pw-restore-status hidden"></p>
-          <p class="pw-restore-help">If you're having trouble, contact <a href="mailto:support@example.com">support</a>.</p>
+          <p class="pw-restore-help">If you're having trouble, contact <a href="mailto:beaverbathroomblitz@gmail.com">support</a>.</p>
         </div>
       </div>
       <!-- Checkout view (shown during Stripe checkout) -->
@@ -362,6 +371,101 @@
       <button class="btn btn-share" id="share-gameover">📤 Share Score</button>
     </div>
     <button class="btn" id="retry-btn">Try Again</button>
+  </div>
+
+  <!-- Privacy Policy Modal -->
+  <div id="privacy-modal" class="modal">
+    <div class="modal-content legal-content">
+      <div class="modal-header">
+        <span class="modal-title">🔒 Privacy Policy</span>
+        <button class="modal-close" id="close-privacy">&times;</button>
+      </div>
+      <div class="legal-body">
+        <p class="legal-updated">Last updated: February 2026</p>
+
+        <h4>What We Collect</h4>
+        <p>Beaver's Bathroom Blitz collects minimal data:</p>
+        <ul>
+          <li><strong>Gameplay data:</strong> High scores, achievements, and game progress stored locally on your device (localStorage)</li>
+          <li><strong>Purchase info:</strong> When you buy premium, Stripe processes your payment. We receive confirmation but never see your card details</li>
+          <li><strong>Leaderboard:</strong> If you submit a score, we store your chosen display name and score on our servers</li>
+        </ul>
+
+        <h4>How We Use Your Data</h4>
+        <ul>
+          <li>To save your game progress and preferences</li>
+          <li>To verify premium purchases for restoration</li>
+          <li>To display global leaderboards</li>
+        </ul>
+
+        <h4>Third-Party Services</h4>
+        <ul>
+          <li><strong>Stripe:</strong> Handles payment processing. See <a href="https://stripe.com/privacy" target="_blank" rel="noopener">Stripe's Privacy Policy</a></li>
+          <li><strong>Convex:</strong> Stores leaderboard and premium verification data. See <a href="https://www.convex.dev/privacy" target="_blank" rel="noopener">Convex Privacy Policy</a></li>
+        </ul>
+
+        <h4>Your Rights</h4>
+        <p>You can clear your local data anytime by clearing your browser's localStorage. To request deletion of leaderboard data or purchase records, contact us.</p>
+
+        <h4>Children's Privacy</h4>
+        <p>This game does not knowingly collect data from children under 13. The game content is suitable for all ages.</p>
+
+        <h4>Contact</h4>
+        <p>Questions? Email <a href="mailto:beaverbathroomblitz@gmail.com">beaverbathroomblitz@gmail.com</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Terms of Service Modal -->
+  <div id="terms-modal" class="modal">
+    <div class="modal-content legal-content">
+      <div class="modal-header">
+        <span class="modal-title">📜 Terms of Service</span>
+        <button class="modal-close" id="close-terms">&times;</button>
+      </div>
+      <div class="legal-body">
+        <p class="legal-updated">Last updated: February 2026</p>
+
+        <h4>Agreement</h4>
+        <p>By playing Beaver's Bathroom Blitz, you agree to these terms. If you don't agree, please don't play.</p>
+
+        <h4>The Game</h4>
+        <ul>
+          <li>Beaver's Bathroom Blitz is a browser-based game for entertainment</li>
+          <li>We may update, modify, or discontinue the game at any time</li>
+          <li>Game progress is stored locally and may be lost if you clear browser data</li>
+        </ul>
+
+        <h4>Premium Purchase</h4>
+        <ul>
+          <li>Premium unlocks additional content for a one-time payment of $2.99</li>
+          <li>Payments are processed securely by Stripe</li>
+          <li>You can restore purchases using the email associated with your payment</li>
+          <li>Premium access is tied to your device/browser unless restored</li>
+        </ul>
+
+        <h4>Refund Policy</h4>
+        <p>Refunds are available within 7 days of purchase if you haven't substantially used premium features. Contact us to request a refund.</p>
+
+        <h4>Acceptable Use</h4>
+        <p>Don't:</p>
+        <ul>
+          <li>Use automated tools or cheats</li>
+          <li>Submit offensive names to leaderboards</li>
+          <li>Attempt to hack or exploit the game</li>
+          <li>Reverse engineer or redistribute the game</li>
+        </ul>
+
+        <h4>Disclaimer</h4>
+        <p>This game is an original parody/homage and is not affiliated with, endorsed by, or connected to Buc-ee's Ltd. or any other entity.</p>
+
+        <h4>Limitation of Liability</h4>
+        <p>The game is provided "as is" without warranties. We're not liable for any damages from using the game.</p>
+
+        <h4>Contact</h4>
+        <p>Questions or concerns? Email <a href="mailto:beaverbathroomblitz@gmail.com">beaverbathroomblitz@gmail.com</a></p>
+      </div>
+    </div>
   </div>
 
   <!-- Share preview modal -->

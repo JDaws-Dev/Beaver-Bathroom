@@ -4976,6 +4976,24 @@ $('master-mute').addEventListener('click', toggleMasterMute);
 $('haptics-toggle').addEventListener('click', toggleHaptics);
 updateSettingsUI();
 
+// Legal modals
+function openPrivacyModal() { $('privacy-modal').classList.add('active'); }
+function closePrivacyModal() { $('privacy-modal').classList.remove('active'); }
+function openTermsModal() { $('terms-modal').classList.add('active'); }
+function closeTermsModal() { $('terms-modal').classList.remove('active'); }
+
+$('privacy-btn').addEventListener('click', openPrivacyModal);
+$('close-privacy').addEventListener('click', closePrivacyModal);
+$('privacy-modal').addEventListener('click', e => {
+  if (e.target === $('privacy-modal')) closePrivacyModal();
+});
+
+$('terms-btn').addEventListener('click', openTermsModal);
+$('close-terms').addEventListener('click', closeTermsModal);
+$('terms-modal').addEventListener('click', e => {
+  if (e.target === $('terms-modal')) closeTermsModal();
+});
+
 $('start-btn').addEventListener('click', () => {
   initAudio();
   init();
