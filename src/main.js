@@ -1486,6 +1486,390 @@ function continueFromMinigame() {
   }
 }
 
+// =============================================================================
+// MINI-GAME: SUPPLY RUN
+// =============================================================================
+
+const SUPPLYRUN_CONFIG = {
+  duration: 30,              // 30 seconds
+  startLives: 3,             // Starting lives
+  baseSpawnRate: 1200,       // ms between spawns at start
+  minSpawnRate: 400,         // ms minimum spawn rate
+  speedupPerSecond: 30,      // Reduce spawn rate by this much per second
+  fallSpeed: 200,            // Base pixels per second
+  fallSpeedIncrease: 5,      // Increase fall speed per second
+  catcherWidth: 80,          // Catcher hitbox width
+  coinsPerCatch: 2,          // Coins earned per catch
+  triggerAfterShift: [0, 2, 4], // After shifts 1, 3, 5 (0-indexed)
+};
+
+// Supply types with point values and spawn weights
+const SUPPLY_TYPES = [
+  { emoji: '🧻', name: 'toilet paper', points: 10, weight: 30 },
+  { emoji: '🧼', name: 'soap', points: 15, weight: 25 },
+  { emoji: '🧽', name: 'sponge', points: 12, weight: 20 },
+  { emoji: '🧴', name: 'lotion', points: 18, weight: 15 },
+  { emoji: '🪥', name: 'brush', points: 20, weight: 10 },
+];
+
+// Hazard types (reduce lives)
+const HAZARD_TYPES = [
+  { emoji: '💩', name: 'poop', weight: 15 },
+  { emoji: '🪳', name: 'cockroach', weight: 10 },
+  { emoji: '🦠', name: 'germ', weight: 5 },
+];
+
+// Calculate total weight for random selection
+const TOTAL_SUPPLY_WEIGHT = SUPPLY_TYPES.reduce((sum, t) => sum + t.weight, 0);
+const TOTAL_HAZARD_WEIGHT = HAZARD_TYPES.reduce((sum, t) => sum + t.weight, 0);
+
+// Supply Run state
+let supplyrun = {
+  active: false,
+  time: 0,
+  score: 0,
+  caught: 0,
+  lives: 3,
+  items: [],
+  catcherX: 0,
+  lastTime: 0,
+  spawnTimer: 0,
+  currentSpawnRate: SUPPLYRUN_CONFIG.baseSpawnRate,
+  currentFallSpeed: SUPPLYRUN_CONFIG.fallSpeed,
+};
+
+// Comments based on performance
+const SUPPLYRUN_COMMENTS = [
+  { min: 0, msg: "Better luck next time!" },
+  { min: 50, msg: "Getting started!" },
+  { min: 100, msg: "Nice catching!" },
+  { min: 200, msg: "Supply champion! 🏆" },
+  { min: 300, msg: "LEGENDARY CATCHER! 🌟" },
+];
+
+function shouldTriggerSupplyRun() {
+  return SUPPLYRUN_CONFIG.triggerAfterShift.includes(game.shift);
+}
+
+function showSupplyRunIntro() {
+  playClick();
+  showScreen('supplyrun-intro');
+}
+
+function startSupplyRun() {
+  const areaEl = $('supplyrun-area');
+  const areaRect = areaEl.getBoundingClientRect();
+
+  supplyrun = {
+    active: true,
+    time: SUPPLYRUN_CONFIG.duration,
+    score: 0,
+    caught: 0,
+    lives: SUPPLYRUN_CONFIG.startLives,
+    items: [],
+    catcherX: areaRect.width / 2,
+    lastTime: performance.now(),
+    spawnTimer: 0,
+    currentSpawnRate: SUPPLYRUN_CONFIG.baseSpawnRate,
+    currentFallSpeed: SUPPLYRUN_CONFIG.fallSpeed,
+  };
+
+  // Clear previous items
+  $('supplyrun-items').innerHTML = '';
+
+  // Position catcher in center
+  updateCatcherPosition();
+  updateSupplyRunHUD();
+  showScreen('supplyrun-screen');
+
+  // Set up touch/mouse controls
+  setupSupplyRunControls();
+
+  // Start game loop
+  requestAnimationFrame(supplyRunLoop);
+  playClick();
+  haptic('strong');
+}
+
+function setupSupplyRunControls() {
+  const areaEl = $('supplyrun-area');
+
+  // Remove old listeners by cloning
+  const newArea = areaEl.cloneNode(true);
+  areaEl.parentNode.replaceChild(newArea, areaEl);
+
+  // Touch controls
+  newArea.addEventListener('touchmove', (e) => {
+    if (!supplyrun.active) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    const rect = newArea.getBoundingClientRect();
+    supplyrun.catcherX = Math.max(40, Math.min(rect.width - 40, touch.clientX - rect.left));
+    updateCatcherPosition();
+  }, { passive: false });
+
+  newArea.addEventListener('touchstart', (e) => {
+    if (!supplyrun.active) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    const rect = newArea.getBoundingClientRect();
+    supplyrun.catcherX = Math.max(40, Math.min(rect.width - 40, touch.clientX - rect.left));
+    updateCatcherPosition();
+  }, { passive: false });
+
+  // Mouse controls
+  newArea.addEventListener('mousemove', (e) => {
+    if (!supplyrun.active) return;
+    const rect = newArea.getBoundingClientRect();
+    supplyrun.catcherX = Math.max(40, Math.min(rect.width - 40, e.clientX - rect.left));
+    updateCatcherPosition();
+  });
+
+  // Keyboard controls
+  supplyrun.keyHandler = (e) => {
+    if (!supplyrun.active) return;
+    const areaRect = $('supplyrun-area')?.getBoundingClientRect();
+    if (!areaRect) return;
+    const moveSpeed = 30;
+    if (e.key === 'ArrowLeft' || e.key === 'a') {
+      supplyrun.catcherX = Math.max(40, supplyrun.catcherX - moveSpeed);
+      updateCatcherPosition();
+    } else if (e.key === 'ArrowRight' || e.key === 'd') {
+      supplyrun.catcherX = Math.min(areaRect.width - 40, supplyrun.catcherX + moveSpeed);
+      updateCatcherPosition();
+    }
+  };
+  document.addEventListener('keydown', supplyrun.keyHandler);
+}
+
+function updateCatcherPosition() {
+  const catcher = $('supplyrun-catcher');
+  if (catcher) {
+    catcher.style.left = supplyrun.catcherX + 'px';
+  }
+}
+
+function spawnSupplyItem() {
+  const areaEl = $('supplyrun-area');
+  const areaRect = areaEl.getBoundingClientRect();
+
+  // 25% chance of hazard
+  const isHazard = Math.random() < 0.25;
+
+  let itemData;
+  if (isHazard) {
+    // Pick random hazard based on weight
+    let roll = Math.random() * TOTAL_HAZARD_WEIGHT;
+    for (const h of HAZARD_TYPES) {
+      roll -= h.weight;
+      if (roll <= 0) {
+        itemData = { ...h, isHazard: true, points: 0 };
+        break;
+      }
+    }
+  } else {
+    // Pick random supply based on weight
+    let roll = Math.random() * TOTAL_SUPPLY_WEIGHT;
+    for (const s of SUPPLY_TYPES) {
+      roll -= s.weight;
+      if (roll <= 0) {
+        itemData = { ...s, isHazard: false };
+        break;
+      }
+    }
+  }
+
+  if (!itemData) itemData = { ...SUPPLY_TYPES[0], isHazard: false };
+
+  // Create DOM element
+  const el = document.createElement('div');
+  el.className = 'supplyrun-item';
+  el.textContent = itemData.emoji;
+  el.style.left = (Math.random() * (areaRect.width - 60) + 30) + 'px';
+  el.style.top = '-50px';
+
+  $('supplyrun-items').appendChild(el);
+
+  supplyrun.items.push({
+    el,
+    y: -50,
+    x: parseFloat(el.style.left),
+    isHazard: itemData.isHazard,
+    points: itemData.points,
+    caught: false,
+  });
+}
+
+function supplyRunLoop(now) {
+  if (!supplyrun.active) return;
+
+  const dt = Math.min(now - supplyrun.lastTime, 100);
+  supplyrun.lastTime = now;
+
+  // Update timer
+  supplyrun.time -= dt / 1000;
+
+  // Increase difficulty over time
+  const elapsed = SUPPLYRUN_CONFIG.duration - supplyrun.time;
+  supplyrun.currentSpawnRate = Math.max(
+    SUPPLYRUN_CONFIG.minSpawnRate,
+    SUPPLYRUN_CONFIG.baseSpawnRate - elapsed * SUPPLYRUN_CONFIG.speedupPerSecond
+  );
+  supplyrun.currentFallSpeed = SUPPLYRUN_CONFIG.fallSpeed + elapsed * SUPPLYRUN_CONFIG.fallSpeedIncrease;
+
+  // Spawn new items
+  supplyrun.spawnTimer -= dt;
+  if (supplyrun.spawnTimer <= 0) {
+    spawnSupplyItem();
+    supplyrun.spawnTimer = supplyrun.currentSpawnRate;
+  }
+
+  // Update items
+  const areaEl = $('supplyrun-area');
+  const areaRect = areaEl.getBoundingClientRect();
+  const catcherY = areaRect.height - 60; // Catcher position from bottom
+  const catcherWidth = SUPPLYRUN_CONFIG.catcherWidth;
+
+  supplyrun.items = supplyrun.items.filter(item => {
+    if (item.caught) return false;
+
+    // Move item down
+    item.y += supplyrun.currentFallSpeed * (dt / 1000);
+    item.el.style.top = item.y + 'px';
+
+    // Check if caught
+    if (item.y >= catcherY - 30 && item.y <= catcherY + 20) {
+      const itemCenter = item.x + 20; // Approximate center of emoji
+      if (Math.abs(itemCenter - supplyrun.catcherX) < catcherWidth / 2) {
+        item.caught = true;
+        item.el.classList.add('caught');
+
+        if (item.isHazard) {
+          // Caught hazard - lose a life
+          supplyrun.lives--;
+          playBad();
+          haptic('error');
+          spawnFloatText(item.x, item.y, '💔', '#ff5252');
+        } else {
+          // Caught supply - add points
+          supplyrun.score += item.points;
+          supplyrun.caught++;
+          playClick();
+          haptic('light');
+          spawnFloatText(item.x, item.y, '+' + item.points, '#69f0ae');
+        }
+
+        updateSupplyRunHUD();
+
+        // Remove element after animation
+        setTimeout(() => item.el.remove(), 300);
+        return false;
+      }
+    }
+
+    // Check if missed (fell past bottom)
+    if (item.y > areaRect.height) {
+      if (!item.isHazard) {
+        // Missed a supply - no penalty, but show miss
+        item.el.classList.add('missed');
+      }
+      setTimeout(() => item.el.remove(), 300);
+      return false;
+    }
+
+    return true;
+  });
+
+  // Check for urgent timer styling
+  const timerEl = $('supplyrun-timer');
+  if (supplyrun.time <= 10) {
+    timerEl.classList.add('urgent');
+  } else {
+    timerEl.classList.remove('urgent');
+  }
+
+  updateSupplyRunHUD();
+
+  // Check for end conditions
+  if (supplyrun.time <= 0 || supplyrun.lives <= 0) {
+    endSupplyRun();
+    return;
+  }
+
+  requestAnimationFrame(supplyRunLoop);
+}
+
+function spawnFloatText(x, y, text, color) {
+  const el = document.createElement('div');
+  el.className = 'float-msg';
+  el.textContent = text;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  el.style.color = color;
+  el.style.position = 'absolute';
+  el.style.fontWeight = 'bold';
+  el.style.fontSize = '1.5em';
+  el.style.zIndex = '100';
+  el.style.animation = 'float-up 0.8s ease-out forwards';
+  $('supplyrun-items').appendChild(el);
+  setTimeout(() => el.remove(), 800);
+}
+
+function updateSupplyRunHUD() {
+  $('supplyrun-timer').textContent = Math.max(0, Math.ceil(supplyrun.time));
+  $('supplyrun-score').textContent = supplyrun.score;
+  $('supplyrun-lives').textContent = '❤️'.repeat(Math.max(0, supplyrun.lives));
+}
+
+function endSupplyRun() {
+  supplyrun.active = false;
+
+  // Clean up keyboard listener
+  if (supplyrun.keyHandler) {
+    document.removeEventListener('keydown', supplyrun.keyHandler);
+    supplyrun.keyHandler = null;
+  }
+
+  // Clear remaining items
+  $('supplyrun-items').innerHTML = '';
+
+  // Calculate rewards
+  const bonusCoins = Math.floor(supplyrun.score / 10) * SUPPLYRUN_CONFIG.coinsPerCatch;
+  game.coins += bonusCoins;
+
+  // Find appropriate comment
+  let comment = SUPPLYRUN_COMMENTS[0].msg;
+  for (const c of SUPPLYRUN_COMMENTS) {
+    if (supplyrun.score >= c.min) comment = c.msg;
+  }
+
+  // Update results screen
+  $('supplyrun-final-caught').textContent = supplyrun.caught;
+  $('supplyrun-bonus-coins').textContent = '+' + bonusCoins;
+  $('supplyrun-comment').textContent = comment;
+
+  // Play celebration or sad sound based on outcome
+  if (supplyrun.lives <= 0) {
+    playBad();
+    haptic('error');
+  } else {
+    playWin();
+    haptic('success');
+  }
+
+  showScreen('supplyrun-result');
+}
+
+function continueFromSupplyRun() {
+  // Continue to shop or final results
+  playClick();
+  if (game.shift < CONFIG.shifts.length) {
+    showUpgradeScreen();
+  } else {
+    gameOver();
+  }
+}
+
 let game = {};
 let selectedGender = 'female';
 let highScore = parseInt(localStorage.getItem('beaverHighScore')) || 0;
@@ -1901,40 +2285,36 @@ function playPowerup() {
 
 // Mascot Walk System - Beaver walks across the floor and distracts customers
 function startMascotWalk() {
+  console.log('startMascotWalk called');
   const floorArea = $('floor-area');
   const floorRect = floorArea.getBoundingClientRect();
   const mascotEl = $('mascot-walk');
 
+  console.log('mascotEl:', mascotEl, 'floorRect:', floorRect.width, floorRect.height);
+
   // Spawn on left side (visible), walk right
-  const startX = 20;
-  const endX = floorRect.width - 60;
-  const y = floorRect.height * 0.35;
+  const startX = 50;
+  const endX = floorRect.width - 100;
+  const y = floorRect.height * 0.4;
 
   game.mascotWalk = {
     x: startX,
     y: y,
     targetX: endX,
-    speed: 50  // pixels per second (slow stroll)
+    speed: 60
   };
 
-  // Simple emoji beaver like other characters
-  mascotEl.innerHTML = `
-    <div class="person-body mascot-body">
-      <div class="person-shirt" style="background:linear-gradient(180deg,#b5803a,#8b6342);border-color:#5d4037"></div>
-      <div class="person-legs">
-        <div class="person-leg"></div>
-        <div class="person-leg"></div>
-      </div>
-    </div>
-    <div class="person-icon" style="font-size:2.5em">🦫</div>
-    <div class="mascot-label">BEAVER!</div>
-  `;
+  // Just the beaver emoji - CSS handles the gold circle
+  mascotEl.textContent = '🦫';
   mascotEl.style.left = startX + 'px';
   mascotEl.style.top = y + 'px';
+  mascotEl.style.display = 'block';
   mascotEl.classList.remove('hidden');
   mascotEl.classList.add('walking');
 
-  // Mark all current people as distracted - they'll crowd toward beaver
+  console.log('Beaver element after setup:', mascotEl.style.cssText, mascotEl.className);
+
+  // Mark all current people as distracted
   for (const p of game.people) {
     if (p.phase === 'enter' || p.phase === 'findStall' || p.phase === 'toStall') {
       initDistractedCustomer(p);
@@ -4537,15 +4917,19 @@ $('pow-auto').addEventListener('click', () => {
 });
 
 $('pow-mascot').addEventListener('click', () => {
+  console.log('MASCOT CLICKED! powerups:', game.powerups.mascot, 'effects:', game.effects.mascot);
   const el = $('pow-mascot');
   el.classList.remove('clicked'); void el.offsetWidth; el.classList.add('clicked');
   if (game.powerups.mascot > 0 && game.effects.mascot <= 0) {
+    console.log('STARTING BEAVER WALK');
     game.powerups.mascot--;
     game.effects.mascot = getItemDuration('mascot');
     startMascotWalk();
     playPowerup();
     haptic('strong');
     setBeaverMood('excited', 1500);
+  } else {
+    console.log('BLOCKED: no powerups or already active');
   }
 });
 
@@ -5017,8 +5401,9 @@ $('shift-start-btn').addEventListener('click', () => {
 });
 
 $('next-btn').addEventListener('click', () => {
-  // Check for mini-game trigger BEFORE incrementing shift
-  const shouldMinigame = shouldTriggerMinigame();
+  // Check for mini-game triggers BEFORE incrementing shift
+  const shouldSpeedClean = shouldTriggerMinigame();
+  const shouldSupplyRun = shouldTriggerSupplyRun();
   game.shift++;
 
   // Paywall after Shift 3 (game.shift is now 3, about to start Shift 4)
@@ -5029,16 +5414,20 @@ $('next-btn').addEventListener('click', () => {
   }
 
   if (game.shift >= CONFIG.shifts.length) {
-    // Last shift completed - check minigame before final results
-    if (shouldMinigame) {
+    // Last shift completed - check minigames before final results
+    if (shouldSpeedClean) {
       showMinigameIntro();
+    } else if (shouldSupplyRun) {
+      showSupplyRunIntro();
     } else {
       gameOver();
     }
   } else {
     // More shifts to go
-    if (shouldMinigame) {
+    if (shouldSpeedClean) {
       showMinigameIntro();
+    } else if (shouldSupplyRun) {
+      showSupplyRunIntro();
     } else {
       showUpgradeScreen();
     }
@@ -5076,6 +5465,15 @@ $('minigame-start-btn').addEventListener('click', () => {
 
 $('minigame-continue-btn').addEventListener('click', () => {
   continueFromMinigame();
+});
+
+// Supply Run mini-game buttons
+$('supplyrun-start-btn').addEventListener('click', () => {
+  startSupplyRun();
+});
+
+$('supplyrun-continue-btn').addEventListener('click', () => {
+  continueFromSupplyRun();
 });
 
 // Keyboard

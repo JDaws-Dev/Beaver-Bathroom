@@ -7,7 +7,7 @@ Use these prompts with AI image generators like Midjourney, DALL-E, Fotor, or By
 | Element | Value |
 |---------|-------|
 | **Name** | Beaver's Bathroom Blitz |
-| **Mascot** | Bucky the Beaver |
+| **Mascot** | Beaver (the mascot) |
 | **Domain** | beaverbathroomblitz.com |
 | **Tagline** | "Cleanest Restrooms in Texas!" |
 | **Style** | Retro Americana, 1950s travel stop, arcade game |
@@ -23,7 +23,7 @@ Use these prompts with AI image generators like Midjourney, DALL-E, Fotor, or By
 
 ---
 
-## 1. Main Mascot Character (Bucky)
+## 1. Main Mascot Character (Beaver)
 
 ```
 Friendly cartoon beaver character mascot, wearing a light blue
@@ -124,7 +124,7 @@ mobile game loading screen style
 ## 7. Character Sheet (Multiple Poses)
 
 ```
-Character sheet of cartoon beaver mascot "Bucky", multiple
+Character sheet of cartoon beaver mascot "Beaver", multiple
 poses: standing proud, mopping floor, plunging toilet,
 giving thumbs up, exhausted/sweating, celebrating victory,
 wearing blue attendant uniform throughout, consistent style,
@@ -177,7 +177,7 @@ pixels, flat minimal icon design, no gradients
 
 ## Legal Notes
 
-- Bucky must NOT look like Buc-ee's mascot (no red baseball cap)
+- Beaver must NOT look like Buc-ee's mascot (no red baseball cap)
 - Original character design, attendant uniform differentiates
 - Parody/homage is protected, but keep it distinct
 - Do not use any Buc-ee's trademarks or exact imagery

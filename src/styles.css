@@ -915,3 +915,54 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .minigame-result-stats{gap:16px}
 .minigame-stat-val{font-size:2em}
 }
+
+/* Supply Run Mini-Game */
+#supplyrun-intro,#supplyrun-result{background:linear-gradient(180deg,#2e7d32 0%,#1b5e20 50%,#0a3d0a 100%)}
+.supplyrun-card,.supplyrun-result-card{background:linear-gradient(180deg,#43a047 0%,#2e7d32 50%,#1b5e20 100%);border:5px solid #ffd700;border-radius:20px;padding:24px 28px;max-width:380px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,0.6),0 0 40px rgba(255,215,0,0.2)}
+.supplyrun-badge,.supplyrun-result-badge{color:#ffd700;font-size:0.9em;font-weight:bold;letter-spacing:3px;text-shadow:0 0 15px rgba(255,215,0,0.6);margin-bottom:8px;animation:badge-pulse 1.5s ease-in-out infinite}
+.supplyrun-title,.supplyrun-result-title{color:#fff;font-size:1.8em;margin-bottom:12px;text-shadow:0 3px 0 #1b5e20,-1px -1px 0 #1b5e20}
+.supplyrun-desc{color:#c8e6c9;font-size:1em;margin-bottom:20px}
+.supplyrun-rules{text-align:left;margin-bottom:20px}
+.supplyrun-rule{display:flex;gap:10px;align-items:center;margin:8px 0;font-size:0.9em;color:#e8f5e9}
+.supplyrun-start-btn{animation:start-glow 1s ease-in-out infinite alternate}
+
+#supplyrun-screen{background:linear-gradient(180deg,#1b5e20 0%,#0a3d0a 100%);padding:0;gap:0}
+#supplyrun-hud{display:flex;justify-content:center;gap:40px;padding:16px;background:linear-gradient(180deg,#2e7d32,#1b5e20);border-bottom:4px solid #ffd700}
+.supplyrun-hud-item{text-align:center}
+.supplyrun-label{font-size:0.75em;color:#c8e6c9;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.supplyrun-value{font-size:2em;font-weight:bold;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,0.5)}
+.supplyrun-timer{color:#ffd700;animation:timer-pulse 1s ease-in-out infinite}
+.supplyrun-timer.urgent{color:#ff5252;animation:timer-urgent 0.3s ease-in-out infinite}
+.supplyrun-score{color:#69f0ae}
+.supplyrun-lives{font-size:1.5em}
+
+#supplyrun-area{flex:1;position:relative;overflow:hidden;touch-action:none}
+#supplyrun-items{position:absolute;inset:0;pointer-events:none}
+.supplyrun-item{position:absolute;font-size:2.5em;transition:transform 0.05s linear;animation:supply-wobble 0.4s ease-in-out infinite}
+@keyframes supply-wobble{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+.supplyrun-item.caught{animation:supply-catch 0.3s ease-out forwards;pointer-events:none}
+@keyframes supply-catch{to{transform:scale(1.5);opacity:0}}
+.supplyrun-item.missed{animation:supply-miss 0.3s ease-out forwards;pointer-events:none}
+@keyframes supply-miss{to{transform:translateY(50px) scale(0.5);opacity:0}}
+
+#supplyrun-catcher{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);font-size:4em;transition:left 0.08s ease-out;user-select:none;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.4))}
+
+.supplyrun-result-stats{display:flex;gap:24px;justify-content:center;margin:20px 0}
+.supplyrun-stat{text-align:center}
+.supplyrun-stat-val{font-size:2.5em;font-weight:bold;color:#ffd700;text-shadow:0 2px 4px rgba(0,0,0,0.5)}
+.supplyrun-stat-lbl{font-size:0.75em;color:#c8e6c9;text-transform:uppercase;letter-spacing:1px}
+.supplyrun-comment{color:#e8f5e9;font-size:0.95em;margin-bottom:20px;font-style:italic}
+
+/* Supply Run responsive */
+@media(max-width:420px){
+.supplyrun-card,.supplyrun-result-card{padding:18px 16px;max-width:95%}
+.supplyrun-title,.supplyrun-result-title{font-size:1.4em}
+.supplyrun-desc{font-size:0.85em}
+.supplyrun-rule{font-size:0.8em;gap:8px}
+#supplyrun-hud{gap:24px;padding:12px}
+.supplyrun-value{font-size:1.6em}
+.supplyrun-item{font-size:2em}
+#supplyrun-catcher{font-size:3em;bottom:15px}
+.supplyrun-result-stats{gap:16px}
+.supplyrun-stat-val{font-size:2em}
+}

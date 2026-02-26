@@ -556,6 +556,61 @@
     </div>
   </div>
 
+  <!-- Supply Run Mini-Game -->
+  <div id="supplyrun-intro" class="screen">
+    <div class="supplyrun-card">
+      <div class="supplyrun-badge">📦 BONUS ROUND 📦</div>
+      <h2 class="supplyrun-title">Supply Run!</h2>
+      <p class="supplyrun-desc">Catch falling supplies before they hit the ground!</p>
+      <div class="supplyrun-rules">
+        <div class="supplyrun-rule"><span>🧻</span> Catch supplies = +points</div>
+        <div class="supplyrun-rule"><span>💩</span> Avoid hazards = bad news</div>
+        <div class="supplyrun-rule"><span>⚡</span> Speed increases over time!</div>
+      </div>
+      <button class="btn btn-play supplyrun-start-btn" id="supplyrun-start-btn">GO!</button>
+    </div>
+  </div>
+
+  <div id="supplyrun-screen" class="screen">
+    <div id="supplyrun-hud">
+      <div class="supplyrun-hud-item">
+        <div class="supplyrun-label">TIME</div>
+        <div class="supplyrun-value supplyrun-timer" id="supplyrun-timer">30</div>
+      </div>
+      <div class="supplyrun-hud-item">
+        <div class="supplyrun-label">SCORE</div>
+        <div class="supplyrun-value supplyrun-score" id="supplyrun-score">0</div>
+      </div>
+      <div class="supplyrun-hud-item">
+        <div class="supplyrun-label">LIVES</div>
+        <div class="supplyrun-value supplyrun-lives" id="supplyrun-lives">❤️❤️❤️</div>
+      </div>
+    </div>
+    <div id="supplyrun-area">
+      <div id="supplyrun-items"></div>
+      <div id="supplyrun-catcher">🛒</div>
+    </div>
+  </div>
+
+  <div id="supplyrun-result" class="screen">
+    <div class="supplyrun-result-card">
+      <div class="supplyrun-result-badge">📦 SUPPLY RUN COMPLETE 📦</div>
+      <h2 class="supplyrun-result-title">Supply Run Results!</h2>
+      <div class="supplyrun-result-stats">
+        <div class="supplyrun-stat">
+          <div class="supplyrun-stat-val" id="supplyrun-final-caught">0</div>
+          <div class="supplyrun-stat-lbl">Supplies Caught</div>
+        </div>
+        <div class="supplyrun-stat">
+          <div class="supplyrun-stat-val" id="supplyrun-bonus-coins">0</div>
+          <div class="supplyrun-stat-lbl">Bonus Coins</div>
+        </div>
+      </div>
+      <p class="supplyrun-comment" id="supplyrun-comment">Great job!</p>
+      <button class="btn" id="supplyrun-continue-btn">Continue →</button>
+    </div>
+  </div>
+
 </div>
 
 <script type="module" src="/src/main.js"></script>

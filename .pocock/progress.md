@@ -9,6 +9,29 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Supply Run Mini-Game (1vc) - COMPLETE
+- Goal: catch falling supplies while avoiding hazards
+- Implementation:
+  - Supplies fall from top (🧻🧼🧽🧴🪥) with weighted spawn rates
+  - Hazards (💩🪳🦠) cause life loss when caught
+  - Player moves catcher (🛒) with touch/mouse/keyboard
+  - Speed increases over time (spawn rate decreases, fall speed increases)
+  - 3 lives, 30 second timer
+- Mini-game flow: intro → game → result, same pattern as Speed Clean Challenge
+- Triggering: after shifts 1, 3, 5 (0-indexed: 0, 2, 4) - alternates with Speed Clean (2, 4, 6)
+- Controls:
+  - Touch: drag/tap to move catcher
+  - Mouse: hover moves catcher
+  - Keyboard: Arrow keys or A/D
+- Scoring: different supplies have different point values (10-20), coins = score/10 * 2
+- New functions:
+  - shouldTriggerSupplyRun(), showSupplyRunIntro(), startSupplyRun()
+  - setupSupplyRunControls(), updateCatcherPosition(), spawnSupplyItem()
+  - supplyRunLoop(), spawnFloatText(), updateSupplyRunHUD()
+  - endSupplyRun(), continueFromSupplyRun()
+- Updated next-btn handler to check for both mini-game types
+- Files: index.html (~45 lines), src/styles.css (~50 lines), src/main.js (~320 lines)
+
 ### Add Legal Pages and Site Requirements (972) - COMPLETE
 - Goal: add standard legal pages required for commercial game (privacy, terms, contact, refund)
 - Implementation:
