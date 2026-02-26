@@ -2080,6 +2080,15 @@ function completeTask() {
 
   const stallIdx = game.activeStall; // Save before we reset it
   const stall = game.stalls[stallIdx];
+
+  // Guard against race condition where stall/task was already cleared
+  if (!stall || !stall.tasks || !stall.tasks[game.activeTask]) {
+    game.activeStall = -1;
+    game.activeTask = -1;
+    hideTaskPanel();
+    return;
+  }
+
   stall.tasks[game.activeTask].done = true;
   game.taskProgress = 0;
   playTaskComplete();
