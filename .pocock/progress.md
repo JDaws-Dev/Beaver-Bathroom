@@ -9,6 +9,22 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Add Haptic Feedback for Mobile (680)
+- Goal: add vibration feedback to make game feel tactile on mobile
+- Added `haptic(type)` function with 6 intensity levels: light (15ms), medium (40ms), strong (80ms), success (pattern), warning (pattern), error (150ms)
+- Check `canVibrate` (navigator.vibrate) and `hapticsEnabled` before vibrating
+- localStorage key: `beaverHaptics` (defaults to ON)
+- Added toggle in settings modal: "📳 Haptics" with ON/OFF button
+- Haptic events added to:
+  - `light`: stall click, task button mash
+  - `medium`: single task complete
+  - `strong`: stall cleaned, combo milestone, powerup activated
+  - `success`: shift complete, game won
+  - `warning`: inspector arriving
+  - `error`: customer leaves unhappy, game over (lost)
+- Toggling haptics ON triggers medium pulse as confirmation
+- Files: index.html (+4 lines), src/main.js (~30 lines)
+
 ### Update Visual Style to Evoke Buc-ee's Aesthetic (b79)
 - Goal: refresh visual design to capture Buc-ee's roadside travel stop vibe (legally safe parody)
 - Added beaver pun tagline: "Dam Good Restrooms - Since 1982" (replaces generic "Cleanest Restrooms")
@@ -32,22 +48,6 @@ This file maintains context between autonomous iterations.
 - Settings modal already had SFX volume, music volume, and mute controls with localStorage persistence
 - Added: stopMusic() call on pause, startMusic() call on resume (respects mute state)
 - Files: src/main.js (~5 lines changed in openSettings/closeSettings)
-
-### Settings Modal with Volume Controls (voq)
-- Goal: replace floating audio buttons with single gear icon and settings modal
-- Removed: 2x audio-ctrl divs (#mute-btn, #music-btn) from HUD
-- Added: #settings-btn (fixed position, top-right corner) in game-screen
-- Added: #title-settings-btn as btn-help on title screen for consistency
-- New settings-modal with wood/gold theme matching game aesthetic
-- Volume sliders: sfxVolume (0-100%), musicVolume (0-100%) with real-time update
-- Master mute toggle button (styled as red when active)
-- localStorage keys: beaverSfxVolume, beaverMusicVolume (integers), beaverMuted (boolean)
-- playSound() now scales volume by sfxVolume, startMusic() scales by musicVolume
-- setMusicVolume() updates musicGain.gain.value live during playback
-- Removed old toggleMute(), updateMuteButton(), toggleMusic(), updateMusicButton()
-- Added: openSettings(), closeSettings(), toggleMasterMute(), setSfxVolume(), setMusicVolume(), updateSettingsUI()
-- Mobile styles: smaller settings button, larger touch targets on sliders
-- Files: index.html (~25 lines), src/styles.css (~25 lines), src/main.js (~45 lines changed)
 
 ---
 
@@ -103,6 +103,22 @@ Patterns, gotchas, and decisions that affect future work:
 ## Archive (Older Iterations)
 
 <!-- Move entries here when they roll out of "Recent Context" -->
+
+### Settings Modal with Volume Controls (voq)
+- Goal: replace floating audio buttons with single gear icon and settings modal
+- Removed: 2x audio-ctrl divs (#mute-btn, #music-btn) from HUD
+- Added: #settings-btn (fixed position, top-right corner) in game-screen
+- Added: #title-settings-btn as btn-help on title screen for consistency
+- New settings-modal with wood/gold theme matching game aesthetic
+- Volume sliders: sfxVolume (0-100%), musicVolume (0-100%) with real-time update
+- Master mute toggle button (styled as red when active)
+- localStorage keys: beaverSfxVolume, beaverMusicVolume (integers), beaverMuted (boolean)
+- playSound() now scales volume by sfxVolume, startMusic() scales by musicVolume
+- setMusicVolume() updates musicGain.gain.value live during playback
+- Removed old toggleMute(), updateMuteButton(), toggleMusic(), updateMusicButton()
+- Added: openSettings(), closeSettings(), toggleMasterMute(), setSfxVolume(), setMusicVolume(), updateSettingsUI()
+- Mobile styles: smaller settings button, larger touch targets on sliders
+- Files: index.html (~25 lines), src/styles.css (~25 lines), src/main.js (~45 lines changed)
 
 ### Move Paper Towels Next to Sinks with New Customer Flow (d2n)
 - Goal: relocate towels to be adjacent to sinks, customers walk to towels after washing

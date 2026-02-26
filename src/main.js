@@ -2235,6 +2235,7 @@ function clickStall(i) {
     void stallEl.offsetWidth;
     stallEl.classList.add('clicked');
   }
+  haptic('light'); // Light tap on stall selection
 
   if (stall.state === 'dirty' || stall.state === 'cleaning') {
     if (stall.state === 'dirty') {
@@ -2279,6 +2280,7 @@ function showTaskPanel(stallIdx) {
         btn.classList.remove('clicked');
         void btn.offsetWidth; // Force reflow
         btn.classList.add('clicked');
+        haptic('light'); // Quick tap feedback on task mashing
 
         if (game.activeTask === ti) {
           // Clicking active task = boost progress!
