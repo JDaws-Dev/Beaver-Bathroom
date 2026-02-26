@@ -678,9 +678,10 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 #combo-break{position:absolute;top:40%;left:50%;transform:translate(-50%,-50%) scale(0);color:#ff9800;font-size:1.1em;font-weight:bold;z-index:140;text-shadow:0 2px 4px rgba(0,0,0,0.5);pointer-events:none;opacity:0}
 #combo-break.show{animation:combo-break-pop 0.8s forwards}
 @keyframes combo-break-pop{0%{transform:translate(-50%,-50%) scale(0);opacity:0}20%{transform:translate(-50%,-50%) scale(1.1);opacity:1}40%{transform:translate(-50%,-50%) scale(0.95)}60%{transform:translate(-50%,-50%) scale(1);opacity:0.8}100%{transform:translate(-50%,-50%) translateY(-20px);opacity:0}}
-@keyframes rush-warning{0%,100%{opacity:1}50%{opacity:0.5}}
-#rush-warning{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(213,0,0,0.9);color:#fff;padding:15px 30px;border-radius:10px;font-size:1.3em;font-weight:bold;display:none;z-index:100;animation:rush-warning 0.3s infinite}
-#inspector-warning{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(180deg,rgba(33,150,243,0.95),rgba(25,118,210,0.95));color:#fff;padding:15px 30px;border-radius:10px;font-size:1.3em;font-weight:bold;display:none;z-index:100;animation:rush-warning 0.3s infinite;border:3px solid #1565c0;box-shadow:0 0 20px rgba(33,150,243,0.5)}
+@keyframes announcement-pulse{0%,100%{opacity:1}50%{opacity:0.8}}
+@keyframes announcement-slide{0%{transform:translateX(-50%) translateY(-100%);opacity:0}10%{transform:translateX(-50%) translateY(0);opacity:1}90%{transform:translateX(-50%) translateY(0);opacity:1}100%{transform:translateX(-50%) translateY(-100%);opacity:0}}
+#rush-warning{position:absolute;top:60px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#ff5722,#e64a19);color:#fff;padding:10px 24px;border-radius:20px;font-size:1em;font-weight:bold;display:none;z-index:100;animation:announcement-pulse 0.4s infinite;border:2px solid #ffab91;box-shadow:0 4px 12px rgba(0,0,0,0.4)}
+#inspector-warning{position:absolute;top:60px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#2196f3,#1976d2);color:#fff;padding:10px 24px;border-radius:20px;font-size:1em;font-weight:bold;display:none;z-index:100;animation:announcement-pulse 0.4s infinite;border:2px solid #64b5f6;box-shadow:0 4px 12px rgba(0,0,0,0.4)}
 #pause-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.8);display:none;align-items:center;justify-content:center;z-index:150}
 #pause-overlay.active{display:flex}
 .pause-menu{display:flex;flex-direction:column;align-items:center;gap:12px;background:linear-gradient(180deg,#4a3520,#2d1f0f);padding:24px 32px;border-radius:16px;border:3px solid #FEF117;box-shadow:0 8px 30px rgba(0,0,0,0.5)}
