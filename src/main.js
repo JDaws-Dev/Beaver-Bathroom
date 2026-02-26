@@ -1270,6 +1270,32 @@ let highScore = parseInt(localStorage.getItem('beaverHighScore')) || 0;
 let endlessHighScore = parseInt(localStorage.getItem('beaverEndlessHighScore')) || 0;
 let endlessUnlocked = localStorage.getItem('beaverEndlessUnlocked') === 'true';
 
+// Daily Challenge state
+let dailyHighScore = parseInt(localStorage.getItem('beaverDailyHighScore')) || 0;
+let dailyDate = localStorage.getItem('beaverDailyDate') || '';
+let dailyAttempts = parseInt(localStorage.getItem('beaverDailyAttempts')) || 0;
+
+// Seeded RNG for daily challenge (mulberry32)
+let seededRngState = 0;
+function seededRng() {
+  seededRngState |= 0;
+  seededRngState = seededRngState + 0x6D2B79F5 | 0;
+  let t = Math.imul(seededRngState ^ seededRngState >>> 15, 1 | seededRngState);
+  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+  return ((t ^ t >>> 14) >>> 0) / 4294967296;
+}
+
+function getDailySeed() {
+  const today = new Date();
+  return today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+}
+
+function seedRng(seed) {
+  seededRngState = seed;
+  // Warm up the RNG with a few iterations
+  for (let i = 0; i < 10; i++) seededRng();
+}
+
 // Audio
 let audioCtx = null;
 let isMuted = localStorage.getItem('beaverMuted') === 'true';
@@ -1901,8 +1927,12 @@ function showBeaverTip(tipKey, duration = 3500) {
 }
 
 function $(id) { return document.getElementById(id); }
-function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-function rnd(min, max) { return min + Math.random() * (max - min); }
+function rand() {
+  // Use seeded RNG in daily mode, Math.random otherwise
+  return game.mode === 'daily' ? seededRng() : Math.random();
+}
+function pick(arr) { return arr[Math.floor(rand() * arr.length)]; }
+function rnd(min, max) { return min + rand() * (max - min); }
 function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
 
 function screenShake() {
@@ -1965,6 +1995,10 @@ function getCustomers() {
 }
 
 function getShiftConfig() {
+  // Daily mode uses generated config
+  if (game.mode === 'daily' && game.dailyShiftOverride) {
+    return game.dailyShiftOverride;
+  }
   return CONFIG.shifts[Math.min(game.shift, CONFIG.shifts.length - 1)];
 }
 
@@ -2346,7 +2380,7 @@ function startEndlessMode() {
   game.running = true;
   showScreen('game-screen');
   startMusic();
-  lastTime = performance.now();
+  game.lastTime = performance.now();
   requestAnimationFrame(gameLoop);
 }
 
@@ -2406,6 +2440,256 @@ function endlessGameOver() {
   showScreen('gameover-screen');
 }
 
+// Daily Challenge Mode
+function generateDailyConfig(seed) {
+  // Seed the RNG with today's date
+  seedRng(seed);
+
+  // Generate shift parameters from seed (within reasonable bounds)
+  const stalls = 6 + Math.floor(seededRng() * 4);  // 6-9 stalls
+  const sinks = 2 + Math.floor(seededRng() * 2);   // 2-3 sinks
+  const duration = 75 + Math.floor(seededRng() * 30); // 75-105 seconds
+  const spawnMin = 1800 + Math.floor(seededRng() * 800);
+  const spawnMax = spawnMin + 800 + Math.floor(seededRng() * 600);
+  const occMin = 1400 + Math.floor(seededRng() * 400);
+  const occMax = occMin + 800 + Math.floor(seededRng() * 600);
+
+  // Special modifiers based on seed
+  const hasInspector = seededRng() > 0.5;  // 50% chance
+  const hasRushHour = seededRng() > 0.4;   // 60% chance
+  const vipBoost = seededRng() > 0.7;      // 30% chance of extra VIPs
+
+  return {
+    stalls,
+    sinks,
+    duration,
+    spawnMin,
+    spawnMax,
+    occMin,
+    occMax,
+    hasInspector,
+    hasRushHour,
+    vipBoost,
+  };
+}
+
+function isDailyUnlocked() {
+  return isPremium();
+}
+
+function checkDailyReset() {
+  const today = getTodayString();
+  if (dailyDate !== today) {
+    // New day - reset daily stats
+    dailyDate = today;
+    dailyHighScore = 0;
+    dailyAttempts = 0;
+    localStorage.setItem('beaverDailyDate', today);
+    localStorage.setItem('beaverDailyHighScore', '0');
+    localStorage.setItem('beaverDailyAttempts', '0');
+  }
+}
+
+function updateDailyButton() {
+  const btn = $('daily-btn');
+  if (!btn) return;
+
+  checkDailyReset();
+
+  if (!isDailyUnlocked()) {
+    btn.classList.add('locked');
+    btn.innerHTML = '🔒 Daily Challenge';
+  } else {
+    btn.classList.remove('locked');
+    const today = new Date();
+    const dateStr = today.toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
+    btn.innerHTML = `📅 Daily Challenge<span class="daily-date">${dateStr}</span>`;
+  }
+}
+
+function startDailyMode() {
+  if (!isDailyUnlocked()) {
+    showPaywallModal();
+    return;
+  }
+
+  checkDailyReset();
+  dailyAttempts++;
+  localStorage.setItem('beaverDailyAttempts', dailyAttempts.toString());
+
+  init();
+  game.mode = 'daily';
+  game.shift = 0;
+  game.elapsed = 0;
+
+  // Seed RNG with today's date and generate config
+  const seed = getDailySeed();
+  seedRng(seed);
+  game.dailyConfig = generateDailyConfig(seed);
+
+  // Re-seed for gameplay (config generation consumed some RNG calls)
+  seedRng(seed);
+
+  // Apply daily config
+  const cfg = game.dailyConfig;
+  game.time = cfg.duration;
+
+  // Override CONFIG for this mode
+  game.dailyShiftOverride = {
+    stalls: cfg.stalls,
+    sinks: cfg.sinks,
+    duration: cfg.duration,
+    spawnMin: cfg.spawnMin,
+    spawnMax: cfg.spawnMax,
+    occMin: cfg.occMin,
+    occMax: cfg.occMax,
+  };
+
+  // Set up modifiers
+  if (cfg.hasInspector) {
+    game.inspectorTimer = rnd(20000, 45000);
+  }
+  if (cfg.hasRushHour) {
+    game.rushTimer = rnd(15000, 35000);
+  }
+
+  // Start with moderate powerups
+  game.powerups = {speed: 1, slow: 1, auto: 0, mascot: 0};
+  game.skills = {scrub: 1, patience: 1, tips: 1};
+
+  buildStalls();
+  buildSinks();
+  hideTaskPanel();
+  updateHUD();
+  showScreen('game-screen');
+  $('rush-warning').style.display = 'none';
+  $('inspector-warning').style.display = 'none';
+  $('pause-overlay').classList.remove('active');
+
+  game.running = true;
+  game.paused = false;
+  game.lastTime = performance.now();
+  startMusic();
+  requestAnimationFrame(gameLoop);
+}
+
+function dailyGameOver() {
+  game.running = false;
+  stopMusic();
+
+  // Clean up
+  if (game.mascotWalk || game.effects.mascot > 0) endMascotWalk();
+  game.inspector = null;
+  const inspectorEl = $('floor-area').querySelector('.inspector');
+  if (inspectorEl) inspectorEl.remove();
+  $('inspector-warning').style.display = 'none';
+
+  const finalScore = Math.floor(game.score);
+  const isNewRecord = finalScore > dailyHighScore;
+
+  if (isNewRecord) {
+    dailyHighScore = finalScore;
+    localStorage.setItem('beaverDailyHighScore', finalScore.toString());
+    playWin();
+    haptic('success');
+  } else {
+    playBad();
+    haptic('medium');
+  }
+
+  // Calculate grade
+  const grade = getGrade(finalScore);
+
+  // Show game over screen
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('en-US', {weekday: 'short', month: 'short', day: 'numeric'});
+
+  $('go-icon').textContent = '📅';
+  $('go-title').textContent = 'DAILY CHALLENGE';
+  $('go-score').textContent = finalScore.toLocaleString();
+  $('go-comment').textContent = isNewRecord
+    ? `🎉 New daily best! Attempt #${dailyAttempts}`
+    : `Today's best: ${dailyHighScore.toLocaleString()}`;
+  $('go-stats').innerHTML = `
+    <div class="stat"><div class="num">${dateStr}</div><div class="lbl">${getTodayString()}</div></div>
+    <div class="stat"><div class="num">${game.stats.cleaned}</div><div class="lbl">Stalls Cleaned</div></div>
+    <div class="stat"><div class="num">${game.stats.served}</div><div class="lbl">Customers Served</div></div>
+  `;
+
+  // High score display
+  const goHighScore = $('go-high-score');
+  if (goHighScore) {
+    goHighScore.textContent = `Daily Best: ${dailyHighScore.toLocaleString()}`;
+    goHighScore.classList.add('visible');
+  }
+  if (isNewRecord) {
+    const recordEl = document.createElement('div');
+    recordEl.className = 'new-record';
+    recordEl.textContent = '🎉 NEW DAILY BEST!';
+    $('go-stats').appendChild(recordEl);
+  }
+
+  // Submit to daily leaderboard
+  if (isPremium() && playerName) {
+    submitDailyScore(finalScore, grade);
+  }
+
+  // Hide name input (use existing name)
+  $('go-name-section').style.display = 'none';
+  $('retry-btn').textContent = 'Try Again';
+
+  showScreen('gameover-screen');
+}
+
+async function submitDailyScore(score, grade) {
+  if (!playerName) return null;
+  try {
+    const scoreId = await convex.mutation(api.scores.submitDailyScore, {
+      playerName,
+      score,
+      grade,
+      date: getTodayString(),
+      userId: currentUser?.id || null,
+    });
+    await fetchDailyLeaderboard();
+    return scoreId;
+  } catch (e) {
+    console.log('Daily score submit failed:', e);
+    return null;
+  }
+}
+
+async function fetchDailyLeaderboard() {
+  try {
+    const scores = await convex.query(api.scores.getDailyScores, {
+      date: getTodayString(),
+      limit: 10
+    });
+    updateDailyLeaderboardUI(scores);
+  } catch (e) {
+    console.log('Daily leaderboard offline:', e);
+  }
+}
+
+function updateDailyLeaderboardUI(scores) {
+  const list = $('daily-leaderboard-list');
+  if (!list) return;
+
+  if (!scores || scores.length === 0) {
+    list.innerHTML = '<div class="lb-empty">No daily scores yet!</div>';
+    return;
+  }
+
+  list.innerHTML = scores.map((s, i) => `
+    <div class="lb-row ${s.playerName === playerName ? 'lb-you' : ''}">
+      <span class="lb-rank">${i + 1}</span>
+      <span class="lb-name">${s.playerName}</span>
+      <span class="lb-score">${s.score.toLocaleString()}</span>
+      <span class="lb-grade">${s.grade}</span>
+    </div>
+  `).join('');
+}
+
 function showShiftIntro() {
   const cfg = getShiftConfig();
   const narrative = SHIFT_NARRATIVES[game.shift] || SHIFT_NARRATIVES[0];
@@ -2414,7 +2698,7 @@ function showShiftIntro() {
   $('intro-desc').textContent = narrative.desc;
   // Pick a random tip for this shift from Beaver
   const shiftTips = BEAVER_TIPS[game.shift] || BEAVER_TIPS[0];
-  const tip = shiftTips[Math.floor(Math.random() * shiftTips.length)];
+  const tip = shiftTips[Math.floor(rand() * shiftTips.length)];
   $('intro-tip').textContent = tip;
   $('intro-stalls').textContent = cfg.stalls;
   $('intro-sinks').textContent = cfg.sinks;
@@ -2447,13 +2731,13 @@ function startShift() {
     game.powerups = {speed: 1, slow: 1, auto: 0, mascot: 0};
   }
 
-  // Maybe trigger inspector visit (not on first shift)
-  if (Math.random() < CONFIG.inspectorChance && game.shift > 0) {
+  // Maybe trigger inspector visit (not on first shift, or always in daily)
+  if (rand() < CONFIG.inspectorChance && game.shift > 0) {
     game.inspectorTimer = rnd(20000, 40000); // Inspector arrives after 20-40 seconds
   }
 
   // Maybe trigger rush hour
-  if (Math.random() < CONFIG.rushChance && game.shift > 0) {
+  if (rand() < CONFIG.rushChance && game.shift > 0) {
     game.rushTimer = rnd(15000, 30000); // Rush starts after 15-30 seconds
   }
 
@@ -2506,6 +2790,14 @@ function update(dt) {
       endlessGameOver();
       return;
     }
+  } else if (game.mode === 'daily') {
+    // Daily mode: single shift, count down, end on time or rating 0
+    game.time -= dt / 1000;
+    if (game.time <= 0 || game.rating <= 0) {
+      dailyGameOver();
+      return;
+    }
+    if (game.time <= 15 && game.time > 14.5) showBeaverTip('lowTime');
   } else {
     // Campaign mode: count down
     game.time -= dt / 1000;
@@ -2532,7 +2824,7 @@ function update(dt) {
   if (game.rushMode) {
     game.rushDuration -= dt;
     // Random mess spawn during rush (chaos!)
-    if (Math.random() < CONFIG.messChance.walkwayRandom * (dt / 1000)) {
+    if (rand() < CONFIG.messChance.walkwayRandom * (dt / 1000)) {
       spawnRandomMess();
     }
     if (game.rushDuration <= 0) {
@@ -2663,7 +2955,7 @@ function spawnCustomer() {
   if (isPremium()) {
     const eligibleSpecials = SPECIAL_CUSTOMERS.filter(c => c.gender === genderFilter);
     for (const sc of eligibleSpecials) {
-      if (Math.random() < sc.chance) {
+      if (rand() < sc.chance) {
         special = sc;
         break;
       }
@@ -2688,12 +2980,12 @@ function spawnCustomer() {
     specialBadge = null;
     specialThoughts = null;
     icon = pick(getCustomers());
-    isUrgent = Math.random() < 0.2; // 20% chance of urgent customer
+    isUrgent = rand() < 0.2; // 20% chance of urgent customer
     // VIP customers only for premium users
-    isVip = isPremium() && !isUrgent && Math.random() < 0.12; // 12% chance of VIP (not if urgent)
+    isVip = isPremium() && !isUrgent && rand() < 0.12; // 12% chance of VIP (not if urgent)
 
     // Messiness: 0 = average, -1 = clean (sparkle), 1 = messy (more tasks)
-    const messRoll = Math.random();
+    const messRoll = rand();
     messiness = messRoll < 0.15 ? -1 : (messRoll < 0.35 ? 1 : 0);
 
     // Variety of shirt colors for personality
@@ -2797,10 +3089,10 @@ function updatePeople(dt) {
     }
 
     // Messy feet leave occasional footprints
-    if (p.hasMessyFeet && Math.random() < 0.002 * (dt / 16)) {
+    if (p.hasMessyFeet && rand() < 0.002 * (dt / 16)) {
       spawnPuddle(p.x + rnd(-5, 5), p.y + rnd(15, 25), 'muddy');
       // Feet get cleaner over time
-      if (Math.random() < 0.3) p.hasMessyFeet = false;
+      if (rand() < 0.3) p.hasMessyFeet = false;
     }
 
     // Patience - only drain when truly waiting for a stall
@@ -2850,7 +3142,7 @@ function updatePeople(dt) {
       if (p.distracted) {
         if (!p.distractedThought) {
           p.distractedThought = true;
-          p.thought = ['📸', '🤩', 'Is that Beaver?!', 'OMG!', '📷'][Math.floor(Math.random() * 5)];
+          p.thought = ['📸', '🤩', 'Is that Beaver?!', 'OMG!', '📷'][Math.floor(rand() * 5)];
           p.thoughtTimer = 10000;  // Keep showing while distracted
         }
         continue;  // Skip movement this frame
@@ -2891,7 +3183,7 @@ function updatePeople(dt) {
       if (p.distracted) {
         if (!p.distractedThought) {
           p.distractedThought = true;
-          p.thought = ['📸', '🤩', 'Is that Beaver?!', 'Wow!', '📷'][Math.floor(Math.random() * 5)];
+          p.thought = ['📸', '🤩', 'Is that Beaver?!', 'Wow!', '📷'][Math.floor(rand() * 5)];
           p.thoughtTimer = 10000;
         }
         continue;  // Skip finding stall this frame
@@ -3098,13 +3390,13 @@ function updatePeople(dt) {
     else if (p.phase === 'washing') {
       p.washTime -= dt;
       if (p.washTime <= 0) {
-        if (Math.random() < 0.25) {
+        if (rand() < 0.25) {
           game.sinks[p.sinkIdx].dirty = true;
           showBeaverTip('dirtySink');
         }
         updateSinkDOM(p.sinkIdx);
         // Chance of water splash on floor
-        if (Math.random() < CONFIG.messChance.sinkSplash) {
+        if (rand() < CONFIG.messChance.sinkSplash) {
           const sinkEl = $('sinks-area').children[p.sinkIdx];
           if (sinkEl) {
             const sinkRect = sinkEl.getBoundingClientRect();
@@ -3115,7 +3407,7 @@ function updatePeople(dt) {
         }
 
         // Customer wants to dry hands (configurable skip chance)
-        const skipTowel = Math.random() < CONFIG.towelSkipChance;
+        const skipTowel = rand() < CONFIG.towelSkipChance;
         if (skipTowel) {
           // Didn't need towel, still happy
           if (p.specialThoughts && p.specialThoughts.happy) {
@@ -3202,18 +3494,18 @@ function customerLeaves(stallIdx) {
   const chanceModifier = messiness === -1 ? 0.4 : (messiness === 1 ? 1.5 : 1);
 
   // Occasional comedy sound (8% chance for fart, higher for messy customers)
-  if (Math.random() < (messiness === 1 ? 0.15 : 0.08)) {
+  if (rand() < (messiness === 1 ? 0.15 : 0.08)) {
     setTimeout(() => playFart(), 150);
   }
 
-  stall.tasks = TASKS.filter(t => Math.random() < (t.chance * chanceModifier)).map(t => ({...t, done: false}));
+  stall.tasks = TASKS.filter(t => rand() < (t.chance * chanceModifier)).map(t => ({...t, done: false}));
 
   // Ensure minimum tasks based on messiness
   if (messiness === 1 && stall.tasks.length < 3) {
     // Messy customers: guarantee at least 3 tasks
     const remaining = TASKS.filter(t => !stall.tasks.find(st => st.id === t.id));
     while (stall.tasks.length < 3 && remaining.length > 0) {
-      const idx = Math.floor(Math.random() * remaining.length);
+      const idx = Math.floor(rand() * remaining.length);
       stall.tasks.push({...remaining.splice(idx, 1)[0], done: false});
     }
   } else if (stall.tasks.length === 0) {
@@ -3239,7 +3531,7 @@ function customerLeaves(stallIdx) {
 
     // Chance of vomit - messy customers more likely
     const vomitChance = person.messiness === 1 ? 0.25 : (person.messiness === -1 ? 0.05 : 0.12);
-    if (Math.random() < vomitChance) {
+    if (rand() < vomitChance) {
       spawnPuddle(person.x + rnd(-20, 20), person.y + rnd(30, 50), 'vomit');
     }
   }
@@ -3269,7 +3561,7 @@ function spawnRandomMess() {
   const x = rnd(80, rect.width - 80);
   const y = rnd(100, rect.height - 100);
   // Random mess type weighted by frequency
-  const roll = Math.random();
+  const roll = rand();
   let type = 'water';
   if (roll < 0.15) type = 'muddy';
   else if (roll < 0.35) type = 'vomit';
@@ -3972,6 +4264,16 @@ $('pow-mascot').addEventListener('click', () => {
   }
 });
 
+// Grade calculation based on performance
+function getGrade(score) {
+  const ratio = game.stats.dirty / Math.max(1, game.stats.served);
+  if (ratio === 0 && game.stats.abandoned === 0) return 'S';
+  if (ratio <= 0.1) return 'A';
+  if (ratio <= 0.2) return 'B';
+  if (ratio <= 0.35) return 'C';
+  return 'F';
+}
+
 // Supply Shop system - simplified item purchases
 function calculateCoins(score, grade) {
   // Base coins from score
@@ -4328,6 +4630,7 @@ function updateHighScoreDisplay() {
 updateHighScoreDisplay();
 updateRankDisplay();
 updateOvertimeButton();
+updateDailyButton();
 
 // Achievements modal - show preview for free users
 $('achievements-btn').addEventListener('click', () => {
@@ -4396,6 +4699,12 @@ $('overtime-btn').addEventListener('click', () => {
   startEndlessMode();
 });
 
+$('daily-btn').addEventListener('click', () => {
+  initAudio();
+  playClick();
+  startDailyMode();
+});
+
 $('shift-start-btn').addEventListener('click', () => {
   startShift();
 });
@@ -4445,6 +4754,9 @@ $('retry-btn').addEventListener('click', () => {
   if (game.mode === 'endless') {
     // Restart endless mode directly
     startEndlessMode();
+  } else if (game.mode === 'daily') {
+    // Restart daily mode
+    startDailyMode();
   } else {
     showScreen('title-screen');
   }

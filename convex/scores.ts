@@ -63,3 +63,39 @@ export const getPlayerRank = query({
     return higherScores.length + 1;
   },
 });
+
+// Submit daily challenge score
+export const submitDailyScore = mutation({
+  args: {
+    userId: v.optional(v.id("users")),
+    playerName: v.string(),
+    score: v.number(),
+    grade: v.string(),
+    date: v.string(), // YYYY-MM-DD format
+  },
+  handler: async (ctx, args) => {
+    const scoreId = await ctx.db.insert("dailyScores", {
+      userId: args.userId,
+      playerName: args.playerName,
+      score: args.score,
+      grade: args.grade,
+      date: args.date,
+      timestamp: Date.now(),
+    });
+    return scoreId;
+  },
+});
+
+// Get daily challenge scores for a specific date
+export const getDailyScores = query({
+  args: { date: v.string(), limit: v.optional(v.number()) },
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 10;
+    const scores = await ctx.db
+      .query("dailyScores")
+      .withIndex("by_date_score", (q) => q.eq("date", args.date))
+      .order("desc")
+      .take(limit);
+    return scores;
+  },
+});

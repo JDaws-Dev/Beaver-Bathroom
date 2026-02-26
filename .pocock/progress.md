@@ -9,6 +9,32 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Daily Challenge Mode (72r) - COMPLETE
+- Goal: daily challenge with seeded RNG so all players get same shift each day
+- Implementation:
+  - Seeded RNG: mulberry32 PRNG seeded with YYYYMMDD date integer
+  - `rand()` function replaces `Math.random()` during daily mode
+  - Replaced 25+ Math.random() calls with rand() for determinism
+  - Daily config generated: stalls (6-9), sinks (2-3), duration (75-105s), spawn rates, modifiers
+  - Special modifiers: 50% inspector chance, 60% rush hour, 30% VIP boost
+- New functions:
+  - `seededRng()`, `seedRng()`, `getDailySeed()`: seeded PRNG system
+  - `generateDailyConfig()`: creates shift params from seed
+  - `startDailyMode()`: initializes daily challenge
+  - `dailyGameOver()`: handles daily challenge end
+  - `updateDailyButton()`: shows date and locked state
+  - `submitDailyScore()`, `fetchDailyLeaderboard()`: Convex integration
+- UI:
+  - "📅 Daily Challenge" button on title screen with today's date
+  - Shows locked state for non-premium users
+  - Game over shows daily best and attempt count
+- Convex API:
+  - New `dailyScores` table with by_date_score index
+  - `submitDailyScore`: stores score with date
+  - `getDailyScores`: fetches leaderboard for specific date
+- Premium-only: daily challenge gated behind isPremium() check
+- Files: src/main.js (~200 lines), index.html (1 line), src/styles.css (~3 lines), convex/scores.ts (~40 lines), convex/schema.ts (~10 lines)
+
 ### Premium Upsell UI - Visible Locks and Gated Elements (o4e) - COMPLETE
 - Goal: communicate premium value to free users through visible locks without being pushy
 - Implementation:

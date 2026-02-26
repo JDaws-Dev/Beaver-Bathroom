@@ -20,4 +20,15 @@ export default defineSchema({
     timestamp: v.number(),
   }).index("by_score", ["score"])
     .index("by_user", ["userId"]),
+
+  // Daily challenge scores - separate leaderboard per day
+  dailyScores: defineTable({
+    userId: v.optional(v.id("users")),
+    playerName: v.string(),
+    score: v.number(),
+    grade: v.string(),
+    date: v.string(), // YYYY-MM-DD format
+    timestamp: v.number(),
+  }).index("by_date_score", ["date", "score"])
+    .index("by_date", ["date"]),
 });

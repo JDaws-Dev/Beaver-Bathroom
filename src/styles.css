@@ -152,6 +152,9 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .btn-help.locked{opacity:0.5;color:#888;position:relative}
 .btn-help.locked::after{content:' 🔒';font-size:0.9em;margin-left:2px}
 
+/* Daily Challenge button */
+.daily-date{display:block;font-size:0.75em;opacity:0.7;margin-top:2px}
+
 /* Result screen premium buttons */
 .result-premium-btns{display:flex;gap:10px;justify-content:center;margin:12px 0}
 .btn-result-premium{padding:10px 16px;font-size:0.85em;font-weight:bold;border:3px solid #5d4037;border-radius:8px;background:linear-gradient(180deg,#3d2814,#2d1f0f);color:#c9a86c;cursor:pointer;transition:all 0.15s}
