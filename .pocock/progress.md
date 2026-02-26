@@ -9,6 +9,22 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Verify Convex Leaderboard Works (dtk) - COMPLETE
+- Goal: test and verify Convex-powered leaderboard is functioning correctly
+- Issues found and fixed:
+  - `.env.local` had `\n` appended to VITE_CONVEX_URL - broke Convex connection
+  - Game over screen showed leaderboard submission form for free users (should be premium-only)
+- Verification performed:
+  - Convex API direct testing: getTopScores and submitScore both work
+  - Leaderboard displays scores correctly (tested via curl)
+  - Title screen leaderboard button already gated with isPremium() check
+  - Achievements button already gated with isPremium() check
+- Fix applied:
+  - Added isPremium() check to game over screen name input section
+  - Free users now see hidden name input, cannot submit scores
+  - Leaderboard section only shows after successful premium submission
+- Files: .env.local (1 line), src/main.js (~5 lines changed)
+
 ### Implement Stripe Paywall After Shift 3 (56w) - COMPLETE
 - Goal: implement free-to-paid conversion flow using Stripe Payment Links
 - Stripe Details (from memory):

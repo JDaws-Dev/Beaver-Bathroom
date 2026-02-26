@@ -3976,12 +3976,16 @@ function gameOver() {
     <div class="stat"><div class="num">${game.stats.saves}</div><div class="lbl">Close Calls</div></div>
   `;
 
-  // Show name input for leaderboard
+  // Show name input for leaderboard (premium only)
   const nameSection = $('go-name-section');
   const nameInput = $('go-name-input');
   if (nameSection && nameInput) {
-    nameInput.value = playerName;
-    nameSection.style.display = 'block';
+    if (isPremium()) {
+      nameInput.value = playerName;
+      nameSection.style.display = 'block';
+    } else {
+      nameSection.style.display = 'none';
+    }
   }
 
   // Store score info for submission
