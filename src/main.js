@@ -1094,6 +1094,13 @@ function toggleHaptics() {
 
 function initAudio() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  // Resume AudioContext on user interaction (required by browser autoplay policy)
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume().then(() => {
+      // Reload sounds if they failed to load initially (AudioContext was suspended)
+      if (!soundsLoaded) preloadSounds();
+    });
+  }
 }
 
 // === SAMPLE-BASED AUDIO SYSTEM ===
@@ -1126,13 +1133,18 @@ let soundsLoaded = false;
 async function preloadSounds() {
   if (soundsLoaded) return;
   initAudio();
+  // Wait for AudioContext to be running before decoding
+  if (audioCtx.state === 'suspended') {
+    // Audio will be loaded later when initAudio is called on user interaction
+    return;
+  }
   const loadPromises = Object.entries(SOUND_FILES).map(async ([name, url]) => {
     try {
       const response = await fetch(url);
       const arrayBuffer = await response.arrayBuffer();
       soundBuffers[name] = await audioCtx.decodeAudioData(arrayBuffer);
     } catch (e) {
-      console.log(`Failed to load sound: ${name}`, e);
+      console.warn(`Failed to load sound: ${name}`, e);
     }
   });
   await Promise.all(loadPromises);

@@ -9,6 +9,16 @@ This file maintains context between autonomous iterations.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 
+### Fix Broken Sound System (hgo) - COMPLETE
+- Goal: fix audio not playing after sample-based audio implementation
+- Root cause: AudioContext starts "suspended" in modern browsers, requires user interaction to resume
+- preloadSounds() was called at module load time, but AudioContext was suspended so decodeAudioData silently failed
+- Fix 1: Added audioCtx.resume() call in initAudio() on user interaction
+- Fix 2: preloadSounds() now checks if AudioContext is suspended and returns early (sounds loaded later when resumed)
+- Fix 3: After resume, initAudio() re-triggers preloadSounds() if sounds weren't loaded
+- Browser autoplay policy: AudioContext must be created/resumed after user gesture (click/tap)
+- Files: src/main.js (~8 lines changed in initAudio and preloadSounds)
+
 ### Replace Synthesized Sounds with Samples (ysj) - COMPLETE
 - Goal: replace oscillator beeps with actual sound effects for polished cartoony feel
 - Generated 18 WAV sounds using jsfxr-style synthesis (scripts/generate-sounds.cjs)
@@ -41,16 +51,6 @@ This file maintains context between autonomous iterations.
 - Claim button with pulsing animation, celebratory sound on claim
 - CSS: bouncing beaver mascot, pulsing today indicator, coin float animation
 - Files: src/main.js (~140 lines), src/styles.css (~35 lines), index.html (~22 lines)
-
-### Improved Puddle/Mess System (g0v)
-- Goal: expand mess variety with different types, spawn locations, and cleanup times
-- New MESS_TYPES config with 4 mess varieties:
-  - 💧 water: quick clean (200ms), 15 pts, spawns near sinks, no stink lines
-  - 💦 pee: medium clean (400ms), 30 pts, customer accidents, stink lines
-  - 🤮 vomit: long clean (600ms), 50 pts, messy customers, stink lines, larger puddle
-  - 👣 muddy: quick clean (250ms), 20 pts, tracked in by customers, footprint icon
-- Cleanup mechanic changed: click to start mopping, mash to fill progress bar
-- Files: src/main.js (~180 lines), src/styles.css (~10 lines)
 
 ---
 
