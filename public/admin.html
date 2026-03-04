@@ -187,6 +187,17 @@
     </div>
   </div>
 
+  <!-- Visitors Section -->
+  <div class="section">
+    <h2>👀 Unique Visitors</h2>
+    <div id="visitor-stats" class="stats-grid" style="margin-bottom: 16px;">
+      <div class="loading">Loading visitor stats...</div>
+    </div>
+    <div id="visitors-table">
+      <div class="loading">Loading visitors...</div>
+    </div>
+  </div>
+
   <!-- Users Section -->
   <div class="section">
     <h2>👥 Registered Users</h2>
@@ -386,10 +397,84 @@
       }
     }
 
+    // Load visitor stats
+    async function loadVisitorStats() {
+      try {
+        const stats = await convexQuery("admin:getVisitorStats", {});
+        document.getElementById('visitor-stats').innerHTML = `
+          <div class="stat-card highlight">
+            <div class="stat-value">${stats.totalVisitors}</div>
+            <div class="stat-label">Total Visitors</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${stats.visitorsToday}</div>
+            <div class="stat-label">Active Today</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${stats.newVisitorsToday}</div>
+            <div class="stat-label">New Today</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${stats.conversionToPlay}%</div>
+            <div class="stat-label">Played Game</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${stats.conversionToComplete}%</div>
+            <div class="stat-label">Completed Shift</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${stats.mobilePercent}%</div>
+            <div class="stat-label">Mobile</div>
+          </div>
+        `;
+      } catch (e) {
+        console.error('Failed to load visitor stats:', e);
+        document.getElementById('visitor-stats').innerHTML = `<div class="loading">Failed to load</div>`;
+      }
+    }
+
+    // Load visitors table
+    async function loadVisitors() {
+      try {
+        const visitors = await convexQuery("admin:getVisitors", { limit: 50 });
+        if (visitors.length === 0) {
+          document.getElementById('visitors-table').innerHTML = `<div class="empty">No visitors yet</div>`;
+          return;
+        }
+        document.getElementById('visitors-table').innerHTML = `
+          <table>
+            <tr>
+              <th>Device</th>
+              <th>Platform</th>
+              <th>Visits</th>
+              <th>Played</th>
+              <th>First Seen</th>
+              <th>Last Seen</th>
+            </tr>
+            ${visitors.slice(0, 20).map(v => `
+              <tr>
+                <td><code>${v.deviceId.slice(0, 12)}...</code></td>
+                <td>${v.platform || 'unknown'}</td>
+                <td>${v.visitCount}</td>
+                <td>${v.hasPlayed ? '✅' : '❌'} ${v.hasCompleted ? '🏆' : ''} ${v.hasPurchased ? '💰' : ''}</td>
+                <td><span class="time-ago">${timeAgo(v.firstSeen)}</span></td>
+                <td><span class="time-ago">${timeAgo(v.lastSeen)}</span></td>
+              </tr>
+            `).join('')}
+          </table>
+        `;
+      } catch (e) {
+        console.error('Failed to load visitors:', e);
+        document.getElementById('visitors-table').innerHTML = `<div class="loading">Failed to load</div>`;
+      }
+    }
+
     // Load all data
     window.loadData = async function() {
       await Promise.all([
         loadStats(),
+        loadVisitorStats(),
+        loadVisitors(),
         loadPurchases(),
         loadUsers(),
         loadEvents(currentFilter),

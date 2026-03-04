@@ -141,9 +141,25 @@ function updateLeaderboardUI() {
   `).join('');
 }
 
+// Track page visit for analytics
+async function trackPageVisit() {
+  try {
+    const platform = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
+    const referrer = document.referrer || undefined;
+    await convex.mutation(api.admin.trackVisit, {
+      deviceId,
+      platform,
+      referrer,
+    });
+  } catch (e) {
+    console.log('Visit tracking failed:', e);
+  }
+}
+
 // Initialize
 initAuth();
 fetchLeaderboard();
+trackPageVisit();
 
 const SHIFT_NARRATIVES = [
   {name: 'Training Day', desc: "Welcome to Beaver's Travel Stop, rookie! Show us what you've got.", progress: "Day 1 of 6"},

@@ -54,12 +54,13 @@ export default defineSchema({
 
   // Game events - track player activity
   gameEvents: defineTable({
-    type: v.string(), // "game_start", "shift_complete", "game_over", "daily_start"
+    type: v.string(), // "game_start", "shift_complete", "game_over", "daily_start", "page_visit"
     deviceId: v.optional(v.string()),
     data: v.optional(v.any()), // Flexible data payload
     createdAt: v.number(),
   }).index("by_type", ["type"])
-    .index("by_date", ["createdAt"]),
+    .index("by_date", ["createdAt"])
+    .index("by_device", ["deviceId"]),
 
   // Multiplayer rooms - Jackbox-style join code rooms
   rooms: defineTable({
@@ -83,4 +84,18 @@ export default defineSchema({
   }).index("by_code", ["code"])
     .index("by_host", ["hostDeviceId"])
     .index("by_status", ["status"]),
+
+  // Visitors - track unique visitors and their activity
+  visitors: defineTable({
+    deviceId: v.string(),
+    firstSeen: v.number(),
+    lastSeen: v.number(),
+    visitCount: v.number(),
+    hasPlayed: v.boolean(),
+    hasCompleted: v.boolean(), // Completed at least one shift
+    hasPurchased: v.boolean(),
+    platform: v.optional(v.string()), // mobile, desktop
+    referrer: v.optional(v.string()),
+  }).index("by_device", ["deviceId"])
+    .index("by_first_seen", ["firstSeen"]),
 });
