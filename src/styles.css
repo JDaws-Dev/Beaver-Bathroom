@@ -37,6 +37,13 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .restroom-btn.selected{background:linear-gradient(180deg,#5a4a38,#3d2814);color:#FEF117;box-shadow:0 2px 8px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.1)}
 .restroom-btn.selected svg{opacity:1}
 .restroom-btn.selected span{opacity:1}
+.difficulty-selector{display:flex;gap:0;background:rgba(0,0,0,0.4);border-radius:10px;padding:3px;margin-bottom:12px;border:2px solid rgba(254,241,23,0.2)}
+.difficulty-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 4px;border:none;border-radius:8px;background:transparent;color:#8b7355;cursor:pointer;transition:all 0.2s ease;font-family:inherit}
+.difficulty-btn span{font-size:0.6em;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px;opacity:0.7}
+.difficulty-btn small{font-size:0.5em;opacity:0.5}
+.difficulty-btn:hover{color:#c9a86c}
+.difficulty-btn.selected{background:linear-gradient(180deg,#5a4a38,#3d2814);color:#FEF117;box-shadow:0 2px 8px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.1)}
+.difficulty-btn.selected span,.difficulty-btn.selected small{opacity:1}
 /* Big PLAY button - gloss effect */
 .btn-play{width:100%;padding:18px;font-size:1.6em;letter-spacing:4px;margin-bottom:14px;animation:start-pulse 1.5s ease-in-out infinite;position:relative;overflow:hidden;background:linear-gradient(180deg,#ff6b8a 0%,#e8305a 15%,#D31145 50%,#b80d3a 85%,#8a0d2e 100%)}
 .btn-play::before{content:'';position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(180deg,rgba(255,255,255,0.25),rgba(255,255,255,0.05));pointer-events:none}

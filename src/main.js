@@ -1989,6 +1989,14 @@ function continueFromSupplyRun() {
 
 let game = {};
 let selectedGender = 'female';
+let selectedDifficulty = localStorage.getItem('beaverDifficulty') || 'normal';
+
+const DIFFICULTY_MODIFIERS = {
+  easy:   { spawn: 1.4, patience: 1.4, occupy: 1.2, score: 0.5 },
+  normal: { spawn: 1.0, patience: 1.0, occupy: 1.0, score: 1.0 },
+  hard:   { spawn: 0.7, patience: 0.7, occupy: 0.85, score: 1.5 },
+  insane: { spawn: 0.5, patience: 0.5, occupy: 0.7, score: 2.0 },
+};
 let highScore = parseInt(localStorage.getItem('beaverHighScore')) || 0;
 let endlessHighScore = parseInt(localStorage.getItem('beaverEndlessHighScore')) || 0;
 let endlessUnlocked = localStorage.getItem('beaverEndlessUnlocked') === 'true';
@@ -2909,6 +2917,7 @@ function init() {
     stats: {cleaned: 0, served: 0, dirty: 0, abandoned: 0, saves: 0},
     personId: 0,
     gender: selectedGender,
+    difficulty: selectedDifficulty,
     rushMode: false,
     rushTimer: 0,
     lastUrgentBeep: 0,
@@ -2934,7 +2943,16 @@ function getShiftConfig() {
   if (game.mode === 'daily' && game.dailyShiftOverride) {
     return game.dailyShiftOverride;
   }
-  return CONFIG.shifts[Math.min(game.shift, CONFIG.shifts.length - 1)];
+  const base = CONFIG.shifts[Math.min(game.shift, CONFIG.shifts.length - 1)];
+  const diff = DIFFICULTY_MODIFIERS[game.difficulty || 'normal'];
+  if (!diff || diff.spawn === 1) return base;
+  return {
+    ...base,
+    spawnMin: Math.round(base.spawnMin * diff.spawn),
+    spawnMax: Math.round(base.spawnMax * diff.spawn),
+    occMin: Math.round(base.occMin * diff.occupy),
+    occMax: Math.round(base.occMax * diff.occupy),
+  };
 }
 
 function getEffectiveTaskTime() {
@@ -2949,7 +2967,8 @@ function getEffectiveTaskTime() {
 function getEffectivePatience() {
   // Patience skill increases customer patience
   const patienceBonus = getSkillEffect('patience');
-  let patience = CONFIG.patience * (1 + patienceBonus);
+  const diff = DIFFICULTY_MODIFIERS[game.difficulty || 'normal'];
+  let patience = CONFIG.patience * (1 + patienceBonus) * (diff ? diff.patience : 1);
   // Endless mode: patience decreases 5% per minute
   if (game.mode === 'endless') {
     const minutesPlayed = Math.floor(game.elapsed / 60000);
@@ -2969,6 +2988,11 @@ function getItemDuration(itemId) {
   const item = ITEMS.find(i => i.id === itemId);
   if (!item || !item.duration) return 12000;
   return item.duration;
+}
+
+function getDifficultyScoreMultiplier() {
+  const diff = DIFFICULTY_MODIFIERS[game.difficulty || 'normal'];
+  return diff ? diff.score : 1;
 }
 
 function getCoinBonus() {
@@ -3184,7 +3208,7 @@ function updateHUD() {
   $('rating').textContent = stars;
   $('rating').style.animation = game.rating <= 1 ? 'blink 0.3s infinite' : '';
 
-  $('score').textContent = Math.floor(game.score);
+  $('score').textContent = Math.floor(game.score * getDifficultyScoreMultiplier());
 
   const comboMult = 1 + game.combo * 0.5;
   const boostIcon = game.comboBoost > 0 ? '⚡' : '';
@@ -3336,7 +3360,7 @@ function endlessGameOver() {
   if (inspectorEl) inspectorEl.remove();
   $('inspector-warning').style.display = 'none';
 
-  const finalScore = Math.floor(game.score);
+  const finalScore = Math.floor(game.score * getDifficultyScoreMultiplier());
   const minutesSurvived = Math.floor(game.elapsed / 60000);
   const secondsSurvived = Math.floor((game.elapsed % 60000) / 1000);
   const isNewRecord = finalScore > endlessHighScore;
@@ -3527,7 +3551,7 @@ function dailyGameOver() {
   if (inspectorEl) inspectorEl.remove();
   $('inspector-warning').style.display = 'none';
 
-  const finalScore = Math.floor(game.score);
+  const finalScore = Math.floor(game.score * getDifficultyScoreMultiplier());
   const isNewRecord = finalScore > dailyHighScore;
 
   if (isNewRecord) {
@@ -5521,7 +5545,7 @@ function gameOver() {
   if (inspectorEl) inspectorEl.remove();
   $('inspector-warning').style.display = 'none';
 
-  const finalScore = Math.floor(game.score);
+  const finalScore = Math.floor(game.score * getDifficultyScoreMultiplier());
   const isNewRecord = finalScore > highScore;
 
   // Calculate grade for leaderboard
@@ -5595,6 +5619,21 @@ document.querySelectorAll('.restroom-btn').forEach(btn => {
     selectedGender = btn.dataset.gender;
     playClick();
   });
+});
+
+// Difficulty selector
+document.querySelectorAll('.difficulty-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedDifficulty = btn.dataset.difficulty;
+    localStorage.setItem('beaverDifficulty', selectedDifficulty);
+    playClick();
+  });
+});
+// Restore saved difficulty selection
+document.querySelectorAll('.difficulty-btn').forEach(b => {
+  b.classList.toggle('selected', b.dataset.difficulty === selectedDifficulty);
 });
 
 // Tutorial modal
