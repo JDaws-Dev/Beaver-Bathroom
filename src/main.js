@@ -5325,13 +5325,14 @@ function renderSupplyShop() {
   const shopHtml = `
     <div class="shop-items">
       ${ITEMS.map(item => {
-        const canAfford = game.coins >= item.cost;
+        const cost = getItemCost(item);
+        const canAfford = game.coins >= cost;
         return `
           <button class="shop-item ${canAfford ? '' : 'cant-afford'}" data-id="${item.id}">
             <span class="shop-icon">${item.icon}</span>
             <span class="shop-name">${item.name}</span>
             <span class="shop-desc">${item.desc}</span>
-            <span class="shop-cost">🪙 ${item.cost}</span>
+            <span class="shop-cost">🪙 ${cost}</span>
           </button>
         `;
       }).join('')}
@@ -5348,13 +5349,19 @@ function renderSupplyShop() {
   });
 }
 
+function getItemCost(item) {
+  const owned = game.powerups[item.id] || 0;
+  return Math.floor(item.cost * Math.pow(1.3, owned));
+}
+
 function purchaseItem(itemId) {
   const item = ITEMS.find(i => i.id === itemId);
   if (!item) return;
 
-  if (game.coins < item.cost) return;
+  const cost = getItemCost(item);
+  if (game.coins < cost) return;
 
-  game.coins -= item.cost;
+  game.coins -= cost;
   game.powerups[itemId]++;
   playTaskComplete();
   renderSupplyShop();
