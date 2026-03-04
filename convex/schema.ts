@@ -72,6 +72,7 @@ export default defineSchema({
     status: v.string(),            // "waiting", "playing", "finished"
     shift: v.number(),             // Which shift to play (0-5)
     gender: v.string(),            // "male" or "female"
+    difficulty: v.optional(v.string()), // "easy", "normal", "hard", "insane"
     hostScore: v.number(),
     hostRating: v.number(),
     hostCombo: v.number(),

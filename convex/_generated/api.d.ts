@@ -10,6 +10,7 @@
 
 import type * as admin from "../admin.js";
 import type * as coupons from "../coupons.js";
+import type * as multiplayer from "../multiplayer.js";
 import type * as scores from "../scores.js";
 import type * as stripe from "../stripe.js";
 import type * as users from "../users.js";
@@ -23,6 +24,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   admin: typeof admin;
   coupons: typeof coupons;
+  multiplayer: typeof multiplayer;
   scores: typeof scores;
   stripe: typeof stripe;
   users: typeof users;

@@ -13,6 +13,7 @@ export const createRoom = mutation({
     hostName: v.string(),
     shift: v.number(),
     gender: v.string(),
+    difficulty: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     // Clean up any existing waiting rooms from this host
@@ -49,6 +50,7 @@ export const createRoom = mutation({
       status: "waiting",
       shift: args.shift,
       gender: args.gender,
+      difficulty: args.difficulty || "normal",
       hostScore: 0,
       hostRating: 5,
       hostCombo: 0,
@@ -104,6 +106,7 @@ export const joinRoom = mutation({
       hostName: room.hostName,
       shift: room.shift,
       gender: room.gender,
+      difficulty: room.difficulty || "normal",
     };
   },
 });

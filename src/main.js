@@ -6759,6 +6759,7 @@ $('mp-host-btn')?.addEventListener('click', async () => {
       hostName: name,
       shift: 0,
       gender: selectedGender,
+      difficulty: selectedDifficulty,
     });
 
     mpState.active = true;
@@ -6836,10 +6837,14 @@ $('mp-join-submit')?.addEventListener('click', async () => {
     mpState.roomCode = code;
     mpState.opponentName = result.hostName;
 
-    // Use host's gender setting
+    // Use host's gender and difficulty settings
     selectedGender = result.gender;
     document.querySelectorAll('.restroom-btn').forEach(b => {
       b.classList.toggle('selected', b.dataset.gender === selectedGender);
+    });
+    selectedDifficulty = result.difficulty || 'normal';
+    document.querySelectorAll('.difficulty-btn').forEach(b => {
+      b.classList.toggle('selected', b.dataset.difficulty === selectedDifficulty);
     });
 
     $('mp-join-modal').classList.remove('active');
@@ -6862,6 +6867,8 @@ function showMPLobby(code, myName, isHost) {
   $('mp-host-name').textContent = isHost ? myName : mpState.opponentName;
   $('mp-lobby-shift').textContent = 'Shift 1';
   $('mp-lobby-gender').textContent = selectedGender === 'male' ? "Men's" : "Women's";
+  const diffLabel = selectedDifficulty.charAt(0).toUpperCase() + selectedDifficulty.slice(1);
+  if ($('mp-lobby-difficulty')) $('mp-lobby-difficulty').textContent = diffLabel;
 
   if (isHost) {
     $('mp-guest-name').textContent = 'Waiting...';
