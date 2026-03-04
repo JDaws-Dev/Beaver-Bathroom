@@ -367,10 +367,11 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .hud-score .value{font-size:1.1em;font-weight:bold;color:#FEF117}
 .hud-combo .value{font-size:1em;color:#fff}
 .hud-time .value{font-size:1.1em;font-weight:bold;color:#fff}
+#beaver-mascot,#locker-beaver{--fur-1:#c9a86c;--fur-2:#a67c52;--fur-3:#8b6342;--fur-border:#5d4037;--ear-1:#8b6342;--ear-2:#6d4c2a}
 #beaver-mascot{width:48px;height:48px;position:relative;flex-shrink:0;transition:transform 0.2s}
 .beaver-head{width:100%;height:100%;position:relative}
-.beaver-face{width:40px;height:36px;background:linear-gradient(180deg,#c9a86c 0%,#a67c52 70%,#8b6342 100%);border-radius:50% 50% 45% 45%;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:2px solid #5d4037;box-shadow:inset 0 -4px 8px rgba(0,0,0,0.2),0 2px 4px rgba(0,0,0,0.3)}
-.beaver-ear{width:12px;height:12px;background:linear-gradient(180deg,#8b6342,#6d4c2a);border-radius:50%;position:absolute;top:2px;border:2px solid #5d4037}
+.beaver-face{width:40px;height:36px;background:linear-gradient(180deg,var(--fur-1) 0%,var(--fur-2) 70%,var(--fur-3) 100%);border-radius:50% 50% 45% 45%;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:2px solid var(--fur-border);box-shadow:inset 0 -4px 8px rgba(0,0,0,0.2),0 2px 4px rgba(0,0,0,0.3)}
+.beaver-ear{width:12px;height:12px;background:linear-gradient(180deg,var(--ear-1),var(--ear-2));border-radius:50%;position:absolute;top:2px;border:2px solid var(--fur-border)}
 .beaver-ear.left{left:2px}
 .beaver-ear.right{right:2px}
 .beaver-eye{width:10px;height:10px;background:#fff;border-radius:50%;position:absolute;top:10px;border:1px solid #333;overflow:hidden}
@@ -408,6 +409,56 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .beaver-speech::after{content:'';position:absolute;left:-5px;top:50%;transform:translateY(-50%);border:5px solid transparent;border-right-color:#fff}
 .beaver-speech.active{opacity:1;animation:speech-pop 0.3s cubic-bezier(0.34,1.56,0.64,1)}
 @keyframes speech-pop{0%{opacity:0;transform:translateY(-50%) scale(0.8)}100%{opacity:1;transform:translateY(-50%) scale(1)}}
+/* Fur color variants */
+[data-color="golden"]{--fur-1:#ffd700;--fur-2:#daa520;--fur-3:#b8860b;--fur-border:#8b6914;--ear-1:#b8860b;--ear-2:#8b6914}
+[data-color="midnight"]{--fur-1:#4a4a5a;--fur-2:#35354a;--fur-3:#25253a;--fur-border:#1a1a2e;--ear-1:#35354a;--ear-2:#1a1a2e}
+[data-color="albino"]{--fur-1:#f5f0e8;--fur-2:#e8ddd0;--fur-3:#d4c4b0;--fur-border:#b8a898;--ear-1:#d4c4b0;--ear-2:#b8a898}
+[data-color="texas"]{--fur-1:#e87030;--fur-2:#cc5500;--fur-3:#a04000;--fur-border:#803000;--ear-1:#a04000;--ear-2:#803000}
+/* Hat slot */
+.beaver-hat{position:absolute;top:-2px;left:50%;transform:translateX(-50%);z-index:10;pointer-events:none}
+/* Hat: Buc-ee's Cap */
+[data-hat="cap"] .beaver-hat{width:28px;height:10px;background:linear-gradient(180deg,#e8305a,#D31145);border-radius:4px 4px 1px 1px;top:-6px;border:1px solid #a00030}
+[data-hat="cap"] .beaver-hat::before{content:'';position:absolute;top:6px;left:-4px;width:36px;height:5px;background:linear-gradient(180deg,#D31145,#b80d3a);border-radius:2px}
+[data-hat="cap"] .beaver-hat::after{content:'B';position:absolute;top:0;left:50%;transform:translateX(-50%);font-size:8px;font-weight:900;color:#FEF117;line-height:10px}
+/* Hat: Hard Hat */
+[data-hat="hardhat"] .beaver-hat{width:30px;height:12px;background:linear-gradient(180deg,#fdd835,#f9a825);border-radius:8px 8px 2px 2px;top:-7px;border:1px solid #f57f17}
+[data-hat="hardhat"] .beaver-hat::before{content:'';position:absolute;top:8px;left:-4px;width:38px;height:5px;background:linear-gradient(180deg,#f9a825,#f57f17);border-radius:2px}
+/* Hat: Cowboy */
+[data-hat="cowboy"] .beaver-hat{width:20px;height:10px;background:linear-gradient(180deg,#a0522d,#8B4513);border-radius:6px 6px 2px 2px;top:-8px;border:1px solid #5d3a1a}
+[data-hat="cowboy"] .beaver-hat::before{content:'';position:absolute;top:7px;left:-8px;width:36px;height:5px;background:linear-gradient(180deg,#8B4513,#6b3410);border-radius:50%;border:1px solid #5d3a1a}
+/* Hat: Crown */
+[data-hat="crown"] .beaver-hat{width:26px;height:12px;background:linear-gradient(180deg,#ffd700,#daa520);border-radius:2px;top:-8px;border:1px solid #b8860b;clip-path:polygon(0% 100%,0% 40%,15% 70%,30% 20%,50% 60%,70% 20%,85% 70%,100% 40%,100% 100%)}
+/* Hat: Chef */
+[data-hat="chef"] .beaver-hat{width:22px;height:16px;background:radial-gradient(circle,#fff,#f0f0f0);border-radius:50% 50% 5px 5px;top:-12px;border:1px solid #ddd}
+[data-hat="chef"] .beaver-hat::before{content:'';position:absolute;bottom:0;left:-2px;width:26px;height:5px;background:#fff;border-radius:2px;border:1px solid #ddd}
+/* Hat: Party */
+[data-hat="party"] .beaver-hat{width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-bottom:18px solid #ff4081;top:-14px;border-radius:2px}
+[data-hat="party"] .beaver-hat::before{content:'✨';position:absolute;top:-4px;left:-3px;font-size:8px}
+[data-hat="party"] .beaver-hat::after{content:'';position:absolute;bottom:-1px;left:-12px;width:24px;height:4px;background:repeating-linear-gradient(90deg,#ff4081,#ff4081 3px,#ffd740 3px,#ffd740 6px);border-radius:2px}
+/* Hat: Top Hat */
+[data-hat="tophat"] .beaver-hat{width:18px;height:16px;background:linear-gradient(180deg,#1a1a2e,#16213e);border-radius:3px 3px 0 0;top:-12px;border:1px solid #0f1626}
+[data-hat="tophat"] .beaver-hat::before{content:'';position:absolute;bottom:-2px;left:-6px;width:30px;height:5px;background:linear-gradient(180deg,#16213e,#0f1626);border-radius:2px;border:1px solid #0f1626}
+[data-hat="tophat"] .beaver-hat::after{content:'';position:absolute;bottom:6px;left:0;width:100%;height:3px;background:linear-gradient(180deg,#daa520,#b8860b)}
+/* Locker Room Modal */
+.locker-content{max-width:360px;width:90%;padding:0;overflow:hidden}
+.locker-header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:linear-gradient(180deg,#5a4a38,#3d2814);border-bottom:2px solid rgba(254,241,23,0.3)}
+.locker-header h2{margin:0;font-size:1.1em;color:#FEF117}
+.locker-preview{display:flex;justify-content:center;align-items:center;padding:24px;background:linear-gradient(180deg,rgba(0,0,0,0.4),rgba(0,0,0,0.2))}
+#locker-beaver{width:48px;height:48px;position:relative;transform:scale(2.5);transform-origin:center}
+.locker-tabs{display:flex;gap:0;padding:0 12px;background:rgba(0,0,0,0.3)}
+.locker-tab{flex:1;padding:8px;border:none;background:transparent;color:#8b7355;font-family:inherit;font-size:0.75em;font-weight:bold;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s}
+.locker-tab.selected{color:#FEF117;border-bottom-color:#FEF117}
+.locker-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px;max-height:220px;overflow-y:auto}
+.locker-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;border-radius:8px;background:rgba(0,0,0,0.3);border:2px solid transparent;cursor:pointer;transition:all 0.2s}
+.locker-item:hover{border-color:rgba(254,241,23,0.3)}
+.locker-item.equipped{border-color:#FEF117;background:rgba(254,241,23,0.1)}
+.locker-item.locked{opacity:0.5;cursor:default}
+.locker-item-icon{font-size:1.4em}
+.locker-item-name{font-size:0.55em;color:#c9a86c;text-align:center;font-weight:bold}
+.locker-item-status{font-size:0.5em;color:#8b7355}
+.locker-item.equipped .locker-item-status{color:#FEF117}
+.locker-item.locked .locker-item-status{color:#ff6b6b}
+.locker-coins{text-align:center;padding:8px;font-size:0.8em;color:#fdd835;background:rgba(0,0,0,0.3);border-top:1px solid rgba(255,255,255,0.05)}
 .hud-item .label{font-size:0.55em;text-transform:uppercase;color:#b5944a;letter-spacing:0.5px}
 .hud-item .value{font-size:1em;font-weight:bold;color:#fff}
 #dirty-count{color:#fdd835;font-size:0.9em}

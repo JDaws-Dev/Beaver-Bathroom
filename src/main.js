@@ -365,6 +365,86 @@ const ITEMS = [
   },
 ];
 
+// COSMETICS: Hats and fur colors
+const COSMETICS = [
+  // Hats
+  {id:'hat-none', category:'hats', name:'No Hat', icon:'🚫', unlock:'default'},
+  {id:'hat-cap', category:'hats', name:"Buc-ee's Cap", icon:'🧢', unlock:'default'},
+  {id:'hat-hardhat', category:'hats', name:'Hard Hat', icon:'⛑️', unlock:'shift2', desc:'Complete Shift 2'},
+  {id:'hat-cowboy', category:'hats', name:'Cowboy Hat', icon:'🤠', unlock:'shift4', desc:'Complete Shift 4', premium:true},
+  {id:'hat-chef', category:'hats', name:"Chef's Toque", icon:'👨‍🍳', unlock:'clean100', desc:'Clean 100 stalls', premium:true},
+  {id:'hat-party', category:'hats', name:'Party Hat', icon:'🥳', unlock:'streak7', desc:'7-day login streak', premium:true},
+  {id:'hat-crown', category:'hats', name:'Golden Crown', icon:'👑', unlock:'allS', desc:'All S-grades', premium:true},
+  {id:'hat-tophat', category:'hats', name:'Top Hat', icon:'🎩', unlock:'legend', desc:'Reach Legend rank', premium:true},
+  // Colors
+  {id:'color-classic', category:'colors', name:'Classic Brown', icon:'🟤', unlock:'default'},
+  {id:'color-golden', category:'colors', name:'Honey Gold', icon:'🟡', unlock:'manager', desc:'Reach Manager rank'},
+  {id:'color-texas', category:'colors', name:'Texas Orange', icon:'🟠', unlock:'coins500', desc:'Buy for 500 coins', cost:500},
+  {id:'color-midnight', category:'colors', name:'Midnight', icon:'🔵', unlock:'insane6', desc:'Beat Shift 6 on Insane', premium:true},
+  {id:'color-albino', category:'colors', name:'Albino', icon:'⚪', unlock:'streak30', desc:'30-day login streak', premium:true},
+];
+
+let cosmeticState = JSON.parse(localStorage.getItem('beaverCosmetics') || 'null') || {
+  unlocked: ['hat-none','hat-cap','color-classic'],
+  equipped: {hat:'hat-none', color:'color-classic'}
+};
+
+function saveCosmeticState() {
+  localStorage.setItem('beaverCosmetics', JSON.stringify(cosmeticState));
+}
+
+function applyCosmeticsToBeaver(el) {
+  if (!el) el = document.getElementById('beaver-mascot');
+  if (!el) return;
+  const hatId = cosmeticState.equipped.hat.replace('hat-','');
+  const colorId = cosmeticState.equipped.color.replace('color-','');
+  el.dataset.hat = hatId;
+  el.dataset.color = colorId;
+}
+
+function checkCosmeticUnlocks() {
+  let newUnlocks = [];
+  for (const c of COSMETICS) {
+    if (cosmeticState.unlocked.includes(c.id)) continue;
+    if (c.premium && !isPremium()) continue;
+    let earned = false;
+    switch(c.unlock) {
+      case 'shift2': earned = achievementStats.shiftsCompleted >= 2; break;
+      case 'shift4': earned = achievementStats.shiftsCompleted >= 4; break;
+      case 'clean100': earned = achievementStats.totalCleaned >= 100; break;
+      case 'streak7': {
+        const dr = JSON.parse(localStorage.getItem('beaverDailyReward') || '{}');
+        earned = (dr.streak || 0) >= 7;
+        break;
+      }
+      case 'streak30': {
+        const dr = JSON.parse(localStorage.getItem('beaverDailyReward') || '{}');
+        earned = (dr.streak || 0) >= 30;
+        break;
+      }
+      case 'allS': earned = achievementStats.sGrades >= 6; break;
+      case 'legend': earned = getRank().name === 'Legend'; break;
+      case 'manager': {
+        const r = getRank();
+        earned = r.name === 'Manager' || r.name === 'Legend';
+        break;
+      }
+      case 'insane6': earned = localStorage.getItem('beaverInsane6') === 'true'; break;
+      // coins500 is purchased manually, not auto-unlocked
+    }
+    if (earned) {
+      cosmeticState.unlocked.push(c.id);
+      newUnlocks.push(c);
+    }
+  }
+  if (newUnlocks.length > 0) {
+    saveCosmeticState();
+    for (const c of newUnlocks) {
+      floatMessage(`🎉 Unlocked: ${c.icon} ${c.name}!`, window.innerWidth / 2, 80, 'good');
+    }
+  }
+}
+
 const TASKS = [
   {id:'plunge', icon:'🪠', label:'Plunge', chance:0.3},
   {id:'wipe', icon:'🧽', label:'Scrub', chance:0.75},
@@ -5455,8 +5535,13 @@ function endShift() {
   achievementStats.totalSaves += game.stats.saves;
   if (game.maxCombo > achievementStats.maxCombo) achievementStats.maxCombo = game.maxCombo;
   if (grade === 'S') achievementStats.sGrades++;
+  // Track insane difficulty shift 6 completion
+  if (game.difficulty === 'insane' && game.shift >= 5) {
+    localStorage.setItem('beaverInsane6', 'true');
+  }
   saveAchievementData();
   checkAchievements();
+  checkCosmeticUnlocks();
 
   // Award coins based on performance
   const coinsEarned = calculateCoins(game.score, grade);
@@ -5685,6 +5770,8 @@ updateRankDisplay();
 updateOvertimeButton();
 updateDailyButton();
 updatePremiumUI();
+applyCosmeticsToBeaver();
+checkCosmeticUnlocks();
 
 // Achievements modal - show preview for free users
 $('achievements-btn').addEventListener('click', () => {
@@ -5858,6 +5945,99 @@ $('overtime-btn').addEventListener('click', () => {
   playClick();
   startEndlessMode();
 });
+
+// Locker Room
+$('locker-btn').addEventListener('click', () => {
+  initAudio();
+  playClick();
+  showLockerRoom();
+});
+$('close-locker').addEventListener('click', () => {
+  playClick();
+  $('locker-modal').classList.remove('active');
+});
+$('locker-modal').addEventListener('click', e => {
+  if (e.target === $('locker-modal')) $('locker-modal').classList.remove('active');
+});
+
+function showLockerRoom() {
+  $('locker-modal').classList.add('active');
+  $('locker-coins').textContent = (game.coins || parseInt(localStorage.getItem('beaverCoins')) || 0);
+  checkCosmeticUnlocks();
+  applyCosmeticsToBeaver(document.getElementById('locker-beaver'));
+  renderLockerTab('hats');
+  // Tab switching
+  document.querySelectorAll('.locker-tab').forEach(tab => {
+    tab.onclick = () => {
+      document.querySelectorAll('.locker-tab').forEach(t => t.classList.remove('selected'));
+      tab.classList.add('selected');
+      playClick();
+      renderLockerTab(tab.dataset.tab);
+    };
+  });
+}
+
+function renderLockerTab(category) {
+  const grid = $('locker-grid');
+  const items = COSMETICS.filter(c => c.category === category);
+  grid.innerHTML = items.map(c => {
+    const owned = cosmeticState.unlocked.includes(c.id);
+    const equipped = cosmeticState.equipped.hat === c.id || cosmeticState.equipped.color === c.id;
+    const locked = !owned;
+    let status = '';
+    if (equipped) status = '✓ Equipped';
+    else if (owned) status = 'Owned';
+    else if (c.cost) status = `🪙 ${c.cost}`;
+    else if (c.premium && !isPremium()) status = '🔒 Premium';
+    else if (c.desc) status = c.desc;
+    else status = '🔒';
+    return `<div class="locker-item ${equipped ? 'equipped' : ''} ${locked ? 'locked' : ''}" data-id="${c.id}">
+      <span class="locker-item-icon">${c.icon}</span>
+      <span class="locker-item-name">${c.name}</span>
+      <span class="locker-item-status">${status}</span>
+    </div>`;
+  }).join('');
+
+  grid.querySelectorAll('.locker-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const id = el.dataset.id;
+      const cosmetic = COSMETICS.find(c => c.id === id);
+      if (!cosmetic) return;
+      const owned = cosmeticState.unlocked.includes(id);
+
+      if (!owned) {
+        // Try to purchase with coins
+        if (cosmetic.cost) {
+          const coins = game.coins || parseInt(localStorage.getItem('beaverCoins')) || 0;
+          if (coins >= cosmetic.cost) {
+            if (game.coins !== undefined) game.coins -= cosmetic.cost;
+            localStorage.setItem('beaverCoins', coins - cosmetic.cost);
+            cosmeticState.unlocked.push(id);
+            saveCosmeticState();
+            playTaskComplete();
+            $('locker-coins').textContent = (game.coins || parseInt(localStorage.getItem('beaverCoins')) || 0);
+          } else {
+            return; // Can't afford
+          }
+        } else if (cosmetic.premium && !isPremium()) {
+          showPaywallModal();
+          return;
+        } else {
+          return; // Not yet earned
+        }
+      }
+
+      // Equip
+      if (cosmetic.category === 'hats') cosmeticState.equipped.hat = id;
+      else cosmeticState.equipped.color = id;
+      saveCosmeticState();
+      applyCosmeticsToBeaver(document.getElementById('locker-beaver'));
+      applyCosmeticsToBeaver();
+      playClick();
+      renderLockerTab(cosmetic.category);
+    });
+  });
+}
 
 $('daily-btn').addEventListener('click', () => {
   initAudio();
