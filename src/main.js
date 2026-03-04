@@ -423,9 +423,9 @@ function checkCosmeticUnlocks() {
         break;
       }
       case 'allS': earned = achievementStats.sGrades >= 6; break;
-      case 'legend': earned = getRank().name === 'Legend'; break;
+      case 'legend': earned = getCurrentRank().name === 'Legend'; break;
       case 'manager': {
-        const r = getRank();
+        const r = getCurrentRank();
         earned = r.name === 'Manager' || r.name === 'Legend';
         break;
       }
@@ -5771,7 +5771,7 @@ updateOvertimeButton();
 updateDailyButton();
 updatePremiumUI();
 applyCosmeticsToBeaver();
-checkCosmeticUnlocks();
+try { checkCosmeticUnlocks(); } catch(e) { /* safe to skip on init */ }
 
 // Achievements modal - show preview for free users
 $('achievements-btn').addEventListener('click', () => {
