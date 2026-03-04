@@ -353,7 +353,7 @@ const ITEMS = [
     name: 'Beaver Nuggets',
     icon: '🍿',
     desc: 'Instant clean one stall',
-    cost: 50,
+    cost: 75,
   },
   {
     id: 'mascot',
@@ -361,7 +361,7 @@ const ITEMS = [
     icon: '🦫',
     desc: 'Beaver distracts customers!',
     duration: 8000,  // 8s
-    cost: 40,
+    cost: 60,
   },
 ];
 
