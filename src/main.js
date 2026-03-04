@@ -2995,6 +2995,12 @@ function getDifficultyScoreMultiplier() {
   return diff ? diff.score : 1;
 }
 
+function addScore(points) {
+  const scaled = Math.round(points * getDifficultyScoreMultiplier());
+  game.score += scaled;
+  return scaled;
+}
+
 function getCoinBonus() {
   // Better Tips skill increases coins earned
   return 1 + getSkillEffect('tips');
@@ -3060,7 +3066,7 @@ function checkComboMilestone() {
       // Rewards
       if (m.speedBoost > 0) game.comboBoost = m.speedBoost;
       if (m.rating > 0) { game.rating = clamp(game.rating + m.rating, 0, 5); bumpValue('rating'); }
-      if (m.points > 0) { game.score += m.points; bumpValue('score'); }
+      if (m.points > 0) { addScore(m.points); bumpValue('score'); }
 
       // Visual feedback
       const banner = $('combo-milestone');
@@ -3208,7 +3214,7 @@ function updateHUD() {
   $('rating').textContent = stars;
   $('rating').style.animation = game.rating <= 1 ? 'blink 0.3s infinite' : '';
 
-  $('score').textContent = Math.floor(game.score * getDifficultyScoreMultiplier());
+  $('score').textContent = Math.floor(game.score);
 
   const comboMult = 1 + game.combo * 0.5;
   const boostIcon = game.comboBoost > 0 ? '⚡' : '';
@@ -3360,7 +3366,7 @@ function endlessGameOver() {
   if (inspectorEl) inspectorEl.remove();
   $('inspector-warning').style.display = 'none';
 
-  const finalScore = Math.floor(game.score * getDifficultyScoreMultiplier());
+  const finalScore = Math.floor(game.score);
   const minutesSurvived = Math.floor(game.elapsed / 60000);
   const secondsSurvived = Math.floor((game.elapsed % 60000) / 1000);
   const isNewRecord = finalScore > endlessHighScore;
@@ -3551,7 +3557,7 @@ function dailyGameOver() {
   if (inspectorEl) inspectorEl.remove();
   $('inspector-warning').style.display = 'none';
 
-  const finalScore = Math.floor(game.score * getDifficultyScoreMultiplier());
+  const finalScore = Math.floor(game.score);
   const isNewRecord = finalScore > dailyHighScore;
 
   if (isNewRecord) {
@@ -3894,7 +3900,7 @@ function update(dt) {
         sink.cleaning = false;
         sink.dirty = false;
         sink.progress = 0;
-        game.score += 25;
+        addScore(25);
         playTaskComplete();
         floatMessage('+25', 400, 350, 'good');
       }
@@ -4260,8 +4266,8 @@ function updatePeople(dt) {
           // Cleaned in time (or actively cleaning)! Award save bonus
           p.gracePending = false;
           game.stats.saves++;
-          game.score += 50;
-          floatMessage('JUST IN TIME! +50', p.x, p.y - 30, 'save');
+          const savePts = addScore(50);
+          floatMessage(`JUST IN TIME! +${savePts}`, p.x, p.y - 30, 'save');
           playStallClean();
           setBeaverMood('excited', 1200);
           // Complete cleaning instantly if still in progress
@@ -4627,7 +4633,7 @@ function clickPuddle(id) {
 
   // Check if cleaned
   if (puddle.cleanProgress >= messType.cleanTime) {
-    game.score += messType.points;
+    addScore(messType.points);
     game.stats.cleaned++;
     game.combo++;
 
@@ -4685,7 +4691,7 @@ function clickPuddleOld(id) {
 
   const puddle = game.puddles[idx];
   const points = puddle.type === 'vomit' ? 40 : 30;
-  game.score += points;
+  addScore(points);
   game.stats.cleaned++;
 
   floatMessage('+' + points + ' 🧹', puddle.x, puddle.y - 10, 'good');
@@ -4842,7 +4848,7 @@ function finishInspection() {
 
   if (dirtyCount === 0) {
     // Perfect inspection!
-    game.score += CONFIG.inspectorBonus;
+    addScore(CONFIG.inspectorBonus);
     game.rating = clamp(game.rating + 0.3, 0, 5);
     floatMessage('PERFECT INSPECTION! +' + CONFIG.inspectorBonus, 400, 200, 'combo');
     playInspectorGood();
@@ -5082,7 +5088,7 @@ function completeTask() {
     const comboMult = 1 + game.combo * 0.5;
     const vipMult = wasVip ? 2 : 1; // VIP stalls give 2x score!
     const points = Math.floor(100 * comboMult * vipMult);
-    game.score += points;
+    addScore(points);
     bumpValue('score');
     game.stats.cleaned++;
     const ratingGain = wasVip ? 0.16 : 0.08; // VIP = 2x rating boost too
@@ -5179,8 +5185,8 @@ $('towels').addEventListener('click', () => {
 
   if (game.towels < 10) {
     game.towels = 10;
-    game.score += 20;
-    floatMessage('+20 Restocked!', 60, 300, 'good');
+    const restockPts = addScore(20);
+    floatMessage(`+${restockPts} Restocked!`, 60, 300, 'good');
     playTaskComplete();
   }
 });
@@ -5218,7 +5224,7 @@ $('pow-auto').addEventListener('click', () => {
       game.powerups.auto--;
       game.stalls[dirty].state = 'empty';
       game.stalls[dirty].tasks = [];
-      game.score += 75;
+      addScore(75);
       game.stats.cleaned++;
       updateStallDOM(dirty);
 
@@ -5545,7 +5551,7 @@ function gameOver() {
   if (inspectorEl) inspectorEl.remove();
   $('inspector-warning').style.display = 'none';
 
-  const finalScore = Math.floor(game.score * getDifficultyScoreMultiplier());
+  const finalScore = Math.floor(game.score);
   const isNewRecord = finalScore > highScore;
 
   // Calculate grade for leaderboard
