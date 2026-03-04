@@ -7122,9 +7122,10 @@ async function showMPResults() {
     }
 
     const isHost = room.hostDeviceId === deviceId;
-    const myScore = isHost ? room.hostScore : room.guestScore;
-    const myRating = isHost ? room.hostRating : room.guestRating;
-    const myCleaned = isHost ? room.hostCleaned : room.guestCleaned;
+    // Use local game state for own score (always current; room may be stale from last sync)
+    const myScore = Math.floor(game.score);
+    const myRating = game.rating;
+    const myCleaned = game.stats.cleaned;
     const oppScore = isHost ? room.guestScore : room.hostScore;
     const oppRating = isHost ? room.guestRating : room.hostRating;
     const oppCleaned = isHost ? room.guestCleaned : room.hostCleaned;
