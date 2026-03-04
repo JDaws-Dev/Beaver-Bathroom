@@ -60,4 +60,27 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_type", ["type"])
     .index("by_date", ["createdAt"]),
+
+  // Multiplayer rooms - Jackbox-style join code rooms
+  rooms: defineTable({
+    code: v.string(),              // 4-digit join code
+    hostDeviceId: v.string(),
+    hostName: v.string(),
+    guestDeviceId: v.optional(v.string()),
+    guestName: v.optional(v.string()),
+    status: v.string(),            // "waiting", "playing", "finished"
+    shift: v.number(),             // Which shift to play (0-5)
+    gender: v.string(),            // "male" or "female"
+    hostScore: v.number(),
+    hostRating: v.number(),
+    hostCombo: v.number(),
+    hostCleaned: v.number(),
+    guestScore: v.number(),
+    guestRating: v.number(),
+    guestCombo: v.number(),
+    guestCleaned: v.number(),
+    createdAt: v.number(),
+  }).index("by_code", ["code"])
+    .index("by_host", ["hostDeviceId"])
+    .index("by_status", ["status"]),
 });

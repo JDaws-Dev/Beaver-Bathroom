@@ -1093,3 +1093,81 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 
 /* Hide non-essential visual elements during gameplay */
 .low-perf .stall-wood-grain,.low-perf .floor-tile::before{display:none}
+
+/* ============================================================
+   MULTIPLAYER STYLES
+   ============================================================ */
+
+/* Multiplayer Modal */
+.mp-content{max-width:360px}
+.mp-body{display:flex;flex-direction:column;gap:14px;padding:12px 0}
+.mp-desc{font-size:0.85em;color:#c9a86c;text-align:center;line-height:1.4}
+.mp-name-row{display:flex;flex-direction:column;gap:4px}
+.mp-name-label{font-size:0.75em;color:#c9a86c;text-transform:uppercase;letter-spacing:0.5px}
+.mp-name-input{width:100%;padding:10px 14px;border:2px solid #8b7355;border-radius:10px;background:rgba(0,0,0,0.4);color:#fff;font-size:1em;font-family:inherit;outline:none;transition:border-color 0.2s}
+.mp-name-input:focus{border-color:#FEF117}
+.mp-name-input.shake{animation:shake 0.3s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.mp-buttons{display:flex;flex-direction:column;gap:10px}
+.mp-host-btn,.mp-join-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:14px;font-size:1em;letter-spacing:1px}
+.mp-btn-icon{font-size:1.4em}
+.mp-btn-text{font-weight:bold;font-size:1.1em}
+.mp-btn-sub{font-size:0.65em;opacity:0.7;letter-spacing:0}
+.mp-host-btn{background:linear-gradient(180deg,#ff9a3c,#e87a1a)}
+.mp-join-btn{background:linear-gradient(180deg,#4ecdc4,#2bbbad)}
+
+/* Join Code Input */
+.mp-code-input-row{display:flex;justify-content:center;margin:8px 0}
+.mp-code-digits{width:180px;text-align:center;font-size:2.2em;letter-spacing:12px;padding:12px;border:3px solid #FEF117;border-radius:14px;background:rgba(0,0,0,0.5);color:#FEF117;font-family:'Courier New',monospace;font-weight:bold;outline:none}
+.mp-code-digits::placeholder{color:rgba(254,241,23,0.3);letter-spacing:8px}
+.mp-error{color:#ff6b6b;font-size:0.8em;text-align:center}
+.mp-error.hidden{display:none}
+
+/* Multiplayer Lobby */
+.mp-lobby-card{background:linear-gradient(180deg,rgba(61,40,20,0.95),rgba(26,16,8,0.98));border:4px solid #FEF117;border-radius:18px;padding:24px;max-width:380px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,0.7);display:flex;flex-direction:column;gap:16px;align-items:center}
+.mp-lobby-header{text-align:center}
+.mp-lobby-badge{font-size:0.75em;color:#FEF117;letter-spacing:2px;text-transform:uppercase;background:rgba(254,241,23,0.1);padding:4px 14px;border-radius:20px;border:1px solid rgba(254,241,23,0.3)}
+.mp-lobby-title{font-size:1.5em;margin-top:8px;color:#fff}
+
+/* Room Code Display */
+.mp-lobby-code-section{text-align:center;width:100%}
+.mp-lobby-code-label{font-size:0.8em;color:#c9a86c;margin-bottom:6px}
+.mp-lobby-code{font-size:3em;letter-spacing:14px;font-family:'Courier New',monospace;font-weight:bold;color:#FEF117;text-shadow:0 0 20px rgba(254,241,23,0.5);background:rgba(0,0,0,0.4);padding:12px 24px;border-radius:14px;border:2px solid rgba(254,241,23,0.3);margin-bottom:8px}
+.mp-copy-btn{font-size:0.8em;padding:6px 16px}
+
+/* Player Slots */
+.mp-lobby-players{width:100%;display:flex;flex-direction:column;gap:6px;align-items:center}
+.mp-lobby-player{display:flex;align-items:center;gap:10px;padding:12px 18px;background:rgba(0,0,0,0.3);border-radius:12px;width:100%;border:2px solid rgba(139,115,85,0.3);transition:all 0.3s}
+.mp-lobby-player.mp-player-ready{border-color:rgba(76,175,80,0.6);background:rgba(76,175,80,0.1)}
+.mp-player-icon{font-size:1.5em}
+.mp-player-name{flex:1;font-weight:bold;font-size:1em}
+.mp-player-status{font-size:0.75em;color:#8b7355;text-transform:uppercase;letter-spacing:0.5px}
+.mp-player-status.mp-ready{color:#4CAF50}
+.mp-lobby-vs{font-size:1.2em;font-weight:bold;color:#c9a86c;padding:4px 0}
+.mp-lobby-info{display:flex;gap:12px;justify-content:center}
+.mp-lobby-shift,.mp-lobby-gender{font-size:0.8em;color:#c9a86c;background:rgba(0,0,0,0.3);padding:4px 12px;border-radius:8px}
+.mp-start-btn{width:100%}
+.mp-start-btn:disabled{opacity:0.5;cursor:not-allowed;animation:none}
+
+/* Opponent HUD (during gameplay) */
+.mp-opponent-hud{position:absolute;top:44px;left:50%;transform:translateX(-50%);z-index:50;background:rgba(0,0,0,0.7);border:2px solid #c9a86c;border-radius:10px;padding:4px 14px;display:flex;flex-direction:column;align-items:center;gap:2px;backdrop-filter:blur(4px);min-width:180px;transition:border-color 0.3s}
+.mp-opponent-hud.hidden{display:none}
+.mp-opponent-hud.mp-winning{border-color:#4CAF50}
+.mp-opponent-hud.mp-losing{border-color:#ff6b6b}
+.mp-opp-label{font-size:0.55em;color:#c9a86c;text-transform:uppercase;letter-spacing:1px}
+.mp-opp-row{display:flex;align-items:center;gap:8px}
+.mp-opp-name{font-size:0.75em;color:#fff;font-weight:bold}
+.mp-opp-score{font-size:0.9em;color:#FEF117;font-weight:bold}
+.mp-opp-rating{font-size:0.6em}
+
+/* Multiplayer Result Screen */
+.mp-result-card{background:linear-gradient(180deg,rgba(61,40,20,0.95),rgba(26,16,8,0.98));border:4px solid #FEF117;border-radius:18px;padding:24px;max-width:400px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,0.7);display:flex;flex-direction:column;gap:16px;align-items:center}
+.mp-result-badge{font-size:1em;color:#FEF117;letter-spacing:2px;text-transform:uppercase}
+.mp-result-title{font-size:1.4em;color:#fff;margin:0}
+.mp-result-comparison{display:flex;align-items:center;gap:12px;width:100%}
+.mp-result-player{flex:1;text-align:center;padding:14px 8px;background:rgba(0,0,0,0.3);border-radius:12px;border:2px solid rgba(139,115,85,0.3);transition:all 0.3s}
+.mp-result-player.mp-winner{border-color:#FEF117;background:rgba(254,241,23,0.08);box-shadow:0 0 15px rgba(254,241,23,0.2)}
+.mp-result-vs{font-size:1.2em;font-weight:bold;color:#c9a86c}
+.mp-result-name{font-size:0.85em;color:#c9a86c;display:block;margin-bottom:6px}
+.mp-result-score{font-size:1.8em;font-weight:bold;color:#FEF117;margin-bottom:4px}
+.mp-result-details{display:flex;flex-direction:column;gap:2px;font-size:0.7em;color:#8b7355}

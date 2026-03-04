@@ -5329,6 +5329,14 @@ function endShift() {
   stopMusic();
   stopAutoSave();
   clearSavedState();
+
+  // Multiplayer: route to MP results instead of normal results
+  if (game.mode === 'multiplayer' && mpState.active) {
+    playWin();
+    haptic('success');
+    checkMPEnd();
+    return;
+  }
   playWin();
   haptic('success'); // Success pattern for shift complete
 
@@ -6618,3 +6626,491 @@ $('resume-modal')?.addEventListener('click', e => {
 
 // Check for saved game on page load (after small delay for other init)
 setTimeout(checkForSavedGame, 300);
+
+// ============================================================
+// MULTIPLAYER (1v1 Battle Mode)
+// ============================================================
+
+const MP_FREE_GAME_LIMIT = 3;
+
+let mpState = {
+  active: false,
+  isHost: false,
+  roomCode: null,
+  opponentName: '',
+  lobbyPollTimer: null,
+  scoreSyncTimer: null,
+  gamesPlayed: parseInt(localStorage.getItem('beaverMPGamesPlayed') || '0'),
+};
+
+function getMPGamesPlayed() {
+  return parseInt(localStorage.getItem('beaverMPGamesPlayed') || '0');
+}
+
+function incrementMPGames() {
+  const count = getMPGamesPlayed() + 1;
+  localStorage.setItem('beaverMPGamesPlayed', count.toString());
+  mpState.gamesPlayed = count;
+}
+
+function canPlayMultiplayer() {
+  return isPremium() || getMPGamesPlayed() < MP_FREE_GAME_LIMIT;
+}
+
+// Open multiplayer modal
+$('multiplayer-btn')?.addEventListener('click', () => {
+  initAudio();
+  playClick();
+
+  if (!canPlayMultiplayer()) {
+    showPaywallModal('landing');
+    return;
+  }
+
+  // Pre-fill name
+  const nameInput = $('mp-name-input');
+  if (nameInput && playerName) nameInput.value = playerName;
+
+  $('multiplayer-modal').classList.add('active');
+});
+
+$('close-multiplayer')?.addEventListener('click', () => {
+  $('multiplayer-modal').classList.remove('active');
+});
+$('multiplayer-modal')?.addEventListener('click', e => {
+  if (e.target === $('multiplayer-modal')) $('multiplayer-modal').classList.remove('active');
+});
+
+// Host game
+$('mp-host-btn')?.addEventListener('click', async () => {
+  playClick();
+  const name = $('mp-name-input')?.value?.trim();
+  if (!name) {
+    $('mp-name-input').classList.add('shake');
+    setTimeout(() => $('mp-name-input').classList.remove('shake'), 400);
+    return;
+  }
+
+  // Save name
+  if (name !== playerName) {
+    playerName = name;
+    localStorage.setItem('beaverPlayerName', name);
+    createOrUpdateUser(name);
+  }
+
+  try {
+    const result = await convex.mutation(api.multiplayer.createRoom, {
+      hostDeviceId: deviceId,
+      hostName: name,
+      shift: 0,
+      gender: selectedGender,
+    });
+
+    mpState.active = true;
+    mpState.isHost = true;
+    mpState.roomCode = result.code;
+    mpState.opponentName = '';
+
+    $('multiplayer-modal').classList.remove('active');
+    showMPLobby(result.code, name, true);
+  } catch (e) {
+    console.error('Failed to create room:', e);
+  }
+});
+
+// Join game
+$('mp-join-btn')?.addEventListener('click', () => {
+  playClick();
+  const name = $('mp-name-input')?.value?.trim();
+  if (!name) {
+    $('mp-name-input').classList.add('shake');
+    setTimeout(() => $('mp-name-input').classList.remove('shake'), 400);
+    return;
+  }
+
+  // Save name
+  if (name !== playerName) {
+    playerName = name;
+    localStorage.setItem('beaverPlayerName', name);
+    createOrUpdateUser(name);
+  }
+
+  $('multiplayer-modal').classList.remove('active');
+  $('mp-code-input').value = '';
+  $('mp-join-error').classList.add('hidden');
+  $('mp-join-modal').classList.add('active');
+  $('mp-code-input').focus();
+});
+
+$('close-mp-join')?.addEventListener('click', () => {
+  $('mp-join-modal').classList.remove('active');
+});
+$('mp-join-modal')?.addEventListener('click', e => {
+  if (e.target === $('mp-join-modal')) $('mp-join-modal').classList.remove('active');
+});
+$('mp-join-back')?.addEventListener('click', () => {
+  $('mp-join-modal').classList.remove('active');
+  $('multiplayer-modal').classList.add('active');
+});
+
+// Submit join code
+$('mp-join-submit')?.addEventListener('click', async () => {
+  playClick();
+  const code = $('mp-code-input')?.value?.trim();
+  if (!code || code.length !== 4) {
+    $('mp-join-error').textContent = 'Please enter a 4-digit code.';
+    $('mp-join-error').classList.remove('hidden');
+    return;
+  }
+
+  try {
+    const result = await convex.mutation(api.multiplayer.joinRoom, {
+      code,
+      guestDeviceId: deviceId,
+      guestName: playerName,
+    });
+
+    if (result.error) {
+      $('mp-join-error').textContent = result.error;
+      $('mp-join-error').classList.remove('hidden');
+      return;
+    }
+
+    mpState.active = true;
+    mpState.isHost = false;
+    mpState.roomCode = code;
+    mpState.opponentName = result.hostName;
+
+    // Use host's gender setting
+    selectedGender = result.gender;
+    document.querySelectorAll('.restroom-btn').forEach(b => {
+      b.classList.toggle('selected', b.dataset.gender === selectedGender);
+    });
+
+    $('mp-join-modal').classList.remove('active');
+    showMPLobby(code, playerName, false);
+  } catch (e) {
+    console.error('Failed to join room:', e);
+    $('mp-join-error').textContent = 'Connection failed. Try again.';
+    $('mp-join-error').classList.remove('hidden');
+  }
+});
+
+// Also allow enter key on code input
+$('mp-code-input')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') $('mp-join-submit')?.click();
+});
+
+// Show multiplayer lobby
+function showMPLobby(code, myName, isHost) {
+  $('mp-lobby-code').textContent = code;
+  $('mp-host-name').textContent = isHost ? myName : mpState.opponentName;
+  $('mp-lobby-shift').textContent = 'Shift 1';
+  $('mp-lobby-gender').textContent = selectedGender === 'male' ? "Men's" : "Women's";
+
+  if (isHost) {
+    $('mp-guest-name').textContent = 'Waiting...';
+    $('mp-guest-slot').classList.remove('mp-player-ready');
+    $('mp-guest-status').textContent = '--';
+    $('mp-guest-status').classList.remove('mp-ready');
+    $('mp-start-btn').disabled = true;
+    $('mp-start-btn').textContent = 'Waiting for opponent...';
+  } else {
+    $('mp-guest-name').textContent = myName;
+    $('mp-guest-slot').classList.add('mp-player-ready');
+    $('mp-guest-status').textContent = 'Ready';
+    $('mp-guest-status').classList.add('mp-ready');
+    $('mp-start-btn').disabled = true;
+    $('mp-start-btn').textContent = 'Waiting for host to start...';
+  }
+
+  showScreen('mp-lobby');
+  startLobbyPolling();
+}
+
+// Copy room code
+$('mp-copy-code')?.addEventListener('click', () => {
+  playClick();
+  const code = $('mp-lobby-code').textContent;
+  navigator.clipboard?.writeText(code).then(() => {
+    $('mp-copy-code').textContent = 'Copied!';
+    setTimeout(() => { $('mp-copy-code').textContent = 'Copy Code'; }, 2000);
+  }).catch(() => {
+    // Fallback: select text
+    $('mp-copy-code').textContent = code + ' (copied)';
+    setTimeout(() => { $('mp-copy-code').textContent = 'Copy Code'; }, 2000);
+  });
+});
+
+// Leave room
+$('mp-leave-btn')?.addEventListener('click', async () => {
+  playClick();
+  stopLobbyPolling();
+  if (mpState.roomCode) {
+    try {
+      await convex.mutation(api.multiplayer.leaveRoom, {
+        code: mpState.roomCode,
+        deviceId,
+      });
+    } catch (e) {
+      console.log('Leave room failed:', e);
+    }
+  }
+  mpState.active = false;
+  mpState.roomCode = null;
+  showScreen('title-screen');
+});
+
+// Host starts game
+$('mp-start-btn')?.addEventListener('click', async () => {
+  if (!mpState.isHost || $('mp-start-btn').disabled) return;
+  playClick();
+
+  try {
+    const result = await convex.mutation(api.multiplayer.startGame, {
+      code: mpState.roomCode,
+      hostDeviceId: deviceId,
+    });
+
+    if (result.error) {
+      console.log('Start game error:', result.error);
+      return;
+    }
+
+    stopLobbyPolling();
+    startMPGame();
+  } catch (e) {
+    console.error('Failed to start game:', e);
+  }
+});
+
+// Poll lobby for updates
+function startLobbyPolling() {
+  stopLobbyPolling();
+  mpState.lobbyPollTimer = setInterval(pollLobby, 1500);
+}
+
+function stopLobbyPolling() {
+  if (mpState.lobbyPollTimer) {
+    clearInterval(mpState.lobbyPollTimer);
+    mpState.lobbyPollTimer = null;
+  }
+}
+
+async function pollLobby() {
+  if (!mpState.roomCode) return;
+
+  try {
+    const room = await convex.query(api.multiplayer.getRoom, { code: mpState.roomCode });
+    if (!room) {
+      stopLobbyPolling();
+      mpState.active = false;
+      showScreen('title-screen');
+      return;
+    }
+
+    if (room.status === 'finished') {
+      stopLobbyPolling();
+      mpState.active = false;
+      showScreen('title-screen');
+      return;
+    }
+
+    // Update lobby UI
+    if (mpState.isHost) {
+      if (room.guestName) {
+        $('mp-guest-name').textContent = room.guestName;
+        $('mp-guest-slot').classList.add('mp-player-ready');
+        $('mp-guest-status').textContent = 'Ready';
+        $('mp-guest-status').classList.add('mp-ready');
+        $('mp-start-btn').disabled = false;
+        $('mp-start-btn').textContent = 'Start Battle!';
+        mpState.opponentName = room.guestName;
+      } else {
+        $('mp-guest-name').textContent = 'Waiting...';
+        $('mp-guest-slot').classList.remove('mp-player-ready');
+        $('mp-guest-status').textContent = '--';
+        $('mp-guest-status').classList.remove('mp-ready');
+        $('mp-start-btn').disabled = true;
+        $('mp-start-btn').textContent = 'Waiting for opponent...';
+      }
+    } else {
+      // Guest: check if game started
+      $('mp-host-name').textContent = room.hostName;
+      if (room.status === 'playing') {
+        stopLobbyPolling();
+        startMPGame();
+      }
+    }
+  } catch (e) {
+    console.log('Lobby poll failed:', e);
+  }
+}
+
+// Start multiplayer game
+function startMPGame() {
+  init();
+  game.mode = 'multiplayer';
+  game.shift = 0;
+
+  // Show opponent HUD
+  $('mp-opponent-hud')?.classList.remove('hidden');
+  $('mp-opp-hud-name').textContent = mpState.opponentName;
+  $('mp-opp-hud-score').textContent = '0';
+  $('mp-opp-hud-rating').textContent = '⭐⭐⭐⭐⭐';
+
+  startShift();
+  startScoreSync();
+}
+
+// Sync scores during gameplay
+function startScoreSync() {
+  stopScoreSync();
+  mpState.scoreSyncTimer = setInterval(syncScores, 2000);
+}
+
+function stopScoreSync() {
+  if (mpState.scoreSyncTimer) {
+    clearInterval(mpState.scoreSyncTimer);
+    mpState.scoreSyncTimer = null;
+  }
+}
+
+async function syncScores() {
+  if (!mpState.roomCode || !mpState.active) return;
+
+  try {
+    // Send my score
+    await convex.mutation(api.multiplayer.updateScore, {
+      code: mpState.roomCode,
+      deviceId,
+      score: Math.floor(game.score),
+      rating: game.rating,
+      combo: game.combo,
+      cleaned: game.stats.cleaned,
+    });
+
+    // Get opponent's score
+    const room = await convex.query(api.multiplayer.getRoom, { code: mpState.roomCode });
+    if (!room) return;
+
+    const isHost = room.hostDeviceId === deviceId;
+    const oppScore = isHost ? room.guestScore : room.hostScore;
+    const oppRating = isHost ? room.guestRating : room.hostRating;
+
+    // Update opponent HUD
+    $('mp-opp-hud-score').textContent = Math.floor(oppScore).toLocaleString();
+    let oppStars = '';
+    for (let i = 0; i < 5; i++) oppStars += oppRating >= i + 0.75 ? '⭐' : (oppRating >= i + 0.25 ? '🌟' : '☆');
+    $('mp-opp-hud-rating').textContent = oppStars;
+
+    // Color indicator: green if winning, red if losing
+    const hud = $('mp-opponent-hud');
+    if (hud) {
+      hud.classList.toggle('mp-losing', game.score < oppScore);
+      hud.classList.toggle('mp-winning', game.score > oppScore);
+    }
+  } catch (e) {
+    console.log('Score sync failed:', e);
+  }
+}
+
+// Override endShift for multiplayer
+const originalEndShift = endShift;
+// We'll hook into endShift via a check in the existing function
+// Instead, let's patch the flow after the shift ends
+
+// Watch for game.running to transition and handle MP end
+function checkMPEnd() {
+  if (!mpState.active || game.mode !== 'multiplayer') return;
+
+  stopScoreSync();
+
+  // Send final scores
+  convex.mutation(api.multiplayer.finishGame, {
+    code: mpState.roomCode,
+    deviceId,
+    score: Math.floor(game.score),
+    rating: game.rating,
+    cleaned: game.stats.cleaned,
+  }).catch(e => console.log('Finish game failed:', e));
+
+  // Count this as a multiplayer game played
+  incrementMPGames();
+
+  // Hide opponent HUD
+  $('mp-opponent-hud')?.classList.add('hidden');
+
+  // Poll for final results after a short delay
+  setTimeout(showMPResults, 1500);
+}
+
+async function showMPResults() {
+  try {
+    const room = await convex.query(api.multiplayer.getRoom, { code: mpState.roomCode });
+    if (!room) {
+      mpState.active = false;
+      return;
+    }
+
+    const isHost = room.hostDeviceId === deviceId;
+    const myScore = isHost ? room.hostScore : room.guestScore;
+    const myRating = isHost ? room.hostRating : room.guestRating;
+    const myCleaned = isHost ? room.hostCleaned : room.guestCleaned;
+    const oppScore = isHost ? room.guestScore : room.hostScore;
+    const oppRating = isHost ? room.guestRating : room.hostRating;
+    const oppCleaned = isHost ? room.guestCleaned : room.hostCleaned;
+    const oppName = isHost ? (room.guestName || 'Opponent') : room.hostName;
+
+    // Determine winner
+    const won = myScore > oppScore;
+    const tied = myScore === oppScore;
+
+    $('mp-result-badge').textContent = won ? '🏆 VICTORY 🏆' : (tied ? '🤝 TIE 🤝' : '💪 DEFEATED 💪');
+    $('mp-result-title').textContent = won ? 'You Win!' : (tied ? "It's a Tie!" : 'Better Luck Next Time!');
+
+    $('mp-result-your-name').textContent = playerName || 'You';
+    $('mp-result-your-score').textContent = Math.floor(myScore).toLocaleString();
+    let myStars = '';
+    for (let i = 0; i < 5; i++) myStars += myRating >= i + 0.75 ? '⭐' : (myRating >= i + 0.25 ? '🌟' : '☆');
+    $('mp-result-your-rating').textContent = myStars;
+    $('mp-result-your-cleaned').textContent = myCleaned + ' cleaned';
+
+    $('mp-result-opp-name').textContent = oppName;
+    $('mp-result-opp-score').textContent = Math.floor(oppScore).toLocaleString();
+    let oppStars = '';
+    for (let i = 0; i < 5; i++) oppStars += oppRating >= i + 0.75 ? '⭐' : (oppRating >= i + 0.25 ? '🌟' : '☆');
+    $('mp-result-opp-rating').textContent = oppStars;
+    $('mp-result-opp-cleaned').textContent = oppCleaned + ' cleaned';
+
+    // Highlight winner
+    const youEl = document.querySelector('.mp-result-you');
+    const oppEl = document.querySelector('.mp-result-opponent');
+    if (youEl) youEl.classList.toggle('mp-winner', won);
+    if (oppEl) oppEl.classList.toggle('mp-winner', !won && !tied);
+
+    // Show remaining free games for non-premium users
+    if (!isPremium()) {
+      const remaining = MP_FREE_GAME_LIMIT - getMPGamesPlayed();
+      if (remaining > 0) {
+        $('mp-result-title').textContent += ` (${remaining} free games left)`;
+      } else {
+        $('mp-result-title').textContent += ' (Premium required for more)';
+      }
+    }
+
+    showScreen('mp-result');
+  } catch (e) {
+    console.error('Failed to show MP results:', e);
+    mpState.active = false;
+    showScreen('title-screen');
+  }
+}
+
+// Back to menu from MP results
+$('mp-result-done')?.addEventListener('click', () => {
+  playClick();
+  mpState.active = false;
+  mpState.roomCode = null;
+  showScreen('title-screen');
+});
