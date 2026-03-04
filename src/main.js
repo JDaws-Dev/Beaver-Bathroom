@@ -5960,11 +5960,26 @@ $('locker-modal').addEventListener('click', e => {
   if (e.target === $('locker-modal')) $('locker-modal').classList.remove('active');
 });
 
+function getLockerPreviewSrc() {
+  // Show the equipped hat sprite, or color sprite if on colors tab
+  const hat = cosmeticState.equipped.hat;
+  const color = cosmeticState.equipped.color;
+  // Hat sprites take priority since they're more visually distinct
+  if (hat && hat !== 'hat-none') return `/images/cosmetics/${hat}.png`;
+  return `/images/cosmetics/${color || 'color-classic'}.png`;
+}
+
+function updateLockerPreview(id) {
+  const img = $('locker-beaver-img');
+  if (img) img.src = `/images/cosmetics/${id}.png`;
+}
+
 function showLockerRoom() {
   $('locker-modal').classList.add('active');
   $('locker-coins').textContent = (game.coins || parseInt(localStorage.getItem('beaverCoins')) || 0);
   checkCosmeticUnlocks();
-  applyCosmeticsToBeaver(document.getElementById('locker-beaver'));
+  const previewImg = $('locker-beaver-img');
+  if (previewImg) previewImg.src = getLockerPreviewSrc();
   renderLockerTab('hats');
   // Tab switching
   document.querySelectorAll('.locker-tab').forEach(tab => {
@@ -5992,7 +6007,7 @@ function renderLockerTab(category) {
     else if (c.desc) status = c.desc;
     else status = '🔒';
     return `<div class="locker-item ${equipped ? 'equipped' : ''} ${locked ? 'locked' : ''}" data-id="${c.id}">
-      <span class="locker-item-icon">${c.icon}</span>
+      <img class="locker-item-sprite" src="/images/cosmetics/${c.id}.png" alt="${c.name}" loading="lazy">
       <span class="locker-item-name">${c.name}</span>
       <span class="locker-item-status">${status}</span>
     </div>`;
@@ -6031,7 +6046,7 @@ function renderLockerTab(category) {
       if (cosmetic.category === 'hats') cosmeticState.equipped.hat = id;
       else cosmeticState.equipped.color = id;
       saveCosmeticState();
-      applyCosmeticsToBeaver(document.getElementById('locker-beaver'));
+      updateLockerPreview(id);
       applyCosmeticsToBeaver();
       playClick();
       renderLockerTab(cosmetic.category);
