@@ -1152,7 +1152,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .mp-player-status.mp-ready{color:#4CAF50}
 .mp-lobby-vs{font-size:1.2em;font-weight:bold;color:#c9a86c;padding:4px 0}
 .mp-lobby-info{display:flex;gap:12px;justify-content:center}
-.mp-lobby-shift,.mp-lobby-gender{font-size:0.8em;color:#c9a86c;background:rgba(0,0,0,0.3);padding:4px 12px;border-radius:8px}
+.mp-lobby-shift,.mp-lobby-gender,.mp-lobby-difficulty{font-size:0.8em;color:#c9a86c;background:rgba(0,0,0,0.3);padding:4px 12px;border-radius:8px}
 .mp-start-btn{width:100%}
 .mp-start-btn:disabled{opacity:0.5;cursor:not-allowed;animation:none}
 
