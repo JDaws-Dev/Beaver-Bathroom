@@ -578,6 +578,7 @@ function checkCosmeticUnlocks() {
     if (earned) {
       cosmeticState.unlocked.push(c.id);
       newUnlocks.push(c);
+      trackEvent('outfitter_unlock', { item: c.id, name: c.name, category: c.category, method: c.unlock });
     }
   }
   if (newUnlocks.length > 0) {
@@ -6561,6 +6562,7 @@ function showOutfitter() {
   $('outfitter-coins').textContent = (game.coins || parseInt(localStorage.getItem('beaverCoins')) || 0);
   checkCosmeticUnlocks();
   markOutfitterSeen();
+  trackEvent('outfitter_open', { unlocked: cosmeticState.unlocked.length, equipped: cosmeticState.equipped });
   updateOutfitterPreview();
   renderOutfitterTab('uniforms');
   // Tab switching
@@ -6753,6 +6755,7 @@ function renderOutfitterTab(category) {
             localStorage.setItem('beaverCoins', coins - cosmetic.cost);
             cosmeticState.unlocked.push(id);
             saveCosmeticState();
+            trackEvent('outfitter_purchase', { item: id, cost: cosmetic.cost, category: cosmetic.category, totalUnlocked: cosmeticState.unlocked.length });
             playTaskComplete();
             haptic('success');
             $('outfitter-coins').textContent = (game.coins || parseInt(localStorage.getItem('beaverCoins')) || 0);
@@ -6784,6 +6787,7 @@ function renderOutfitterTab(category) {
       updateOutfitterPreview();
       applyCosmeticsToBeaver();
       playClick();
+      trackEvent('outfitter_equip', { item: id, category: cosmetic.category, equipped: cosmeticState.equipped });
       renderOutfitterTab(cosmetic.category);
     });
   });

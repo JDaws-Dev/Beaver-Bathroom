@@ -108,6 +108,10 @@
     .badge.game-over { background: #f44336; }
     .badge.daily-start { background: #9C27B0; }
     .badge.purchase { background: #FFD54F; color: #000; }
+    .badge.outfitter-open { background: #E91E63; }
+    .badge.outfitter-equip { background: #00BCD4; }
+    .badge.outfitter-purchase { background: #FF9800; }
+    .badge.outfitter-unlock { background: #8BC34A; }
 
     .loading {
       color: #888;
@@ -206,6 +210,24 @@
     </div>
   </div>
 
+  <!-- Outfitter Activity Section -->
+  <div class="section">
+    <h2>🎨 Outfitter Activity</h2>
+    <div id="outfitter-stats" class="stats-grid" style="margin-bottom: 16px;">
+      <div class="loading">Loading outfitter stats...</div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" data-outfitter-filter="">All</button>
+      <button class="tab" data-outfitter-filter="outfitter_open">Opens</button>
+      <button class="tab" data-outfitter-filter="outfitter_equip">Equips</button>
+      <button class="tab" data-outfitter-filter="outfitter_purchase">Purchases</button>
+      <button class="tab" data-outfitter-filter="outfitter_unlock">Unlocks</button>
+    </div>
+    <div id="outfitter-table">
+      <div class="loading">Loading outfitter events...</div>
+    </div>
+  </div>
+
   <!-- Recent Events Section -->
   <div class="section">
     <h2>📊 Recent Events</h2>
@@ -237,6 +259,7 @@
     }
 
     let currentFilter = "";
+    let currentOutfitterFilter = "";
 
     // Time ago helper
     function timeAgo(timestamp) {
@@ -469,6 +492,80 @@
       }
     }
 
+    // Load outfitter stats
+    async function loadOutfitterStats() {
+      try {
+        const events = await convexQuery("admin:getGameEvents", { limit: 500 });
+        const outfitterEvents = events.filter(e => e.type && e.type.startsWith('outfitter_'));
+        const opens = outfitterEvents.filter(e => e.type === 'outfitter_open').length;
+        const equips = outfitterEvents.filter(e => e.type === 'outfitter_equip').length;
+        const purchases = outfitterEvents.filter(e => e.type === 'outfitter_purchase').length;
+        const unlocks = outfitterEvents.filter(e => e.type === 'outfitter_unlock').length;
+        document.getElementById('outfitter-stats').innerHTML = `
+          <div class="stat-card highlight">
+            <div class="stat-value">${outfitterEvents.length}</div>
+            <div class="stat-label">Total Outfitter Events</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${opens}</div>
+            <div class="stat-label">Opens</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${equips}</div>
+            <div class="stat-label">Equips</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${purchases}</div>
+            <div class="stat-label">Purchases</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${unlocks}</div>
+            <div class="stat-label">Unlocks</div>
+          </div>
+        `;
+      } catch (e) {
+        console.error('Failed to load outfitter stats:', e);
+        document.getElementById('outfitter-stats').innerHTML = `<div class="loading">Failed to load</div>`;
+      }
+    }
+
+    // Load outfitter events
+    async function loadOutfitterEvents(filter = "") {
+      try {
+        const events = await convexQuery("admin:getGameEvents", { limit: 100 });
+        const filtered = events.filter(e => {
+          if (!e.type || !e.type.startsWith('outfitter_')) return false;
+          if (filter && e.type !== filter) return false;
+          return true;
+        });
+        if (filtered.length === 0) {
+          document.getElementById('outfitter-table').innerHTML = `<div class="empty">No outfitter events yet</div>`;
+          return;
+        }
+        document.getElementById('outfitter-table').innerHTML = `
+          <table>
+            <tr>
+              <th>Type</th>
+              <th>Device</th>
+              <th>Details</th>
+              <th>Time</th>
+            </tr>
+            ${filtered.map(e => `
+              <tr>
+                <td><span class="badge ${e.type.replace('_', '-')}">${e.type}</span></td>
+                <td><code>${e.deviceId ? e.deviceId.slice(0, 8) + '...' : 'N/A'}</code></td>
+                <td>${e.data ? JSON.stringify(e.data).slice(0, 50) : '-'}</td>
+                <td><span class="time-ago">${timeAgo(e.createdAt)}</span></td>
+              </tr>
+            `).join('')}
+          </table>
+        `;
+      } catch (e) {
+        console.error('Failed to load outfitter events:', e);
+        document.getElementById('outfitter-table').innerHTML = `<div class="loading">Failed to load</div>`;
+      }
+    }
+
     // Load all data
     window.loadData = async function() {
       await Promise.all([
@@ -477,17 +574,29 @@
         loadVisitors(),
         loadPurchases(),
         loadUsers(),
+        loadOutfitterStats(),
+        loadOutfitterEvents(currentOutfitterFilter),
         loadEvents(currentFilter),
       ]);
     };
 
-    // Tab filtering
-    document.querySelectorAll('.tab').forEach(tab => {
+    // Tab filtering for events
+    document.querySelectorAll('.tab[data-filter]').forEach(tab => {
       tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab[data-filter]').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
         currentFilter = tab.dataset.filter;
         loadEvents(currentFilter);
+      });
+    });
+
+    // Tab filtering for outfitter
+    document.querySelectorAll('.tab[data-outfitter-filter]').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab[data-outfitter-filter]').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentOutfitterFilter = tab.dataset.outfitterFilter;
+        loadOutfitterEvents(currentOutfitterFilter);
       });
     });
 
