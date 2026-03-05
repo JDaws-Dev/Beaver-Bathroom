@@ -6117,6 +6117,37 @@ function endShift() {
     }
   }
 
+  // Hide review section initially, then fetch AI review async
+  const reviewSection = $('customer-review-section');
+  if (reviewSection) {
+    reviewSection.style.display = 'none';
+    // Fire off review generation (non-blocking)
+    convex.action(api.reviews.generateReview, {
+      score: Math.floor(game.score),
+      grade,
+      cleaned: game.stats.cleaned || 0,
+      served: game.stats.served || 0,
+      abandoned: game.stats.abandoned || 0,
+      maxCombo: game.maxCombo || 0,
+      rating: game.rating || 0,
+      shift: game.shift,
+    }).then(result => {
+      if (result && result.review) {
+        const starsStr = '⭐'.repeat(result.stars) + '☆'.repeat(5 - result.stars);
+        $('review-stars').textContent = starsStr;
+        $('review-quote').textContent = `"${result.review}"`;
+        $('review-author').textContent = `— ${result.reviewer}`;
+        reviewSection.style.display = 'block';
+        // Re-trigger animation
+        reviewSection.style.animation = 'none';
+        void reviewSection.offsetWidth;
+        reviewSection.style.animation = '';
+      }
+    }).catch(err => {
+      console.warn('Review generation failed:', err);
+    });
+  }
+
   showScreen('result-screen');
 }
 
