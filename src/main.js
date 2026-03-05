@@ -469,12 +469,22 @@ function getAccessorySrc() {
 }
 
 function applyCosmeticsToBeaver() {
+  const e = cosmeticState.equipped;
   const src = getComboSpriteSrc();
-  const fallback = `/images/cosmetics/${cosmeticState.equipped.hat || 'hat-cap'}.png`;
+  // Fallback chain: combo → shirt-base → hat-only → base
+  const fallbacks = [
+    `/images/cosmetics/shirt-base-${e.shirt || 'shirt-polo'}.png`,
+    `/images/cosmetics/${e.hat || 'hat-cap'}.png`,
+    `/images/cosmetics/base.png`,
+  ];
   const setWithFallback = (el) => {
     if (!el) return;
+    let idx = 0;
+    el.onerror = () => {
+      if (idx < fallbacks.length) { el.src = fallbacks[idx++]; }
+      else { el.onerror = null; }
+    };
     el.src = src;
-    el.onerror = () => { el.onerror = null; el.src = fallback; };
   };
   setWithFallback(document.getElementById('beaver-sprite'));
   setWithFallback(document.getElementById('title-beaver-sprite'));
@@ -6142,10 +6152,19 @@ $('outfitter-modal').addEventListener('click', e => {
 function updateOutfitterPreview() {
   const img = $('outfitter-beaver-img');
   if (img) {
+    const e = cosmeticState.equipped;
     const src = getComboSpriteSrc();
-    const fallback = `/images/cosmetics/${cosmeticState.equipped.hat || 'hat-cap'}.png`;
+    const fallbacks = [
+      `/images/cosmetics/shirt-base-${e.shirt || 'shirt-polo'}.png`,
+      `/images/cosmetics/${e.hat || 'hat-cap'}.png`,
+      `/images/cosmetics/base.png`,
+    ];
+    let idx = 0;
+    img.onerror = () => {
+      if (idx < fallbacks.length) { img.src = fallbacks[idx++]; }
+      else { img.onerror = null; }
+    };
     img.src = src;
-    img.onerror = () => { img.onerror = null; img.src = fallback; };
   }
   // Update accessory overlay in preview
   const accSrc = getAccessorySrc();
@@ -6253,20 +6272,19 @@ function renderOutfitterTab(category) {
         tierLocked ? 'locked-tier' : '',
       ].filter(Boolean).join(' ');
 
-      // Show combo preview for hats/shirts, item-only for accessories/specials
+      // Show best available preview for each category
       let thumbSrc;
-      if (c.category === 'headgear') {
-        thumbSrc = `/images/cosmetics/combo-${c.id}-${e.shirt || 'shirt-polo'}.png`;
-      } else if (c.category === 'uniforms') {
-        thumbSrc = `/images/cosmetics/combo-${e.hat || 'hat-cap'}-${c.id}.png`;
+      if (c.category === 'uniforms') {
+        // Show shirt-base (beaver wearing this shirt, no hat)
+        thumbSrc = `/images/cosmetics/shirt-base-${c.id}.png`;
       } else {
+        // Headgear, accessories, specials — show item sprite
         thumbSrc = `/images/cosmetics/${c.id}.png`;
       }
-      const fallSrc = `/images/cosmetics/${c.id}.png`;
 
       html += `<div class="${classes}" data-id="${c.id}">
         ${isNew ? '<span class="new-badge">NEW</span>' : ''}
-        <img class="outfitter-item-sprite" src="${thumbSrc}" onerror="this.onerror=null;this.src='${fallSrc}'" alt="${c.name}" loading="lazy">
+        <img class="outfitter-item-sprite" src="${thumbSrc}" onerror="this.onerror=null;this.src='/images/cosmetics/base.png'" alt="${c.name}" loading="lazy">
         <span class="outfitter-item-name">${c.name}</span>
         <span class="outfitter-item-status">${status}</span>
       </div>`;
