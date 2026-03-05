@@ -248,13 +248,15 @@ const CONFIG = {
     { level: 10, speedBoost: 5000, rating: 0.3, points: 250, msg: '🌟 LEGENDARY!' },
   ],
   towelSkipChance: 0.3,  // 30% of customers skip towel drying
-  // Mess spawn chances per source
+  // Mess spawn chances per source (base values, scaled by shift)
   messChance: {
     sinkSplash: 0.08,    // Water puddle after sink use
     stallAccident: 0.15, // Pee puddle on angry leave
     walkwayRandom: 0.02, // Random mess during rush
     vomitSick: 0.10,     // Vomit from sick customers
   },
+  // Mess frequency scales up per shift: shift 0 = 0, shift 1 = 0.3, ... shift 5 = 1.0
+  messScaleByShift: [0, 0.3, 0.5, 0.7, 0.85, 1.0],
 };
 
 // MESS_TYPES: Different mess varieties with severity and cleanup time
@@ -4230,8 +4232,8 @@ function update(dt) {
   }
   if (game.rushMode) {
     game.rushDuration -= dt;
-    // Random mess spawn during rush (chaos!)
-    if (rand() < CONFIG.messChance.walkwayRandom * (dt / 1000)) {
+    // Random mess spawn during rush (chaos!) - scaled by shift
+    if (rand() < CONFIG.messChance.walkwayRandom * getMessScale() * (dt / 1000)) {
       spawnRandomMess();
     }
     // Show countdown in rush warning
@@ -4513,22 +4515,30 @@ function spawnCustomer() {
   }
 
   // Entry messes — muddy boots, urgent accidents, or sick arrivals
+  // Scaled by shift so early shifts focus on stall cleaning
   const p = game.people[game.people.length - 1];
-  if (floor) {
+  const mScale = getMessScale();
+  if (floor && mScale > 0) {
     const floorRect = floor.getBoundingClientRect();
     // Muddy boots on entry (messy customers or random chance)
-    if (messiness === 1 || rand() < 0.08) {
+    if (rand() < (messiness === 1 ? 1.0 : 0.08) * mScale) {
       spawnPuddle(p.x + rnd(-20, 20), floorRect.height - rnd(10, floorRect.height * 0.6), 'muddy');
     }
     // Urgent customers might have a pee accident on entry
-    if (isUrgent && rand() < 0.2) {
+    if (isUrgent && rand() < 0.2 * mScale) {
       spawnPuddle(p.x + rnd(-25, 25), floorRect.height - rnd(20, floorRect.height * 0.6), 'pee');
     }
     // Small chance of vomit on arrival (sick travelers)
-    if (rand() < (messiness === 1 ? 0.1 : 0.03)) {
+    if (rand() < (messiness === 1 ? 0.1 : 0.03) * mScale) {
       spawnPuddle(p.x + rnd(-20, 20), floorRect.height - rnd(15, floorRect.height * 0.6), 'vomit');
     }
   }
+}
+
+// Get mess scale factor for the current shift (0 on shift 1, ramps to 1.0)
+function getMessScale() {
+  const idx = Math.min(game.shift, CONFIG.messScaleByShift.length - 1);
+  return CONFIG.messScaleByShift[idx];
 }
 
 // Deflect customer away from the towel dispenser if overlapping it.
@@ -4917,8 +4927,8 @@ function updatePeople(dt) {
           showBeaverTip('dirtySink');
         }
         updateSinkDOM(p.sinkIdx);
-        // Chance of water splash on floor
-        if (rand() < CONFIG.messChance.sinkSplash) {
+        // Chance of water splash on floor (scaled by shift)
+        if (rand() < CONFIG.messChance.sinkSplash * getMessScale()) {
           const sinkEl = $('sinks-area').children[p.sinkIdx];
           if (sinkEl) {
             const sinkRect = sinkEl.getBoundingClientRect();
@@ -5083,9 +5093,9 @@ function customerLeaves(stallIdx) {
     }
     person.phase = 'exitStall';
 
-    // Chance of floor mess when exiting - messy customers more likely
-    const messChance = person.messiness === 1 ? 0.35 : (person.messiness === -1 ? 0.05 : 0.15);
-    if (rand() < messChance) {
+    // Chance of floor mess when exiting - messy customers more likely, scaled by shift
+    const baseMessChance = person.messiness === 1 ? 0.35 : (person.messiness === -1 ? 0.05 : 0.15);
+    if (rand() < baseMessChance * getMessScale()) {
       const messRoll = rand();
       const messType = messRoll < 0.4 ? 'pee' : (messRoll < 0.75 ? 'vomit' : 'muddy');
       const floorEl = $('floor-area');
