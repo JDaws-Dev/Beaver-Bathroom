@@ -409,13 +409,10 @@ function saveCosmeticState() {
   localStorage.setItem('beaverCosmetics', JSON.stringify(cosmeticState));
 }
 
-function applyCosmeticsToBeaver(el) {
-  if (!el) el = document.getElementById('beaver-mascot');
-  if (!el) return;
-  const hatId = cosmeticState.equipped.hat.replace('hat-','');
-  const colorId = cosmeticState.equipped.color.replace('color-','');
-  el.dataset.hat = hatId;
-  el.dataset.color = colorId;
+function applyCosmeticsToBeaver() {
+  const sprite = document.getElementById('beaver-sprite');
+  if (!sprite) return;
+  sprite.src = getLockerPreviewSrc();
 }
 
 function checkCosmeticUnlocks() {

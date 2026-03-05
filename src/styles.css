@@ -373,6 +373,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .hud-time .value{font-size:1.1em;font-weight:bold;color:#fff}
 #beaver-mascot,#locker-beaver{--fur-1:#c9a86c;--fur-2:#a67c52;--fur-3:#8b6342;--fur-border:#5d4037;--ear-1:#8b6342;--ear-2:#6d4c2a}
 #beaver-mascot{width:48px;height:48px;position:relative;flex-shrink:0;transition:transform 0.2s}
+.beaver-sprite{width:100%;height:100%;border-radius:10px;object-fit:cover}
 .beaver-head{width:100%;height:100%;position:relative}
 .beaver-face{width:40px;height:36px;background:linear-gradient(180deg,var(--fur-1) 0%,var(--fur-2) 70%,var(--fur-3) 100%);border-radius:50% 50% 45% 45%;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:2px solid var(--fur-border);box-shadow:inset 0 -4px 8px rgba(0,0,0,0.2),0 2px 4px rgba(0,0,0,0.3)}
 .beaver-ear{width:12px;height:12px;background:linear-gradient(180deg,var(--ear-1),var(--ear-2));border-radius:50%;position:absolute;top:2px;border:2px solid var(--fur-border)}
@@ -389,22 +390,17 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .beaver-cheek{width:8px;height:6px;background:rgba(255,150,150,0.5);border-radius:50%;position:absolute;top:16px;opacity:0;transition:opacity 0.2s}
 .beaver-cheek.left{left:1px}
 .beaver-cheek.right{right:1px}
-.beaver-idle .beaver-pupil{animation:beaver-look 3s infinite}
+/* Beaver mood animations on sprite */
+.beaver-idle .beaver-sprite{animation:beaver-breathe 3s ease-in-out infinite}
 .beaver-happy{animation:beaver-bounce 0.3s ease-out}
-.beaver-happy .beaver-mouth{width:16px;height:8px;border-radius:0 0 10px 10px}
-.beaver-happy .beaver-cheek{opacity:1}
-.beaver-happy .beaver-eye{height:6px}
+.beaver-happy .beaver-sprite{filter:brightness(1.1)}
 .beaver-excited{animation:beaver-bounce 0.15s infinite}
-.beaver-excited .beaver-mouth{width:18px;height:10px;border-radius:0 0 12px 12px;background:#1a1209}
-.beaver-excited .beaver-cheek{opacity:1}
-.beaver-excited .beaver-eye{height:5px}
-.beaver-worried .beaver-eye{height:12px}
-.beaver-worried .beaver-pupil{top:4px;animation:beaver-shake 0.2s infinite}
-.beaver-worried .beaver-mouth{width:10px;height:8px;border-radius:50%;background:#2d1f14}
+.beaver-excited .beaver-sprite{filter:brightness(1.15) saturate(1.2)}
+.beaver-worried{animation:beaver-shake 0.2s infinite}
+.beaver-worried .beaver-sprite{filter:hue-rotate(-10deg) brightness(0.95)}
 .beaver-sad{transform:translateY(2px)}
-.beaver-sad .beaver-eye{height:6px}
-.beaver-sad .beaver-pupil{top:3px}
-.beaver-sad .beaver-mouth{width:12px;height:4px;border-radius:8px 8px 0 0;top:27px}
+.beaver-sad .beaver-sprite{filter:brightness(0.85) saturate(0.8)}
+@keyframes beaver-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
 @keyframes beaver-look{0%,100%{transform:translateX(0)}25%{transform:translateX(2px)}75%{transform:translateX(-2px)}}
 @keyframes beaver-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 @keyframes beaver-shake{0%,100%{transform:translateX(0)}50%{transform:translateX(2px)}}
