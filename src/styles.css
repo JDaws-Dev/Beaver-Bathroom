@@ -903,7 +903,20 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 }
 /* Phone breakpoint - extra touch-friendly */
 @media(max-width:420px){
-.title-card{padding:15px 16px 20px;border-width:4px;border-radius:12px;max-width:95%}
+.title-card{padding:10px 14px 10px;border-width:3px;border-radius:12px;max-width:95%}
+.title-hero{margin-bottom:4px}
+.title-hero .title-beaver-img{width:72px;height:72px;margin-bottom:4px}
+.title-hero h1{font-size:1.15em;letter-spacing:1px;line-height:1.05}
+.player-row{gap:8px;margin-bottom:6px}
+.title-beaver-sprite{width:52px;height:52px;border-radius:10px;border-width:2px}
+.rank-row{margin-bottom:3px}
+.rank-row .rank-badge{font-size:0.75em}
+.rank-row .rank-xp{font-size:0.65em}
+.rank-progress-bar{height:7px}
+.restroom-selector{margin-bottom:8px;padding:3px;border-radius:10px}
+.restroom-btn{padding:6px 12px;gap:2px}
+.restroom-btn svg{width:22px;height:22px}
+.restroom-btn span{font-size:0.6em}
 .title-beaver{width:70px;height:70px}
 .title-beaver .beaver-head{width:50px;height:50px}
 .title-beaver .beaver-cap{width:32px;height:14px;top:0px}
@@ -921,10 +934,18 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .title-beaver .beaver-mouth{top:26px;width:12px;height:5px}
 .title-beaver .beaver-teeth{top:24px;width:9px;height:6px}
 .title-beaver .beaver-cheek{top:17px;width:8px;height:5px}
-#title-screen h1{font-size:1.2em;letter-spacing:1px}
-.title-tagline{font-size:0.75em}
-.btn-play{padding:14px 0;font-size:1.1em}
-.btn-1v1{padding:12px 0;font-size:1em}
+.title-tagline{font-size:0.7em;margin-top:3px}
+.btn-play{padding:10px 0;font-size:1.05em;margin-bottom:5px}
+.btn-1v1{padding:9px 0;font-size:0.95em;margin-bottom:8px}
+.title-dock{gap:6px;margin-bottom:6px}
+.dock-btn{width:34px;height:34px;border-width:2px}
+.dock-btn svg{width:17px;height:17px}
+.dock-item{gap:2px;min-width:38px}
+.dock-label{font-size:0.42em}
+.title-bottom-row{margin-bottom:2px}
+.title-bottom-row .high-score{font-size:0.7em}
+.title-footer{padding-top:4px}
+.title-card::after{top:8px}
 .gender-opt{width:50px;height:54px;font-size:1.6em;min-width:44px;min-height:44px}
 .modal-content{padding:16px 14px;max-width:95%}
 .tutorial-item{font-size:0.85em}

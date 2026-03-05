@@ -442,12 +442,6 @@ const COSMETICS = [
   {id:'acc-scarf', category:'accessories', name:'Scarf', icon:'🧣', unlock:'clean200', desc:'Clean 200 stalls', tier:4, premium:true},
   {id:'acc-tool-belt', category:'accessories', name:'Tool Belt', icon:'🔧', unlock:'inspect10', desc:'Pass 10 inspections', tier:5, premium:true},
 
-  // === FUR STYLES (5) ===
-  {id:'fur-classic', category:'fur', name:'Classic Brown', icon:'🟤', unlock:'default', tier:0},
-  {id:'fur-golden', category:'fur', name:'Honey Gold', icon:'🟡', unlock:'manager', desc:'Reach Manager rank or buy', tier:3, cost:500},
-  {id:'fur-texas', category:'fur', name:'Texas Orange', icon:'🟠', unlock:'coins500', desc:'Buy for 500 coins', tier:3, cost:500},
-  {id:'fur-midnight', category:'fur', name:'Midnight', icon:'⚫', unlock:'insane6', desc:'Complete Shift 6 on Hard', tier:5, premium:true},
-  {id:'fur-albino', category:'fur', name:'Albino', icon:'⚪', unlock:'streak30', desc:'30-day login streak', tier:5, premium:true},
 ];
 
 // Tier names and rank requirements
@@ -461,25 +455,24 @@ const COSMETIC_TIERS = [
 ];
 
 let cosmeticState = JSON.parse(localStorage.getItem('beaverCosmetics') || 'null') || {
-  unlocked: ['hat-none','hat-cap','shirt-polo','shirt-none','shirt-artios','fur-classic'],
-  equipped: {hat:'hat-cap', shirt:'shirt-polo', special:null},
+  unlocked: ['hat-none','hat-cap','shirt-polo','shirt-none','shirt-artios'],
+  equipped: {hat:'hat-cap', shirt:'shirt-polo', special:null, accessory:null, fur:'fur-classic'},
   lastSeen: Date.now(),
 };
 // Migrate from activeLook format back to multi-equip
 if (cosmeticState.activeLook && !cosmeticState.equipped) {
   const id = cosmeticState.activeLook;
-  cosmeticState.equipped = {hat:'hat-cap', shirt:'shirt-polo', special:null};
+  cosmeticState.equipped = {hat:'hat-cap', shirt:'shirt-polo', special:null, accessory:null, fur:'fur-classic'};
   if (id.startsWith('hat-')) cosmeticState.equipped.hat = id;
   else if (id.startsWith('shirt-')) cosmeticState.equipped.shirt = id;
   else if (id.startsWith('acc-')) cosmeticState.equipped.accessory = id;
-  else if (id.startsWith('fur-')) cosmeticState.equipped.fur = id;
   else if (id.startsWith('special-')) cosmeticState.equipped.special = id;
   delete cosmeticState.activeLook;
 }
 // Ensure equipped has all slots
-if (!cosmeticState.equipped) cosmeticState.equipped = {hat:'hat-cap', shirt:'shirt-polo', special:null};
+if (!cosmeticState.equipped) cosmeticState.equipped = {hat:'hat-cap', shirt:'shirt-polo', special:null, accessory:null, fur:'fur-classic'};
 if (!cosmeticState.equipped.accessory) cosmeticState.equipped.accessory = null;
-if (!cosmeticState.equipped.fur) cosmeticState.equipped.fur = 'fur-classic';
+delete cosmeticState.equipped.fur;
 if (!cosmeticState.equipped.special) cosmeticState.equipped.special = null;
 if (!cosmeticState.lastSeen) cosmeticState.lastSeen = Date.now();
 // Remove old fur/color from unlocked defaults
@@ -6497,6 +6490,14 @@ function updateOutfitterPreview() {
       if (s && s.id !== 'shirt-none') parts.push(s.name);
       if (parts.length === 0) parts.push('Default Look');
     }
+    if (e.accessory) {
+      const a = COSMETICS.find(c => c.id === e.accessory);
+      if (a) parts.push(a.name);
+    }
+    if (e.fur && e.fur !== 'fur-classic') {
+      const f = COSMETICS.find(c => c.id === e.fur);
+      if (f) parts.push(f.name);
+    }
     label.textContent = parts.join(' · ');
   }
 }
@@ -6610,7 +6611,7 @@ function renderOutfitterTab(category) {
     for (const c of tiers[t]) {
       const owned = cosmeticState.unlocked.includes(c.id);
       const e = cosmeticState.equipped;
-      const isActive = e.hat === c.id || e.shirt === c.id || e.special === c.id || e.accessory === c.id || e.fur === c.id;
+      const isActive = e.hat === c.id || e.shirt === c.id || e.special === c.id || e.accessory === c.id;
       const coins = game.coins || parseInt(localStorage.getItem('beaverCoins')) || 0;
       const canBuy = !owned && c.cost && !c.premium && coins >= c.cost;
       const locked = !owned && !canBuy;
@@ -6724,8 +6725,6 @@ function renderOutfitterTab(category) {
       } else if (cosmetic.category === 'accessories') {
         // Toggle accessory — tap again to remove
         cosmeticState.equipped.accessory = cosmeticState.equipped.accessory === id ? null : id;
-      } else if (cosmetic.category === 'fur') {
-        cosmeticState.equipped.fur = id;
       } else if (cosmetic.category === 'special') {
         // Toggle special — tap again to revert to hat+shirt
         cosmeticState.equipped.special = cosmeticState.equipped.special === id ? null : id;

@@ -7,6 +7,14 @@ function generateCode(): string {
 }
 
 // Create a new multiplayer room
+const cosmeticsValidator = v.optional(v.object({
+  hat: v.optional(v.string()),
+  shirt: v.optional(v.string()),
+  special: v.optional(v.union(v.string(), v.null())),
+  accessory: v.optional(v.union(v.string(), v.null())),
+  fur: v.optional(v.string()),
+}));
+
 export const createRoom = mutation({
   args: {
     hostDeviceId: v.string(),
@@ -14,6 +22,7 @@ export const createRoom = mutation({
     shift: v.number(),
     gender: v.string(),
     difficulty: v.optional(v.string()),
+    hostCosmetics: cosmeticsValidator,
   },
   handler: async (ctx, args) => {
     // Clean up any existing waiting rooms from this host
@@ -51,6 +60,7 @@ export const createRoom = mutation({
       shift: args.shift,
       gender: args.gender,
       difficulty: args.difficulty || "normal",
+      hostCosmetics: args.hostCosmetics,
       hostScore: 0,
       hostRating: 5,
       hostCombo: 0,
@@ -72,6 +82,7 @@ export const joinRoom = mutation({
     code: v.string(),
     guestDeviceId: v.string(),
     guestName: v.string(),
+    guestCosmetics: cosmeticsValidator,
   },
   handler: async (ctx, args) => {
     const room = await ctx.db
@@ -98,6 +109,7 @@ export const joinRoom = mutation({
     await ctx.db.patch(room._id, {
       guestDeviceId: args.guestDeviceId,
       guestName: args.guestName,
+      guestCosmetics: args.guestCosmetics,
     });
 
     return {
@@ -107,6 +119,7 @@ export const joinRoom = mutation({
       shift: room.shift,
       gender: room.gender,
       difficulty: room.difficulty || "normal",
+      hostCosmetics: room.hostCosmetics,
     };
   },
 });

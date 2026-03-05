@@ -73,6 +73,20 @@ export default defineSchema({
     shift: v.number(),             // Which shift to play (0-5)
     gender: v.string(),            // "male" or "female"
     difficulty: v.optional(v.string()), // "easy", "normal", "hard", "insane"
+    hostCosmetics: v.optional(v.object({
+      hat: v.optional(v.string()),
+      shirt: v.optional(v.string()),
+      special: v.optional(v.union(v.string(), v.null())),
+      accessory: v.optional(v.union(v.string(), v.null())),
+      fur: v.optional(v.string()),
+    })),
+    guestCosmetics: v.optional(v.object({
+      hat: v.optional(v.string()),
+      shirt: v.optional(v.string()),
+      special: v.optional(v.union(v.string(), v.null())),
+      accessory: v.optional(v.union(v.string(), v.null())),
+      fur: v.optional(v.string()),
+    })),
     hostScore: v.number(),
     hostRating: v.number(),
     hostCombo: v.number(),
