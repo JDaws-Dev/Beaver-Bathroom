@@ -43,6 +43,12 @@
         <p class="high-score" id="title-high-score">🏆 High Score: <span id="high-score-val">0</span></p>
       </div>
 
+      <!-- Your beaver avatar - click to customize -->
+      <div class="title-beaver-avatar" id="title-avatar-btn">
+        <img id="title-beaver-sprite" class="title-beaver-sprite" src="/images/cosmetics/hat-none.png" alt="Your Beaver">
+        <span class="title-avatar-label">Tap to Customize</span>
+      </div>
+
       <!-- Slim progress bar -->
       <div class="player-rank-display" id="player-rank-display">
         <div class="rank-row">
@@ -85,10 +91,8 @@
       </div>
 
       <!-- Main action buttons -->
-      <div class="title-actions">
-        <button class="btn btn-play" id="start-btn">PLAY</button>
-        <button class="btn btn-1v1" id="multiplayer-btn">1v1 BATTLE</button>
-      </div>
+      <button class="btn btn-play" id="start-btn">PLAY</button>
+      <button class="btn btn-1v1" id="multiplayer-btn">⚔️ 1v1 BATTLE</button>
 
       <!-- Icon dock for menu items -->
       <div class="title-dock">
@@ -571,7 +575,7 @@
     <!-- Leaderboard display -->
     <div id="leaderboard-section" class="leaderboard-section" style="display:none">
       <h4>🏆 Top Scores</h4>
-      <div id="leaderboard-list" class="lb-list"></div>
+      <div id="go-leaderboard-list" class="lb-list"></div>
     </div>
 
     <div class="share-row">

@@ -123,22 +123,22 @@ async function submitScore(score, shift, grade) {
 
 // Update leaderboard display
 function updateLeaderboardUI() {
-  const list = $('leaderboard-list');
-  if (!list) return;
+  const html = leaderboardData.length === 0
+    ? '<div class="lb-empty">No scores yet. Be the first!</div>'
+    : leaderboardData.map((s, i) => `
+      <div class="lb-row ${s.playerName === playerName ? 'lb-you' : ''}">
+        <span class="lb-rank">${i + 1}</span>
+        <span class="lb-name">${s.playerName}</span>
+        <span class="lb-score">${s.score.toLocaleString()}</span>
+        <span class="lb-grade">${s.grade}</span>
+      </div>
+    `).join('');
 
-  if (leaderboardData.length === 0) {
-    list.innerHTML = '<div class="lb-empty">No scores yet. Be the first!</div>';
-    return;
-  }
-
-  list.innerHTML = leaderboardData.map((s, i) => `
-    <div class="lb-row ${s.playerName === playerName ? 'lb-you' : ''}">
-      <span class="lb-rank">${i + 1}</span>
-      <span class="lb-name">${s.playerName}</span>
-      <span class="lb-score">${s.score.toLocaleString()}</span>
-      <span class="lb-grade">${s.grade}</span>
-    </div>
-  `).join('');
+  // Update both title screen and game-over leaderboards
+  const titleList = $('leaderboard-list');
+  const goList = $('go-leaderboard-list');
+  if (titleList) titleList.innerHTML = html;
+  if (goList) goList.innerHTML = html;
 }
 
 // Track page visit for analytics
@@ -410,9 +410,11 @@ function saveCosmeticState() {
 }
 
 function applyCosmeticsToBeaver() {
+  const src = getLockerPreviewSrc();
   const sprite = document.getElementById('beaver-sprite');
-  if (!sprite) return;
-  sprite.src = getLockerPreviewSrc();
+  if (sprite) sprite.src = src;
+  const titleSprite = document.getElementById('title-beaver-sprite');
+  if (titleSprite) titleSprite.src = src;
 }
 
 function checkCosmeticUnlocks() {
@@ -5969,6 +5971,11 @@ $('locker-btn').addEventListener('click', () => {
   playClick();
   showLockerRoom();
 });
+$('title-avatar-btn').addEventListener('click', () => {
+  initAudio();
+  playClick();
+  showLockerRoom();
+});
 $('close-locker').addEventListener('click', () => {
   playClick();
   $('locker-modal').classList.remove('active');
@@ -6011,6 +6018,11 @@ function showLockerRoom() {
 }
 
 function renderLockerTab(category) {
+  // Show the equipped item for this category in the preview
+  const catKey = category === 'hats' ? 'hat' : category === 'shirts' ? 'shirt' : 'color';
+  const equippedId = cosmeticState.equipped[catKey];
+  if (equippedId) updateLockerPreview(equippedId);
+
   const grid = $('locker-grid');
   const items = COSMETICS.filter(c => c.category === category);
   grid.innerHTML = items.map(c => {
