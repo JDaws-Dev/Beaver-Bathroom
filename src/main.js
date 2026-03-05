@@ -953,6 +953,26 @@ function showAchievementBanner(ach) {
   }, 2500);
 }
 
+function playCosmeticUnlockSound() {
+  if (isMuted || isSfxMuted) return;
+  initAudio();
+  // Sparkly reveal: rising shimmer + chime
+  const notes = [587, 740, 880, 1175, 1397]; // D5, F#5, A5, D6, F#6
+  notes.forEach((f, i) => {
+    setTimeout(() => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = f;
+      gain.gain.value = 0.12 * sfxVolume;
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.4);
+    }, i * 100);
+  });
+}
+
 function playAchievementSound() {
   if (isMuted || isSfxMuted) return;
   initAudio();
@@ -2339,12 +2359,13 @@ let isSfxMuted = localStorage.getItem('beaverSfxMuted') === 'true';
 let sfxVolume = (parseInt(localStorage.getItem('beaverSfxVolume')) || 70) / 100;
 let musicVolume = (parseInt(localStorage.getItem('beaverMusicVolume')) || 50) / 100;
 
-// Haptics
+// Haptics — navigator.vibrate works on Android only; iOS needs visual fallback
 let hapticsEnabled = localStorage.getItem('beaverHaptics') !== 'false'; // default ON
-const canVibrate = 'vibrate' in navigator;
+const canVibrate = typeof navigator.vibrate === 'function';
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
 function haptic(type = 'light') {
-  if (!canVibrate || !hapticsEnabled) return;
+  if (!hapticsEnabled) return;
   const patterns = {
     light: 15,           // Quick tap - UI clicks
     medium: 40,          // Task complete, coin collect
@@ -2353,7 +2374,17 @@ function haptic(type = 'light') {
     warning: [30, 20, 30, 20, 30], // Low patience, inspector
     error: 150           // Customer leaves, rating drop
   };
-  try { navigator.vibrate(patterns[type] || patterns.light); } catch(e) {}
+  // Android: real vibration
+  if (canVibrate) {
+    try { navigator.vibrate(patterns[type] || patterns.light); } catch(e) {}
+  }
+  // All touch devices: visual micro-shake for strong/error/success/warning
+  if ('ontouchstart' in window && (type === 'strong' || type === 'error' || type === 'success' || type === 'warning')) {
+    const el = document.querySelector('.screen.active') || document.body;
+    el.classList.remove('haptic-bump');
+    void el.offsetWidth;
+    el.classList.add('haptic-bump');
+  }
 }
 
 function toggleHaptics() {
@@ -3285,8 +3316,33 @@ function getCoinBonus() {
 }
 
 function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  $(id).classList.add('active');
+  const current = document.querySelector('.screen.active');
+  const next = $(id);
+  if (!next) return;
+  if (current && current !== next) {
+    // Quick crossfade
+    current.classList.add('fade-out');
+    next.classList.add('active');
+    // Force display:flex before fading in
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        next.classList.add('fade-in');
+      });
+    });
+    setTimeout(() => {
+      current.classList.remove('active', 'fade-out');
+      next.classList.remove('fade-in');
+    }, 250);
+  } else {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active', 'fade-out', 'fade-in'));
+    next.classList.add('active');
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        next.classList.add('fade-in');
+      });
+    });
+    setTimeout(() => next.classList.remove('fade-in'), 250);
+  }
 }
 
 function spawnConfetti(x, y, count = 8) {
@@ -4042,12 +4098,37 @@ function startShift() {
   $('inspector-warning').style.display = 'none';
   $('pause-overlay').classList.remove('active');
 
-  game.running = true;
+  // Countdown before gameplay starts
+  const cdOverlay = $('shift-countdown');
+  const cdNum = cdOverlay.querySelector('.countdown-number');
+  cdOverlay.classList.remove('hidden');
+  game.running = false;
   game.paused = false;
-  game.lastTime = performance.now();
-  startMusic();
-  startAutoSave();
-  requestAnimationFrame(gameLoop);
+
+  const steps = ['3', '2', '1', 'GO!'];
+  let step = 0;
+  function nextStep() {
+    if (step >= steps.length) {
+      cdOverlay.classList.add('hidden');
+      game.running = true;
+      game.lastTime = performance.now();
+      startMusic();
+      startAutoSave();
+      requestAnimationFrame(gameLoop);
+      return;
+    }
+    cdNum.textContent = steps[step];
+    cdNum.classList.remove('countdown-pop');
+    void cdNum.offsetWidth;
+    cdNum.style.animation = 'none';
+    void cdNum.offsetWidth;
+    cdNum.style.animation = '';
+    if (step < 3) playTone(330 + step * 110, 0.1, 'square', 0.15);
+    else playSweep(440, 880, 0.3, 'square', 0.2);
+    step++;
+    setTimeout(nextStep, step <= 3 ? 700 : 500);
+  }
+  nextStep();
 }
 
 function gameLoop(now) {
@@ -5930,6 +6011,13 @@ function endShift() {
         </div>
       `;
       unlockSection.style.display = 'block';
+      // Re-trigger animation
+      unlockSection.style.animation = 'none';
+      void unlockSection.offsetWidth;
+      unlockSection.style.animation = '';
+      // Play unlock reveal sound after delay matching the slide-in
+      setTimeout(() => playCosmeticUnlockSound(), 800);
+      haptic('success');
       $('cosmetic-unlock-card').onclick = () => {
         showOutfitter();
       };
@@ -6417,6 +6505,52 @@ function isTierUnlocked(tier) {
   return employeeXP >= reqRank.xp;
 }
 
+function showLockedPreview(cosmetic) {
+  // Remove any existing preview
+  const existing = document.querySelector('.locked-preview-overlay');
+  if (existing) existing.remove();
+
+  // Build sprite src
+  let spriteSrc;
+  if (cosmetic.category === 'uniforms') {
+    spriteSrc = `${BASE}images/cosmetics/shirt-base-${cosmetic.id}.png`;
+  } else if (cosmetic.category === 'headgear') {
+    spriteSrc = `${BASE}images/cosmetics/combo-${cosmetic.id}-shirt-polo.png`;
+  } else {
+    spriteSrc = `${BASE}images/cosmetics/${cosmetic.id}.png`;
+  }
+
+  // Build unlock requirement text
+  const tierInfo = COSMETIC_TIERS[cosmetic.tier || 0];
+  const reqRank = tierInfo ? EMPLOYEE_RANKS.find(r => r.name === tierInfo.rankRequired) : null;
+  const tierOpen = isTierUnlocked(cosmetic.tier || 0);
+  let reqText = '';
+  if (!tierOpen && reqRank) {
+    reqText = `<div class="lp-req">🔒 Requires <strong>${reqRank.name}</strong> rank (${reqRank.xp.toLocaleString()} XP)</div>
+      <div class="lp-progress">You have ${employeeXP.toLocaleString()} / ${reqRank.xp.toLocaleString()} XP</div>`;
+  } else if (cosmetic.cost) {
+    const coins = game.coins || parseInt(localStorage.getItem('beaverCoins')) || 0;
+    reqText = `<div class="lp-req">🪙 ${cosmetic.cost} coins</div>
+      <div class="lp-progress">You have ${coins} coins</div>`;
+  } else if (cosmetic.desc) {
+    reqText = `<div class="lp-req">🔒 ${cosmetic.desc}</div>`;
+  }
+
+  const overlay = document.createElement('div');
+  overlay.className = 'locked-preview-overlay';
+  overlay.innerHTML = `
+    <div class="locked-preview-card">
+      <img src="${spriteSrc}" onerror="this.onerror=null;this.src='${BASE}images/cosmetics/base.png'" alt="${cosmetic.name}">
+      <div class="lp-name">${cosmetic.icon} ${cosmetic.name}</div>
+      ${reqText}
+      <div class="lp-dismiss">Tap to close</div>
+    </div>
+  `;
+  overlay.addEventListener('click', () => overlay.remove());
+  document.body.appendChild(overlay);
+  haptic('light');
+}
+
 function renderOutfitterTab(category) {
   const grid = $('outfitter-grid');
   const items = COSMETICS.filter(c => c.category === category);
@@ -6435,17 +6569,28 @@ function renderOutfitterTab(category) {
     const tierInfo = COSMETIC_TIERS[tierNum];
     const tierOpen = isTierUnlocked(tierNum);
     if (tierNum > 0) {
-      html += `<div class="outfitter-tier-header">
+      const reqRank = tierInfo ? EMPLOYEE_RANKS.find(r => r.name === tierInfo.rankRequired) : null;
+      const reqXP = reqRank ? reqRank.xp : 0;
+      let tierStatus = '';
+      if (!tierOpen && reqRank) {
+        const progress = Math.min(100, Math.round((employeeXP / reqXP) * 100));
+        tierStatus = `<span class="tier-req">🔒 ${reqRank.name} rank (${reqXP.toLocaleString()} XP) — ${progress}%</span>`;
+      } else {
+        tierStatus = `<span class="tier-unlocked">✓ Unlocked</span>`;
+      }
+      html += `<div class="outfitter-tier-header ${tierOpen ? '' : 'tier-locked'}">
         <span class="tier-icon">${tierInfo ? tierInfo.icon : ''}</span>
         Tier ${tierNum} — ${tierInfo ? tierInfo.name : ''}
-        ${!tierOpen ? ' 🔒' : ''}
+        ${tierStatus}
       </div>`;
     }
     for (const c of tiers[t]) {
       const owned = cosmeticState.unlocked.includes(c.id);
       const e = cosmeticState.equipped;
       const isActive = e.hat === c.id || e.shirt === c.id || e.special === c.id;
-      const locked = !owned;
+      const coins = game.coins || parseInt(localStorage.getItem('beaverCoins')) || 0;
+      const canBuy = !owned && c.cost && !c.premium && coins >= c.cost;
+      const locked = !owned && !canBuy;
       const tierLocked = !tierOpen && tierNum > 0;
       // Check if item is "new" (unlocked but not yet seen when outfitter was last opened)
       const isNew = owned && c.unlock !== 'default' && !isActive;
@@ -6463,7 +6608,8 @@ function renderOutfitterTab(category) {
         'outfitter-item',
         isActive ? 'active' : '',
         owned && !isActive ? 'owned' : '',
-        locked && !tierLocked ? 'locked' : '',
+        canBuy ? 'buyable' : '',
+        locked && !tierLocked && !canBuy ? 'locked' : '',
         tierLocked ? 'locked-tier' : '',
       ].filter(Boolean).join(' ');
 
@@ -6495,8 +6641,11 @@ function renderOutfitterTab(category) {
       const id = el.dataset.id;
       const cosmetic = COSMETICS.find(c => c.id === id);
       if (!cosmetic) return;
-      // Block tier-locked items
-      if (!isTierUnlocked(cosmetic.tier || 0)) return;
+      // Preview locked/tier-locked items on tap
+      if (!isTierUnlocked(cosmetic.tier || 0) || (!cosmeticState.unlocked.includes(id) && !cosmetic.cost)) {
+        showLockedPreview(cosmetic);
+        return;
+      }
       const owned = cosmeticState.unlocked.includes(id);
 
       if (!owned) {
@@ -6504,20 +6653,41 @@ function renderOutfitterTab(category) {
         if (cosmetic.cost) {
           const coins = game.coins || parseInt(localStorage.getItem('beaverCoins')) || 0;
           if (coins >= cosmetic.cost) {
+            // Show confirmation before purchasing
+            if (!el.dataset.confirming) {
+              el.dataset.confirming = 'true';
+              const origHTML = el.innerHTML;
+              el.innerHTML = `<div style="text-align:center;padding:4px"><div style="font-size:0.8em;color:#fdd835">Buy ${cosmetic.name}?</div><div style="font-size:1.1em;margin:4px 0">🪙 ${cosmetic.cost}</div><div style="font-size:0.7em;color:#aaa">Tap again to confirm</div></div>`;
+              el.classList.add('confirming');
+              setTimeout(() => {
+                if (el.dataset.confirming) {
+                  delete el.dataset.confirming;
+                  el.classList.remove('confirming');
+                  el.innerHTML = origHTML;
+                }
+              }, 3000);
+              return;
+            }
+            // Confirmed — purchase
+            delete el.dataset.confirming;
+            el.classList.remove('confirming');
             if (game.coins !== undefined) game.coins -= cosmetic.cost;
             localStorage.setItem('beaverCoins', coins - cosmetic.cost);
             cosmeticState.unlocked.push(id);
             saveCosmeticState();
             playTaskComplete();
+            haptic('success');
             $('outfitter-coins').textContent = (game.coins || parseInt(localStorage.getItem('beaverCoins')) || 0);
           } else {
-            return; // Can't afford
+            showLockedPreview(cosmetic);
+            return; // Can't afford — show preview
           }
         } else if (cosmetic.premium && !isPremium()) {
           showPaywallModal();
           return;
         } else {
-          return; // Not yet earned
+          showLockedPreview(cosmetic);
+          return; // Not yet earned — show preview
         }
       }
 

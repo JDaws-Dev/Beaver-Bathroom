@@ -79,7 +79,7 @@ const SPECIALS = [
   { id: 'special-zombie', prompt: `Transform this beaver into a zombie! Make the fur grayish-green, add dark circles under glowing green eyes, torn clothing, and stitches on the face. ${KEEP_SAME}` },
   { id: 'special-astronaut', prompt: `Transform this beaver into an astronaut! Add a white space helmet with a reflective visor, and a white spacesuit with patches and tubes. ${KEEP_SAME}` },
   { id: 'special-ninja', prompt: `Transform this beaver into a ninja! Add a black ninja mask covering the lower face, a black ninja headband with the tails flowing behind, and a dark gray ninja outfit. Only the eyes are visible. ${KEEP_SAME}` },
-  { id: 'special-pirate-beaver', prompt: `Transform this beaver into a pirate! Add a black eye patch over one eye, a pirate tricorn hat, a red-and-white striped pirate shirt, and a gold hoop earring. ${KEEP_SAME}` },
+  { id: 'special-pirate', prompt: `Transform this beaver into a pirate! Add a black eye patch over one eye, a pirate tricorn hat, a red-and-white striped pirate shirt, and a gold hoop earring. ${KEEP_SAME}` },
   { id: 'special-cowboy-full', prompt: `Transform this beaver into a full cowboy! Add a brown cowboy hat, a brown leather vest over a plaid western shirt, a sheriff's star badge, and a bandana around the neck. ${KEEP_SAME}` },
   { id: 'special-robot', prompt: `Transform this beaver into a robot! Replace fur with shiny silver/chrome metallic plating, add glowing blue LED eyes, antenna on top of the head, and visible circuit/panel lines on the body. ${KEEP_SAME}` },
 ];

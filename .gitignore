@@ -4,3 +4,5 @@ dist
 .env.local
 .vercel
 .env*.local
+public/images/gameplay/
+scripts/generate-gameplay-sprites.cjs

@@ -2,8 +2,10 @@
 body{font-family:system-ui,sans-serif;background:#2d1f0f;color:#eee;overflow:hidden;height:100vh;height:100dvh;display:flex;justify-content:center;align-items:center;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
 button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-card{touch-action:manipulation;-webkit-touch-callout:none}
 #game-container{width:100%;max-width:800px;height:100vh;height:100dvh;max-height:900px;display:flex;flex-direction:column;position:relative}
-.screen{display:none;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;position:absolute;inset:0;padding:20px;text-align:center}
-.screen.active{display:flex}
+.screen{display:none;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;position:absolute;inset:0;padding:20px;text-align:center;opacity:0;transition:opacity 0.25s ease-out}
+.screen.active{display:flex;opacity:1}
+.screen.fade-in{opacity:1}
+.screen.fade-out{opacity:0}
 /* Tiled bathroom wall background */
 #title-screen{background:radial-gradient(ellipse at center top,#4a3525 0%,#2d1f0f 50%,#1a1008 100%);gap:0;padding:15px 20px;overflow-y:auto;position:relative}
 #title-screen::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent 0px,transparent 20px,rgba(255,255,255,0.03) 20px,rgba(255,255,255,0.03) 21px),repeating-linear-gradient(-45deg,transparent 0px,transparent 20px,rgba(255,255,255,0.03) 20px,rgba(255,255,255,0.03) 21px);pointer-events:none}
@@ -477,16 +479,25 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .outfitter-tabs::-webkit-scrollbar{display:none}
 .outfitter-tab{flex-shrink:0;padding:8px 10px;border:none;background:transparent;color:#8b7355;font-family:inherit;font-size:0.65em;font-weight:bold;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;white-space:nowrap}
 .outfitter-tab.selected{color:#FEF117;border-bottom-color:#FEF117}
-.outfitter-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px;max-height:260px;overflow-y:auto}
-.outfitter-tier-header{grid-column:1/-1;font-size:0.65em;color:#c9a86c;font-weight:bold;padding:6px 4px 2px;border-bottom:1px solid rgba(201,168,108,0.3);display:flex;align-items:center;gap:6px}
+.outfitter-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px;max-height:min(260px,35vh);overflow-y:auto}
+.outfitter-tier-header{grid-column:1/-1;font-size:0.65em;color:#c9a86c;font-weight:bold;padding:6px 4px 2px;border-bottom:1px solid rgba(201,168,108,0.3);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.outfitter-tier-header.tier-locked{color:#8b7355}
 .outfitter-tier-header .tier-icon{font-size:1.2em}
+.outfitter-tier-header .tier-req{font-size:0.85em;color:#ff6b6b;font-weight:normal;margin-left:auto}
+.outfitter-tier-header .tier-unlocked{font-size:0.85em;color:#66bb6a;font-weight:normal;margin-left:auto}
 .outfitter-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;border-radius:8px;background:rgba(0,0,0,0.3);border:2px solid transparent;cursor:pointer;transition:all 0.2s;position:relative}
 .outfitter-item:hover{border-color:rgba(254,241,23,0.3)}
 .outfitter-item.active{border-color:#FEF117;background:rgba(254,241,23,0.1);box-shadow:0 0 8px rgba(254,241,23,0.2)}
 .outfitter-item.active::after{content:'✓';position:absolute;top:2px;right:4px;font-size:0.6em;color:#FEF117}
 .outfitter-item.owned{border-color:rgba(201,168,108,0.2)}
-.outfitter-item.locked{opacity:0.5;cursor:default}
-.outfitter-item.locked-tier{opacity:0.35;cursor:default;filter:grayscale(0.6) blur(0.5px)}
+.outfitter-item.buyable{border-color:rgba(253,216,53,0.4);background:rgba(253,216,53,0.08);cursor:pointer}
+.outfitter-item.buyable .outfitter-item-status{color:#fdd835}
+.outfitter-item.locked{opacity:0.85;cursor:pointer}
+.outfitter-item.locked .outfitter-item-sprite{filter:brightness(0.8) saturate(0.6)}
+.outfitter-item.locked-tier{opacity:0.7;cursor:pointer}
+.outfitter-item.locked-tier .outfitter-item-sprite{filter:brightness(0.6) saturate(0.4)}
+.outfitter-item.confirming{border-color:#fdd835;background:rgba(253,216,53,0.15);animation:confirm-pulse 0.8s ease-in-out infinite}
+@keyframes confirm-pulse{0%,100%{box-shadow:0 0 6px rgba(253,216,53,0.3)}50%{box-shadow:0 0 14px rgba(253,216,53,0.5)}}
 .outfitter-item .new-badge{position:absolute;top:-3px;right:-3px;background:#ff4081;color:#fff;font-size:0.45em;font-weight:bold;padding:1px 5px;border-radius:6px;text-transform:uppercase;letter-spacing:0.5px;z-index:2}
 .outfitter-item-sprite{width:52px;height:52px;border-radius:8px;object-fit:cover}
 .outfitter-item-name{font-size:0.55em;color:#c9a86c;text-align:center;font-weight:bold}
@@ -494,15 +505,31 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .outfitter-item.active .outfitter-item-status{color:#FEF117}
 .outfitter-item.locked .outfitter-item-status{color:#ff6b6b}
 .outfitter-coins{text-align:center;padding:8px;font-size:0.8em;color:#fdd835;background:rgba(0,0,0,0.3);border-top:1px solid rgba(255,255,255,0.05)}
+/* Locked item preview popup */
+.locked-preview-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:10000;padding:20px}
+.locked-preview-card{background:linear-gradient(180deg,#3d2814 0%,#2d1f0f 100%);border:2px solid #c9a86c;border-radius:16px;padding:20px;text-align:center;max-width:260px;width:100%}
+@keyframes pop-in{0%{transform:scale(0.8);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes fade-in{0%{opacity:0}100%{opacity:1}}
+.locked-preview-card img{width:120px;height:120px;border-radius:12px;object-fit:cover;border:2px solid rgba(201,168,108,0.3);margin-bottom:10px}
+.lp-name{font-size:1.1em;font-weight:bold;color:#FEF117;margin-bottom:8px}
+.lp-req{font-size:0.8em;color:#ff6b6b;margin-bottom:4px}
+.lp-progress{font-size:0.75em;color:#aaa;margin-bottom:8px}
+.lp-dismiss{font-size:0.65em;color:#666;margin-top:6px}
 /* Cosmetic unlock card (shift-end reveal) */
-.cosmetic-unlock-section{margin:10px 0}
-.cosmetic-unlock-card{display:flex;align-items:center;gap:12px;background:linear-gradient(180deg,rgba(254,241,23,0.15),rgba(254,241,23,0.05));border:2px solid rgba(254,241,23,0.4);border-radius:12px;padding:10px 14px;cursor:pointer;transition:all 0.2s;animation:unlock-glow 1.5s ease-in-out infinite}
-.cosmetic-unlock-card:hover{border-color:#FEF117;transform:scale(1.02)}
-@keyframes unlock-glow{0%,100%{box-shadow:0 0 8px rgba(254,241,23,0.2)}50%{box-shadow:0 0 16px rgba(254,241,23,0.4)}}
-.cosmetic-unlock-card img{width:48px;height:48px;border-radius:8px;object-fit:cover}
-.cosmetic-unlock-card .unlock-info{flex:1;text-align:left}
-.cosmetic-unlock-card .unlock-label{font-size:0.6em;color:#ff4081;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px}
-.cosmetic-unlock-card .unlock-name{font-size:0.9em;color:#FEF117;font-weight:bold}
+.cosmetic-unlock-section{margin:10px 0;animation:unlock-slide-in 0.5s cubic-bezier(0.34,1.56,0.64,1) both;animation-delay:0.8s;opacity:0}
+@keyframes unlock-slide-in{0%{transform:translateY(30px) scale(0.9);opacity:0}100%{transform:translateY(0) scale(1);opacity:1}}
+.cosmetic-unlock-card{display:flex;align-items:center;gap:12px;background:linear-gradient(180deg,rgba(254,241,23,0.2),rgba(255,64,129,0.1));border:2px solid rgba(254,241,23,0.5);border-radius:12px;padding:12px 16px;cursor:pointer;transition:all 0.2s;animation:unlock-glow 1.5s ease-in-out infinite;position:relative;overflow:hidden}
+.cosmetic-unlock-card::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:conic-gradient(from 0deg,transparent 0deg,rgba(254,241,23,0.15) 60deg,transparent 120deg);animation:unlock-shimmer 3s linear infinite;pointer-events:none}
+@keyframes unlock-shimmer{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.cosmetic-unlock-card:hover{border-color:#FEF117;transform:scale(1.03)}
+@keyframes unlock-glow{0%,100%{box-shadow:0 0 10px rgba(254,241,23,0.3),0 0 20px rgba(255,64,129,0.1)}50%{box-shadow:0 0 20px rgba(254,241,23,0.5),0 0 30px rgba(255,64,129,0.2)}}
+.cosmetic-unlock-card img{width:56px;height:56px;border-radius:10px;object-fit:cover;border:2px solid rgba(254,241,23,0.4);animation:unlock-sprite-bounce 0.6s cubic-bezier(0.34,1.56,0.64,1) both;animation-delay:1.1s;position:relative;z-index:1}
+@keyframes unlock-sprite-bounce{0%{transform:scale(0) rotate(-15deg)}100%{transform:scale(1) rotate(0deg)}}
+.cosmetic-unlock-card .unlock-info{flex:1;text-align:left;position:relative;z-index:1}
+.cosmetic-unlock-card .unlock-label{font-size:0.65em;color:#ff4081;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px;animation:unlock-text-in 0.4s ease-out both;animation-delay:1.3s}
+.cosmetic-unlock-card .unlock-name{font-size:0.95em;color:#FEF117;font-weight:bold;animation:unlock-text-in 0.4s ease-out both;animation-delay:1.5s}
+.cosmetic-unlock-card .unlock-cta{animation:unlock-text-in 0.4s ease-out both;animation-delay:1.7s}
+@keyframes unlock-text-in{0%{transform:translateX(-10px);opacity:0}100%{transform:translateX(0);opacity:1}}
 .cosmetic-unlock-card .unlock-cta{font-size:0.6em;color:#c9a86c}
 /* MP difficulty selector */
 .mp-difficulty-selector{margin-bottom:12px}
@@ -792,6 +819,12 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 @keyframes pulse-dirty{from{background:#ffcc80}to{background:#ffb74d}}
 @keyframes pulse-danger{from{background:#c62828}to{background:#e53935}}
 @keyframes screen-shake{0%,100%{transform:translate(0)}20%{transform:translate(calc(-1 * var(--shake-px,3px)),calc(var(--shake-px,3px) * 0.5))}40%{transform:translate(var(--shake-px,3px),calc(-1 * var(--shake-px,3px) * 0.5))}60%{transform:translate(calc(-0.6 * var(--shake-px,3px)))}80%{transform:translate(calc(0.6 * var(--shake-px,3px)))}}
+.haptic-bump{animation:haptic-bump 0.12s ease-out}
+@keyframes haptic-bump{0%{transform:scale(1)}50%{transform:scale(0.985)}100%{transform:scale(1)}}
+.countdown-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:500}
+.countdown-overlay.hidden{display:none}
+.countdown-number{font-size:5em;font-weight:900;color:#FEF117;text-shadow:0 0 30px rgba(254,241,23,0.6),0 4px 8px rgba(0,0,0,0.5);animation:countdown-pop 0.7s ease-out}
+@keyframes countdown-pop{0%{transform:scale(2.5);opacity:0}20%{transform:scale(1);opacity:1}80%{transform:scale(1);opacity:1}100%{transform:scale(0.8);opacity:0}}
 @keyframes confetti{0%{transform:translateY(0) rotate(0deg) scale(1);opacity:1}100%{transform:translateY(-80px) rotate(360deg) scale(0);opacity:0}}
 .confetti{position:absolute;font-size:1.4em;animation:confetti 0.7s forwards;pointer-events:none;z-index:200}
 /* Cleaning celebration effects */
@@ -993,6 +1026,20 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .reward-icon{font-size:1.3em}
 .reward-val{font-size:0.85em}
 .reward-lbl{font-size:0.65em}
+/* Outfitter - mobile */
+.outfitter-content{max-width:95%;width:95%}
+.outfitter-header{padding:8px 12px}
+.outfitter-header h2{font-size:0.95em}
+.outfitter-preview{padding:8px;gap:2px}
+.outfitter-preview-sprite{width:90px;height:90px}
+.outfitter-beaver-img{width:90px;height:90px}
+.outfitter-grid{gap:6px;padding:8px;max-height:min(220px,32vh)}
+.outfitter-item{padding:6px 3px;min-height:44px}
+.outfitter-item-sprite{width:46px;height:46px}
+.outfitter-tab{padding:7px 8px;font-size:0.6em}
+.outfitter-tier-header{font-size:0.6em;padding:4px 3px 2px}
+.locked-preview-card{max-width:85%;padding:16px}
+.locked-preview-card img{width:100px;height:100px}
 /* Share modal - mobile */
 .share-content{max-width:95%}
 .share-actions{flex-direction:column;gap:8px}
