@@ -4505,6 +4505,25 @@ function spawnCustomer() {
     showBeaverTip('vipCustomer');
     playVIPFanfare();
   }
+
+  // Entry messes — muddy boots, urgent accidents, or sick arrivals
+  const p = game.people[game.people.length - 1];
+  const floor = $('floor-area');
+  if (floor) {
+    const floorRect = floor.getBoundingClientRect();
+    // Muddy boots on entry (messy customers or random chance)
+    if (messiness === 1 || rand() < 0.08) {
+      spawnPuddle(p.x + rnd(-20, 20), floorRect.height - rnd(10, 40), 'muddy');
+    }
+    // Urgent customers might have a pee accident on entry
+    if (isUrgent && rand() < 0.2) {
+      spawnPuddle(p.x + rnd(-25, 25), floorRect.height - rnd(20, 50), 'pee');
+    }
+    // Small chance of vomit on arrival (sick travelers)
+    if (rand() < (messiness === 1 ? 0.1 : 0.03)) {
+      spawnPuddle(p.x + rnd(-20, 20), floorRect.height - rnd(15, 45), 'vomit');
+    }
+  }
 }
 
 function updatePeople(dt) {
