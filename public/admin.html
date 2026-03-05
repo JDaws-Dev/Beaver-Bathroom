@@ -102,6 +102,24 @@
       transform: translateY(-2px);
     }
 
+    .stat-card.clickable {
+      cursor: pointer;
+      position: relative;
+    }
+
+    .stat-card.clickable::after {
+      content: '→';
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      color: #7a6a58;
+      font-size: 0.75em;
+    }
+
+    .stat-card.clickable:hover {
+      border-color: #d4a03c;
+    }
+
     .stat-card.highlight {
       border-color: #4CAF50;
       background: linear-gradient(180deg, #1e2e18, #182414);
@@ -369,6 +387,7 @@
     <button class="main-tab" data-tab="visitors"><span class="tab-emoji">👀</span>Visitors</button>
     <button class="main-tab" data-tab="players"><span class="tab-emoji">👥</span>Players</button>
     <button class="main-tab" data-tab="outfitter"><span class="tab-emoji">🎨</span>Outfitter</button>
+    <button class="main-tab" data-tab="scores"><span class="tab-emoji">🏆</span>Scores</button>
     <button class="main-tab" data-tab="events"><span class="tab-emoji">📊</span>Events</button>
   </div>
 
@@ -429,6 +448,22 @@
     </div>
   </div>
 
+  <!-- Tab Panel: Scores -->
+  <div class="tab-panel" id="panel-scores">
+    <div class="section">
+      <h2>🏆 Leaderboard</h2>
+      <div id="scores-table">
+        <div class="loading">Loading scores...</div>
+      </div>
+    </div>
+    <div class="section">
+      <h2>📋 Daily Challenge Scores</h2>
+      <div id="daily-scores-table">
+        <div class="loading">Loading daily scores...</div>
+      </div>
+    </div>
+  </div>
+
   <!-- Tab Panel: Events -->
   <div class="tab-panel" id="panel-events">
     <div class="section">
@@ -470,16 +505,18 @@
     const mainTabs = document.querySelectorAll('.main-tab[data-tab]');
     const tabPanels = document.querySelectorAll('.tab-panel');
 
-    mainTabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        mainTabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-
-        const targetId = 'panel-' + tab.dataset.tab;
-        tabPanels.forEach(panel => {
-          panel.classList.toggle('active', panel.id === targetId);
-        });
+    function switchTab(tabName) {
+      mainTabs.forEach(t => {
+        t.classList.toggle('active', t.dataset.tab === tabName);
       });
+      tabPanels.forEach(panel => {
+        panel.classList.toggle('active', panel.id === 'panel-' + tabName);
+      });
+    }
+    window.switchTab = switchTab;
+
+    mainTabs.forEach(tab => {
+      tab.addEventListener('click', () => switchTab(tab.dataset.tab));
     });
 
     // Time ago helper
@@ -634,12 +671,12 @@
             <div class="stat-value">${stats.gameStartsThisWeek}</div>
             <div class="stat-label">This Week</div>
           </div>
-          <div class="stat-card">
+          <div class="stat-card clickable" onclick="switchTab('scores')" title="View scores">
             <div class="stat-icon">🏆</div>
             <div class="stat-value">${stats.totalScoresSubmitted}</div>
             <div class="stat-label">Scores</div>
           </div>
-          <div class="stat-card">
+          <div class="stat-card clickable" onclick="switchTab('scores')" title="View daily scores">
             <div class="stat-icon">📋</div>
             <div class="stat-value">${stats.totalDailyChallenges}</div>
             <div class="stat-label">Dailies</div>
@@ -902,6 +939,77 @@
       }
     }
 
+    // Load top scores
+    async function loadScores() {
+      try {
+        const scores = await convexQuery("scores:getTopScores", { limit: 50 });
+        if (scores.length === 0) {
+          document.getElementById('scores-table').innerHTML = `<div class="empty">No scores yet — they'll show up after players finish shifts! 🦫</div>`;
+          return;
+        }
+        document.getElementById('scores-table').innerHTML = `
+          <table>
+            <tr>
+              <th>#</th>
+              <th>Player</th>
+              <th>Score</th>
+              <th>Shift</th>
+              <th>Grade</th>
+              <th>When</th>
+            </tr>
+            ${scores.map((s, i) => `
+              <tr>
+                <td class="row-num">${i + 1}</td>
+                <td class="player-name">${s.playerName || 'Anonymous'}</td>
+                <td><strong>${s.score.toLocaleString()}</strong></td>
+                <td>${s.shift + 1}</td>
+                <td><span class="badge shift-complete">${s.grade}</span></td>
+                <td><span class="time-ago">${timeAgo(s.timestamp)}</span></td>
+              </tr>
+            `).join('')}
+          </table>
+        `;
+      } catch (e) {
+        console.error('Failed to load scores:', e);
+        document.getElementById('scores-table').innerHTML = `<div class="loading">Failed to load scores</div>`;
+      }
+    }
+
+    // Load daily challenge scores
+    async function loadDailyScores() {
+      try {
+        const today = new Date().toISOString().slice(0, 10);
+        const scores = await convexQuery("scores:getDailyScores", { date: today, limit: 50 });
+        if (scores.length === 0) {
+          document.getElementById('daily-scores-table').innerHTML = `<div class="empty">No daily scores for today yet</div>`;
+          return;
+        }
+        document.getElementById('daily-scores-table').innerHTML = `
+          <table>
+            <tr>
+              <th>#</th>
+              <th>Player</th>
+              <th>Score</th>
+              <th>Grade</th>
+              <th>When</th>
+            </tr>
+            ${scores.map((s, i) => `
+              <tr>
+                <td class="row-num">${i + 1}</td>
+                <td class="player-name">${s.playerName || 'Anonymous'}</td>
+                <td><strong>${s.score.toLocaleString()}</strong></td>
+                <td><span class="badge daily-start">${s.grade}</span></td>
+                <td><span class="time-ago">${timeAgo(s.timestamp)}</span></td>
+              </tr>
+            `).join('')}
+          </table>
+        `;
+      } catch (e) {
+        console.error('Failed to load daily scores:', e);
+        document.getElementById('daily-scores-table').innerHTML = `<div class="loading">Failed to load daily scores</div>`;
+      }
+    }
+
     // Load all data
     window.loadData = async function() {
       await Promise.all([
@@ -910,6 +1018,8 @@
         loadVisitors(),
         loadPurchases(),
         loadUsers(),
+        loadScores(),
+        loadDailyScores(),
         loadOutfitterStats(),
         loadOutfitterEvents(currentOutfitterFilter),
         loadEvents(currentFilter),
