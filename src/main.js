@@ -170,6 +170,16 @@ const SHIFT_NARRATIVES = [
   {name: 'Championship Sunday', desc: "FINAL SHIFT! Earn the Golden Plunger and become a legend!", progress: "Final Day"},
 ];
 
+// Visual themes per shift — applied to bathroom area
+const SHIFT_THEMES = [
+  {wall:'#f5f0e6', floor:'#d4c8a8', accent:'#8b7355', wallDetail:'rgba(200,190,170,0.3)', sign:'🧹 KEEP IT CLEAN!'},
+  {wall:'#f0ece0', floor:'#c8b888', accent:'#a08050', wallDetail:'rgba(180,160,120,0.3)', sign:'☕ FRESH COFFEE NEXT DOOR'},
+  {wall:'#e8e4d8', floor:'#bfb080', accent:'#907040', wallDetail:'rgba(160,140,100,0.35)', sign:'🚌 TOUR BUS PARKING →'},
+  {wall:'#f8f8f0', floor:'#d8d0c0', accent:'#607860', wallDetail:'rgba(100,150,100,0.2)', sign:'✅ INSPECTION READY'},
+  {wall:'#f5e8d0', floor:'#c8a870', accent:'#c05020', wallDetail:'rgba(200,100,50,0.15)', sign:'🎪 BBQ FEST TODAY!'},
+  {wall:'#e0d8c8', floor:'#b8a068', accent:'#c8a020', wallDetail:'rgba(200,160,30,0.2)', sign:'🏆 CHAMPIONSHIP FINALS'},
+];
+
 // Beaver the Beaver mentor tips - shown on shift intro
 const BEAVER_TIPS = [
   // Shift 1 (Training Day) tips - basics
@@ -374,9 +384,9 @@ const COSMETICS = [
   {id:'hat-cap', category:'headgear', name:"Classic Cap", icon:'🧢', unlock:'default', tier:0},
   {id:'hat-visor', category:'headgear', name:'Sun Visor', icon:'🧢', unlock:'shift1', desc:'Complete Shift 1', tier:1},
   {id:'hat-hardhat', category:'headgear', name:'Hard Hat', icon:'⛑️', unlock:'shift2', desc:'Complete Shift 2', tier:1},
-  {id:'hat-beanie', category:'headgear', name:'Beanie', icon:'🧶', unlock:'clean50', desc:'Clean 50 stalls', tier:2},
+  {id:'hat-beanie', category:'headgear', name:'Beanie', icon:'🧶', unlock:'clean50', desc:'Clean 50 stalls or buy', tier:2, cost:150},
   {id:'hat-cowboy', category:'headgear', name:'Cowboy Hat', icon:'🤠', unlock:'shift4', desc:'Complete Shift 4', tier:2, premium:true},
-  {id:'hat-sombrero', category:'headgear', name:'Sombrero', icon:'🎩', unlock:'serve200', desc:'Serve 200 customers', tier:3},
+  {id:'hat-sombrero', category:'headgear', name:'Sombrero', icon:'🎩', unlock:'serve200', desc:'Serve 200 customers or buy', tier:3, cost:350},
   {id:'hat-chef', category:'headgear', name:"Chef's Toque", icon:'👨‍🍳', unlock:'clean100', desc:'Clean 100 stalls', tier:3, premium:true},
   {id:'hat-party', category:'headgear', name:'Party Hat', icon:'🥳', unlock:'streak7', desc:'7-day login streak', tier:4, premium:true},
   {id:'hat-viking', category:'headgear', name:'Viking Helmet', icon:'⚔️', unlock:'combo25', desc:'Get a 25x combo', tier:4, premium:true},
@@ -386,7 +396,7 @@ const COSMETICS = [
   // === UNIFORMS (12) ===
   {id:'shirt-polo', category:'uniforms', name:'Red Polo', icon:'👕', unlock:'default', tier:0},
   {id:'shirt-none', category:'uniforms', name:'No Shirt', icon:'🚫', unlock:'default', tier:0},
-  {id:'shirt-artios', category:'uniforms', name:'ARTIOS Tee', icon:'🎨', unlock:'default', tier:0},
+  {id:'shirt-artios', category:'uniforms', name:'Cool Tee', icon:'🎨', unlock:'default', tier:0},
   {id:'shirt-overalls', category:'uniforms', name:'Overalls', icon:'👷', unlock:'clean25', desc:'Clean 25 stalls', tier:1},
   {id:'shirt-hawaiian', category:'uniforms', name:'Hawaiian', icon:'🌺', unlock:'shift3', desc:'Complete Shift 3', tier:2},
   {id:'shirt-lab-coat', category:'uniforms', name:'Lab Coat', icon:'🥼', unlock:'inspect5', desc:'Pass 5 inspections', tier:2},
@@ -400,16 +410,16 @@ const COSMETICS = [
   // === ACCESSORIES (8) - overlay items ===
   {id:'acc-sunglasses', category:'accessories', name:'Sunglasses', icon:'🕶️', unlock:'shift1', desc:'Complete Shift 1', tier:1},
   {id:'acc-bandana', category:'accessories', name:'Bandana', icon:'🎀', unlock:'clean25', desc:'Clean 25 stalls', tier:1},
-  {id:'acc-bowtie', category:'accessories', name:'Bow Tie', icon:'🎀', unlock:'serve100', desc:'Serve 100 customers', tier:2},
+  {id:'acc-bowtie', category:'accessories', name:'Bow Tie', icon:'🎀', unlock:'serve100', desc:'Serve 100 customers or buy', tier:2, cost:200},
   {id:'acc-gold-chain', category:'accessories', name:'Gold Chain', icon:'⛓️', unlock:'coins400', desc:'Buy for 400 coins', tier:3, cost:400},
-  {id:'acc-monocle', category:'accessories', name:'Monocle', icon:'🧐', unlock:'gradeS', desc:'Get an S grade', tier:3},
+  {id:'acc-monocle', category:'accessories', name:'Monocle', icon:'🧐', unlock:'gradeS', desc:'Get an S grade or buy', tier:3, cost:500},
   {id:'acc-headphones', category:'accessories', name:'Headphones', icon:'🎧', unlock:'streak14', desc:'14-day login streak', tier:4, premium:true},
   {id:'acc-scarf', category:'accessories', name:'Scarf', icon:'🧣', unlock:'clean200', desc:'Clean 200 stalls', tier:4, premium:true},
   {id:'acc-tool-belt', category:'accessories', name:'Tool Belt', icon:'🔧', unlock:'inspect10', desc:'Pass 10 inspections', tier:5, premium:true},
 
   // === SPECIAL (6) - NEW ===
-  {id:'special-superhero', category:'special', name:'Superhero', icon:'🦸', unlock:'combo15', desc:'Get a 15x combo', tier:2},
-  {id:'special-disco', category:'special', name:'Disco Beaver', icon:'🪩', unlock:'serve500', desc:'Serve 500 customers', tier:3},
+  {id:'special-superhero', category:'special', name:'Superhero', icon:'🦸', unlock:'combo15', desc:'Get a 15x combo or buy', tier:2, cost:250},
+  {id:'special-disco', category:'special', name:'Disco Beaver', icon:'🪩', unlock:'serve500', desc:'Serve 500 customers or buy', tier:3, cost:600},
   {id:'special-santa', category:'special', name:'Santa Beaver', icon:'🎅', unlock:'streak21', desc:'21-day login streak', tier:4, premium:true},
   {id:'special-uncle-sam', category:'special', name:'Uncle Sam', icon:'🇺🇸', unlock:'shift6', desc:'Complete Shift 6', tier:4, premium:true},
   {id:'special-zombie', category:'special', name:'Zombie Beaver', icon:'🧟', unlock:'coins1000', desc:'Buy for 1000 coins', tier:5, cost:1000},
@@ -3937,6 +3947,23 @@ function updateDailyLeaderboardUI(scores) {
   `).join('');
 }
 
+function applyShiftTheme(shiftIdx) {
+  const theme = SHIFT_THEMES[shiftIdx] || SHIFT_THEMES[0];
+  const bathroom = $('bathroom');
+  if (!bathroom) return;
+  bathroom.style.background = `linear-gradient(180deg, ${theme.wall} 0%, ${theme.floor} 100%)`;
+  bathroom.style.setProperty('--wall-detail', theme.wallDetail);
+  bathroom.style.setProperty('--accent', theme.accent);
+  // Wall sign
+  let sign = bathroom.querySelector('.shift-sign');
+  if (!sign) {
+    sign = document.createElement('div');
+    sign.className = 'shift-sign';
+    bathroom.appendChild(sign);
+  }
+  sign.textContent = theme.sign;
+}
+
 function showShiftIntro() {
   const cfg = getShiftConfig();
   const narrative = SHIFT_NARRATIVES[game.shift] || SHIFT_NARRATIVES[0];
@@ -3956,6 +3983,7 @@ function showShiftIntro() {
 function startShift() {
   // Track game start
   trackEvent('game_start', { mode: game.mode, shift: game.shift, gender: game.gender });
+  applyShiftTheme(game.shift);
 
   const cfg = getShiftConfig();
   game.time = cfg.duration;
@@ -6344,7 +6372,7 @@ function renderOutfitterTab(category) {
       if (isActive) status = '✓ ACTIVE';
       else if (owned) status = 'Owned';
       else if (tierLocked) status = `🔒 ${tierInfo ? tierInfo.rankRequired : 'Locked'}`;
-      else if (c.cost) status = `🪙 ${c.cost}`;
+      else if (c.cost && !c.premium) status = `🪙 ${c.cost}`;
       else if (c.premium && !isPremium()) status = '🔒 Premium';
       else if (c.desc) status = c.desc;
       else status = '🔒';
