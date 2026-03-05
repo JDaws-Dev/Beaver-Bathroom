@@ -32,6 +32,10 @@ const SHIRTS = [
   { id: 'shirt-jersey', prompt: `Change this beaver's shirt to a sports jersey - red and white with number 82 on the front. Also remove any hat from the head. ${KEEP_SAME}` },
   { id: 'shirt-hoodie', prompt: `Change this beaver's shirt to a cozy gray hoodie sweatshirt with the hood down. Also remove any hat from the head. ${KEEP_SAME}` },
   { id: 'shirt-tuxedo', prompt: `Change this beaver's shirt to a formal black tuxedo vest with a white dress shirt and black bow tie. Also remove any hat from the head. ${KEEP_SAME}` },
+  { id: 'shirt-tank', prompt: `Change this beaver's shirt to a white athletic tank top/sleeveless undershirt, showing the beaver's furry arms. Also remove any hat from the head. ${KEEP_SAME}` },
+  { id: 'shirt-denim', prompt: `Change this beaver's shirt to a classic blue denim jacket with copper buttons and a collar. Also remove any hat from the head. ${KEEP_SAME}` },
+  { id: 'shirt-letterman', prompt: `Change this beaver's shirt to a red and white varsity letterman jacket with a big letter "B" patch on the chest. Also remove any hat from the head. ${KEEP_SAME}` },
+  { id: 'shirt-poncho', prompt: `Change this beaver's clothing to a colorful Mexican-style poncho with striped patterns in red, orange, and yellow. Also remove any hat from the head. ${KEEP_SAME}` },
 ];
 
 // === HAT EDITS: applied on top of each shirt variant ===
@@ -48,6 +52,10 @@ const HATS = [
   { id: 'hat-viking', prompt: `Add a metal Viking helmet with curved horns on the sides on this beaver character's head. ${KEEP_SAME}` },
   { id: 'hat-crown', prompt: `Add a shiny golden royal crown with red and blue jewels on top of this beaver character's head. ${KEEP_SAME}` },
   { id: 'hat-tophat', prompt: `Add a tall black top hat with a gold band on top of this beaver character's head. ${KEEP_SAME}` },
+  { id: 'hat-bucket', prompt: `Add a casual khaki/tan bucket hat (fisherman's hat) with a floppy brim on this beaver character's head. ${KEEP_SAME}` },
+  { id: 'hat-headband', prompt: `Add a red athletic sweatband/headband across this beaver character's forehead. ${KEEP_SAME}` },
+  { id: 'hat-fedora', prompt: `Add a stylish gray fedora hat with a dark band on this beaver character's head. ${KEEP_SAME}` },
+  { id: 'hat-pirate', prompt: `Add a black pirate tricorn hat with a white skull and crossbones emblem on the front on this beaver character's head. ${KEEP_SAME}` },
 ];
 
 // === ACCESSORIES: small overlay items generated separately ===
@@ -70,6 +78,10 @@ const SPECIALS = [
   { id: 'special-uncle-sam', prompt: `Transform this beaver into Uncle Sam! Add a tall red-white-blue striped top hat with stars, and a blue coat with star-spangled vest. ${KEEP_SAME}` },
   { id: 'special-zombie', prompt: `Transform this beaver into a zombie! Make the fur grayish-green, add dark circles under glowing green eyes, torn clothing, and stitches on the face. ${KEEP_SAME}` },
   { id: 'special-astronaut', prompt: `Transform this beaver into an astronaut! Add a white space helmet with a reflective visor, and a white spacesuit with patches and tubes. ${KEEP_SAME}` },
+  { id: 'special-ninja', prompt: `Transform this beaver into a ninja! Add a black ninja mask covering the lower face, a black ninja headband with the tails flowing behind, and a dark gray ninja outfit. Only the eyes are visible. ${KEEP_SAME}` },
+  { id: 'special-pirate-beaver', prompt: `Transform this beaver into a pirate! Add a black eye patch over one eye, a pirate tricorn hat, a red-and-white striped pirate shirt, and a gold hoop earring. ${KEEP_SAME}` },
+  { id: 'special-cowboy-full', prompt: `Transform this beaver into a full cowboy! Add a brown cowboy hat, a brown leather vest over a plaid western shirt, a sheriff's star badge, and a bandana around the neck. ${KEEP_SAME}` },
+  { id: 'special-robot', prompt: `Transform this beaver into a robot! Replace fur with shiny silver/chrome metallic plating, add glowing blue LED eyes, antenna on top of the head, and visible circuit/panel lines on the body. ${KEEP_SAME}` },
 ];
 
 function generateBase() {

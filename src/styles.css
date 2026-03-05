@@ -416,6 +416,20 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .beaver-speech::after{content:'';position:absolute;left:-5px;top:50%;transform:translateY(-50%);border:5px solid transparent;border-right-color:#fff}
 .beaver-speech.active{opacity:1;animation:speech-pop 0.3s cubic-bezier(0.34,1.56,0.64,1)}
 @keyframes speech-pop{0%{opacity:0;transform:translateY(-50%) scale(0.8)}100%{opacity:1;transform:translateY(-50%) scale(1)}}
+/* Combo timer bar */
+.combo-timer{height:3px;border-radius:2px;margin-top:2px;background:#f5a623;transition:width 0.1s linear;width:0}
+.combo-timer.active{background:linear-gradient(90deg,#e53935,#f5a623)}
+.combo-timer.warning{background:#e53935;animation:combo-pulse 0.5s infinite}
+@keyframes combo-pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+/* Result screen beaver */
+.result-beaver{margin:0 auto 8px;width:80px;height:80px}
+.result-beaver-img{width:100%;height:100%;border-radius:14px;object-fit:cover;border:3px solid #f5a623}
+.result-beaver.celebrate{animation:result-beaver-celebrate 0.6s ease-out}
+.result-beaver.sad .result-beaver-img{filter:grayscale(0.3) brightness(0.9)}
+@keyframes result-beaver-celebrate{0%{transform:scale(1) rotate(0deg)}25%{transform:scale(1.15) rotate(-5deg)}50%{transform:scale(1.1) rotate(5deg)}75%{transform:scale(1.05) rotate(-2deg)}100%{transform:scale(1) rotate(0deg)}}
+/* Customer tip float */
+.float-tip{position:absolute;pointer-events:none;font-size:0.85em;font-weight:bold;color:#43a047;text-shadow:0 1px 2px rgba(0,0,0,0.5);animation:tip-float 1.2s ease-out forwards;z-index:50}
+@keyframes tip-float{0%{opacity:1;transform:translateY(0) scale(1)}50%{opacity:1;transform:translateY(-20px) scale(1.1)}100%{opacity:0;transform:translateY(-40px) scale(0.8)}}
 /* Fur color variants */
 [data-color="golden"]{--fur-1:#ffd700;--fur-2:#daa520;--fur-3:#b8860b;--fur-border:#8b6914;--ear-1:#b8860b;--ear-2:#8b6914}
 [data-color="midnight"]{--fur-1:#4a4a5a;--fur-2:#35354a;--fur-3:#25253a;--fur-border:#1a1a2e;--ear-1:#35354a;--ear-2:#1a1a2e}
@@ -663,7 +677,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .task-btn:active{transform:scale(0.97) translateY(2px);box-shadow:inset 0 2px 4px rgba(0,0,0,0.4),0 2px 0 #5c0000}
 .task-btn.done{background:linear-gradient(180deg,#66bb6a 0%,#43a047 50%,#2e7d32 100%);border-color:#1b5e20;box-shadow:inset 0 2px 0 rgba(255,255,255,0.25),0 4px 0 #1b5e20,0 5px 8px rgba(0,0,0,0.3);opacity:0.85}
 .task-btn.active{border-color:#ffd700;box-shadow:0 0 20px rgba(255,215,0,0.6),inset 0 2px 0 rgba(255,255,255,0.2),0 4px 0 #5c0000;animation:glow 0.5s infinite alternate}
-.task-btn .progress{position:absolute;bottom:0;left:0;height:5px;background:linear-gradient(90deg,#f5a623,#fdd835);transition:width 0.05s;border-radius:0 4px 4px 0}
+.task-btn .progress{position:absolute;bottom:0;left:0;height:100%;background:linear-gradient(90deg,rgba(76,175,80,0.6),rgba(102,187,106,0.6));transition:width 0.05s;border-radius:5px;pointer-events:none}
 #powerups{display:flex;gap:8px;padding:10px 8px;background:repeating-linear-gradient(90deg,#3d2814 0px,#4a3424 2px,#2d1f0f 4px,#3d2814 6px),linear-gradient(180deg,#3d2814 0%,#2d1f0f 100%);background-blend-mode:overlay;border-top:4px solid #FEF117;justify-content:center;box-shadow:inset 0 4px 8px rgba(0,0,0,0.3);flex-wrap:wrap}
 .powerup{padding:8px 12px;background:linear-gradient(180deg,#5a4a38 0%,#4a3a28 50%,#3a2a18 100%);border:3px solid #6a5a48;border-radius:10px;color:#fff;font-size:0.7em;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all 0.18s cubic-bezier(0.34,1.56,0.64,1);box-shadow:inset 0 2px 0 rgba(255,255,255,0.15),inset 0 -2px 4px rgba(0,0,0,0.3),0 3px 6px rgba(0,0,0,0.3);text-shadow:0 1px 2px rgba(0,0,0,0.4);white-space:nowrap}
 .powerup-text{display:inline}
@@ -771,6 +785,8 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 #combo.combo-legendary{animation:combo-pulse-intense 0.25s ease-in-out infinite,combo-glow-legendary 0.25s ease-in-out infinite}
 #play-area.combo-edge-glow{animation:screen-edge-glow 0.6s ease-in-out infinite}
 #play-area.combo-edge-legendary{animation:screen-edge-legendary 0.4s ease-in-out infinite}
+#play-area.rating-critical{box-shadow:inset 0 0 40px rgba(229,57,53,0.4) !important;animation:rating-danger 0.6s ease-in-out infinite !important}
+@keyframes rating-danger{0%,100%{box-shadow:inset 0 0 30px rgba(229,57,53,0.3)}50%{box-shadow:inset 0 0 50px rgba(229,57,53,0.6)}}
 @keyframes pulse{from{box-shadow:0 0 8px #1e88e5}to{box-shadow:0 0 16px #1e88e5}}
 @keyframes glow{from{box-shadow:0 0 8px #f5a623}to{box-shadow:0 0 18px #f5a623}}
 @keyframes pulse-dirty{from{background:#ffcc80}to{background:#ffb74d}}
@@ -823,6 +839,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .powerup.clicked{animation:click-pulse 0.15s ease-out}
 /* Mobile/tablet breakpoint */
 @media(max-width:600px){
+.shift-sign{display:none}
 #game-container{max-height:100vh}
 #hud{padding:8px 12px}
 .hud-item .label{font-size:0.5em}

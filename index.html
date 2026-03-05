@@ -451,9 +451,13 @@
 
   <div id="game-screen" class="screen">
     <div id="hud">
+      <div id="beaver-mascot" class="beaver-idle">
+        <img id="beaver-sprite" class="beaver-sprite" src="/images/cosmetics/combo-hat-cap-shirt-polo.png" alt="Beaver">
+        <div id="beaver-speech" class="beaver-speech"></div>
+      </div>
       <div class="hud-item hud-rating"><div class="label">Rating</div><div class="value" id="rating">⭐⭐⭐⭐⭐</div></div>
       <div class="hud-item hud-score"><div class="label">Score</div><div class="value" id="score">0</div></div>
-      <div class="hud-item hud-combo"><div class="label">Combo</div><div class="value" id="combo">x1</div></div>
+      <div class="hud-item hud-combo"><div class="label">Combo</div><div class="value" id="combo">x1</div><div class="combo-timer" id="combo-timer"></div></div>
       <div class="hud-item hud-time"><div class="label">Time</div><div class="value" id="timer">1:00</div></div>
       <button id="settings-btn" aria-label="Settings">⚙️</button>
     </div>
@@ -469,10 +473,6 @@
     <!-- Hidden elements for JS compatibility -->
     <div id="dirty-count" style="display:none">0</div>
     <div id="dirty-sinks" style="display:none">0</div>
-    <div id="beaver-mascot" class="beaver-idle" style="display:none">
-      <img id="beaver-sprite" class="beaver-sprite" src="/images/cosmetics/combo-hat-cap-shirt-polo.png" alt="Beaver">
-      <div id="beaver-speech" class="beaver-speech"></div>
-    </div>
     <div id="play-area">
       <div id="bathroom">
         <div id="stalls-row"></div>
@@ -511,6 +511,9 @@
   </div>
 
   <div id="result-screen" class="screen">
+    <div id="result-beaver" class="result-beaver">
+      <img id="result-beaver-img" class="result-beaver-img" src="/images/cosmetics/combo-hat-cap-shirt-polo.png" alt="Beaver">
+    </div>
     <h2 id="result-title">Shift Complete!</h2>
     <div id="result-rating"></div>
     <div class="stats-grid" id="result-stats"></div>

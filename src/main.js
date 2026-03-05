@@ -4,6 +4,9 @@ import { api } from "../convex/_generated/api";
 // Initialize Convex client
 const convex = new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL);
 
+// Base URL for assets (handles Vite base path)
+const BASE = import.meta.env.BASE_URL || '/';
+
 // Auth state
 let currentUser = null;
 let deviceId = localStorage.getItem('beaverDeviceId');
@@ -231,8 +234,8 @@ const CONFIG = {
   ],
   patience: 10000,
   walkSpeed: 120,
-  baseTaskTime: 500,   // Base time per task
-  clickBoost: 80,      // Each click reduces time by this much
+  baseTaskTime: 1200,  // Base time per task (ms worth of progress needed)
+  clickBoost: 50,      // Each mash tap reduces time by this much
   sinkCleanTime: 400,
   rushChance: 0.15,    // Chance of rush hour per shift
   inspectorChance: 0.25,  // Chance of inspector visit per shift
@@ -470,11 +473,11 @@ function saveCosmeticState() {
 function getComboSpriteSrc() {
   const e = cosmeticState.equipped;
   // Special overrides everything
-  if (e.special) return `/images/cosmetics/${e.special}.png`;
+  if (e.special) return `${BASE}images/cosmetics/${e.special}.png`;
   // Combo sprite: hat + shirt
   const hat = e.hat || 'hat-cap';
   const shirt = e.shirt || 'shirt-polo';
-  return `/images/cosmetics/combo-${hat}-${shirt}.png`;
+  return `${BASE}images/cosmetics/combo-${hat}-${shirt}.png`;
 }
 
 
@@ -483,9 +486,9 @@ function applyCosmeticsToBeaver() {
   const src = getComboSpriteSrc();
   // Fallback chain: combo → shirt-base → hat-only → base
   const fallbacks = [
-    `/images/cosmetics/shirt-base-${e.shirt || 'shirt-polo'}.png`,
-    `/images/cosmetics/${e.hat || 'hat-cap'}.png`,
-    `/images/cosmetics/base.png`,
+    `${BASE}images/cosmetics/shirt-base-${e.shirt || 'shirt-polo'}.png`,
+    `${BASE}images/cosmetics/${e.hat || 'hat-cap'}.png`,
+    `${BASE}images/cosmetics/base.png`,
   ];
   const setWithFallback = (el) => {
     if (!el) return;
@@ -832,7 +835,7 @@ function showRankUpBanner(rank) {
 }
 
 function playRankUpSound() {
-  if (isMuted) return;
+  if (isMuted || isSfxMuted) return;
   initAudio();
   // Grand fanfare for promotion
   const freqs = [392, 523, 659, 784, 1047]; // G4, C5, E5, G5, C6
@@ -951,7 +954,7 @@ function showAchievementBanner(ach) {
 }
 
 function playAchievementSound() {
-  if (isMuted) return;
+  if (isMuted || isSfxMuted) return;
   initAudio();
   // Ascending triumphant arpeggio
   const freqs = [523, 659, 784, 1047]; // C5, E5, G5, C6
@@ -1285,7 +1288,7 @@ function showCoinCollect(amount) {
 
 // Play celebratory sound for daily reward
 function playDailyRewardSound() {
-  if (isMuted) return;
+  if (isMuted || isSfxMuted) return;
   initAudio();
   // Ascending coin collect arpeggio
   const freqs = [392, 523, 659, 784]; // G4, C5, E5, G5
@@ -2406,7 +2409,7 @@ function playTone(freq, duration, type = 'sine', volume = 0.2) {
 
 // Helper: play a quick frequency sweep (for cartoony effects)
 function playSweep(startFreq, endFreq, duration, type = 'sine', volume = 0.2) {
-  if (!audioCtx || isMuted) return;
+  if (!audioCtx || isMuted || isSfxMuted) return;
   if (audioCtx.state === 'suspended') {
     audioCtx.resume();
     return;
@@ -3177,6 +3180,9 @@ function init() {
     skills: {scrub: 0, patience: 0, tips: 0},  // Passive skills (earned per shift)
     comboBoost: 0,            // Remaining duration of combo speed boost
     lastMilestone: 0,         // Last milestone level achieved (to avoid re-triggering)
+    comboTimer: 0,            // Time remaining before combo resets (ms)
+    comboTimerMax: 0,         // Max combo timer for progress bar
+    tipsEarned: 0,            // Total coins earned from customer tips this shift
     isMultiplayer: false,     // Set true for 1v1 games (enables difficulty modifiers)
   };
 
@@ -3494,7 +3500,18 @@ function updateHUD() {
     stars += game.rating >= i + 0.75 ? '⭐' : (game.rating >= i + 0.25 ? '🌟' : '☆');
   }
   $('rating').textContent = stars;
-  $('rating').style.animation = game.rating <= 1 ? 'blink 0.3s infinite' : '';
+  const ratingEl = $('rating');
+  const playArea2 = $('play-area');
+  if (game.rating <= 1) {
+    ratingEl.style.animation = 'blink 0.3s infinite';
+    playArea2.classList.add('rating-critical');
+  } else if (game.rating <= 1.5) {
+    ratingEl.style.animation = 'blink 0.8s infinite';
+    playArea2.classList.remove('rating-critical');
+  } else {
+    ratingEl.style.animation = '';
+    playArea2.classList.remove('rating-critical');
+  }
 
   $('score').textContent = Math.floor(game.score);
 
@@ -4049,15 +4066,18 @@ function gameLoop(now) {
   const dt = Math.min(now - game.lastTime, 100);
   game.lastTime = now;
 
-  update(dt);
+  try {
+    update(dt);
+  } catch(e) { console.error('update error:', e); }
 
   // Throttle HUD updates for better mobile performance
-  if (now - perf.lastHudUpdate >= perf.hudUpdateInterval) {
-    updateHUD();
-    perf.lastHudUpdate = now;
-  }
-
-  renderPeople();
+  try {
+    if (now - perf.lastHudUpdate >= perf.hudUpdateInterval) {
+      updateHUD();
+      perf.lastHudUpdate = now;
+    }
+    renderPeople();
+  } catch(e) { console.error('render error:', e); }
 
   requestAnimationFrame(gameLoop);
 }
@@ -4112,9 +4132,13 @@ function update(dt) {
     if (rand() < CONFIG.messChance.walkwayRandom * (dt / 1000)) {
       spawnRandomMess();
     }
+    // Show countdown in rush warning
+    const rushSec = Math.max(0, Math.ceil(game.rushDuration / 1000));
+    $('rush-warning').textContent = `🚌 TOUR BUS! ${rushSec}s 🚌`;
     if (game.rushDuration <= 0) {
       game.rushMode = false;
       $('rush-warning').style.display = 'none';
+      $('rush-warning').textContent = '🚌 TOUR BUS ARRIVING! 🚌';
       if (!game.inspector) setBeaverMood('idle', 0);
     }
   }
@@ -4180,14 +4204,22 @@ function update(dt) {
 
   // Update active cleaning (auto-progress, but clicking is faster!)
   if (game.activeStall >= 0 && game.activeTask >= 0) {
-    const speed = game.effects.speed > 0 ? 2 : 1;
-    game.taskProgress += dt * 0.3 * speed; // Slow auto-progress
+    const stall = game.stalls[game.activeStall];
+    // Guard: ensure active task still valid
+    if (!stall || !stall.tasks || !stall.tasks[game.activeTask] || stall.tasks[game.activeTask].done) {
+      game.activeTask = -1;
+      game.activeStall = -1;
+      hideTaskPanel();
+    } else {
+      const speed = game.effects.speed > 0 ? 2 : 1;
+      game.taskProgress += dt * 0.3 * speed; // Slow auto-progress
 
-    if (game.taskProgress >= getEffectiveTaskTime()) {
-      completeTask();
+      if (game.taskProgress >= getEffectiveTaskTime()) {
+        completeTask();
+      }
+      updateStallDOM(game.activeStall);
+      updateTaskPanel();
     }
-    updateStallDOM(game.activeStall);
-    updateTaskPanel();
   }
 
   // Update sinks
@@ -4219,6 +4251,33 @@ function update(dt) {
     }
   }
   if (game.comboBoost > 0) game.comboBoost -= dt;
+
+
+  // Combo pressure timer - resets combo if you idle too long at 3x+
+  if (game.combo >= 3 && game.comboTimer > 0) {
+    game.comboTimer -= dt;
+    const timerEl = $('combo-timer');
+    if (timerEl) {
+      const pct = Math.max(0, game.comboTimer / game.comboTimerMax * 100);
+      timerEl.style.width = pct + '%';
+      timerEl.classList.toggle('active', pct > 0);
+      timerEl.classList.toggle('warning', pct < 30);
+    }
+    if (game.comboTimer <= 0) {
+      // Combo expired!
+      game.combo = 0;
+      game.comboBoost = 0;
+      game.lastMilestone = 0;
+      const comboBreak = $('combo-break');
+      comboBreak.classList.remove('show');
+      void comboBreak.offsetWidth;
+      comboBreak.classList.add('show');
+      setBeaverMood('sad', 1500);
+      screenShake(0.5);
+      const timerEl2 = $('combo-timer');
+      if (timerEl2) { timerEl2.style.width = '0'; timerEl2.classList.remove('active', 'warning'); }
+    }
+  }
 
   // Floor messes age and penalize rating if left uncleaned
   game.puddles.forEach(p => {
@@ -4415,11 +4474,15 @@ function updatePeople(dt) {
         game.rating = clamp(game.rating - ratingLoss, 0, 5);
         game.stats.abandoned++;
         const hadCombo = game.combo;
-        game.combo = Math.max(0, game.combo - 3); // Soft combo penalty instead of full reset
-        if (hadCombo > 0 && game.combo === 0) showComboBreak(hadCombo);
+        const comboLoss = p.vip ? 5 : 3; // VIP abandonment costs more combo
+        game.combo = Math.max(0, game.combo - comboLoss);
+        if (game.combo < 3) { game.comboTimer = 0; const ct = $('combo-timer'); if (ct) { ct.style.width = '0'; ct.classList.remove('active','warning'); } }
+        if (hadCombo >= 3) showComboBreak(hadCombo); // Show break on any significant combo loss
+        if (hadCombo >= 3 && game.combo > 0) floatMessage(`-${comboLoss} COMBO!`, p.x, p.y - 40, 'bad');
+        p.angry = true; // Mark as angry — no tip
         playBad();
         haptic('error'); // Negative feedback for customer leaving
-        screenShake();
+        screenShake(p.vip ? 1.5 : 1); // VIP leaves = bigger shake
         setBeaverMood('sad', 1500);
         const msg = p.vip ? '⭐ VIP LEFT! -' + ratingLoss.toFixed(1) + '⭐' : '😤 LEFT!';
         floatMessage(msg, p.x, p.y - 20, 'bad');
@@ -4611,6 +4674,7 @@ function updatePeople(dt) {
             game.stats.dirty++;
             const hadCombo = game.combo;
             game.combo = Math.max(0, game.combo - 3);
+            if (game.combo < 3) { game.comboTimer = 0; const ct = $('combo-timer'); if (ct) { ct.style.width = '0'; ct.classList.remove('active','warning'); } }
             showComboBreak(hadCombo);
             playBad();
             playCustomerDisgusted();
@@ -4771,6 +4835,19 @@ function updatePeople(dt) {
       }
     }
     else if (p.phase === 'exit') {
+      // Tip system — happy customers tip coins on exit
+      if (!p.tipped && !p.angry && !p.steppedInPuddle) {
+        p.tipped = true;
+        const baseTip = p.vip ? 3 : 1;
+        const tipAmount = Math.floor(baseTip * getCoinBonus());
+        if (tipAmount > 0) {
+          game.coins += tipAmount;
+          game.tipsEarned += tipAmount;
+          floatCoin(p.x, p.y - 10);
+          if (p.vip) floatCoin(p.x + 10, p.y - 15);
+        }
+      }
+
       const exitDoor = $('exit-door').getBoundingClientRect();
       const tx = exitDoor.left - floorRect.left + 15;
       const ty = exitDoor.top - floorRect.top + 20;
@@ -5309,13 +5386,11 @@ function clickStall(i) {
       updateStallDOM(i);
     }
     game.activeStall = i;
-    if (game.activeTask < 0) {
-      // Auto-select first incomplete task
-      const firstTask = stall.tasks.findIndex(t => !t.done);
-      if (firstTask >= 0) {
-        game.activeTask = firstTask;
-        game.taskProgress = 0;
-      }
+    // Always auto-select first incomplete task (reset when switching stalls)
+    const firstTask = stall.tasks.findIndex(t => !t.done);
+    if (firstTask >= 0) {
+      game.activeTask = firstTask;
+      game.taskProgress = 0;
     }
     showTaskPanel(i);
     playClick();
@@ -5342,18 +5417,15 @@ function showTaskPanel(stallIdx) {
       e.stopPropagation();
       const ti = parseInt(btn.dataset.idx);
       if (!stall.tasks[ti].done) {
-        // Visual click feedback
         btn.classList.remove('clicked');
-        void btn.offsetWidth; // Force reflow
+        void btn.offsetWidth;
         btn.classList.add('clicked');
-        haptic('light'); // Quick tap feedback on task mashing
+        haptic('light');
 
         if (game.activeTask === ti) {
-          // Clicking active task = boost progress!
           const boost = game.effects.speed > 0 ? CONFIG.clickBoost * 2 : CONFIG.clickBoost;
           game.taskProgress += boost;
           playTaskSound(stall.tasks[ti].id);
-
           if (game.taskProgress >= getEffectiveTaskTime()) {
             completeTask();
           } else {
@@ -5376,11 +5448,14 @@ function showTaskPanel(stallIdx) {
 function updateTaskPanel() {
   if (game.activeStall < 0) return;
   const stall = game.stalls[game.activeStall];
+  if (!stall || !stall.tasks) return;
   const btns = $('task-buttons').querySelectorAll('.task-btn');
 
   btns.forEach((btn, ti) => {
+    if (ti >= stall.tasks.length) return;
     const progress = game.activeTask === ti ? (game.taskProgress / getEffectiveTaskTime()) * 100 : 0;
-    btn.querySelector('.progress').style.width = Math.min(100, progress) + '%';
+    const progEl = btn.querySelector('.progress');
+    if (progEl) progEl.style.width = Math.min(100, progress) + '%';
     btn.classList.toggle('active', game.activeTask === ti && !stall.tasks[ti].done);
   });
 }
@@ -5417,6 +5492,10 @@ function completeTask() {
     stall.wasVip = false; // Reset for next customer
     game.combo++;
     if (game.combo > game.maxCombo) game.maxCombo = game.combo;
+    // Reset combo pressure timer — scales down as combo grows (more pressure!)
+    const comboTime = game.combo >= 10 ? 5000 : game.combo >= 7 ? 6000 : game.combo >= 5 ? 7000 : game.combo >= 3 ? 8000 : 0;
+    game.comboTimer = comboTime;
+    game.comboTimerMax = comboTime;
     checkComboMilestone();
     bumpValue('combo');
 
@@ -5442,12 +5521,14 @@ function completeTask() {
       stallEl.classList.add('celebrate');
       setTimeout(() => stallEl.classList.remove('celebrate'), 650);
 
-      // Sparkle burst effect - more particles at higher combos
-      const sparkleCount = game.combo >= 10 ? 24 : (game.combo >= 5 ? 20 : (game.combo >= 3 ? 14 : (wasVip ? 16 : 10)));
+      // Sparkle burst effect - scales continuously with combo
+      const sparkleCount = game.combo >= 15 ? 36 : (game.combo >= 10 ? 28 : (game.combo >= 5 ? 20 : (game.combo >= 3 ? 14 : (wasVip ? 16 : 10))));
       spawnSparkles(x, y + 40, sparkleCount);
 
       let msg;
-      if (game.combo >= 10) {
+      if (game.combo >= 15) {
+        msg = `💎 ${game.combo}x GODLIKE! +${points}`;
+      } else if (game.combo >= 10) {
         msg = `🌟 ${game.combo}x LEGENDARY! +${points}`;
       } else if (wasVip) {
         msg = `⭐ VIP! +${points}`;
@@ -5459,16 +5540,17 @@ function completeTask() {
         msg = `+${points} ${pick(CLEAN_MESSAGES)}`;
       }
       floatMessage(msg, x, y, (wasVip || game.combo >= 3) ? 'combo' : 'good');
-      const confettiCount = game.combo >= 10 ? 22 : (game.combo >= 5 ? 18 : (game.combo >= 3 ? 12 : (wasVip ? 14 : 6)));
+      const confettiCount = game.combo >= 15 ? 32 : (game.combo >= 10 ? 24 : (game.combo >= 5 ? 18 : (game.combo >= 3 ? 12 : (wasVip ? 14 : 6))));
       spawnConfetti(x, y + 30, confettiCount);
     }
 
     playStallClean();
-    // Extra bloop sound at high combos for extra fun
-    if (game.combo >= 5) playBloop();
+    // Extra sound at high combos for extra fun
+    if (game.combo >= 10) { playBloop(); playBloop(); }
+    else if (game.combo >= 5) playBloop();
     // Beaver always gets excited for a clean stall!
     if (wasVip || game.combo >= 3) {
-      screenShake();
+      screenShake(game.combo >= 15 ? 2 : (game.combo >= 10 ? 1.5 : 1));
       setBeaverMood('excited', 1500);
     } else {
       setBeaverMood('excited', 800);
@@ -5770,7 +5852,7 @@ function endShift() {
     <div class="stat"><div class="num">${game.maxCombo}x</div><div class="lbl">Best Combo</div></div>
     <div class="stat"><div class="num">${Math.floor(game.score)}</div><div class="lbl">Score</div></div>
     <div class="stat"><div class="num">${abandoned}</div><div class="lbl">Walked Out</div></div>
-    <div class="stat"><div class="num">${Math.round(game.rating * 20)}%</div><div class="lbl">Rating</div></div>
+    <div class="stat"><div class="num">${game.tipsEarned > 0 ? '🪙' + game.tipsEarned : Math.round(game.rating * 20) + '%'}</div><div class="lbl">${game.tipsEarned > 0 ? 'Tips' : 'Rating'}</div></div>
   `;
 
   const shiftsLeft = CONFIG.shifts.length - game.shift - 1;
@@ -5785,6 +5867,20 @@ function endShift() {
 
   $('result-grade').textContent = grade;
   $('result-grade').className = 'grade ' + grade;
+
+  // Result screen beaver — show equipped cosmetic with grade-based animation
+  const resultBeaver = $('result-beaver');
+  const resultBeaverImg = $('result-beaver-img');
+  if (resultBeaver && resultBeaverImg) {
+    const beaverSrc = getComboSpriteSrc();
+    resultBeaverImg.src = beaverSrc;
+    resultBeaver.className = 'result-beaver';
+    if (grade === 'S' || grade === 'A') {
+      resultBeaver.classList.add('celebrate');
+    } else if (grade === 'F') {
+      resultBeaver.classList.add('sad');
+    }
+  }
 
   // Add Beaver premium hint after Shift 3 for free users (once per playthrough)
   if (game.shift === 2 && !isPremium() && !localStorage.getItem('beaverPremiumHintShown')) {
@@ -6265,9 +6361,9 @@ function updateOutfitterPreview() {
     const e = cosmeticState.equipped;
     const src = getComboSpriteSrc();
     const fallbacks = [
-      `/images/cosmetics/shirt-base-${e.shirt || 'shirt-polo'}.png`,
-      `/images/cosmetics/${e.hat || 'hat-cap'}.png`,
-      `/images/cosmetics/base.png`,
+      `${BASE}images/cosmetics/shirt-base-${e.shirt || 'shirt-polo'}.png`,
+      `${BASE}images/cosmetics/${e.hat || 'hat-cap'}.png`,
+      `${BASE}images/cosmetics/base.png`,
     ];
     let idx = 0;
     img.onerror = () => {
@@ -6375,18 +6471,18 @@ function renderOutfitterTab(category) {
       let thumbSrc;
       if (c.category === 'uniforms') {
         // Shirt-base: beaver wearing this shirt, no hat — consistent
-        thumbSrc = `/images/cosmetics/shirt-base-${c.id}.png`;
+        thumbSrc = `${BASE}images/cosmetics/shirt-base-${c.id}.png`;
       } else if (c.category === 'headgear') {
         // Hat on default polo — consistent, doesn't shift with equipped shirt
-        thumbSrc = `/images/cosmetics/combo-${c.id}-shirt-polo.png`;
+        thumbSrc = `${BASE}images/cosmetics/combo-${c.id}-shirt-polo.png`;
       } else {
         // Accessories, specials — show item sprite
-        thumbSrc = `/images/cosmetics/${c.id}.png`;
+        thumbSrc = `${BASE}images/cosmetics/${c.id}.png`;
       }
 
       html += `<div class="${classes}" data-id="${c.id}">
         ${isNew ? '<span class="new-badge">NEW</span>' : ''}
-        <img class="outfitter-item-sprite" src="${thumbSrc}" onerror="this.onerror=null;this.src='/images/cosmetics/base.png'" alt="${c.name}" loading="lazy">
+        <img class="outfitter-item-sprite" src="${thumbSrc}" onerror="this.onerror=null;this.src='${BASE}images/cosmetics/base.png'" alt="${c.name}" loading="lazy">
         <span class="outfitter-item-name">${c.name}</span>
         <span class="outfitter-item-status">${status}</span>
       </div>`;
