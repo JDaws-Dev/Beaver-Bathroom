@@ -84,8 +84,11 @@
         </button>
       </div>
 
-      <!-- Big PLAY button -->
-      <button class="btn btn-play" id="start-btn">PLAY</button>
+      <!-- Main action buttons -->
+      <div class="title-actions">
+        <button class="btn btn-play" id="start-btn">PLAY</button>
+        <button class="btn btn-1v1" id="multiplayer-btn">1v1 BATTLE</button>
+      </div>
 
       <!-- Icon dock for menu items -->
       <div class="title-dock">
@@ -102,22 +105,10 @@
           <span class="dock-label">Badges</span>
         </div>
         <div class="dock-item">
-          <button class="dock-btn" id="locker-btn">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.6 18.2L13 11.75v-.91c1.65-.49 2.8-2.17 2.43-4.05-.26-1.31-1.3-2.4-2.61-2.7C10.54 3.57 8.5 5.3 8.5 7.5c0 .94.39 1.78 1 2.39v1.86L1.2 18.2c-.41.3-.2.8.2.8h20c.5 0 .7-.5.4-.8zM6.5 17.5L12 13.5l5.5 4H6.5z"/></svg>
-          </button>
-          <span class="dock-label">Locker</span>
-        </div>
-        <div class="dock-item">
           <button class="dock-btn" id="daily-btn">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H18V1H16V3H8V1H6V3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V8H19V19ZM9 10H7V12H9V10ZM13 10H11V12H13V10ZM17 10H15V12H17V10ZM9 14H7V16H9V14ZM13 14H11V16H13V14Z"/></svg>
           </button>
           <span class="dock-label">Daily</span>
-        </div>
-        <div class="dock-item">
-          <button class="dock-btn" id="multiplayer-btn">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-          </button>
-          <span class="dock-label">1v1</span>
         </div>
         <div class="dock-item">
           <button class="dock-btn" id="title-settings-btn">
@@ -127,8 +118,9 @@
         </div>
       </div>
 
-      <!-- Premium + How to Play + Overtime -->
+      <!-- Secondary links -->
       <div class="title-secondary">
+        <button class="btn-help" id="locker-btn">🧢 Locker Room</button>
         <button class="btn-help" id="help-btn">❓ How to Play</button>
         <button class="btn-help" id="overtime-btn">⏰ Overtime</button>
         <button class="btn-help btn-unlock-premium" id="unlock-premium-btn">🔓 Unlock Premium</button>

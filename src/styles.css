@@ -44,8 +44,12 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .difficulty-btn:hover{color:#c9a86c}
 .difficulty-btn.selected{background:linear-gradient(180deg,#5a4a38,#3d2814);color:#FEF117;box-shadow:0 2px 8px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.1)}
 .difficulty-btn.selected span,.difficulty-btn.selected small{opacity:1}
-/* Big PLAY button - gloss effect */
-.btn-play{width:100%;padding:18px;font-size:1.6em;letter-spacing:4px;margin-bottom:14px;animation:start-pulse 1.5s ease-in-out infinite;position:relative;overflow:hidden;background:linear-gradient(180deg,#ff6b8a 0%,#e8305a 15%,#D31145 50%,#b80d3a 85%,#8a0d2e 100%)}
+/* Main action buttons */
+.title-actions{display:flex;gap:10px;margin-bottom:14px}
+.btn-play{flex:3;padding:18px;font-size:1.6em;letter-spacing:4px;animation:start-pulse 1.5s ease-in-out infinite;position:relative;overflow:hidden;background:linear-gradient(180deg,#ff6b8a 0%,#e8305a 15%,#D31145 50%,#b80d3a 85%,#8a0d2e 100%)}
+.btn-1v1{flex:2;padding:18px;font-size:1.1em;letter-spacing:2px;position:relative;overflow:hidden;background:linear-gradient(180deg,#6bc5ff 0%,#3094e8 15%,#1170D3 50%,#0d5ab8 85%,#0d3e8a 100%);animation:start-pulse 1.5s ease-in-out infinite 0.3s}
+.btn-1v1::before{content:'';position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(180deg,rgba(255,255,255,0.25),rgba(255,255,255,0.05));pointer-events:none}
+.btn-1v1::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.5),transparent);animation:start-shine 3s ease-in-out infinite 1s;transform:skewX(-20deg)}
 .btn-play::before{content:'';position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(180deg,rgba(255,255,255,0.25),rgba(255,255,255,0.05));pointer-events:none}
 /* Icon dock - more breathing room */
 .title-dock{display:flex;justify-content:center;gap:18px;margin-bottom:12px}
@@ -837,7 +841,8 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .title-beaver .beaver-cheek{top:17px;width:8px;height:5px}
 #title-screen h1{font-size:1.2em;letter-spacing:1px}
 .title-tagline{font-size:0.75em}
-.btn-play{padding:14px 40px;font-size:1.1em}
+.btn-play{padding:14px 0;font-size:1.1em}
+.btn-1v1{padding:14px 0;font-size:0.9em}
 .gender-opt{width:50px;height:54px;font-size:1.6em;min-width:44px;min-height:44px}
 .modal-content{padding:16px 14px;max-width:95%}
 .tutorial-item{font-size:0.85em}
