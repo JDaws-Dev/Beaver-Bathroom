@@ -382,8 +382,8 @@ const COSMETICS = [
   // === HEADGEAR (12) ===
   {id:'hat-none', category:'headgear', name:'No Hat', icon:'🚫', unlock:'default', tier:0},
   {id:'hat-cap', category:'headgear', name:"Classic Cap", icon:'🧢', unlock:'default', tier:0},
-  {id:'hat-visor', category:'headgear', name:'Sun Visor', icon:'🧢', unlock:'shift1', desc:'Complete Shift 1', tier:1},
-  {id:'hat-hardhat', category:'headgear', name:'Hard Hat', icon:'⛑️', unlock:'shift2', desc:'Complete Shift 2', tier:1},
+  {id:'hat-visor', category:'headgear', name:'Sun Visor', icon:'🧢', unlock:'shift1', desc:'Complete Shift 1 or buy', tier:1, cost:75},
+  {id:'hat-hardhat', category:'headgear', name:'Hard Hat', icon:'⛑️', unlock:'shift2', desc:'Complete Shift 2 or buy', tier:1, cost:100},
   {id:'hat-beanie', category:'headgear', name:'Beanie', icon:'🧶', unlock:'clean50', desc:'Clean 50 stalls or buy', tier:2, cost:150},
   {id:'hat-cowboy', category:'headgear', name:'Cowboy Hat', icon:'🤠', unlock:'shift4', desc:'Complete Shift 4', tier:2, premium:true},
   {id:'hat-sombrero', category:'headgear', name:'Sombrero', icon:'🎩', unlock:'serve200', desc:'Serve 200 customers or buy', tier:3, cost:350},
@@ -397,33 +397,37 @@ const COSMETICS = [
   {id:'shirt-polo', category:'uniforms', name:'Red Polo', icon:'👕', unlock:'default', tier:0},
   {id:'shirt-none', category:'uniforms', name:'No Shirt', icon:'🚫', unlock:'default', tier:0},
   {id:'shirt-artios', category:'uniforms', name:'Cool Tee', icon:'🎨', unlock:'default', tier:0},
-  {id:'shirt-overalls', category:'uniforms', name:'Overalls', icon:'👷', unlock:'clean25', desc:'Clean 25 stalls', tier:1},
-  {id:'shirt-hawaiian', category:'uniforms', name:'Hawaiian', icon:'🌺', unlock:'shift3', desc:'Complete Shift 3', tier:2},
-  {id:'shirt-lab-coat', category:'uniforms', name:'Lab Coat', icon:'🥼', unlock:'inspect5', desc:'Pass 5 inspections', tier:2},
-  {id:'shirt-camo', category:'uniforms', name:'Camo Vest', icon:'🫒', unlock:'serve300', desc:'Serve 300 customers', tier:3},
+  {id:'shirt-overalls', category:'uniforms', name:'Overalls', icon:'👷', unlock:'clean25', desc:'Clean 25 stalls or buy', tier:1, cost:75},
+  {id:'shirt-hawaiian', category:'uniforms', name:'Hawaiian', icon:'🌺', unlock:'shift3', desc:'Complete Shift 3 or buy', tier:2, cost:150},
+  {id:'shirt-lab-coat', category:'uniforms', name:'Lab Coat', icon:'🥼', unlock:'inspect5', desc:'Pass 5 inspections or buy', tier:2, cost:200},
+  {id:'shirt-camo', category:'uniforms', name:'Camo Vest', icon:'🫒', unlock:'serve300', desc:'Serve 300 customers or buy', tier:3, cost:350},
   {id:'shirt-flannel', category:'uniforms', name:'Flannel', icon:'🪓', unlock:'shift5', desc:'Complete Shift 5', tier:3, premium:true},
   {id:'shirt-raincoat', category:'uniforms', name:'Raincoat', icon:'🧥', unlock:'coins300', desc:'Buy for 300 coins', tier:3, cost:300},
   {id:'shirt-jersey', category:'uniforms', name:'Jersey #82', icon:'🏈', unlock:'combo20', desc:'Get a 20x combo', tier:4, premium:true},
   {id:'shirt-hoodie', category:'uniforms', name:'Hoodie', icon:'🧥', unlock:'coins300', desc:'Buy for 300 coins', tier:4, cost:300},
   {id:'shirt-tuxedo', category:'uniforms', name:'Tuxedo', icon:'🤵', unlock:'allS', desc:'All S-grades', tier:5, premium:true},
+  {id:'shirt-tank', category:'uniforms', name:'Tank Top', icon:'🩱', unlock:'coins100', desc:'Buy for 100 coins', tier:1, cost:100},
+  {id:'shirt-denim', category:'uniforms', name:'Denim Jacket', icon:'🧥', unlock:'coins200', desc:'Buy for 200 coins', tier:2, cost:200},
+  {id:'shirt-letterman', category:'uniforms', name:'Letterman', icon:'🏅', unlock:'coins400', desc:'Buy for 400 coins', tier:3, cost:400},
+  {id:'shirt-poncho', category:'uniforms', name:'Poncho', icon:'🪕', unlock:'coins500', desc:'Buy for 500 coins', tier:4, cost:500},
 
-  // === ACCESSORIES (8) - overlay items ===
-  {id:'acc-sunglasses', category:'accessories', name:'Sunglasses', icon:'🕶️', unlock:'shift1', desc:'Complete Shift 1', tier:1},
-  {id:'acc-bandana', category:'accessories', name:'Bandana', icon:'🎀', unlock:'clean25', desc:'Clean 25 stalls', tier:1},
-  {id:'acc-bowtie', category:'accessories', name:'Bow Tie', icon:'🎀', unlock:'serve100', desc:'Serve 100 customers or buy', tier:2, cost:200},
-  {id:'acc-gold-chain', category:'accessories', name:'Gold Chain', icon:'⛓️', unlock:'coins400', desc:'Buy for 400 coins', tier:3, cost:400},
-  {id:'acc-monocle', category:'accessories', name:'Monocle', icon:'🧐', unlock:'gradeS', desc:'Get an S grade or buy', tier:3, cost:500},
-  {id:'acc-headphones', category:'accessories', name:'Headphones', icon:'🎧', unlock:'streak14', desc:'14-day login streak', tier:4, premium:true},
-  {id:'acc-scarf', category:'accessories', name:'Scarf', icon:'🧣', unlock:'clean200', desc:'Clean 200 stalls', tier:4, premium:true},
-  {id:'acc-tool-belt', category:'accessories', name:'Tool Belt', icon:'🔧', unlock:'inspect10', desc:'Pass 10 inspections', tier:5, premium:true},
+  // === HEADGEAR SHOP ITEMS ===
+  {id:'hat-bucket', category:'headgear', name:'Bucket Hat', icon:'🪣', unlock:'coins100', desc:'Buy for 100 coins', tier:1, cost:100},
+  {id:'hat-headband', category:'headgear', name:'Headband', icon:'💪', unlock:'coins150', desc:'Buy for 150 coins', tier:2, cost:150},
+  {id:'hat-fedora', category:'headgear', name:'Fedora', icon:'🎩', unlock:'coins300', desc:'Buy for 300 coins', tier:3, cost:300},
+  {id:'hat-pirate', category:'headgear', name:'Pirate Hat', icon:'🏴‍☠️', unlock:'coins500', desc:'Buy for 500 coins', tier:4, cost:500},
 
-  // === SPECIAL (6) - NEW ===
+  // === SPECIAL (6 + 4 shop) ===
   {id:'special-superhero', category:'special', name:'Superhero', icon:'🦸', unlock:'combo15', desc:'Get a 15x combo or buy', tier:2, cost:250},
   {id:'special-disco', category:'special', name:'Disco Beaver', icon:'🪩', unlock:'serve500', desc:'Serve 500 customers or buy', tier:3, cost:600},
   {id:'special-santa', category:'special', name:'Santa Beaver', icon:'🎅', unlock:'streak21', desc:'21-day login streak', tier:4, premium:true},
   {id:'special-uncle-sam', category:'special', name:'Uncle Sam', icon:'🇺🇸', unlock:'shift6', desc:'Complete Shift 6', tier:4, premium:true},
   {id:'special-zombie', category:'special', name:'Zombie Beaver', icon:'🧟', unlock:'coins1000', desc:'Buy for 1000 coins', tier:5, cost:1000},
   {id:'special-astronaut', category:'special', name:'Astronaut', icon:'🧑‍🚀', unlock:'legend', desc:'Reach Legend rank', tier:5, premium:true},
+  {id:'special-ninja', category:'special', name:'Ninja Beaver', icon:'🥷', unlock:'coins400', desc:'Buy for 400 coins', tier:2, cost:400},
+  {id:'special-pirate', category:'special', name:'Pirate Beaver', icon:'🏴‍☠️', unlock:'coins700', desc:'Buy for 700 coins', tier:3, cost:700},
+  {id:'special-cowboy-full', category:'special', name:'Full Cowboy', icon:'🤠', unlock:'coins800', desc:'Buy for 800 coins', tier:4, cost:800},
+  {id:'special-robot', category:'special', name:'Robo-Beaver', icon:'🤖', unlock:'coins1200', desc:'Buy for 1200 coins', tier:5, cost:1200},
 ];
 
 // Tier names and rank requirements
@@ -438,22 +442,22 @@ const COSMETIC_TIERS = [
 
 let cosmeticState = JSON.parse(localStorage.getItem('beaverCosmetics') || 'null') || {
   unlocked: ['hat-none','hat-cap','shirt-polo','shirt-none','shirt-artios'],
-  equipped: {hat:'hat-cap', shirt:'shirt-polo', accessory:null, special:null},
+  equipped: {hat:'hat-cap', shirt:'shirt-polo', special:null},
   lastSeen: Date.now(),
 };
 // Migrate from activeLook format back to multi-equip
 if (cosmeticState.activeLook && !cosmeticState.equipped) {
   const id = cosmeticState.activeLook;
-  cosmeticState.equipped = {hat:'hat-cap', shirt:'shirt-polo', accessory:null, special:null};
+  cosmeticState.equipped = {hat:'hat-cap', shirt:'shirt-polo', special:null};
   if (id.startsWith('hat-')) cosmeticState.equipped.hat = id;
   else if (id.startsWith('shirt-')) cosmeticState.equipped.shirt = id;
-  else if (id.startsWith('acc-')) cosmeticState.equipped.accessory = id;
+  // accessories removed
   else if (id.startsWith('special-')) cosmeticState.equipped.special = id;
   delete cosmeticState.activeLook;
 }
 // Ensure equipped has all slots
-if (!cosmeticState.equipped) cosmeticState.equipped = {hat:'hat-cap', shirt:'shirt-polo', accessory:null, special:null};
-if (!cosmeticState.equipped.accessory) cosmeticState.equipped.accessory = null;
+if (!cosmeticState.equipped) cosmeticState.equipped = {hat:'hat-cap', shirt:'shirt-polo', special:null};
+delete cosmeticState.equipped.accessory;
 if (!cosmeticState.equipped.special) cosmeticState.equipped.special = null;
 if (!cosmeticState.lastSeen) cosmeticState.lastSeen = Date.now();
 // Remove old fur/color from unlocked defaults
@@ -473,10 +477,6 @@ function getComboSpriteSrc() {
   return `/images/cosmetics/combo-${hat}-${shirt}.png`;
 }
 
-function getAccessorySrc() {
-  const acc = cosmeticState.equipped.accessory;
-  return acc ? `/images/cosmetics/${acc}.png` : null;
-}
 
 function applyCosmeticsToBeaver() {
   const e = cosmeticState.equipped;
@@ -498,11 +498,6 @@ function applyCosmeticsToBeaver() {
   };
   setWithFallback(document.getElementById('beaver-sprite'));
   setWithFallback(document.getElementById('title-beaver-sprite'));
-  // Hide accessory overlays — accessories are label-only until proper transparent overlays exist
-  const titleAcc = document.getElementById('title-accessory-overlay');
-  const hudAcc = document.getElementById('hud-accessory-overlay');
-  if (titleAcc) titleAcc.style.display = 'none';
-  if (hudAcc) hudAcc.style.display = 'none';
 }
 
 function updateAccessoryOverlay(id, src) {
@@ -6281,9 +6276,6 @@ function updateOutfitterPreview() {
     };
     img.src = src;
   }
-  // Hide accessory overlay in preview — accessories are label-only
-  const accOverlay = document.getElementById('outfitter-accessory-overlay');
-  if (accOverlay) accOverlay.style.display = 'none';
   const label = $('outfitter-active-label');
   if (label) {
     const e = cosmeticState.equipped;
@@ -6298,10 +6290,6 @@ function updateOutfitterPreview() {
       if (s && s.id !== 'shirt-none') parts.push(s.name);
       if (parts.length === 0) parts.push('Default Look');
     }
-    if (e.accessory && !e.special) {
-      const a = COSMETICS.find(c => c.id === e.accessory);
-      if (a) parts.push('+ ' + a.name);
-    }
     label.textContent = parts.join(' · ');
   }
 }
@@ -6312,7 +6300,7 @@ function showOutfitter() {
   checkCosmeticUnlocks();
   markOutfitterSeen();
   updateOutfitterPreview();
-  renderOutfitterTab('headgear');
+  renderOutfitterTab('uniforms');
   // Tab switching
   document.querySelectorAll('.outfitter-tab').forEach(tab => {
     tab.onclick = () => {
@@ -6360,7 +6348,7 @@ function renderOutfitterTab(category) {
     for (const c of tiers[t]) {
       const owned = cosmeticState.unlocked.includes(c.id);
       const e = cosmeticState.equipped;
-      const isActive = e.hat === c.id || e.shirt === c.id || e.accessory === c.id || e.special === c.id;
+      const isActive = e.hat === c.id || e.shirt === c.id || e.special === c.id;
       const locked = !owned;
       const tierLocked = !tierOpen && tierNum > 0;
       // Check if item is "new" (unlocked but not yet seen when outfitter was last opened)
@@ -6443,10 +6431,6 @@ function renderOutfitterTab(category) {
         cosmeticState.equipped.special = null; // Clear special override
       } else if (cosmetic.category === 'uniforms') {
         cosmeticState.equipped.shirt = id;
-        cosmeticState.equipped.special = null;
-      } else if (cosmetic.category === 'accessories') {
-        // Toggle accessory — tap again to remove
-        cosmeticState.equipped.accessory = cosmeticState.equipped.accessory === id ? null : id;
         cosmeticState.equipped.special = null;
       } else if (cosmetic.category === 'special') {
         // Toggle special — tap again to revert to hat+shirt
