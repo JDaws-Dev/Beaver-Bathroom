@@ -39,7 +39,8 @@
       <!-- Compact player row: avatar + rank bar -->
       <div class="player-row">
         <div class="player-row-avatar" id="title-avatar-btn">
-          <img id="title-beaver-sprite" class="title-beaver-sprite" src="/images/cosmetics/hat-none.png" alt="Your Beaver">
+          <img id="title-beaver-sprite" class="title-beaver-sprite" src="/images/cosmetics/combo-hat-cap-shirt-polo.png" alt="Your Beaver">
+          <img id="title-accessory-overlay" class="accessory-overlay accessory-overlay-small" style="display:none" alt="">
           <span class="dock-badge" id="avatar-badge" style="display:none">0</span>
         </div>
         <div class="player-row-rank">
@@ -416,13 +417,15 @@
         <button id="close-outfitter" class="modal-close">✕</button>
       </div>
       <div class="outfitter-preview">
-        <img id="outfitter-beaver-img" class="outfitter-beaver-img" src="/images/cosmetics/hat-none.png" alt="Beaver Preview">
+        <div class="outfitter-preview-sprite">
+          <img id="outfitter-beaver-img" class="outfitter-beaver-img" src="/images/cosmetics/combo-hat-cap-shirt-polo.png" alt="Beaver Preview">
+          <img id="outfitter-accessory-overlay" class="accessory-overlay" style="display:none" alt="">
+        </div>
         <span class="outfitter-active-label" id="outfitter-active-label">Active Look</span>
       </div>
       <div class="outfitter-tabs" id="outfitter-tabs">
         <button class="outfitter-tab selected" data-tab="headgear">🧢 Headgear</button>
         <button class="outfitter-tab" data-tab="uniforms">👕 Uniforms</button>
-        <button class="outfitter-tab" data-tab="fur">🎨 Fur</button>
         <button class="outfitter-tab" data-tab="accessories">🕶️ Accessories</button>
         <button class="outfitter-tab" data-tab="special">⭐ Special</button>
       </div>
@@ -470,7 +473,8 @@
     <div id="dirty-count" style="display:none">0</div>
     <div id="dirty-sinks" style="display:none">0</div>
     <div id="beaver-mascot" class="beaver-idle" style="display:none">
-      <img id="beaver-sprite" class="beaver-sprite" src="/images/cosmetics/hat-none.png" alt="Beaver">
+      <img id="beaver-sprite" class="beaver-sprite" src="/images/cosmetics/combo-hat-cap-shirt-polo.png" alt="Beaver">
+      <img id="hud-accessory-overlay" class="accessory-overlay" style="display:none" alt="">
       <div id="beaver-speech" class="beaver-speech"></div>
     </div>
     <div id="play-area">

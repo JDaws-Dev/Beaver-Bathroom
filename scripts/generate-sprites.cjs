@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-// Generate consistent beaver cosmetic sprites using OpenAI GPT Image Edit API
-// Step 1: Generate ONE base beaver (head + upper body with shirt) using DALL-E 3
-// Step 2: Use gpt-image-1 edit API to create hat, shirt, and color variants
+// Generate combo beaver cosmetic sprites using OpenAI GPT Image Edit API
+// Produces: combo-{hat}-{shirt}.png for all hat×shirt combos
+//           {acc-id}.png for accessory overlays
+//           {special-id}.png for special full-look sprites
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
@@ -17,8 +18,24 @@ const BASE_PROMPT = `A cute cartoon beaver mascot character, head and upper body
 
 const KEEP_SAME = 'Keep everything else exactly the same - same face, same expression, same pose, same background, same art style.';
 
-const VARIANTS = [
-  // === HEADGEAR (beaver wears red polo, different hats) ===
+// === SHIRT EDITS: applied to base to create shirt variants ===
+const SHIRTS = [
+  { id: 'shirt-polo', prompt: `Make sure this beaver is wearing a red polo shirt with a collar. Also remove any hat from the head. ${KEEP_SAME}` },
+  { id: 'shirt-none', prompt: `Remove the shirt from this beaver character so the beaver's bare brown fur chest is showing. No shirt, no clothing on body. Also remove any hat. ${KEEP_SAME}` },
+  { id: 'shirt-artios', prompt: `Change this beaver's shirt to a white t-shirt with "ARTIOS" written in colorful letters on the front. Also remove any hat from the head. ${KEEP_SAME}` },
+  { id: 'shirt-overalls', prompt: `Change this beaver's clothing to blue denim overalls with metal clasps over a white t-shirt. Also remove any hat from the head. ${KEEP_SAME}` },
+  { id: 'shirt-hawaiian', prompt: `Change this beaver's shirt to a bright colorful Hawaiian shirt with tropical flowers and palm trees pattern. Also remove any hat from the head. ${KEEP_SAME}` },
+  { id: 'shirt-lab-coat', prompt: `Change this beaver's clothing to a white laboratory coat over a blue shirt, like a scientist or health inspector. Also remove any hat from the head. ${KEEP_SAME}` },
+  { id: 'shirt-camo', prompt: `Change this beaver's shirt to a military-style camouflage vest in green, brown and tan pattern. Also remove any hat from the head. ${KEEP_SAME}` },
+  { id: 'shirt-flannel', prompt: `Change this beaver's shirt to a red and black plaid lumberjack flannel shirt. Also remove any hat from the head. ${KEEP_SAME}` },
+  { id: 'shirt-raincoat', prompt: `Change this beaver's clothing to a bright yellow raincoat with buttons. Also remove any hat from the head. ${KEEP_SAME}` },
+  { id: 'shirt-jersey', prompt: `Change this beaver's shirt to a sports jersey - red and white with number 82 on the front. Also remove any hat from the head. ${KEEP_SAME}` },
+  { id: 'shirt-hoodie', prompt: `Change this beaver's shirt to a cozy gray hoodie sweatshirt with the hood down. Also remove any hat from the head. ${KEEP_SAME}` },
+  { id: 'shirt-tuxedo', prompt: `Change this beaver's shirt to a formal black tuxedo vest with a white dress shirt and black bow tie. Also remove any hat from the head. ${KEEP_SAME}` },
+];
+
+// === HAT EDITS: applied on top of each shirt variant ===
+const HATS = [
   { id: 'hat-none', prompt: `Remove any hat from this beaver character's head. The beaver should have no hat, just bare fur on top. ${KEEP_SAME}` },
   { id: 'hat-cap', prompt: `Add a red baseball cap with a yellow letter "B" on the front to this beaver character. ${KEEP_SAME}` },
   { id: 'hat-visor', prompt: `Add a white sun visor on this beaver character's head. The visor has a curved brim shading the eyes but no top, so the beaver's fur is visible on top. ${KEEP_SAME}` },
@@ -31,39 +48,22 @@ const VARIANTS = [
   { id: 'hat-viking', prompt: `Add a metal Viking helmet with curved horns on the sides on this beaver character's head. ${KEEP_SAME}` },
   { id: 'hat-crown', prompt: `Add a shiny golden royal crown with red and blue jewels on top of this beaver character's head. ${KEEP_SAME}` },
   { id: 'hat-tophat', prompt: `Add a tall black top hat with a gold band on top of this beaver character's head. ${KEEP_SAME}` },
+];
 
-  // === UNIFORMS (beaver wears no hat, different shirts) ===
-  { id: 'shirt-none', prompt: `Remove the shirt from this beaver character so the beaver's bare brown fur chest is showing. No shirt, no clothing on body. Also remove any hat. ${KEEP_SAME}` },
-  { id: 'shirt-polo', prompt: `Make sure this beaver is wearing a red polo shirt with a collar. Also remove any hat from the head. ${KEEP_SAME}` },
-  { id: 'shirt-artios', prompt: `Change this beaver's shirt to a white t-shirt with "ARTIOS" written in colorful letters on the front. Also remove any hat from the head. ${KEEP_SAME}` },
-  { id: 'shirt-overalls', prompt: `Change this beaver's clothing to blue denim overalls with metal clasps over a white t-shirt. Also remove any hat from the head. ${KEEP_SAME}` },
-  { id: 'shirt-hawaiian', prompt: `Change this beaver's shirt to a bright colorful Hawaiian shirt with tropical flowers and palm trees pattern. Also remove any hat from the head. ${KEEP_SAME}` },
-  { id: 'shirt-lab-coat', prompt: `Change this beaver's clothing to a white laboratory coat over a blue shirt, like a scientist or health inspector. Also remove any hat from the head. ${KEEP_SAME}` },
-  { id: 'shirt-camo', prompt: `Change this beaver's shirt to a military-style camouflage vest in green, brown and tan pattern. Also remove any hat from the head. ${KEEP_SAME}` },
-  { id: 'shirt-flannel', prompt: `Change this beaver's shirt to a red and black plaid lumberjack flannel shirt. Also remove any hat from the head. ${KEEP_SAME}` },
-  { id: 'shirt-raincoat', prompt: `Change this beaver's clothing to a bright yellow raincoat with buttons. Also remove any hat from the head. ${KEEP_SAME}` },
-  { id: 'shirt-jersey', prompt: `Change this beaver's shirt to a sports jersey - red and white with number 82 on the front. Also remove any hat from the head. ${KEEP_SAME}` },
-  { id: 'shirt-hoodie', prompt: `Change this beaver's shirt to a cozy gray hoodie sweatshirt with the hood down. Also remove any hat from the head. ${KEEP_SAME}` },
-  { id: 'shirt-tuxedo', prompt: `Change this beaver's shirt to a formal black tuxedo vest with a white dress shirt and black bow tie. Also remove any hat from the head. ${KEEP_SAME}` },
+// === ACCESSORIES: small overlay items generated separately ===
+const ACCESSORIES = [
+  { id: 'acc-sunglasses', prompt: `Generate a simple pair of cool black sunglasses, front view, floating on a plain transparent/white background. Flat cartoon style with bold black outlines. Just the sunglasses, nothing else. Game item icon style.` },
+  { id: 'acc-bandana', prompt: `Generate a red cowboy bandana/kerchief, flat front view, floating on a plain transparent/white background. Flat cartoon style with bold black outlines. Just the bandana, nothing else. Game item icon style.` },
+  { id: 'acc-bowtie', prompt: `Generate a fancy black bow tie, front view, floating on a plain transparent/white background. Flat cartoon style with bold black outlines. Just the bow tie, nothing else. Game item icon style.` },
+  { id: 'acc-gold-chain', prompt: `Generate a thick gold chain necklace in a U shape, front view, floating on a plain transparent/white background. Flat cartoon style with bold black outlines. Just the chain, nothing else. Game item icon style.` },
+  { id: 'acc-monocle', prompt: `Generate a round monocle with a thin gold chain, front view, floating on a plain transparent/white background. Flat cartoon style with bold black outlines. Just the monocle, nothing else. Game item icon style.` },
+  { id: 'acc-headphones', prompt: `Generate large over-ear DJ headphones in black, front view, floating on a plain transparent/white background. Flat cartoon style with bold black outlines. Just the headphones, nothing else. Game item icon style.` },
+  { id: 'acc-scarf', prompt: `Generate a cozy striped scarf in red and white, draped in a U shape, floating on a plain transparent/white background. Flat cartoon style with bold black outlines. Just the scarf, nothing else. Game item icon style.` },
+  { id: 'acc-tool-belt', prompt: `Generate a brown leather tool belt with wrenches and screwdrivers, front view, floating on a plain transparent/white background. Flat cartoon style with bold black outlines. Just the belt, nothing else. Game item icon style.` },
+];
 
-  // === FUR COLORS (beaver has no hat, red polo, different fur colors) ===
-  { id: 'color-classic', prompt: `This beaver should have classic warm brown fur. Also remove any hat from the head. ${KEEP_SAME}` },
-  { id: 'color-golden', prompt: `Change this beaver character's fur color from brown to a warm golden honey color, like a golden retriever. Also remove any hat from the head. ${KEEP_SAME}` },
-  { id: 'color-texas', prompt: `Change this beaver character's fur color from brown to bright burnt orange (Texas Longhorns orange). Also remove any hat from the head. ${KEEP_SAME}` },
-  { id: 'color-midnight', prompt: `Change this beaver character's fur color from brown to dark midnight blue-black. Also remove any hat from the head. ${KEEP_SAME}` },
-  { id: 'color-albino', prompt: `Change this beaver character's fur color from brown to pure white (albino), and make the eyes pinkish-red. Also remove any hat from the head. ${KEEP_SAME}` },
-
-  // === ACCESSORIES (beaver wears red polo, different accessories) ===
-  { id: 'acc-sunglasses', prompt: `Add cool black sunglasses on this beaver character's face, resting on the nose. ${KEEP_SAME}` },
-  { id: 'acc-bandana', prompt: `Add a red bandana tied around this beaver character's neck, like a cowboy kerchief. ${KEEP_SAME}` },
-  { id: 'acc-bowtie', prompt: `Add a fancy black bow tie at the collar of this beaver character's shirt. ${KEEP_SAME}` },
-  { id: 'acc-gold-chain', prompt: `Add a thick gold chain necklace around this beaver character's neck, hip-hop style. ${KEEP_SAME}` },
-  { id: 'acc-monocle', prompt: `Add a round monocle on this beaver character's right eye, with a thin gold chain hanging down. ${KEEP_SAME}` },
-  { id: 'acc-headphones', prompt: `Add large over-ear headphones on this beaver character's head, modern DJ-style in black. ${KEEP_SAME}` },
-  { id: 'acc-scarf', prompt: `Add a cozy striped scarf in red and white wrapped around this beaver character's neck. ${KEEP_SAME}` },
-  { id: 'acc-tool-belt', prompt: `Add a brown leather tool belt around this beaver character's waist with wrenches and screwdrivers visible. ${KEEP_SAME}` },
-
-  // === SPECIAL (full outfit changes) ===
+// === SPECIAL: full outfit overrides, edited from base ===
+const SPECIALS = [
   { id: 'special-superhero', prompt: `Transform this beaver into a superhero! Add a blue cape, a red mask over the eyes, and a yellow star emblem on the chest. ${KEEP_SAME}` },
   { id: 'special-disco', prompt: `Transform this beaver into a disco dancer! Add a shiny sequined jacket, an afro wig, and disco ball earrings. Flashy 70s style. ${KEEP_SAME}` },
   { id: 'special-santa', prompt: `Transform this beaver into Santa Claus! Add a red Santa hat with white trim, a white fluffy beard, and a red coat with white fur trim. ${KEEP_SAME}` },
@@ -146,15 +146,17 @@ function editImage(baseImagePath, prompt) {
       hostname: 'api.openai.com',
       path: '/v1/images/edits',
       method: 'POST',
+      timeout: 120000,
       headers: {
         'Authorization': `Bearer ${API_KEY}`,
         'Content-Type': `multipart/form-data; boundary=${boundary}`,
         'Content-Length': body.length,
       },
     }, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
+      const chunks = [];
+      res.on('data', chunk => chunks.push(chunk));
       res.on('end', () => {
+        const data = Buffer.concat(chunks).toString();
         try {
           const json = JSON.parse(data);
           if (json.error) return reject(new Error(json.error.message));
@@ -165,6 +167,44 @@ function editImage(baseImagePath, prompt) {
           } else {
             reject(new Error('No image data in response'));
           }
+        } catch (e) {
+          reject(new Error(`Parse error: ${data.slice(0, 300)}`));
+        }
+      });
+    });
+    req.on('timeout', () => { req.destroy(); reject(new Error('Request timed out after 120s')); });
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
+
+function generateDalle3(prompt) {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify({
+      model: 'dall-e-3',
+      prompt,
+      n: 1,
+      size: '1024x1024',
+      quality: 'standard',
+    });
+
+    const req = https.request({
+      hostname: 'api.openai.com',
+      path: '/v1/images/generations',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_KEY}`,
+      },
+    }, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(data);
+          if (json.error) return reject(new Error(json.error.message));
+          resolve(json.data[0].url);
         } catch (e) {
           reject(new Error(`Parse error: ${data.slice(0, 300)}`));
         }
@@ -190,11 +230,23 @@ function downloadImage(url, filepath) {
   });
 }
 
+async function saveResult(result, outPath) {
+  if (result.type === 'base64') {
+    fs.writeFileSync(outPath, Buffer.from(result.data, 'base64'));
+  } else {
+    await downloadImage(result.data, outPath);
+  }
+}
+
+const DELAY = 2000; // ms between API calls
+
 async function main() {
   if (!API_KEY) {
     console.error('Set OPENAI_API_KEY environment variable');
     process.exit(1);
   }
+
+  const mode = process.argv[2] || 'all'; // all, shirts, combos, accessories, specials
 
   // Step 1: Generate or reuse base beaver
   if (!fs.existsSync(BASE_PATH)) {
@@ -211,32 +263,105 @@ async function main() {
     console.log('Step 1: Base beaver already exists, reusing.\n');
   }
 
-  // Step 2: Generate variants by editing the base
-  console.log(`Step 2: Generating ${VARIANTS.length} variants from base...\n`);
-
-  for (const variant of VARIANTS) {
-    const outPath = path.join(OUT_DIR, `${variant.id}.png`);
-    if (fs.existsSync(outPath)) {
-      console.log(`Skip ${variant.id} — already exists`);
-      continue;
-    }
-    console.log(`Editing: ${variant.id}...`);
-    try {
-      const result = await editImage(BASE_PATH, variant.prompt);
-      if (result.type === 'base64') {
-        fs.writeFileSync(outPath, Buffer.from(result.data, 'base64'));
-      } else {
-        await downloadImage(result.data, outPath);
+  // Step 2: Generate shirt base sprites (no hat, just shirt variant)
+  if (mode === 'all' || mode === 'shirts') {
+    console.log(`\nStep 2: Generating ${SHIRTS.length} shirt variants...\n`);
+    for (const shirt of SHIRTS) {
+      const outPath = path.join(OUT_DIR, `shirt-base-${shirt.id}.png`);
+      if (fs.existsSync(outPath)) {
+        console.log(`Skip ${shirt.id} base — already exists`);
+        continue;
       }
-      console.log(`Done: ${variant.id}`);
-    } catch (e) {
-      console.error(`FAIL: ${variant.id} — ${e.message}`);
+      console.log(`Editing: ${shirt.id} base...`);
+      try {
+        const result = await editImage(BASE_PATH, shirt.prompt);
+        await saveResult(result, outPath);
+        console.log(`Done: ${shirt.id} base`);
+      } catch (e) {
+        console.error(`FAIL: ${shirt.id} base — ${e.message}`);
+      }
+      await new Promise(r => setTimeout(r, DELAY));
     }
-    // Rate limit delay
-    await new Promise(r => setTimeout(r, 2000));
   }
 
-  console.log('\nAll sprites saved to public/images/cosmetics/');
+  // Step 3: Generate hat × shirt combos
+  if (mode === 'all' || mode === 'combos') {
+    const total = HATS.length * SHIRTS.length;
+    let count = 0;
+    console.log(`\nStep 3: Generating ${total} hat×shirt combo sprites...\n`);
+
+    for (const shirt of SHIRTS) {
+      const shirtBase = path.join(OUT_DIR, `shirt-base-${shirt.id}.png`);
+      if (!fs.existsSync(shirtBase)) {
+        console.log(`Skip combos for ${shirt.id} — shirt base not found`);
+        count += HATS.length;
+        continue;
+      }
+
+      for (const hat of HATS) {
+        count++;
+        const comboName = `combo-${hat.id}-${shirt.id}`;
+        const outPath = path.join(OUT_DIR, `${comboName}.png`);
+        if (fs.existsSync(outPath)) {
+          console.log(`[${count}/${total}] Skip ${comboName} — exists`);
+          continue;
+        }
+        console.log(`[${count}/${total}] ${comboName}...`);
+        try {
+          const result = await editImage(shirtBase, hat.prompt);
+          await saveResult(result, outPath);
+          console.log(`[${count}/${total}] Done: ${comboName}`);
+        } catch (e) {
+          console.error(`[${count}/${total}] FAIL: ${comboName} — ${e.message}`);
+        }
+        await new Promise(r => setTimeout(r, DELAY));
+      }
+    }
+  }
+
+  // Step 4: Generate accessory overlay icons
+  if (mode === 'all' || mode === 'accessories') {
+    console.log(`\nStep 4: Generating ${ACCESSORIES.length} accessory icons...\n`);
+    for (const acc of ACCESSORIES) {
+      const outPath = path.join(OUT_DIR, `${acc.id}.png`);
+      if (fs.existsSync(outPath)) {
+        console.log(`Skip ${acc.id} — already exists`);
+        continue;
+      }
+      console.log(`Generating: ${acc.id}...`);
+      try {
+        const url = await generateDalle3(acc.prompt);
+        await downloadImage(url, outPath);
+        console.log(`Done: ${acc.id}`);
+      } catch (e) {
+        console.error(`FAIL: ${acc.id} — ${e.message}`);
+      }
+      await new Promise(r => setTimeout(r, DELAY));
+    }
+  }
+
+  // Step 5: Generate special full-body sprites
+  if (mode === 'all' || mode === 'specials') {
+    console.log(`\nStep 5: Generating ${SPECIALS.length} special sprites...\n`);
+    for (const spec of SPECIALS) {
+      const outPath = path.join(OUT_DIR, `${spec.id}.png`);
+      if (fs.existsSync(outPath)) {
+        console.log(`Skip ${spec.id} — already exists`);
+        continue;
+      }
+      console.log(`Editing: ${spec.id}...`);
+      try {
+        const result = await editImage(BASE_PATH, spec.prompt);
+        await saveResult(result, outPath);
+        console.log(`Done: ${spec.id}`);
+      } catch (e) {
+        console.error(`FAIL: ${spec.id} — ${e.message}`);
+      }
+      await new Promise(r => setTimeout(r, DELAY));
+    }
+  }
+
+  console.log('\nAll done! Sprites saved to public/images/cosmetics/');
 }
 
 main();

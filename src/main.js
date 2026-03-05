@@ -397,14 +397,7 @@ const COSMETICS = [
   {id:'shirt-hoodie', category:'uniforms', name:'Hoodie', icon:'🧥', unlock:'coins300', desc:'Buy for 300 coins', tier:4, cost:300},
   {id:'shirt-tuxedo', category:'uniforms', name:'Tuxedo', icon:'🤵', unlock:'allS', desc:'All S-grades', tier:5, premium:true},
 
-  // === FUR STYLES (5) ===
-  {id:'color-classic', category:'fur', name:'Classic Brown', icon:'🟤', unlock:'default', tier:0},
-  {id:'color-golden', category:'fur', name:'Honey Gold', icon:'🟡', unlock:'manager', desc:'Reach Manager rank', tier:3},
-  {id:'color-texas', category:'fur', name:'Texas Orange', icon:'🟠', unlock:'coins500', desc:'Buy for 500 coins', tier:3, cost:500},
-  {id:'color-midnight', category:'fur', name:'Midnight', icon:'🔵', unlock:'insane6', desc:'Beat Shift 6 on Insane', tier:5, premium:true},
-  {id:'color-albino', category:'fur', name:'Albino', icon:'⚪', unlock:'streak30', desc:'30-day login streak', tier:5, premium:true},
-
-  // === ACCESSORIES (8) - NEW ===
+  // === ACCESSORIES (8) - overlay items ===
   {id:'acc-sunglasses', category:'accessories', name:'Sunglasses', icon:'🕶️', unlock:'shift1', desc:'Complete Shift 1', tier:1},
   {id:'acc-bandana', category:'accessories', name:'Bandana', icon:'🎀', unlock:'clean25', desc:'Clean 25 stalls', tier:1},
   {id:'acc-bowtie', category:'accessories', name:'Bow Tie', icon:'🎀', unlock:'serve100', desc:'Serve 100 customers', tier:2},
@@ -434,36 +427,71 @@ const COSMETIC_TIERS = [
 ];
 
 let cosmeticState = JSON.parse(localStorage.getItem('beaverCosmetics') || 'null') || {
-  unlocked: ['hat-none','hat-cap','shirt-polo','shirt-none','shirt-artios','color-classic'],
-  activeLook: 'hat-cap',
+  unlocked: ['hat-none','hat-cap','shirt-polo','shirt-none','shirt-artios'],
+  equipped: {hat:'hat-cap', shirt:'shirt-polo', accessory:null, special:null},
   lastSeen: Date.now(),
 };
-// Migrate from old equipped format to activeLook
-if (cosmeticState.equipped && !cosmeticState.activeLook) {
-  const e = cosmeticState.equipped;
-  if (e.hat && e.hat !== 'hat-none') cosmeticState.activeLook = e.hat;
-  else if (e.shirt && e.shirt !== 'shirt-polo') cosmeticState.activeLook = e.shirt;
-  else cosmeticState.activeLook = e.color || 'color-classic';
-  delete cosmeticState.equipped;
-  cosmeticState.lastSeen = Date.now();
+// Migrate from activeLook format back to multi-equip
+if (cosmeticState.activeLook && !cosmeticState.equipped) {
+  const id = cosmeticState.activeLook;
+  cosmeticState.equipped = {hat:'hat-cap', shirt:'shirt-polo', accessory:null, special:null};
+  if (id.startsWith('hat-')) cosmeticState.equipped.hat = id;
+  else if (id.startsWith('shirt-')) cosmeticState.equipped.shirt = id;
+  else if (id.startsWith('acc-')) cosmeticState.equipped.accessory = id;
+  else if (id.startsWith('special-')) cosmeticState.equipped.special = id;
+  delete cosmeticState.activeLook;
 }
-if (!cosmeticState.activeLook) cosmeticState.activeLook = 'hat-cap';
+// Ensure equipped has all slots
+if (!cosmeticState.equipped) cosmeticState.equipped = {hat:'hat-cap', shirt:'shirt-polo', accessory:null, special:null};
+if (!cosmeticState.equipped.accessory) cosmeticState.equipped.accessory = null;
+if (!cosmeticState.equipped.special) cosmeticState.equipped.special = null;
 if (!cosmeticState.lastSeen) cosmeticState.lastSeen = Date.now();
+// Remove old fur/color from unlocked defaults
+cosmeticState.unlocked = cosmeticState.unlocked.filter(id => !id.startsWith('color-'));
 
 function saveCosmeticState() {
   localStorage.setItem('beaverCosmetics', JSON.stringify(cosmeticState));
 }
 
-function getActiveLookSrc() {
-  return `/images/cosmetics/${cosmeticState.activeLook || 'hat-cap'}.png`;
+function getComboSpriteSrc() {
+  const e = cosmeticState.equipped;
+  // Special overrides everything
+  if (e.special) return `/images/cosmetics/${e.special}.png`;
+  // Combo sprite: hat + shirt
+  const hat = e.hat || 'hat-cap';
+  const shirt = e.shirt || 'shirt-polo';
+  return `/images/cosmetics/combo-${hat}-${shirt}.png`;
+}
+
+function getAccessorySrc() {
+  const acc = cosmeticState.equipped.accessory;
+  return acc ? `/images/cosmetics/${acc}.png` : null;
 }
 
 function applyCosmeticsToBeaver() {
-  const src = getActiveLookSrc();
-  const sprite = document.getElementById('beaver-sprite');
-  if (sprite) sprite.src = src;
-  const titleSprite = document.getElementById('title-beaver-sprite');
-  if (titleSprite) titleSprite.src = src;
+  const src = getComboSpriteSrc();
+  const fallback = `/images/cosmetics/${cosmeticState.equipped.hat || 'hat-cap'}.png`;
+  const setWithFallback = (el) => {
+    if (!el) return;
+    el.src = src;
+    el.onerror = () => { el.onerror = null; el.src = fallback; };
+  };
+  setWithFallback(document.getElementById('beaver-sprite'));
+  setWithFallback(document.getElementById('title-beaver-sprite'));
+  // Accessory overlay
+  updateAccessoryOverlay('title-accessory-overlay', getAccessorySrc());
+  updateAccessoryOverlay('hud-accessory-overlay', getAccessorySrc());
+}
+
+function updateAccessoryOverlay(id, src) {
+  let el = document.getElementById(id);
+  if (!src) {
+    if (el) el.style.display = 'none';
+    return;
+  }
+  if (!el) return;
+  el.src = src;
+  el.style.display = 'block';
 }
 
 function checkCosmeticUnlocks() {
@@ -6111,13 +6139,40 @@ $('outfitter-modal').addEventListener('click', e => {
   if (e.target === $('outfitter-modal')) $('outfitter-modal').classList.remove('active');
 });
 
-function updateOutfitterPreview(id) {
+function updateOutfitterPreview() {
   const img = $('outfitter-beaver-img');
-  if (img) img.src = `/images/cosmetics/${id}.png`;
+  if (img) {
+    const src = getComboSpriteSrc();
+    const fallback = `/images/cosmetics/${cosmeticState.equipped.hat || 'hat-cap'}.png`;
+    img.src = src;
+    img.onerror = () => { img.onerror = null; img.src = fallback; };
+  }
+  // Update accessory overlay in preview
+  const accSrc = getAccessorySrc();
+  let accOverlay = document.getElementById('outfitter-accessory-overlay');
+  if (accOverlay) {
+    if (accSrc) { accOverlay.src = accSrc; accOverlay.style.display = 'block'; }
+    else accOverlay.style.display = 'none';
+  }
   const label = $('outfitter-active-label');
   if (label) {
-    const c = COSMETICS.find(co => co.id === id);
-    label.textContent = c ? c.name : 'Active Look';
+    const e = cosmeticState.equipped;
+    const parts = [];
+    if (e.special) {
+      const s = COSMETICS.find(c => c.id === e.special);
+      parts.push(s ? s.name : 'Special');
+    } else {
+      const h = COSMETICS.find(c => c.id === e.hat);
+      const s = COSMETICS.find(c => c.id === e.shirt);
+      if (h && h.id !== 'hat-none') parts.push(h.name);
+      if (s && s.id !== 'shirt-none') parts.push(s.name);
+      if (parts.length === 0) parts.push('Default Look');
+    }
+    if (e.accessory && !e.special) {
+      const a = COSMETICS.find(c => c.id === e.accessory);
+      if (a) parts.push('+ ' + a.name);
+    }
+    label.textContent = parts.join(' · ');
   }
 }
 
@@ -6126,7 +6181,7 @@ function showOutfitter() {
   $('outfitter-coins').textContent = (game.coins || parseInt(localStorage.getItem('beaverCoins')) || 0);
   checkCosmeticUnlocks();
   markOutfitterSeen();
-  updateOutfitterPreview(cosmeticState.activeLook);
+  updateOutfitterPreview();
   renderOutfitterTab('headgear');
   // Tab switching
   document.querySelectorAll('.outfitter-tab').forEach(tab => {
@@ -6174,7 +6229,8 @@ function renderOutfitterTab(category) {
     }
     for (const c of tiers[t]) {
       const owned = cosmeticState.unlocked.includes(c.id);
-      const isActive = cosmeticState.activeLook === c.id;
+      const e = cosmeticState.equipped;
+      const isActive = e.hat === c.id || e.shirt === c.id || e.accessory === c.id || e.special === c.id;
       const locked = !owned;
       const tierLocked = !tierOpen && tierNum > 0;
       // Check if item is "new" (unlocked but not yet seen when outfitter was last opened)
@@ -6197,9 +6253,20 @@ function renderOutfitterTab(category) {
         tierLocked ? 'locked-tier' : '',
       ].filter(Boolean).join(' ');
 
+      // Show combo preview for hats/shirts, item-only for accessories/specials
+      let thumbSrc;
+      if (c.category === 'headgear') {
+        thumbSrc = `/images/cosmetics/combo-${c.id}-${e.shirt || 'shirt-polo'}.png`;
+      } else if (c.category === 'uniforms') {
+        thumbSrc = `/images/cosmetics/combo-${e.hat || 'hat-cap'}-${c.id}.png`;
+      } else {
+        thumbSrc = `/images/cosmetics/${c.id}.png`;
+      }
+      const fallSrc = `/images/cosmetics/${c.id}.png`;
+
       html += `<div class="${classes}" data-id="${c.id}">
         ${isNew ? '<span class="new-badge">NEW</span>' : ''}
-        <img class="outfitter-item-sprite" src="/images/cosmetics/${c.id}.png" alt="${c.name}" loading="lazy">
+        <img class="outfitter-item-sprite" src="${thumbSrc}" onerror="this.onerror=null;this.src='${fallSrc}'" alt="${c.name}" loading="lazy">
         <span class="outfitter-item-name">${c.name}</span>
         <span class="outfitter-item-status">${status}</span>
       </div>`;
@@ -6238,10 +6305,23 @@ function renderOutfitterTab(category) {
         }
       }
 
-      // Set as Active Look
-      cosmeticState.activeLook = id;
+      // Equip in the appropriate slot
+      if (cosmetic.category === 'headgear') {
+        cosmeticState.equipped.hat = id;
+        cosmeticState.equipped.special = null; // Clear special override
+      } else if (cosmetic.category === 'uniforms') {
+        cosmeticState.equipped.shirt = id;
+        cosmeticState.equipped.special = null;
+      } else if (cosmetic.category === 'accessories') {
+        // Toggle accessory — tap again to remove
+        cosmeticState.equipped.accessory = cosmeticState.equipped.accessory === id ? null : id;
+        cosmeticState.equipped.special = null;
+      } else if (cosmetic.category === 'special') {
+        // Toggle special — tap again to revert to hat+shirt
+        cosmeticState.equipped.special = cosmeticState.equipped.special === id ? null : id;
+      }
       saveCosmeticState();
-      updateOutfitterPreview(id);
+      updateOutfitterPreview();
       applyCosmeticsToBeaver();
       playClick();
       renderOutfitterTab(cosmetic.category);
