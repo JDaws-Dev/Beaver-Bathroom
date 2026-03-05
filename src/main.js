@@ -7778,7 +7778,7 @@ function showMPLobby(code, myName, isHost) {
     const el = $('mp-lobby-host-beaver');
     if (el) el.src = getComboSpriteSrc();
     const gel = $('mp-lobby-guest-beaver');
-    if (gel) gel.src = ''; // Will be set when guest joins
+    if (gel) { gel.src = ''; gel.style.display = 'none'; } // Will be set when guest joins
   } else {
     const hel = $('mp-lobby-host-beaver');
     if (hel) hel.src = mpState.opponentCosmetics ? getOpponentSpriteSrc() : (BASE + 'images/cosmetics/combo-hat-cap-shirt-polo.png');
@@ -7891,7 +7891,7 @@ async function pollLobby() {
         mpState.opponentName = room.guestName;
         mpState.opponentCosmetics = room.guestCosmetics || null;
         const gel = $('mp-lobby-guest-beaver');
-        if (gel) gel.src = getOpponentSpriteSrc();
+        if (gel) { gel.style.display = ''; gel.src = getOpponentSpriteSrc(); }
       } else {
         $('mp-guest-name').textContent = 'Waiting...';
         $('mp-guest-slot').classList.remove('mp-player-ready');
