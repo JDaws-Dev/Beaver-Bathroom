@@ -498,9 +498,11 @@ function applyCosmeticsToBeaver() {
   };
   setWithFallback(document.getElementById('beaver-sprite'));
   setWithFallback(document.getElementById('title-beaver-sprite'));
-  // Accessory overlay
-  updateAccessoryOverlay('title-accessory-overlay', getAccessorySrc());
-  updateAccessoryOverlay('hud-accessory-overlay', getAccessorySrc());
+  // Hide accessory overlays — accessories are label-only until proper transparent overlays exist
+  const titleAcc = document.getElementById('title-accessory-overlay');
+  const hudAcc = document.getElementById('hud-accessory-overlay');
+  if (titleAcc) titleAcc.style.display = 'none';
+  if (hudAcc) hudAcc.style.display = 'none';
 }
 
 function updateAccessoryOverlay(id, src) {
@@ -6279,13 +6281,9 @@ function updateOutfitterPreview() {
     };
     img.src = src;
   }
-  // Update accessory overlay in preview
-  const accSrc = getAccessorySrc();
-  let accOverlay = document.getElementById('outfitter-accessory-overlay');
-  if (accOverlay) {
-    if (accSrc) { accOverlay.src = accSrc; accOverlay.style.display = 'block'; }
-    else accOverlay.style.display = 'none';
-  }
+  // Hide accessory overlay in preview — accessories are label-only
+  const accOverlay = document.getElementById('outfitter-accessory-overlay');
+  if (accOverlay) accOverlay.style.display = 'none';
   const label = $('outfitter-active-label');
   if (label) {
     const e = cosmeticState.equipped;
