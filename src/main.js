@@ -4541,7 +4541,7 @@ function updatePeople(dt) {
 
     // Messy feet leave occasional footprints
     if (p.hasMessyFeet && rand() < 0.002 * (dt / 16)) {
-      spawnPuddle(p.x + rnd(-5, 5), p.y + rnd(15, 25), 'muddy');
+      spawnPuddle(p.x + rnd(-15, 15), p.y + rnd(10, 30), 'muddy');
       // Feet get cleaner over time
       if (rand() < 0.3) p.hasMessyFeet = false;
     }
@@ -4586,7 +4586,7 @@ function updatePeople(dt) {
         floatMessage(msg, p.x, p.y - 20, 'bad');
 
         // Pee accident when customer gives up!
-        spawnPuddle(p.x + rnd(-10, 10), p.y + rnd(20, 35), 'pee');
+        spawnPuddle(p.x + rnd(-30, 30), p.y + rnd(10, 45), 'pee');
 
         p.phase = 'exit';
         continue;
@@ -4874,8 +4874,8 @@ function updatePeople(dt) {
           const sinkEl = $('sinks-area').children[p.sinkIdx];
           if (sinkEl) {
             const sinkRect = sinkEl.getBoundingClientRect();
-            const x = sinkRect.left - floorRect.left + rnd(-15, 15);
-            const y = sinkRect.top - floorRect.top - rnd(30, 50);
+            const x = sinkRect.left - floorRect.left + rnd(-25, 25);
+            const y = sinkRect.top - floorRect.top - rnd(20, 60);
             spawnPuddle(x, y, 'water');
           }
         }
@@ -5034,10 +5034,12 @@ function customerLeaves(stallIdx) {
     }
     person.phase = 'exitStall';
 
-    // Chance of vomit - messy customers more likely
-    const vomitChance = person.messiness === 1 ? 0.25 : (person.messiness === -1 ? 0.05 : 0.12);
-    if (rand() < vomitChance) {
-      spawnPuddle(person.x + rnd(-20, 20), person.y + rnd(30, 50), 'vomit');
+    // Chance of floor mess when exiting - messy customers more likely
+    const messChance = person.messiness === 1 ? 0.35 : (person.messiness === -1 ? 0.05 : 0.15);
+    if (rand() < messChance) {
+      const messRoll = rand();
+      const messType = messRoll < 0.4 ? 'pee' : (messRoll < 0.75 ? 'vomit' : 'muddy');
+      spawnPuddle(person.x + rnd(-30, 30), person.y + rnd(20, 60), messType);
     }
   }
 }
@@ -5062,9 +5064,9 @@ function spawnPuddle(x, y, type) {
 function spawnRandomMess() {
   const floor = $('floor-area');
   const rect = floor.getBoundingClientRect();
-  // Random walkway location (middle area of floor)
-  const x = rnd(80, rect.width - 80);
-  const y = rnd(100, rect.height - 100);
+  // Random location across floor area
+  const x = rnd(40, rect.width - 40);
+  const y = rnd(60, rect.height - 60);
   // Random mess type weighted by frequency
   const roll = rand();
   let type = 'water';
