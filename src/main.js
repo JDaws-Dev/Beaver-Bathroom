@@ -5934,19 +5934,12 @@ function endShift() {
   const narrative = SHIFT_NARRATIVES[game.shift] || SHIFT_NARRATIVES[0];
   $('result-title').textContent = `${narrative.name} Complete!`;
 
-  let stars = '';
-  for (let i = 0; i < 5; i++) stars += game.rating >= i + 0.75 ? '⭐' : (game.rating >= i + 0.25 ? '🌟' : '☆');
-  $('result-rating').innerHTML = `<span style="font-size:1.6em">${stars}</span>`;
-
-  const messesCleared = game.stats.cleaned || 0;
   const abandoned = game.stats.abandoned || 0;
   $('result-stats').innerHTML = `
     <div class="stat"><div class="num">${game.stats.cleaned}</div><div class="lbl">Stalls Cleaned</div></div>
     <div class="stat"><div class="num">${game.stats.served}</div><div class="lbl">Customers</div></div>
     <div class="stat"><div class="num">${game.maxCombo}x</div><div class="lbl">Best Combo</div></div>
     <div class="stat"><div class="num">${Math.floor(game.score)}</div><div class="lbl">Score</div></div>
-    <div class="stat"><div class="num">${abandoned}</div><div class="lbl">Walked Out</div></div>
-    <div class="stat"><div class="num">${game.tipsEarned > 0 ? '🪙' + game.tipsEarned : Math.round(game.rating * 20) + '%'}</div><div class="lbl">${game.tipsEarned > 0 ? 'Tips' : 'Rating'}</div></div>
   `;
 
   const shiftsLeft = CONFIG.shifts.length - game.shift - 1;
@@ -5982,6 +5975,7 @@ function endShift() {
     localStorage.setItem('beaverPremiumHintShown', 'true');
   }
   $('result-comment').textContent = comment;
+  $('result-comment').classList.remove('ai-review');
 
   // Track shift completion
   trackEvent('shift_complete', {
@@ -6102,51 +6096,25 @@ function endShift() {
     $('next-btn').textContent = 'Final Results';
   }
 
-  // Show locked premium buttons for free users to build aspiration
-  const premiumBtns = $('result-premium-btns');
-  if (premiumBtns) {
-    if (!isPremium()) {
-      premiumBtns.style.display = 'flex';
-      // Update button states to show locked
-      const shopBtn = $('result-shop-btn');
-      const badgesBtn = $('result-badges-btn');
-      if (shopBtn) shopBtn.classList.add('locked');
-      if (badgesBtn) badgesBtn.classList.add('locked');
-    } else {
-      premiumBtns.style.display = 'none';
+  // Fire off AI review generation (non-blocking) — overwrites result-comment when ready
+  convex.action(api.reviews.generateReview, {
+    score: Math.floor(game.score),
+    grade,
+    cleaned: game.stats.cleaned || 0,
+    served: game.stats.served || 0,
+    abandoned: game.stats.abandoned || 0,
+    maxCombo: game.maxCombo || 0,
+    rating: game.rating || 0,
+    shift: game.shift,
+  }).then(result => {
+    if (result && result.review) {
+      const el = $('result-comment');
+      el.classList.add('ai-review');
+      el.textContent = `"${result.review}" — ${result.reviewer}`;
     }
-  }
-
-  // Hide review section initially, then fetch AI review async
-  const reviewSection = $('customer-review-section');
-  if (reviewSection) {
-    reviewSection.style.display = 'none';
-    // Fire off review generation (non-blocking)
-    convex.action(api.reviews.generateReview, {
-      score: Math.floor(game.score),
-      grade,
-      cleaned: game.stats.cleaned || 0,
-      served: game.stats.served || 0,
-      abandoned: game.stats.abandoned || 0,
-      maxCombo: game.maxCombo || 0,
-      rating: game.rating || 0,
-      shift: game.shift,
-    }).then(result => {
-      if (result && result.review) {
-        const starsStr = '⭐'.repeat(result.stars) + '☆'.repeat(5 - result.stars);
-        $('review-stars').textContent = starsStr;
-        $('review-quote').textContent = `"${result.review}"`;
-        $('review-author').textContent = `— ${result.reviewer}`;
-        reviewSection.style.display = 'block';
-        // Re-trigger animation
-        reviewSection.style.animation = 'none';
-        void reviewSection.offsetWidth;
-        reviewSection.style.animation = '';
-      }
-    }).catch(err => {
-      console.warn('Review generation failed:', err);
-    });
-  }
+  }).catch(err => {
+    console.warn('Review generation failed:', err);
+  });
 
   showScreen('result-screen');
 }

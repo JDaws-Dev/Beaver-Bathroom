@@ -312,12 +312,6 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 /* Daily Challenge button */
 .daily-date{display:block;font-size:0.75em;opacity:0.7;margin-top:2px}
 
-/* Result screen premium buttons */
-.result-premium-btns{display:flex;gap:10px;justify-content:center;margin:12px 0}
-.btn-result-premium{padding:10px 16px;font-size:0.85em;font-weight:bold;border:3px solid #5d4037;border-radius:8px;background:linear-gradient(180deg,#3d2814,#2d1f0f);color:#c9a86c;cursor:pointer;transition:all 0.15s}
-.btn-result-premium:hover{transform:scale(1.05);border-color:#FEF117}
-.btn-result-premium.locked{opacity:0.5;color:#888}
-.btn-result-premium.locked::after{content:' 🔒';font-size:0.85em}
 
 .player-rank-display{margin-top:10px;text-align:center}
 .rank-badge{font-size:1em;font-weight:bold;margin-bottom:6px;text-shadow:0 2px 4px rgba(0,0,0,0.5);color:#FEF117}
@@ -531,14 +525,8 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .cosmetic-unlock-card .unlock-cta{animation:unlock-text-in 0.4s ease-out both;animation-delay:1.7s}
 @keyframes unlock-text-in{0%{transform:translateX(-10px);opacity:0}100%{transform:translateX(0);opacity:1}}
 .cosmetic-unlock-card .unlock-cta{font-size:0.6em;color:#c9a86c}
-/* Customer review card */
-.customer-review-section{margin:10px 0;animation:review-slide-in 0.5s cubic-bezier(0.34,1.56,0.64,1) both;animation-delay:1.2s;opacity:0}
-@keyframes review-slide-in{0%{transform:translateY(30px) scale(0.9);opacity:0}100%{transform:translateY(0) scale(1);opacity:1}}
-.customer-review-card{background:linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03));border:1.5px solid rgba(255,255,255,0.15);border-radius:12px;padding:14px 16px;text-align:center;position:relative}
-.customer-review-card::before{content:'\201C';position:absolute;top:6px;left:12px;font-size:2.2em;color:rgba(255,255,255,0.12);font-family:Georgia,serif;line-height:1}
-.review-stars{font-size:1.1em;margin-bottom:6px;letter-spacing:2px}
-.review-quote{font-style:italic;font-size:0.82em;color:#e8d5b5;line-height:1.4;margin-bottom:8px;padding:0 8px}
-.review-author{font-size:0.68em;color:#c9a86c;font-weight:600}
+#result-comment.ai-review{font-style:italic;color:#e8d5b5;font-size:0.85em;line-height:1.4;animation:review-fade-in 0.5s ease both;animation-delay:0.8s;opacity:0}
+@keyframes review-fade-in{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
 /* MP difficulty selector */
 .mp-difficulty-selector{margin-bottom:12px}
 .mp-difficulty-selector .mp-name-label{margin-bottom:6px;display:block}

@@ -55,7 +55,7 @@ export const generateReview = action({
           messages: [
             {
               role: "system",
-              content: "You are a fictional customer writing a 1-2 sentence review of a Buc-ee's bathroom after visiting. Family-friendly, clean humor only. Be funny and specific to the stats given. Include a made-up reviewer name and Texas hometown. Keep the review under 40 words. Respond in JSON format: {\"review\": \"...\", \"reviewer\": \"Name, Description from Town\"}",
+              content: "You are a fictional customer writing a 1-2 sentence review of a rest stop bathroom after visiting. Family-friendly, clean humor only. Be funny and specific to the stats given. Include a made-up reviewer name and hometown. Keep the review under 40 words. Respond in JSON format: {\"review\": \"...\", \"reviewer\": \"Name, Description from Town\"}",
             },
             {
               role: "user",
