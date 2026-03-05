@@ -130,6 +130,62 @@
       margin-top: 2px;
     }
 
+    /* Main navigation tabs */
+    .main-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 20px;
+      padding-bottom: 2px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+
+    .main-tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .main-tab {
+      padding: 10px 20px;
+      background: linear-gradient(180deg, #3d3226, #332a20);
+      border: 2px solid #4d4236;
+      border-radius: 24px;
+      color: #c4b8a8;
+      cursor: pointer;
+      font-size: 0.9em;
+      font-weight: 600;
+      transition: all 0.2s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .main-tab:hover {
+      background: linear-gradient(180deg, #4d4236, #3d3226);
+      border-color: #5d5246;
+      color: #ede6db;
+    }
+
+    .main-tab.active {
+      background: linear-gradient(180deg, #d4a03c, #b8862e);
+      border-color: #e8b84a;
+      color: #1c1710;
+      font-weight: 700;
+      box-shadow: 0 2px 12px rgba(212,160,60,0.25);
+    }
+
+    .main-tab .tab-emoji {
+      margin-right: 6px;
+    }
+
+    /* Tab panels */
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
     .section {
       background: linear-gradient(180deg, #2a2218, #221c14);
       border-radius: 16px;
@@ -279,6 +335,8 @@
       th, td { padding: 8px 6px; font-size: 0.8em; }
       .tabs { gap: 6px; }
       .tab { padding: 7px 14px; font-size: 0.8em; }
+      .main-tabs { gap: 4px; }
+      .main-tab { padding: 8px 14px; font-size: 0.82em; }
 
       .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
     }
@@ -300,73 +358,92 @@
     </div>
   </div>
 
-  <!-- Stats Grid -->
+  <!-- Stats Grid (always visible) -->
   <div class="stats-grid" id="stats-grid">
     <div class="loading">Loading stats...</div>
   </div>
 
-  <!-- Purchases Section -->
-  <div class="section">
-    <h2>💰 Purchases</h2>
-    <div id="purchases-table">
-      <div class="loading">Loading purchases...</div>
-    </div>
+  <!-- Main Tab Navigation -->
+  <div class="main-tabs" id="main-tabs">
+    <button class="main-tab active" data-tab="purchases"><span class="tab-emoji">💰</span>Purchases</button>
+    <button class="main-tab" data-tab="visitors"><span class="tab-emoji">👀</span>Visitors</button>
+    <button class="main-tab" data-tab="players"><span class="tab-emoji">👥</span>Players</button>
+    <button class="main-tab" data-tab="outfitter"><span class="tab-emoji">🎨</span>Outfitter</button>
+    <button class="main-tab" data-tab="events"><span class="tab-emoji">📊</span>Events</button>
   </div>
 
-  <!-- Visitors Section -->
-  <div class="section">
-    <h2>👀 Unique Visitors</h2>
-    <div id="visitor-stats" class="stats-grid" style="margin-bottom: 16px;">
-      <div class="loading">Loading visitor stats...</div>
-    </div>
-    <div class="table-scroll">
-      <div id="visitors-table">
-        <div class="loading">Loading visitors...</div>
+  <!-- Tab Panel: Purchases -->
+  <div class="tab-panel active" id="panel-purchases">
+    <div class="section">
+      <h2>💰 Purchases</h2>
+      <div id="purchases-table">
+        <div class="loading">Loading purchases...</div>
       </div>
     </div>
   </div>
 
-  <!-- Users Section -->
-  <div class="section">
-    <h2>👥 Registered Players</h2>
-    <div id="users-table">
-      <div class="loading">Loading users...</div>
-    </div>
-  </div>
-
-  <!-- Outfitter Activity Section -->
-  <div class="section">
-    <h2>🎨 Outfitter Activity</h2>
-    <div id="outfitter-stats" class="stats-grid" style="margin-bottom: 16px;">
-      <div class="loading">Loading outfitter stats...</div>
-    </div>
-    <div class="tabs">
-      <button class="tab active" data-outfitter-filter="">All</button>
-      <button class="tab" data-outfitter-filter="outfitter_open">Opens</button>
-      <button class="tab" data-outfitter-filter="outfitter_equip">Equips</button>
-      <button class="tab" data-outfitter-filter="outfitter_purchase">Purchases</button>
-      <button class="tab" data-outfitter-filter="outfitter_unlock">Unlocks</button>
-    </div>
-    <div class="table-scroll">
-      <div id="outfitter-table">
-        <div class="loading">Loading outfitter events...</div>
+  <!-- Tab Panel: Visitors -->
+  <div class="tab-panel" id="panel-visitors">
+    <div class="section">
+      <h2>👀 Unique Visitors</h2>
+      <div id="visitor-stats" class="stats-grid" style="margin-bottom: 16px;">
+        <div class="loading">Loading visitor stats...</div>
+      </div>
+      <div class="table-scroll">
+        <div id="visitors-table">
+          <div class="loading">Loading visitors...</div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Recent Events Section -->
-  <div class="section">
-    <h2>📊 Recent Events</h2>
-    <div class="tabs">
-      <button class="tab active" data-filter="">All</button>
-      <button class="tab" data-filter="game_start">Game Starts</button>
-      <button class="tab" data-filter="shift_complete">Shift Complete</button>
-      <button class="tab" data-filter="game_over">Game Over</button>
-      <button class="tab" data-filter="daily_start">Daily Challenge</button>
+  <!-- Tab Panel: Players -->
+  <div class="tab-panel" id="panel-players">
+    <div class="section">
+      <h2>👥 Registered Players</h2>
+      <div id="users-table">
+        <div class="loading">Loading users...</div>
+      </div>
     </div>
-    <div class="table-scroll">
-      <div id="events-table">
-        <div class="loading">Loading events...</div>
+  </div>
+
+  <!-- Tab Panel: Outfitter -->
+  <div class="tab-panel" id="panel-outfitter">
+    <div class="section">
+      <h2>🎨 Outfitter Activity</h2>
+      <div id="outfitter-stats" class="stats-grid" style="margin-bottom: 16px;">
+        <div class="loading">Loading outfitter stats...</div>
+      </div>
+      <div class="tabs">
+        <button class="tab active" data-outfitter-filter="">All</button>
+        <button class="tab" data-outfitter-filter="outfitter_open">Opens</button>
+        <button class="tab" data-outfitter-filter="outfitter_equip">Equips</button>
+        <button class="tab" data-outfitter-filter="outfitter_purchase">Purchases</button>
+        <button class="tab" data-outfitter-filter="outfitter_unlock">Unlocks</button>
+      </div>
+      <div class="table-scroll">
+        <div id="outfitter-table">
+          <div class="loading">Loading outfitter events...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Panel: Events -->
+  <div class="tab-panel" id="panel-events">
+    <div class="section">
+      <h2>📊 Recent Events</h2>
+      <div class="tabs">
+        <button class="tab active" data-filter="">All</button>
+        <button class="tab" data-filter="game_start">Game Starts</button>
+        <button class="tab" data-filter="shift_complete">Shift Complete</button>
+        <button class="tab" data-filter="game_over">Game Over</button>
+        <button class="tab" data-filter="daily_start">Daily Challenge</button>
+      </div>
+      <div class="table-scroll">
+        <div id="events-table">
+          <div class="loading">Loading events...</div>
+        </div>
       </div>
     </div>
   </div>
@@ -388,6 +465,22 @@
 
     let currentFilter = "";
     let currentOutfitterFilter = "";
+
+    // Main tab switching
+    const mainTabs = document.querySelectorAll('.main-tab[data-tab]');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+
+    mainTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        mainTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        const targetId = 'panel-' + tab.dataset.tab;
+        tabPanels.forEach(panel => {
+          panel.classList.toggle('active', panel.id === targetId);
+        });
+      });
+    });
 
     // Time ago helper
     function timeAgo(timestamp) {
