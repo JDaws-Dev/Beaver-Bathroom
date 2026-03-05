@@ -371,7 +371,7 @@ const ITEMS = [
 const COSMETICS = [
   // === HEADGEAR (12) ===
   {id:'hat-none', category:'headgear', name:'No Hat', icon:'🚫', unlock:'default', tier:0},
-  {id:'hat-cap', category:'headgear', name:"Buc-ee's Cap", icon:'🧢', unlock:'default', tier:0},
+  {id:'hat-cap', category:'headgear', name:"Classic Cap", icon:'🧢', unlock:'default', tier:0},
   {id:'hat-visor', category:'headgear', name:'Sun Visor', icon:'🧢', unlock:'shift1', desc:'Complete Shift 1', tier:1},
   {id:'hat-hardhat', category:'headgear', name:'Hard Hat', icon:'⛑️', unlock:'shift2', desc:'Complete Shift 2', tier:1},
   {id:'hat-beanie', category:'headgear', name:'Beanie', icon:'🧶', unlock:'clean50', desc:'Clean 50 stalls', tier:2},
