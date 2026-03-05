@@ -2937,6 +2937,7 @@ function updateMascotWalk(dt) {
         p.crowdOffsetY = (Math.random() - 0.5) * 2;
         // Show excited thought
         p.thought = ['📸', '🤩', 'OMG!', '🦫!', 'WOW!'][Math.floor(Math.random() * 5)];
+        p.thoughtMood = 'neutral';
         p.thoughtTimer = 5000;
       }
 
@@ -2957,6 +2958,7 @@ function updateMascotWalk(dt) {
       // Show excited thought
       if (!p.thought || p.thoughtTimer <= 0) {
         p.thought = ['📸', '🤩', 'OMG!', '🦫!', 'WOW!'][Math.floor(Math.random() * 5)];
+        p.thoughtMood = 'neutral';
         p.thoughtTimer = 2000;
       }
     }
@@ -4490,6 +4492,7 @@ function spawnCustomer() {
     vip: isVip,
     messiness: messiness,
     thought: enterThought,
+    thoughtMood: 'neutral',
     thoughtTimer: enterTimer,
     shirt: shirt,
     specialName: specialName,
@@ -4523,6 +4526,7 @@ function updatePeople(dt) {
       if (mess && !p.steppedInMess) {
         p.steppedInMess = mess.id;
         p.thought = pick(THOUGHTS.disgusted);
+        p.thoughtMood = 'bad';
         p.thoughtTimer = 1500;
         playCustomerDisgusted();
         haptic('warning');
@@ -4532,7 +4536,6 @@ function updatePeople(dt) {
         }
         // Small rating hit for letting customers step in mess
         game.rating = clamp(game.rating - 0.05, 0, 5);
-        floatMessage('😖 Stepped in mess!', p.x, p.y - 30, 'bad');
       }
     }
 
@@ -4560,6 +4563,7 @@ function updatePeople(dt) {
           p.thought = pick(patienceRatio < 0.15 ? THOUGHTS.desperate : THOUGHTS.impatient);
         }
         playCustomerImpatient();
+        p.thoughtMood = 'urgent';
         p.thoughtTimer = 2000;
       }
 
@@ -4595,6 +4599,7 @@ function updatePeople(dt) {
         if (!p.distractedThought) {
           p.distractedThought = true;
           p.thought = ['📸', '🤩', 'Is that Beaver?!', 'OMG!', '📷'][Math.floor(rand() * 5)];
+          p.thoughtMood = 'neutral';
           p.thoughtTimer = 10000;  // Keep showing while distracted
         }
         // Movement handled by updateMascotWalk() - skip normal enter movement
@@ -4637,6 +4642,7 @@ function updatePeople(dt) {
         if (!p.distractedThought) {
           p.distractedThought = true;
           p.thought = ['📸', '🤩', 'Is that Beaver?!', 'Wow!', '📷'][Math.floor(rand() * 5)];
+          p.thoughtMood = 'neutral';
           p.thoughtTimer = 10000;
         }
         // Movement handled by updateMascotWalk() - skip normal stall search
@@ -4673,6 +4679,7 @@ function updatePeople(dt) {
         if (!p.distractedThought) {
           p.distractedThought = true;
           p.thought = ['📸', '🤩', 'Is that Beaver?!', 'OMG!', '📷'][Math.floor(rand() * 5)];
+          p.thoughtMood = 'neutral';
           p.thoughtTimer = 10000;
         }
         // Movement handled by updateMascotWalk() - skip normal toStall movement
@@ -4775,6 +4782,7 @@ function updatePeople(dt) {
             screenShake();
             setBeaverMood('sad', 1500);
             p.thought = pick(THOUGHTS.disgusted);
+            p.thoughtMood = 'bad';
             p.thoughtTimer = 2000;
             const msg = p.vip ? '⭐ VIP DISGUSTED! -' + ratingLoss.toFixed(1) + '⭐' : '-0.4⭐ GROSS!';
             floatMessage(msg, p.x, p.y - 30, 'bad');
@@ -4881,6 +4889,7 @@ function updatePeople(dt) {
           } else {
             p.thought = pick(THOUGHTS.happy);
           }
+          p.thoughtMood = 'good';
           playCustomerHappy();
           p.thoughtTimer = 1500;
           p.phase = 'exit';
@@ -4909,11 +4918,13 @@ function updatePeople(dt) {
           } else {
             p.thought = pick(THOUGHTS.happy);
           }
+          p.thoughtMood = 'good';
           playCustomerHappy();
           p.thoughtTimer = 1500;
         } else {
           // No towels! Customer is unhappy
           p.thought = pick(['No towels?!', 'Wet hands...', 'Seriously?', 'Ugh, drip dry...']);
+          p.thoughtMood = 'bad';
           p.thoughtTimer = 2000;
           const penalty = p.vip ? 0.3 : 0.15;
           game.rating = Math.max(0, game.rating - penalty);
@@ -4962,10 +4973,10 @@ function updatePeople(dt) {
         const pdx = p.x - puddle.x, pdy = p.y - puddle.y;
         if (Math.sqrt(pdx*pdx + pdy*pdy) < 30) {
           p.steppedInPuddle = true;
-          p.thought = pick(['🤢 Gross!', '😤 Eww!', '🤮 Disgusting!', '😠 Clean this up!']);
+          p.thought = pick(['Gross!', 'Eww!', 'Disgusting!', 'Clean this up!']);
+          p.thoughtMood = 'bad';
           p.thoughtTimer = 2500;
           game.rating = Math.max(0, game.rating - (p.vip ? 0.2 : 0.1));
-          floatMessage('😤 Stepped in mess!', p.x, p.y - 30, 'bad');
           break;
         }
       }
@@ -5430,7 +5441,6 @@ function renderPeople() {
     }
 
     // Mood states based on thoughts
-    // Check both generic thoughts and special character happy thoughts
     const isHappy = p.thought && (THOUGHTS.happy.includes(p.thought) ||
       (p.specialThoughts && p.thought === p.specialThoughts.happy));
     const isDisgusted = p.thought && THOUGHTS.disgusted.includes(p.thought);
@@ -5440,24 +5450,27 @@ function renderPeople() {
     const patienceRatio = p.patience / p.maxPatience;
     el.classList.toggle('impatient', p.thoughtTimer > 0);
 
+    // Thought bubble with mood color
     const thoughtEl = el.querySelector('.thought');
-    thoughtEl.textContent = p.thoughtTimer > 0 ? p.thought : '';
-
-    // State icon badge for mobile readability
-    let stateIcon = el.querySelector('.state-icon');
-    if (!stateIcon) {
-      stateIcon = document.createElement('div');
-      stateIcon.className = 'state-icon';
-      el.appendChild(stateIcon);
+    if (p.thoughtTimer > 0) {
+      thoughtEl.textContent = p.thought;
+      thoughtEl.className = 'thought mood-' + (p.thoughtMood || 'neutral');
+    } else {
+      thoughtEl.textContent = '';
+      thoughtEl.className = 'thought';
     }
-    const phaseIcons = {findStall:'🔍', toStall:'🚶', washing:'🧼', toSink:'💧', toTowels:'🧻'};
-    stateIcon.textContent = phaseIcons[p.phase] || '';
-    stateIcon.style.display = phaseIcons[p.phase] ? '' : 'none';
 
+    // Only show patience bar when patience is draining
+    const patienceBar = el.querySelector('.patience-bar');
     const pct = patienceRatio * 100;
-    const fill = el.querySelector('.patience-fill');
-    fill.style.width = pct + '%';
-    fill.style.background = pct > 50 ? '#43a047' : (pct > 25 ? '#fdd835' : '#e53935');
+    if (pct < 95) {
+      patienceBar.style.display = '';
+      const fill = el.querySelector('.patience-fill');
+      fill.style.width = pct + '%';
+      fill.style.background = pct > 50 ? '#43a047' : (pct > 25 ? '#fdd835' : '#e53935');
+    } else {
+      patienceBar.style.display = 'none';
+    }
   });
 }
 

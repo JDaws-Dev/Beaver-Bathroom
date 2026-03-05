@@ -656,15 +656,21 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .person.entering{opacity:0;transform:scale(0.5)}
 .person .patience-bar{position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);width:32px;height:6px;background:#222;border-radius:4px;overflow:hidden;border:2px solid #111;box-shadow:inset 0 1px 2px rgba(0,0,0,0.5)}
 .person .patience-fill{height:100%;transition:width 0.1s,background 0.3s;border-radius:2px}
-.person .thought{position:absolute;top:-38px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#fff,#f0f0f0);color:#333;padding:4px 8px;border-radius:12px;font-size:0.5em;white-space:nowrap;opacity:0;transition:opacity 0.2s,transform 0.2s;box-shadow:0 3px 8px rgba(0,0,0,0.35);border:2px solid #ddd;z-index:20}
+.person .thought{position:absolute;top:-42px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#fff,#f0f0f0);color:#333;padding:5px 10px;border-radius:12px;font-size:0.6em;font-weight:600;white-space:nowrap;opacity:0;transition:opacity 0.2s,transform 0.2s;box-shadow:0 3px 8px rgba(0,0,0,0.35);border:2px solid #ddd;z-index:20}
 .person .thought::after{content:'';position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:#f0f0f0}
+.person .thought.mood-urgent{background:linear-gradient(180deg,#ffcdd2,#ef9a9a);border-color:#e53935;color:#b71c1c}
+.person .thought.mood-urgent::after{border-top-color:#ef9a9a}
+.person .thought.mood-bad{background:linear-gradient(180deg,#fff3e0,#ffe0b2);border-color:#e65100;color:#bf360c}
+.person .thought.mood-bad::after{border-top-color:#ffe0b2}
+.person .thought.mood-good{background:linear-gradient(180deg,#e8f5e9,#c8e6c9);border-color:#43a047;color:#1b5e20}
+.person .thought.mood-good::after{border-top-color:#c8e6c9}
 .person.impatient .thought{opacity:1;animation:thought-bounce 0.3s ease-out}
 .person.urgent .person-body{animation:urgent-shake 0.15s infinite}
 .person.urgent .person-icon{filter:drop-shadow(0 0 8px rgba(229,57,53,0.7)) drop-shadow(0 2px 3px rgba(0,0,0,0.4))}
 .person.urgent .person-torso{background:linear-gradient(180deg,#e57373,#c62828);border-color:#b71c1c}
 .person.vip .person-icon{filter:drop-shadow(0 0 10px rgba(255,215,0,0.8)) drop-shadow(0 2px 3px rgba(0,0,0,0.4))}
 .person.vip .person-torso{background:linear-gradient(180deg,#ffd700,#daa520);border-color:#b8860b}
-.person.vip .vip-badge{position:absolute;top:-8px;right:-4px;font-size:0.5em;z-index:15}
+.person.vip .vip-badge{position:absolute;top:-10px;right:-6px;font-size:0.65em;z-index:15}
 .person.vip .patience-bar{border-color:#ffd700;box-shadow:0 0 6px rgba(255,215,0,0.5)}
 .person.messy .person-icon{filter:drop-shadow(0 0 6px rgba(139,90,43,0.7)) drop-shadow(0 2px 3px rgba(0,0,0,0.4))}
 .person.messy .messy-badge{position:absolute;top:-6px;left:-4px;font-size:0.45em;z-index:15;animation:messy-drip 0.8s infinite alternate}
@@ -673,7 +679,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .person.clean .clean-badge{position:absolute;top:-6px;left:-4px;font-size:0.45em;z-index:15;animation:sparkle 0.6s infinite alternate}
 .person.clean .person-torso{background:linear-gradient(180deg,#81d4fa,#4fc3f7);border-color:#0288d1}
 .person.special .person-icon{filter:drop-shadow(0 0 8px rgba(255,165,0,0.5)) drop-shadow(0 2px 3px rgba(0,0,0,0.4))}
-.person.special .special-badge{position:absolute;top:-8px;left:-4px;font-size:0.5em;z-index:15}
+.person.special .special-badge{position:absolute;top:-10px;left:-6px;font-size:0.65em;z-index:15}
 .person.special .special-name{position:absolute;bottom:-28px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#5d4037,#3e2723);padding:2px 6px;border-radius:8px;font-size:0.35em;white-space:nowrap;color:#ffd54f;font-weight:bold;text-shadow:0 1px 2px rgba(0,0,0,0.6);border:1px solid #f5a623;box-shadow:0 2px 4px rgba(0,0,0,0.4);letter-spacing:0.5px}
 @keyframes messy-drip{0%{transform:translateY(0)}100%{transform:translateY(2px)}}
 @keyframes sparkle{0%{transform:scale(1)}100%{transform:scale(1.2);filter:brightness(1.3)}}
@@ -1352,7 +1358,5 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 /* Floating coin particle */
 .float-coin{position:absolute;font-size:1.1em;animation:coin-float 0.8s ease-out forwards;pointer-events:none;z-index:100}
 @keyframes coin-float{0%{transform:translateY(0) scale(1);opacity:1}50%{transform:translateY(-25px) scale(1.2);opacity:0.9}100%{transform:translateY(-50px) scale(0.6);opacity:0}}
-/* Customer state icon badge */
-.state-icon{position:absolute;top:-18px;right:-8px;font-size:0.6em;background:rgba(0,0,0,0.6);border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;line-height:1}
 /* Combo scale transition */
 #combo{transition:transform 0.15s ease-out,color 0.2s;transform-origin:center}
