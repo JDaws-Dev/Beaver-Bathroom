@@ -8104,18 +8104,22 @@ async function showMPResults() {
     $('mp-result-badge').textContent = won ? '🏆 VICTORY 🏆' : (tied ? '🤝 TIE 🤝' : '💪 DEFEATED 💪');
     $('mp-result-title').textContent = won ? 'You Win!' : (tied ? "It's a Tie!" : 'Better Luck Next Time!');
 
+    // Avatars
+    $('mp-result-your-avatar').src = getComboSpriteSrc();
+    $('mp-result-opp-avatar').src = getOpponentSpriteSrc();
+
     $('mp-result-your-name').textContent = playerName || 'You';
     $('mp-result-your-score').textContent = Math.floor(myScore).toLocaleString();
-    let myStars = '';
-    for (let i = 0; i < 5; i++) myStars += myRating >= i + 0.75 ? '⭐' : (myRating >= i + 0.25 ? '🌟' : '☆');
-    $('mp-result-your-rating').textContent = myStars;
+    const myGrade = getGrade(myScore);
+    $('mp-result-your-grade').textContent = myGrade;
+    $('mp-result-your-grade').className = 'mp-result-grade grade ' + myGrade;
     $('mp-result-your-cleaned').textContent = myCleaned + ' cleaned';
 
     $('mp-result-opp-name').textContent = oppName;
     $('mp-result-opp-score').textContent = Math.floor(oppScore).toLocaleString();
-    let oppStars = '';
-    for (let i = 0; i < 5; i++) oppStars += oppRating >= i + 0.75 ? '⭐' : (oppRating >= i + 0.25 ? '🌟' : '☆');
-    $('mp-result-opp-rating').textContent = oppStars;
+    const oppGrade = getGrade(oppScore);
+    $('mp-result-opp-grade').textContent = oppGrade;
+    $('mp-result-opp-grade').className = 'mp-result-grade grade ' + oppGrade;
     $('mp-result-opp-cleaned').textContent = oppCleaned + ' cleaned';
 
     // Highlight winner

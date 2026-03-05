@@ -1417,7 +1417,10 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .mp-result-vs{font-size:1.2em;font-weight:bold;color:#c9a86c}
 .mp-result-name{font-size:0.85em;color:#c9a86c;display:block;margin-bottom:6px}
 .mp-result-score{font-size:1.8em;font-weight:bold;color:#FEF117;margin-bottom:4px}
-.mp-result-details{display:flex;flex-direction:column;gap:2px;font-size:0.7em;color:#8b7355}
+.mp-result-avatar{width:56px;height:56px;border-radius:12px;object-fit:cover;border:2px solid #c9a86c;margin-bottom:6px}
+.mp-result-player.mp-winner .mp-result-avatar{border-color:#FEF117;box-shadow:0 0 10px rgba(254,241,23,0.4)}
+.mp-result-grade{display:inline-block;font-size:0.9em;padding:2px 10px;border-radius:8px;font-weight:bold}
+.mp-result-details{display:flex;flex-direction:column;gap:4px;font-size:0.7em;color:#8b7355;align-items:center}
 /* Powerup countdown timer */
 .pow-timer{position:absolute;bottom:-2px;right:-2px;background:#e53935;color:#fff;font-size:0.6em;font-weight:bold;padding:1px 4px;border-radius:6px;min-width:18px;text-align:center;line-height:1.3}
 /* Floating coin particle */
