@@ -6360,10 +6360,15 @@ function renderOutfitterTab(category) {
       // Show best available preview for each category
       let thumbSrc;
       if (c.category === 'uniforms') {
-        // Show shirt-base (beaver wearing this shirt, no hat)
-        thumbSrc = `/images/cosmetics/shirt-base-${c.id}.png`;
+        // Show combo with current hat + this shirt
+        const curHat = cosmeticState.equipped.hat || 'hat-cap';
+        thumbSrc = `/images/cosmetics/combo-${curHat}-${c.id}.png`;
+      } else if (c.category === 'headgear') {
+        // Show combo with this hat + current shirt
+        const curShirt = cosmeticState.equipped.shirt || 'shirt-polo';
+        thumbSrc = `/images/cosmetics/combo-${c.id}-${curShirt}.png`;
       } else {
-        // Headgear, accessories, specials — show item sprite
+        // Accessories, specials — show item sprite
         thumbSrc = `/images/cosmetics/${c.id}.png`;
       }
 
