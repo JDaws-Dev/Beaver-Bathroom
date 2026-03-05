@@ -3655,8 +3655,13 @@ function updateHUD() {
   const towelEl = $('towels');
   towelEl.classList.toggle('low', game.towels <= 2 && game.towels > 0);
   towelEl.classList.toggle('empty', game.towels === 0);
-  towelEl.children[0].textContent = game.towels > 5 ? '📄📄📄' : (game.towels > 2 ? '📄📄' : (game.towels > 0 ? '📄' : '❌'));
-  towelEl.children[1].textContent = game.towels === 0 ? 'EMPTY!' : 'TOWELS';
+  // Update CSS-art paper sheets: 3 = full, 2 = medium, 1 = low, 0 = empty
+  const sheetsEl = towelEl.querySelector('.towel-sheets');
+  const sheetCount = game.towels > 5 ? 3 : (game.towels > 2 ? 2 : (game.towels > 0 ? 1 : 0));
+  if (sheetsEl && sheetsEl.children.length !== sheetCount) {
+    sheetsEl.innerHTML = Array.from({length: sheetCount}, () => '<div class="towel-sheet"></div>').join('');
+  }
+  towelEl.querySelector('.towel-label').textContent = game.towels === 0 ? 'EMPTY!' : 'TOWELS';
 }
 
 // ============ ENDLESS MODE ============
@@ -4508,21 +4513,37 @@ function spawnCustomer() {
 
   // Entry messes — muddy boots, urgent accidents, or sick arrivals
   const p = game.people[game.people.length - 1];
-  const floor = $('floor-area');
   if (floor) {
     const floorRect = floor.getBoundingClientRect();
     // Muddy boots on entry (messy customers or random chance)
     if (messiness === 1 || rand() < 0.08) {
-      spawnPuddle(p.x + rnd(-20, 20), floorRect.height - rnd(10, 40), 'muddy');
+      spawnPuddle(p.x + rnd(-20, 20), floorRect.height - rnd(10, floorRect.height * 0.6), 'muddy');
     }
     // Urgent customers might have a pee accident on entry
     if (isUrgent && rand() < 0.2) {
-      spawnPuddle(p.x + rnd(-25, 25), floorRect.height - rnd(20, 50), 'pee');
+      spawnPuddle(p.x + rnd(-25, 25), floorRect.height - rnd(20, floorRect.height * 0.6), 'pee');
     }
     // Small chance of vomit on arrival (sick travelers)
     if (rand() < (messiness === 1 ? 0.1 : 0.03)) {
-      spawnPuddle(p.x + rnd(-20, 20), floorRect.height - rnd(15, 45), 'vomit');
+      spawnPuddle(p.x + rnd(-20, 20), floorRect.height - rnd(15, floorRect.height * 0.6), 'vomit');
     }
+  }
+}
+
+// Deflect customer away from the towel dispenser if overlapping it.
+// Called after movement in phases where customers should not walk through it.
+function deflectFromTowels(p, floorRect) {
+  const towelEl = $("towels");
+  if (!towelEl) return;
+  const towelRect = towelEl.getBoundingClientRect();
+  const tLeft   = towelRect.left   - floorRect.left - 20;
+  const tRight  = towelRect.right  - floorRect.left + 20;
+  const tTop    = towelRect.top    - floorRect.top  - 20;
+  const tBottom = towelRect.bottom - floorRect.top  + 10;
+
+  if (p.x > tLeft && p.x < tRight && p.y > tTop && p.y < tBottom) {
+    // Push customer left to go around the dispenser
+    p.x = tLeft - 5;
   }
 }
 
@@ -4563,6 +4584,11 @@ function updatePeople(dt) {
       spawnPuddle(p.x + rnd(-15, 15), p.y + rnd(10, 30), 'muddy');
       // Feet get cleaner over time
       if (rand() < 0.3) p.hasMessyFeet = false;
+    }
+
+    // Messy customers leave muddy drips while walking through the room
+    if (p.messiness === 1 && (p.phase === 'enter' || p.phase === 'toStall') && rand() < 0.001 * (dt / 16)) {
+      spawnPuddle(p.x + rnd(-10, 10), p.y + rnd(5, 15), 'muddy');
     }
 
     // Patience - only drain when truly waiting for a stall
@@ -4744,6 +4770,7 @@ function updatePeople(dt) {
       } else {
         p.x += (dx / dist) * speed;
         p.y += (dy / dist) * speed;
+        deflectFromTowels(p, floorRect);
       }
       }  // End of else (not distracted)
     }
@@ -4851,6 +4878,7 @@ function updatePeople(dt) {
       const ty = 80;
       if (p.y < ty) {
         p.y += speed;
+        deflectFromTowels(p, floorRect);
       } else {
         p.phase = 'toSink';
       }
@@ -4983,6 +5011,7 @@ function updatePeople(dt) {
       } else {
         p.x += (dx / dist) * speed * 1.2;
         p.y += (dy / dist) * speed * 1.2;
+        deflectFromTowels(p, floorRect);
       }
     }
 
@@ -5058,7 +5087,9 @@ function customerLeaves(stallIdx) {
     if (rand() < messChance) {
       const messRoll = rand();
       const messType = messRoll < 0.4 ? 'pee' : (messRoll < 0.75 ? 'vomit' : 'muddy');
-      spawnPuddle(person.x + rnd(-30, 30), person.y + rnd(20, 60), messType);
+      const floorEl = $('floor-area');
+      const floorH = floorEl ? floorEl.getBoundingClientRect().height : 400;
+      spawnPuddle(person.x + rnd(-30, 30), person.y + rnd(20, Math.min(floorH * 0.5, 120)), messType);
     }
   }
 }

@@ -638,11 +638,76 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .sink-label{font-size:0.45em;color:#333;font-weight:bold;margin-top:2px}
 #exit-door{position:absolute;bottom:0;right:10px;width:55px;height:75px;background:linear-gradient(#5a4a3a,#3a2a1a);border:3px solid #2a1a0a;border-bottom:none;border-radius:8px 8px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:1.4em;pointer-events:none}
 #exit-door::after{content:'EXIT';font-size:0.35em;color:#aaa;margin-top:2px}
-#towels{width:50px;height:58px;background:repeating-linear-gradient(90deg,#c9a86c 0px,#d4b87a 2px,#bf9b5c 4px,#c9a86c 6px),linear-gradient(180deg,#d4b87a 0%,#a67c52 50%,#8b6342 100%);background-blend-mode:overlay;border:3px solid #6d4c2a;border-bottom:none;border-radius:0 10px 0 0;border-left:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:0.7em;transition:transform 0.15s cubic-bezier(0.34,1.56,0.64,1);box-shadow:inset 0 2px 4px rgba(255,200,100,0.15),inset 0 -4px 8px rgba(0,0,0,0.2)}
+/* CSS-art paper towel dispenser */
+#towels{
+  position:relative;
+  width:52px;height:62px;
+  background:repeating-linear-gradient(90deg,#c9a86c 0px,#d4b87a 2px,#bf9b5c 4px,#c9a86c 6px),linear-gradient(180deg,#d4b87a 0%,#a67c52 50%,#8b6342 100%);
+  background-blend-mode:overlay;
+  border:3px solid #6d4c2a;border-bottom:3px solid #4a3018;
+  border-radius:6px 6px 4px 4px;
+  cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  padding-top:4px;
+  font-size:0.7em;
+  transition:transform 0.15s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow:inset 0 2px 4px rgba(255,200,100,0.15),inset 0 -4px 8px rgba(0,0,0,0.2),2px 2px 6px rgba(0,0,0,0.3);
+  overflow:visible;
+}
+/* mounting bracket line at top */
+#towels::before{
+  content:'';position:absolute;top:4px;left:6px;right:6px;height:3px;
+  background:rgba(0,0,0,0.25);border-radius:2px;
+}
+/* paper slot at bottom */
+#towels::after{
+  content:'';position:absolute;bottom:4px;left:8px;right:8px;height:6px;
+  background:#3a2010;border-radius:2px;
+  box-shadow:inset 0 2px 3px rgba(0,0,0,0.6);
+}
 #towels:hover{transform:scale(1.08)}
 #towels:active{transform:scale(0.95)}
-#towels.low{background:linear-gradient(#d4a23a,#b8860b);animation:pulse-danger 0.5s infinite alternate}
-#towels.empty{background:linear-gradient(#c62828,#8b0000);animation:pulse-danger 0.3s infinite alternate;box-shadow:0 0 10px rgba(198,40,40,0.6)}
+#towels.low{
+  background:repeating-linear-gradient(90deg,#c9a86c 0px,#d4b87a 2px,#bf9b5c 4px,#c9a86c 6px),linear-gradient(180deg,#d4a23a,#b8860b);
+  background-blend-mode:overlay;
+  animation:pulse-danger 0.5s infinite alternate;
+}
+#towels.empty{
+  background:linear-gradient(#c62828,#8b0000);
+  animation:pulse-danger 0.3s infinite alternate;
+  box-shadow:0 0 10px rgba(198,40,40,0.6);
+}
+/* label inside dispenser */
+.towel-label{
+  font-size:0.55em;font-weight:800;color:#4a2a08;letter-spacing:0.5px;
+  text-shadow:0 1px 0 rgba(255,200,100,0.4);
+  margin-top:2px;z-index:1;pointer-events:none;
+}
+#towels.empty .towel-label{color:#ffcdd2;text-shadow:none;}
+/* paper sheet stack hanging from slot */
+.towel-sheets{
+  position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:0;
+  pointer-events:none;z-index:5;
+}
+.towel-sheet{
+  width:26px;height:11px;
+  background:linear-gradient(180deg,#f5f0e8 0%,#ede6d4 60%,#ddd5c0 100%);
+  border:1px solid #c8b89a;border-top:none;
+  border-radius:0 0 4px 4px;
+  box-shadow:0 2px 4px rgba(0,0,0,0.18),inset 0 -1px 2px rgba(180,150,100,0.2);
+  position:relative;
+}
+/* horizontal fold lines on each sheet */
+.towel-sheet::after{
+  content:'';position:absolute;top:4px;left:4px;right:4px;height:1px;
+  background:rgba(150,120,80,0.3);border-radius:1px;
+}
+/* top sheet slightly wider/different to show stack edge */
+.towel-sheet:first-child{
+  width:28px;
+  background:linear-gradient(180deg,#faf7f0 0%,#f0e8d5 100%);
+}
 .person{position:absolute;font-size:1.8em;z-index:10;transition:opacity 0.15s,transform 0.2s}
 .person-body{position:relative;width:36px;height:48px;display:flex;flex-direction:column;align-items:center}
 .person-icon{position:relative;z-index:2;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.4));transition:transform 0.15s}
@@ -889,7 +954,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .stall-num{font-size:0.6em}
 #sinks-area{gap:8px;padding:6px 10px}
 .sink{width:52px;height:46px;min-width:44px;min-height:44px}
-#towels{width:52px;height:64px;min-width:44px}
+#towels{width:52px;height:64px;min-width:44px}.towel-sheet{width:22px;height:9px}.towel-sheet:first-child{width:24px}
 #exit-door{width:48px;height:65px}
 #task-panel{padding:12px 14px;max-width:90%}
 .task-btn{padding:14px 20px;font-size:1em;min-height:48px;min-width:60px}
@@ -980,7 +1045,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 #sinks-area{gap:4px;padding:4px 6px}
 .sink{width:44px;height:38px}
 .sink-bowl{width:26px;height:10px}
-#towels{width:42px;height:48px}
+#towels{width:42px;height:48px}.towel-sheet{width:18px;height:8px}.towel-sheet:first-child{width:20px}
 #exit-door{width:40px;height:48px;font-size:1em}
 #task-panel{padding:10px 12px}
 #task-panel h3{font-size:0.85em}
