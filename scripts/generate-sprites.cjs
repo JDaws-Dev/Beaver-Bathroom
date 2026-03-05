@@ -22,7 +22,7 @@ const KEEP_SAME = 'Keep everything else exactly the same - same face, same expre
 const SHIRTS = [
   { id: 'shirt-polo', prompt: `Make sure this beaver is wearing a red polo shirt with a collar. Also remove any hat from the head. ${KEEP_SAME}` },
   { id: 'shirt-none', prompt: `Remove the shirt from this beaver character so the beaver's bare brown fur chest is showing. No shirt, no clothing on body. Also remove any hat. ${KEEP_SAME}` },
-  { id: 'shirt-artios', prompt: `Change this beaver's shirt to a white t-shirt with "ARTIOS" written in colorful letters on the front. Also remove any hat from the head. ${KEEP_SAME}` },
+  { id: 'shirt-artios', prompt: `Change this beaver's shirt to a white t-shirt with the "ARTIOS" logo on the front. The logo is the word ARTIOS in an olive/yellow-green color (#a8ad00), rendered as a stylized single continuous brushstroke/calligraphic path — fluid, organic letterforms that flow into each other, not standard block text. Also remove any hat from the head. ${KEEP_SAME}` },
   { id: 'shirt-overalls', prompt: `Change this beaver's clothing to blue denim overalls with metal clasps over a white t-shirt. Also remove any hat from the head. ${KEEP_SAME}` },
   { id: 'shirt-hawaiian', prompt: `Change this beaver's shirt to a bright colorful Hawaiian shirt with tropical flowers and palm trees pattern. Also remove any hat from the head. ${KEEP_SAME}` },
   { id: 'shirt-lab-coat', prompt: `Change this beaver's clothing to a white laboratory coat over a blue shirt, like a scientist or health inspector. Also remove any hat from the head. ${KEEP_SAME}` },
