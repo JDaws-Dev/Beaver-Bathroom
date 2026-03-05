@@ -551,9 +551,9 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .stall-door::after{content:'';position:absolute;right:6px;top:50%;transform:translateY(-50%);width:8px;height:26px;background:linear-gradient(90deg,#5d4037,#8d6e63,#5d4037);border-radius:4px;border:2px solid #3e2723;box-shadow:inset 0 -3px 4px rgba(0,0,0,0.3),2px 2px 4px rgba(0,0,0,0.4)}
 .stall-door.open{transform:rotateY(-100deg)}
 .stall-icon{font-size:1.5em;z-index:1;filter:drop-shadow(0 2px 2px rgba(0,0,0,0.15))}
-.stall-label{font-size:0.55em;font-weight:bold;z-index:1;margin-top:2px;text-shadow:0 1px 1px rgba(0,0,0,0.15);color:#5d4037}
+.stall-label{font-size:0.55em;font-weight:bold;z-index:1;margin-top:2px;text-shadow:0 1px 2px rgba(0,0,0,0.5);color:#ffd54f}
 .stall-bar{position:absolute;bottom:0;left:0;height:6px;background:linear-gradient(90deg,#1e88e5,#64b5f6);z-index:6;transition:width 0.08s;border-radius:0 4px 4px 0;box-shadow:0 0 10px rgba(30,136,229,0.5)}
-.stall-num{font-size:0.65em;color:#5d4037;margin-top:3px;font-weight:bold;text-shadow:0 1px 0 rgba(255,255,255,0.5)}
+.stall-num{font-size:0.65em;color:#ffd54f;margin-top:3px;font-weight:bold;text-shadow:0 1px 2px rgba(0,0,0,0.6)}
 .stall.empty .stall-light{background:radial-gradient(circle at 30% 30%,#81c784,#43a047);box-shadow:0 0 12px #43a047,inset 0 2px 4px rgba(255,255,255,0.4)}
 .stall.empty .stall-body{background:linear-gradient(180deg,#e8f5e9 0%,#c8e6c9 100%)}
 .stall.occupied .stall-light{background:radial-gradient(circle at 30% 30%,#ef5350,#c62828);box-shadow:0 0 12px #e53935,inset 0 2px 4px rgba(255,255,255,0.3)}
@@ -1236,7 +1236,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .minigame-stall:active{transform:scale(0.95)}
 .minigame-stall.cleaned{animation:stall-clean-flash 0.4s ease-out forwards;pointer-events:none}
 @keyframes stall-clean-flash{0%{transform:scale(1);background:linear-gradient(180deg,#69f0ae,#00e676);border-color:#00c853}50%{transform:scale(1.2)}100%{transform:scale(0);opacity:0}}
-.minigame-stall-label{font-size:0.4em;color:#5d4037;font-weight:bold;margin-top:4px}
+.minigame-stall-label{font-size:0.4em;color:#ffd54f;font-weight:bold;margin-top:4px;text-shadow:0 1px 2px rgba(0,0,0,0.5)}
 
 /* Mini-game results */
 .minigame-result-stats{display:flex;gap:24px;justify-content:center;margin:20px 0}

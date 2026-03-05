@@ -6181,25 +6181,6 @@ function endShift() {
     $('next-btn').textContent = 'Final Results';
   }
 
-  // Fire off AI review generation (non-blocking) — overwrites result-comment when ready
-  convex.action(api.reviews.generateReview, {
-    score: Math.floor(game.score),
-    grade,
-    cleaned: game.stats.cleaned || 0,
-    served: game.stats.served || 0,
-    abandoned: game.stats.abandoned || 0,
-    maxCombo: game.maxCombo || 0,
-    rating: game.rating || 0,
-    shift: game.shift,
-  }).then(result => {
-    if (result && result.review) {
-      const el = $('result-comment');
-      el.classList.add('ai-review');
-      el.textContent = `"${result.review}" — ${result.reviewer}`;
-    }
-  }).catch(err => {
-    console.warn('Review generation failed:', err);
-  });
 
   showScreen('result-screen');
 }
