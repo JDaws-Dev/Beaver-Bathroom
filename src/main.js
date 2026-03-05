@@ -385,6 +385,7 @@ const COSMETICS = [
   {id:'shirt-jersey', category:'shirts', name:'Jersey #82', icon:'🏈', unlock:'combo20', desc:'Get a 20x combo', premium:true},
   {id:'shirt-tuxedo', category:'shirts', name:'Tuxedo', icon:'🤵', unlock:'allS', desc:'All S-grades', premium:true},
   {id:'shirt-hoodie', category:'shirts', name:'Hoodie', icon:'🧥', unlock:'coins300', desc:'Buy for 300 coins', cost:300},
+  {id:'shirt-artios', category:'shirts', name:'ARTIOS Tee', icon:'🎨', unlock:'default'},
   // Colors
   {id:'color-classic', category:'colors', name:'Classic Brown', icon:'🟤', unlock:'default'},
   {id:'color-golden', category:'colors', name:'Honey Gold', icon:'🟡', unlock:'manager', desc:'Reach Manager rank'},
@@ -394,7 +395,7 @@ const COSMETICS = [
 ];
 
 let cosmeticState = JSON.parse(localStorage.getItem('beaverCosmetics') || 'null') || {
-  unlocked: ['hat-none','hat-cap','shirt-polo','shirt-none','color-classic'],
+  unlocked: ['hat-none','hat-cap','shirt-polo','shirt-none','shirt-artios','color-classic'],
   equipped: {hat:'hat-none', shirt:'shirt-polo', color:'color-classic'}
 };
 // Migrate old state missing shirt
