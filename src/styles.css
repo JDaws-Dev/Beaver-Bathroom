@@ -673,10 +673,10 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .person.vip .vip-badge{position:absolute;top:-10px;right:-6px;font-size:0.65em;z-index:15}
 .person.vip .patience-bar{border-color:#ffd700;box-shadow:0 0 6px rgba(255,215,0,0.5)}
 .person.messy .person-icon{filter:drop-shadow(0 0 6px rgba(139,90,43,0.7)) drop-shadow(0 2px 3px rgba(0,0,0,0.4))}
-.person.messy .messy-badge{position:absolute;top:-6px;left:-4px;font-size:0.45em;z-index:15;animation:messy-drip 0.8s infinite alternate}
+.person.messy .messy-badge{position:absolute;top:-10px;left:-6px;font-size:0.6em;z-index:15;animation:messy-drip 0.8s infinite alternate}
 .person.messy .person-torso{background:linear-gradient(180deg,#a67c52,#8b5a2b);border-color:#6d4c2a}
 .person.clean .person-icon{filter:drop-shadow(0 0 8px rgba(100,200,255,0.6)) drop-shadow(0 2px 3px rgba(0,0,0,0.4))}
-.person.clean .clean-badge{position:absolute;top:-6px;left:-4px;font-size:0.45em;z-index:15;animation:sparkle 0.6s infinite alternate}
+.person.clean .clean-badge{position:absolute;top:-10px;left:-6px;font-size:0.6em;z-index:15;animation:sparkle 0.6s infinite alternate}
 .person.clean .person-torso{background:linear-gradient(180deg,#81d4fa,#4fc3f7);border-color:#0288d1}
 .person.special .person-icon{filter:drop-shadow(0 0 8px rgba(255,165,0,0.5)) drop-shadow(0 2px 3px rgba(0,0,0,0.4))}
 .person.special .special-badge{position:absolute;top:-10px;left:-6px;font-size:0.65em;z-index:15}

@@ -2936,7 +2936,7 @@ function updateMascotWalk(dt) {
         p.crowdOffset = (Math.random() - 0.5) * 3;
         p.crowdOffsetY = (Math.random() - 0.5) * 2;
         // Show excited thought
-        p.thought = ['📸', '🤩', 'OMG!', '🦫!', 'WOW!'][Math.floor(Math.random() * 5)];
+        p.thought = ['Photo op!', 'Is that Beaver?!', 'OMG!', 'No way!', 'WOW!'][Math.floor(Math.random() * 5)];
         p.thoughtMood = 'neutral';
         p.thoughtTimer = 5000;
       }
@@ -2957,7 +2957,7 @@ function updateMascotWalk(dt) {
 
       // Show excited thought
       if (!p.thought || p.thoughtTimer <= 0) {
-        p.thought = ['📸', '🤩', 'OMG!', '🦫!', 'WOW!'][Math.floor(Math.random() * 5)];
+        p.thought = ['Photo op!', 'Is that Beaver?!', 'OMG!', 'No way!', 'WOW!'][Math.floor(Math.random() * 5)];
         p.thoughtMood = 'neutral';
         p.thoughtTimer = 2000;
       }
@@ -4598,7 +4598,7 @@ function updatePeople(dt) {
       if (p.distracted) {
         if (!p.distractedThought) {
           p.distractedThought = true;
-          p.thought = ['📸', '🤩', 'Is that Beaver?!', 'OMG!', '📷'][Math.floor(rand() * 5)];
+          p.thought = ['Photo op!', 'Is that Beaver?!', 'OMG!', 'No way!', 'WOW!'][Math.floor(rand() * 5)];
           p.thoughtMood = 'neutral';
           p.thoughtTimer = 10000;  // Keep showing while distracted
         }
@@ -4641,7 +4641,7 @@ function updatePeople(dt) {
       if (p.distracted) {
         if (!p.distractedThought) {
           p.distractedThought = true;
-          p.thought = ['📸', '🤩', 'Is that Beaver?!', 'Wow!', '📷'][Math.floor(rand() * 5)];
+          p.thought = ['Photo op!', 'Is that Beaver?!', 'OMG!', 'No way!', 'WOW!'][Math.floor(rand() * 5)];
           p.thoughtMood = 'neutral';
           p.thoughtTimer = 10000;
         }
@@ -4678,7 +4678,7 @@ function updatePeople(dt) {
       if (p.distracted) {
         if (!p.distractedThought) {
           p.distractedThought = true;
-          p.thought = ['📸', '🤩', 'Is that Beaver?!', 'OMG!', '📷'][Math.floor(rand() * 5)];
+          p.thought = ['Photo op!', 'Is that Beaver?!', 'OMG!', 'No way!', 'WOW!'][Math.floor(rand() * 5)];
           p.thoughtMood = 'neutral';
           p.thoughtTimer = 10000;
         }
@@ -5418,12 +5418,28 @@ function renderPeople() {
     el.classList.toggle('urgent', p.urgent);
     el.classList.toggle('vip', p.vip);
     el.classList.toggle('distracted', p.distracted);
+    el.classList.toggle('messy', p.messiness === 1);
+    el.classList.toggle('clean', p.messiness === -1);
 
     // Add VIP badge if needed
     if (p.vip && !el.querySelector('.vip-badge')) {
       const badge = document.createElement('div');
       badge.className = 'vip-badge';
       badge.textContent = '⭐';
+      el.querySelector('.person-body').appendChild(badge);
+    }
+
+    // Add messy/clean badge if needed
+    if (p.messiness === 1 && !el.querySelector('.messy-badge')) {
+      const badge = document.createElement('div');
+      badge.className = 'messy-badge';
+      badge.textContent = '💩';
+      el.querySelector('.person-body').appendChild(badge);
+    }
+    if (p.messiness === -1 && !el.querySelector('.clean-badge')) {
+      const badge = document.createElement('div');
+      badge.className = 'clean-badge';
+      badge.textContent = '✨';
       el.querySelector('.person-body').appendChild(badge);
     }
 
@@ -5439,6 +5455,10 @@ function renderPeople() {
       nameEl.textContent = p.specialName;
       el.appendChild(nameEl);
     }
+
+    // Hide special name when thought bubble is active (avoid clutter)
+    const nameEl = el.querySelector('.special-name');
+    if (nameEl) nameEl.style.display = p.thoughtTimer > 0 ? 'none' : '';
 
     // Mood states based on thoughts
     const isHappy = p.thought && (THOUGHTS.happy.includes(p.thought) ||
