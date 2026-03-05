@@ -379,7 +379,7 @@ const ITEMS = [
 ];
 
 // COSMETICS: All wearable items organized by category and tier
-// Categories: headgear, uniforms, fur, accessories, special
+// Categories: headgear, uniforms, special
 // Tiers: 0=starter, 1-5=rank-gated progression
 const COSMETICS = [
   // === HEADGEAR (12) ===
@@ -431,17 +431,6 @@ const COSMETICS = [
   {id:'special-pirate', category:'special', name:'Pirate Beaver', icon:'🏴‍☠️', unlock:'coins700', desc:'Buy for 700 coins', tier:3, cost:700},
   {id:'special-cowboy-full', category:'special', name:'Full Cowboy', icon:'🤠', unlock:'coins800', desc:'Buy for 800 coins', tier:4, cost:800},
   {id:'special-robot', category:'special', name:'Robo-Beaver', icon:'🤖', unlock:'coins1200', desc:'Buy for 1200 coins', tier:5, cost:1200},
-
-  // === ACCESSORIES (8) ===
-  {id:'acc-sunglasses', category:'accessories', name:'Sunglasses', icon:'🕶️', unlock:'shift1', desc:'Complete Shift 1 or buy', tier:1, cost:75},
-  {id:'acc-bandana', category:'accessories', name:'Bandana', icon:'🎀', unlock:'clean25', desc:'Clean 25 stalls or buy', tier:1, cost:100},
-  {id:'acc-bowtie', category:'accessories', name:'Bow Tie', icon:'🎀', unlock:'serve100', desc:'Serve 100 customers or buy', tier:2, cost:200},
-  {id:'acc-gold-chain', category:'accessories', name:'Gold Chain', icon:'⛓️', unlock:'coins400', desc:'Buy for 400 coins', tier:3, cost:400},
-  {id:'acc-monocle', category:'accessories', name:'Monocle', icon:'🧐', unlock:'gradeS', desc:'Earn an S-grade or buy', tier:3, cost:350},
-  {id:'acc-headphones', category:'accessories', name:'Headphones', icon:'🎧', unlock:'streak14', desc:'14-day login streak', tier:4, premium:true},
-  {id:'acc-scarf', category:'accessories', name:'Scarf', icon:'🧣', unlock:'clean200', desc:'Clean 200 stalls', tier:4, premium:true},
-  {id:'acc-tool-belt', category:'accessories', name:'Tool Belt', icon:'🔧', unlock:'inspect10', desc:'Pass 10 inspections', tier:5, premium:true},
-
 ];
 
 // Tier names and rank requirements
@@ -456,22 +445,21 @@ const COSMETIC_TIERS = [
 
 let cosmeticState = JSON.parse(localStorage.getItem('beaverCosmetics') || 'null') || {
   unlocked: ['hat-none','hat-cap','shirt-polo','shirt-none','shirt-artios'],
-  equipped: {hat:'hat-cap', shirt:'shirt-polo', special:null, accessory:null, fur:'fur-classic'},
+  equipped: {hat:'hat-cap', shirt:'shirt-polo', special:null},
   lastSeen: Date.now(),
 };
 // Migrate from activeLook format back to multi-equip
 if (cosmeticState.activeLook && !cosmeticState.equipped) {
   const id = cosmeticState.activeLook;
-  cosmeticState.equipped = {hat:'hat-cap', shirt:'shirt-polo', special:null, accessory:null, fur:'fur-classic'};
+  cosmeticState.equipped = {hat:'hat-cap', shirt:'shirt-polo', special:null};
   if (id.startsWith('hat-')) cosmeticState.equipped.hat = id;
   else if (id.startsWith('shirt-')) cosmeticState.equipped.shirt = id;
-  else if (id.startsWith('acc-')) cosmeticState.equipped.accessory = id;
   else if (id.startsWith('special-')) cosmeticState.equipped.special = id;
   delete cosmeticState.activeLook;
 }
 // Ensure equipped has all slots
-if (!cosmeticState.equipped) cosmeticState.equipped = {hat:'hat-cap', shirt:'shirt-polo', special:null, accessory:null, fur:'fur-classic'};
-if (!cosmeticState.equipped.accessory) cosmeticState.equipped.accessory = null;
+if (!cosmeticState.equipped) cosmeticState.equipped = {hat:'hat-cap', shirt:'shirt-polo', special:null};
+delete cosmeticState.equipped.accessory;
 delete cosmeticState.equipped.fur;
 if (!cosmeticState.equipped.special) cosmeticState.equipped.special = null;
 if (!cosmeticState.lastSeen) cosmeticState.lastSeen = Date.now();
@@ -496,6 +484,15 @@ function getComboSpriteSrc() {
   return `${BASE}images/cosmetics/combo-${hat}-${shirt}.png`;
 }
 
+
+function getOpponentSpriteSrc() {
+  const c = mpState.opponentCosmetics;
+  if (!c) return BASE + 'images/cosmetics/combo-hat-cap-shirt-polo.png';
+  if (c.special) return BASE + 'images/cosmetics/' + c.special + '.png';
+  const hat = c.hat || 'hat-cap';
+  const shirt = c.shirt || 'shirt-polo';
+  return BASE + 'images/cosmetics/combo-' + hat + '-' + shirt + '.png';
+}
 
 function applyCosmeticsToBeaver() {
   const e = cosmeticState.equipped;
@@ -6490,14 +6487,6 @@ function updateOutfitterPreview() {
       if (s && s.id !== 'shirt-none') parts.push(s.name);
       if (parts.length === 0) parts.push('Default Look');
     }
-    if (e.accessory) {
-      const a = COSMETICS.find(c => c.id === e.accessory);
-      if (a) parts.push(a.name);
-    }
-    if (e.fur && e.fur !== 'fur-classic') {
-      const f = COSMETICS.find(c => c.id === e.fur);
-      if (f) parts.push(f.name);
-    }
     label.textContent = parts.join(' · ');
   }
 }
@@ -6611,7 +6600,7 @@ function renderOutfitterTab(category) {
     for (const c of tiers[t]) {
       const owned = cosmeticState.unlocked.includes(c.id);
       const e = cosmeticState.equipped;
-      const isActive = e.hat === c.id || e.shirt === c.id || e.special === c.id || e.accessory === c.id;
+      const isActive = e.hat === c.id || e.shirt === c.id || e.special === c.id;
       const coins = game.coins || parseInt(localStorage.getItem('beaverCoins')) || 0;
       const canBuy = !owned && c.cost && !c.premium && coins >= c.cost;
       const locked = !owned && !canBuy;
@@ -6722,9 +6711,6 @@ function renderOutfitterTab(category) {
       } else if (cosmetic.category === 'uniforms') {
         cosmeticState.equipped.shirt = id;
         cosmeticState.equipped.special = null;
-      } else if (cosmetic.category === 'accessories') {
-        // Toggle accessory — tap again to remove
-        cosmeticState.equipped.accessory = cosmeticState.equipped.accessory === id ? null : id;
       } else if (cosmetic.category === 'special') {
         // Toggle special — tap again to revert to hat+shirt
         cosmeticState.equipped.special = cosmeticState.equipped.special === id ? null : id;
@@ -7585,6 +7571,7 @@ let mpState = {
   isHost: false,
   roomCode: null,
   opponentName: '',
+  opponentCosmetics: null,
   lobbyPollTimer: null,
   scoreSyncTimer: null,
   gamesPlayed: parseInt(localStorage.getItem('beaverMPGamesPlayed') || '0'),
@@ -7652,6 +7639,11 @@ $('mp-host-btn')?.addEventListener('click', async () => {
       shift: 0,
       gender: selectedGender,
       difficulty: selectedDifficulty,
+      hostCosmetics: {
+        hat: cosmeticState.equipped.hat || undefined,
+        shirt: cosmeticState.equipped.shirt || undefined,
+        special: cosmeticState.equipped.special || null,
+      },
     });
 
     mpState.active = true;
@@ -7716,6 +7708,11 @@ $('mp-join-submit')?.addEventListener('click', async () => {
       code,
       guestDeviceId: deviceId,
       guestName: playerName,
+      guestCosmetics: {
+        hat: cosmeticState.equipped.hat || undefined,
+        shirt: cosmeticState.equipped.shirt || undefined,
+        special: cosmeticState.equipped.special || null,
+      },
     });
 
     if (result.error) {
@@ -7728,6 +7725,7 @@ $('mp-join-submit')?.addEventListener('click', async () => {
     mpState.isHost = false;
     mpState.roomCode = code;
     mpState.opponentName = result.hostName;
+    mpState.opponentCosmetics = result.hostCosmetics || null;
 
     // Use host's gender and difficulty settings
     selectedGender = result.gender;
@@ -7775,6 +7773,19 @@ function showMPLobby(code, myName, isHost) {
     $('mp-start-btn').textContent = 'Waiting for host to start...';
   }
 
+  // Set beaver sprites in lobby
+  if (isHost) {
+    const el = $('mp-lobby-host-beaver');
+    if (el) el.src = getComboSpriteSrc();
+    const gel = $('mp-lobby-guest-beaver');
+    if (gel) gel.src = ''; // Will be set when guest joins
+  } else {
+    const hel = $('mp-lobby-host-beaver');
+    if (hel) hel.src = mpState.opponentCosmetics ? getOpponentSpriteSrc() : (BASE + 'images/cosmetics/combo-hat-cap-shirt-polo.png');
+    const gel = $('mp-lobby-guest-beaver');
+    if (gel) gel.src = getComboSpriteSrc();
+  }
+
   showScreen('mp-lobby');
   startLobbyPolling();
 }
@@ -7809,6 +7820,7 @@ $('mp-leave-btn')?.addEventListener('click', async () => {
   }
   mpState.active = false;
   mpState.roomCode = null;
+  mpState.opponentCosmetics = null;
   showScreen('title-screen');
 });
 
@@ -7877,6 +7889,9 @@ async function pollLobby() {
         $('mp-start-btn').disabled = false;
         $('mp-start-btn').textContent = 'Start Battle!';
         mpState.opponentName = room.guestName;
+        mpState.opponentCosmetics = room.guestCosmetics || null;
+        const gel = $('mp-lobby-guest-beaver');
+        if (gel) gel.src = getOpponentSpriteSrc();
       } else {
         $('mp-guest-name').textContent = 'Waiting...';
         $('mp-guest-slot').classList.remove('mp-player-ready');
@@ -7910,6 +7925,8 @@ function startMPGame() {
   $('mp-opp-hud-name').textContent = mpState.opponentName;
   $('mp-opp-hud-score').textContent = '0';
   $('mp-opp-hud-rating').textContent = '⭐⭐⭐⭐⭐';
+  const oppBeaver = $('mp-opp-hud-beaver');
+  if (oppBeaver) oppBeaver.src = getOpponentSpriteSrc();
 
   startShift();
   startScoreSync();

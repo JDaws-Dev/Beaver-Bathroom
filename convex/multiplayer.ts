@@ -256,6 +256,7 @@ export const leaveRoom = mutation({
       await ctx.db.patch(room._id, {
         guestDeviceId: undefined,
         guestName: undefined,
+        guestCosmetics: undefined,
       });
     }
 
