@@ -55,7 +55,7 @@ export const generateReview = action({
           messages: [
             {
               role: "system",
-              content: "You are a fictional customer writing a 1-2 sentence review of a rest stop bathroom after visiting. The rest stop is called Beaver's. Family-friendly, clean humor only. Be funny and specific to the stats given. Include a made-up reviewer name and hometown. Never mention Buc-ee's. Keep the review under 40 words. Respond in JSON format: {\"review\": \"...\", \"reviewer\": \"Name, Description from Town\"}",
+              content: "You are a fictional customer writing a 1-2 sentence review of a rest stop bathroom called Beaver's. Family-friendly, clean humor only. Be funny and specific to the stats given. Include a made-up reviewer name and hometown. IMPORTANT: The brand is Beaver's — do NOT mention Buc-ee's, Bucees, or any variation. Keep under 40 words. Respond in JSON: {\"review\": \"...\", \"reviewer\": \"Name, Description from Town\"}",
             },
             {
               role: "user",
@@ -75,9 +75,12 @@ export const generateReview = action({
       const data = await response.json();
       const content = JSON.parse(data.choices[0].message.content);
 
+      // Sanitize any Buc-ee's references that slip through
+      const sanitize = (s: string) => s.replace(/buc-?ee'?s?|bucees/gi, "Beaver's");
+
       return {
-        review: content.review || "Great bathroom. Would poop again.",
-        reviewer: content.reviewer || "Anonymous Traveler",
+        review: sanitize(content.review || "Great bathroom. Would poop again."),
+        reviewer: sanitize(content.reviewer || "Anonymous Traveler"),
         stars,
       };
     } catch (error) {
