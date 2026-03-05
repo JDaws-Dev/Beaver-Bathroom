@@ -327,7 +327,7 @@ const SKILLS = [
 // SKILL_UNLOCK_ORDER: Which skill unlocks/levels up after each shift
 // Shift 0→1: scrub L1, 1→2: patience L1, 2→3: tips L1, 3→4: scrub L2, etc.
 const SKILL_UNLOCK_ORDER = [
-  'scrub', 'patience', 'tips', 'scrub', 'patience', 'tips'
+  'scrub', 'patience', 'tips', 'scrub', 'patience', 'tips', 'scrub', 'patience', 'tips'
 ];
 
 // ITEMS: Consumable powerups (buy with coins for extra uses)
@@ -3118,9 +3118,11 @@ function pick(arr) { return arr[Math.floor(rand() * arr.length)]; }
 function rnd(min, max) { return min + rand() * (max - min); }
 function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
 
-function screenShake() {
-  $('play-area').classList.add('shake');
-  setTimeout(() => $('play-area').classList.remove('shake'), 300);
+function screenShake(intensity = 1) {
+  const el = $('play-area');
+  el.style.setProperty('--shake-px', Math.round(3 * intensity) + 'px');
+  el.classList.add('shake');
+  setTimeout(() => el.classList.remove('shake'), 200 + intensity * 100);
 }
 
 function bumpValue(id) {
@@ -3228,6 +3230,23 @@ function getSkillEffect(skillId) {
   return skill.effect * game.skills[skillId];
 }
 
+function updatePowerupTimer(elId, remaining) {
+  const el = $(elId);
+  if (!el) return;
+  let timer = el.querySelector('.pow-timer');
+  if (remaining > 0) {
+    const sec = Math.ceil(remaining / 1000);
+    if (!timer) {
+      timer = document.createElement('span');
+      timer.className = 'pow-timer';
+      el.appendChild(timer);
+    }
+    timer.textContent = sec + 's';
+  } else if (timer) {
+    timer.remove();
+  }
+}
+
 function getItemDuration(itemId) {
   const item = ITEMS.find(i => i.id === itemId);
   if (!item || !item.duration) return 12000;
@@ -3298,6 +3317,16 @@ function floatMessage(text, x, y, type = 'good') {
   el.style.top = y + 'px';
   $('play-area').appendChild(el);
   setTimeout(() => el.remove(), 1000);
+}
+
+function floatCoin(x, y) {
+  const el = document.createElement('div');
+  el.className = 'float-coin';
+  el.textContent = '🪙';
+  el.style.left = (x + rnd(-15, 15)) + 'px';
+  el.style.top = y + 'px';
+  $('play-area').appendChild(el);
+  setTimeout(() => el.remove(), 800);
 }
 
 function checkComboMilestone() {
@@ -3468,7 +3497,7 @@ function updateHUD() {
   const playArea = $('play-area');
   comboEl.textContent = game.combo > 0 ? `${boostIcon}x${comboMult.toFixed(1)}` : 'x1';
   comboEl.style.color = game.combo >= 10 ? '#ffd700' : (game.combo >= 5 ? '#ff5722' : (game.combo >= 3 ? '#f5a623' : '#fff'));
-  comboEl.style.fontSize = game.combo >= 10 ? '1.5em' : (game.combo >= 5 ? '1.4em' : (game.combo >= 3 ? '1.3em' : '1.1em'));
+  comboEl.style.transform = game.combo >= 10 ? 'scale(1.5)' : (game.combo >= 5 ? 'scale(1.35)' : (game.combo >= 3 ? 'scale(1.2)' : 'scale(1)'));
   // Escalating combo visual effects
   comboEl.classList.toggle('combo-fire', game.combo >= 3 && game.combo < 5);
   comboEl.classList.toggle('combo-intense', game.combo >= 5 && game.combo < 10);
@@ -3477,19 +3506,14 @@ function updateHUD() {
   playArea.classList.toggle('combo-edge-legendary', game.combo >= 10);
 
   const dirtyCount = getDirtyCount();
-  $('dirty-count').textContent = dirtyCount > 0 ? `⚠️ ${dirtyCount}` : '✓';
-  $('dirty-count').style.color = dirtyCount > 2 ? '#e53935' : (dirtyCount > 0 ? '#fdd835' : '#43a047');
-
-  // Dirty sinks indicator - always show to prevent layout shift
   const dirtySinks = game.sinks ? game.sinks.filter(s => s.dirty).length : 0;
+  const totalDirty = dirtyCount + dirtySinks;
+  $('dirty-count').textContent = totalDirty > 0 ? `⚠️ ${dirtyCount}🚽${dirtySinks > 0 ? `+${dirtySinks}🚿` : ''}` : '✓';
+  $('dirty-count').style.color = totalDirty > 3 ? '#e53935' : (totalDirty > 0 ? '#fdd835' : '#43a047');
+
+  // Keep dirty-sinks element but hide if merged
   const sinksEl = $('dirty-sinks');
-  if (dirtySinks > 0) {
-    sinksEl.textContent = `🚿 ${dirtySinks}`;
-    sinksEl.style.color = dirtySinks >= game.sinks.length ? '#e53935' : '#64b5f6';
-  } else {
-    sinksEl.textContent = '✓';
-    sinksEl.style.color = '#4caf50';
-  }
+  if (sinksEl) sinksEl.style.display = 'none';
 
   // Timer display - counts up in endless, down in campaign
   if (game.mode === 'endless') {
@@ -3528,6 +3552,10 @@ function updateHUD() {
   $('pow-speed').classList.toggle('active-effect', game.effects.speed > 0);
   $('pow-slow').classList.toggle('active-effect', game.effects.slow > 0);
   $('pow-mascot').classList.toggle('active-effect', game.effects.mascot > 0);
+  // Powerup countdown timers
+  updatePowerupTimer('pow-speed', game.effects.speed);
+  updatePowerupTimer('pow-slow', game.effects.slow);
+  updatePowerupTimer('pow-mascot', game.effects.mascot);
 
   const towelEl = $('towels');
   towelEl.classList.toggle('low', game.towels <= 2 && game.towels > 0);
@@ -4167,6 +4195,16 @@ function update(dt) {
   }
   if (game.comboBoost > 0) game.comboBoost -= dt;
 
+  // Floor messes age and penalize rating if left uncleaned
+  game.puddles.forEach(p => {
+    p.age = (p.age || 0) + dt;
+    if (p.age > 8000 && !p.penalized) {
+      p.penalized = true;
+      game.rating = Math.max(0, game.rating - 0.15);
+      floatMessage('-⭐ Messy floor!', p.x, p.y - 20, 'bad');
+    }
+  });
+
   if (game.rating <= 0) {
     gameOver();
   }
@@ -4352,8 +4390,8 @@ function updatePeople(dt) {
         game.rating = clamp(game.rating - ratingLoss, 0, 5);
         game.stats.abandoned++;
         const hadCombo = game.combo;
-        game.combo = 0;
-        showComboBreak(hadCombo);
+        game.combo = Math.max(0, game.combo - 3); // Soft combo penalty instead of full reset
+        if (hadCombo > 0 && game.combo === 0) showComboBreak(hadCombo);
         playBad();
         haptic('error'); // Negative feedback for customer leaving
         screenShake();
@@ -4547,7 +4585,7 @@ function updatePeople(dt) {
             game.rating = clamp(game.rating - ratingLoss, 0, 5);
             game.stats.dirty++;
             const hadCombo = game.combo;
-            game.combo = 0;
+            game.combo = Math.max(0, game.combo - 3);
             showComboBreak(hadCombo);
             playBad();
             playCustomerDisgusted();
@@ -4719,6 +4757,21 @@ function updatePeople(dt) {
       } else {
         p.x += (dx / dist) * speed * 1.2;
         p.y += (dy / dist) * speed * 1.2;
+      }
+    }
+
+    // Customer disgust when stepping in puddle
+    if (!p.steppedInPuddle && game.puddles.length > 0) {
+      for (const puddle of game.puddles) {
+        const pdx = p.x - puddle.x, pdy = p.y - puddle.y;
+        if (Math.sqrt(pdx*pdx + pdy*pdy) < 30) {
+          p.steppedInPuddle = true;
+          p.thought = pick(['🤢 Gross!', '😤 Eww!', '🤮 Disgusting!', '😠 Clean this up!']);
+          p.thoughtTimer = 2500;
+          game.rating = Math.max(0, game.rating - (p.vip ? 0.2 : 0.1));
+          floatMessage('😤 Stepped in mess!', p.x, p.y - 30, 'bad');
+          break;
+        }
       }
     }
   }
@@ -5194,6 +5247,17 @@ function renderPeople() {
     const thoughtEl = el.querySelector('.thought');
     thoughtEl.textContent = p.thoughtTimer > 0 ? p.thought : '';
 
+    // State icon badge for mobile readability
+    let stateIcon = el.querySelector('.state-icon');
+    if (!stateIcon) {
+      stateIcon = document.createElement('div');
+      stateIcon.className = 'state-icon';
+      el.appendChild(stateIcon);
+    }
+    const phaseIcons = {findStall:'🔍', toStall:'🚶', washing:'🧼', toSink:'💧', toTowels:'🧻'};
+    stateIcon.textContent = phaseIcons[p.phase] || '';
+    stateIcon.style.display = phaseIcons[p.phase] ? '' : 'none';
+
     const pct = patienceRatio * 100;
     const fill = el.querySelector('.patience-fill');
     fill.style.width = pct + '%';
@@ -5517,11 +5581,27 @@ $('pow-mascot').addEventListener('click', () => {
 // Grade calculation based on performance
 function getGrade(score) {
   const ratio = game.stats.dirty / Math.max(1, game.stats.served);
+  // Factor in score thresholds per shift for better grade differentiation
+  const shiftIdx = game.shift || 0;
+  const scoreThresholds = [800, 1200, 1800, 2500, 3500, 5000];
+  const highScore = score >= (scoreThresholds[shiftIdx] || 2000);
   if (ratio === 0 && game.stats.abandoned === 0) return 'S';
-  if (ratio <= 0.1) return 'A';
-  if (ratio <= 0.2) return 'B';
+  if (ratio <= 0.1 || (ratio <= 0.15 && highScore)) return 'A';
+  if (ratio <= 0.2 || (ratio <= 0.25 && highScore)) return 'B';
   if (ratio <= 0.35) return 'C';
+  if (ratio <= 0.5) return 'D';
   return 'F';
+}
+
+// XP rewards skill-based play: combos, grades, and speed matter more than raw output
+function calculateXP(score, grade) {
+  let xp = Math.floor(score / 15); // Lower base than coins
+  const gradeBonus = {S: 3, A: 2, B: 1.5, C: 1, D: 0.7, F: 0.3};
+  xp = Math.floor(xp * (gradeBonus[grade] || 1));
+  // Combo bonus: reward high max combo
+  const comboBonus = 1 + Math.min(game.maxCombo || 0, 25) * 0.04; // up to 2x at 25 combo
+  xp = Math.floor(xp * comboBonus);
+  return xp;
 }
 
 // Supply Shop system - simplified item purchases
@@ -5529,7 +5609,7 @@ function calculateCoins(score, grade) {
   // Base coins from score
   let coins = Math.floor(score / 10);
   // Grade bonus multiplier
-  const gradeBonus = {S: 2, A: 1.5, B: 1.2, C: 1, F: 0.5};
+  const gradeBonus = {S: 2, A: 1.5, B: 1.2, C: 1, D: 0.7, F: 0.5};
   coins = Math.floor(coins * (gradeBonus[grade] || 1));
   // Better Tips skill bonus
   coins = Math.floor(coins * getCoinBonus());
@@ -5597,7 +5677,7 @@ function renderSupplyShop() {
 
 function getItemCost(item) {
   const owned = game.powerups[item.id] || 0;
-  return Math.floor(item.cost * Math.pow(1.3, owned));
+  return Math.floor(item.cost * Math.pow(1.15, owned));
 }
 
 function purchaseItem(itemId) {
@@ -5657,21 +5737,26 @@ function endShift() {
   for (let i = 0; i < 5; i++) stars += game.rating >= i + 0.75 ? '⭐' : (game.rating >= i + 0.25 ? '🌟' : '☆');
   $('result-rating').innerHTML = `<span style="font-size:1.6em">${stars}</span>`;
 
+  const messesCleared = game.stats.cleaned || 0;
+  const abandoned = game.stats.abandoned || 0;
   $('result-stats').innerHTML = `
     <div class="stat"><div class="num">${game.stats.cleaned}</div><div class="lbl">Stalls Cleaned</div></div>
     <div class="stat"><div class="num">${game.stats.served}</div><div class="lbl">Customers</div></div>
     <div class="stat"><div class="num">${game.maxCombo}x</div><div class="lbl">Best Combo</div></div>
     <div class="stat"><div class="num">${Math.floor(game.score)}</div><div class="lbl">Score</div></div>
+    <div class="stat"><div class="num">${abandoned}</div><div class="lbl">Walked Out</div></div>
+    <div class="stat"><div class="num">${Math.round(game.rating * 20)}%</div><div class="lbl">Rating</div></div>
   `;
 
-  const ratio = game.stats.dirty / Math.max(1, game.stats.served);
   const shiftsLeft = CONFIG.shifts.length - game.shift - 1;
-  let grade, comment;
-  if (ratio === 0 && game.stats.abandoned === 0) { grade = 'S'; comment = shiftsLeft > 0 ? 'PERFECT! That Golden Plunger is calling your name!' : 'PERFECT! You earned it, rookie!'; }
-  else if (ratio <= 0.1) { grade = 'A'; comment = shiftsLeft > 0 ? 'Great work! Keep it up!' : 'Almost perfect! Well done!'; }
-  else if (ratio <= 0.2) { grade = 'B'; comment = shiftsLeft > 0 ? `Solid shift. ${shiftsLeft} more to go!` : 'Respectable finish, rookie!'; }
-  else if (ratio <= 0.35) { grade = 'C'; comment = shiftsLeft > 0 ? "The manager's watching... step it up!" : 'Made it... barely!'; }
-  else { grade = 'F'; comment = "That was rough. Don't let it happen again!"; }
+  const grade = getGrade(game.score);
+  let comment;
+  if (grade === 'S') comment = shiftsLeft > 0 ? 'PERFECT! That Golden Plunger is calling your name!' : 'PERFECT! You earned it, rookie!';
+  else if (grade === 'A') comment = shiftsLeft > 0 ? 'Great work! Keep it up!' : 'Almost perfect! Well done!';
+  else if (grade === 'B') comment = shiftsLeft > 0 ? `Solid shift. ${shiftsLeft} more to go!` : 'Respectable finish, rookie!';
+  else if (grade === 'C') comment = shiftsLeft > 0 ? "The manager's watching... step it up!" : 'Made it... barely!';
+  else if (grade === 'D') comment = "Room for improvement. Keep pushing!";
+  else comment = "That was rough. Don't let it happen again!";
 
   $('result-grade').textContent = grade;
   $('result-grade').className = 'grade ' + grade;
@@ -5737,8 +5822,8 @@ function endShift() {
   game.coins += coinsEarned;
   if (coinsEarned > 0) playCoinEarned();
 
-  // Award XP for rank progression (same formula as coins)
-  const xpEarned = calculateCoins(game.score, grade);
+  // Award XP for rank progression (skill-weighted, not same as coins)
+  const xpEarned = calculateXP(game.score, grade);
   addEmployeeXP(xpEarned);
 
   // Unlock next skill based on completed shift

@@ -688,6 +688,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .grade.A{background:linear-gradient(180deg,rgba(67,160,71,0.4),rgba(67,160,71,0.2));color:#66bb6a;border:3px solid #43a047}
 .grade.B{background:linear-gradient(180deg,rgba(30,136,229,0.4),rgba(30,136,229,0.2));color:#64b5f6;border:3px solid #1e88e5}
 .grade.C{background:linear-gradient(180deg,rgba(251,140,0,0.4),rgba(251,140,0,0.2));color:#ffa726;border:3px solid #fb8c00}
+.grade.D{background:linear-gradient(180deg,rgba(255,87,34,0.4),rgba(255,87,34,0.2));color:#ff7043;border:3px solid #ff5722}
 .grade.F{background:linear-gradient(180deg,rgba(229,57,53,0.4),rgba(229,57,53,0.2));color:#ef5350;border:3px solid #e53935}
 .pick-row{display:flex;gap:14px}
 .pick-item{padding:14px 20px;background:linear-gradient(180deg,#5a4a38 0%,#4a3a28 50%,#3a2a18 100%);border:3px solid #6a5a48;border-radius:14px;cursor:pointer;text-align:center;transition:all 0.18s cubic-bezier(0.34,1.56,0.64,1);box-shadow:inset 0 2px 0 rgba(255,255,255,0.15),inset 0 -2px 4px rgba(0,0,0,0.3),0 3px 6px rgba(0,0,0,0.3)}
@@ -773,7 +774,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 @keyframes glow{from{box-shadow:0 0 8px #f5a623}to{box-shadow:0 0 18px #f5a623}}
 @keyframes pulse-dirty{from{background:#ffcc80}to{background:#ffb74d}}
 @keyframes pulse-danger{from{background:#c62828}to{background:#e53935}}
-@keyframes screen-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+@keyframes screen-shake{0%,100%{transform:translate(0)}20%{transform:translate(calc(-1 * var(--shake-px,3px)),calc(var(--shake-px,3px) * 0.5))}40%{transform:translate(var(--shake-px,3px),calc(-1 * var(--shake-px,3px) * 0.5))}60%{transform:translate(calc(-0.6 * var(--shake-px,3px)))}80%{transform:translate(calc(0.6 * var(--shake-px,3px)))}}
 @keyframes confetti{0%{transform:translateY(0) rotate(0deg) scale(1);opacity:1}100%{transform:translateY(-80px) rotate(360deg) scale(0);opacity:0}}
 .confetti{position:absolute;font-size:1.4em;animation:confetti 0.7s forwards;pointer-events:none;z-index:200}
 /* Cleaning celebration effects */
@@ -1264,3 +1265,12 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .mp-result-name{font-size:0.85em;color:#c9a86c;display:block;margin-bottom:6px}
 .mp-result-score{font-size:1.8em;font-weight:bold;color:#FEF117;margin-bottom:4px}
 .mp-result-details{display:flex;flex-direction:column;gap:2px;font-size:0.7em;color:#8b7355}
+/* Powerup countdown timer */
+.pow-timer{position:absolute;bottom:-2px;right:-2px;background:#e53935;color:#fff;font-size:0.6em;font-weight:bold;padding:1px 4px;border-radius:6px;min-width:18px;text-align:center;line-height:1.3}
+/* Floating coin particle */
+.float-coin{position:absolute;font-size:1.1em;animation:coin-float 0.8s ease-out forwards;pointer-events:none;z-index:100}
+@keyframes coin-float{0%{transform:translateY(0) scale(1);opacity:1}50%{transform:translateY(-25px) scale(1.2);opacity:0.9}100%{transform:translateY(-50px) scale(0.6);opacity:0}}
+/* Customer state icon badge */
+.state-icon{position:absolute;top:-18px;right:-8px;font-size:0.6em;background:rgba(0,0,0,0.6);border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;line-height:1}
+/* Combo scale transition */
+#combo{transition:transform 0.15s ease-out,color 0.2s;transform-origin:center}
