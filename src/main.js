@@ -4543,8 +4543,8 @@ function deflectFromTowels(p, floorRect) {
   const tBottom = towelRect.bottom - floorRect.top  + 10;
 
   if (p.x > tLeft && p.x < tRight && p.y > tTop && p.y < tBottom) {
-    // Push customer left to go around the dispenser
-    p.x = tLeft - 5;
+    // Push customer above the dispenser so they can path around it
+    p.y = tTop - 5;
   }
 }
 

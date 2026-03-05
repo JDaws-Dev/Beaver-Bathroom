@@ -10,69 +10,138 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #1a1a2e;
-      color: #eee;
+      background: #1c1710;
+      color: #ede6db;
       min-height: 100vh;
       padding: 20px;
     }
 
-    h1 {
+    .header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 24px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .header-mascot {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #d4a03c;
+      flex-shrink: 0;
+    }
+
+    .header-text h1 {
       color: #FFD54F;
-      margin-bottom: 20px;
+      font-size: 1.5em;
+      line-height: 1.2;
+    }
+
+    .header-text .subtitle {
+      color: #a89070;
+      font-size: 0.85em;
+      font-style: italic;
+    }
+
+    .header-right {
       display: flex;
       align-items: center;
       gap: 12px;
+      flex-shrink: 0;
     }
 
-    h1 span { font-size: 1.5em; }
+    .last-refreshed {
+      color: #7a6a58;
+      font-size: 0.8em;
+    }
+
+    .refresh-btn {
+      background: linear-gradient(180deg, #d4a03c, #b8862e);
+      color: #1c1710;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.9em;
+      transition: transform 0.1s, box-shadow 0.2s;
+    }
+
+    .refresh-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 2px 12px rgba(212,160,60,0.3);
+    }
 
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 16px;
-      margin-bottom: 30px;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
     }
 
     .stat-card {
-      background: linear-gradient(180deg, #2d2d44, #1f1f33);
-      border-radius: 12px;
-      padding: 20px;
-      border: 2px solid #3d3d5c;
+      background: linear-gradient(180deg, #2e2418, #241e14);
+      border-radius: 16px;
+      padding: 18px;
+      border: 2px solid #3d3226;
+      text-align: center;
+      transition: transform 0.15s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
     }
 
     .stat-card.highlight {
       border-color: #4CAF50;
-      background: linear-gradient(180deg, #1b3d1b, #142814);
+      background: linear-gradient(180deg, #1e2e18, #182414);
     }
 
     .stat-card.revenue {
-      border-color: #FFD54F;
-      background: linear-gradient(180deg, #3d3520, #2d2818);
+      border-color: #d4a03c;
+      background: linear-gradient(180deg, #342a18, #2a2214);
+    }
+
+    .stat-icon {
+      font-size: 1.4em;
+      margin-bottom: 4px;
     }
 
     .stat-value {
-      font-size: 2em;
+      font-size: 1.8em;
       font-weight: bold;
       color: #fff;
+      line-height: 1.2;
     }
 
     .stat-label {
-      color: #aaa;
-      font-size: 0.9em;
-      margin-top: 4px;
+      color: #a89070;
+      font-size: 0.8em;
+      margin-top: 2px;
     }
 
     .section {
-      background: #2d2d44;
-      border-radius: 12px;
+      background: linear-gradient(180deg, #2a2218, #221c14);
+      border-radius: 16px;
       padding: 20px;
       margin-bottom: 20px;
+      border: 1px solid #3d3226;
     }
 
     .section h2 {
       color: #FFD54F;
       margin-bottom: 16px;
-      font-size: 1.2em;
+      font-size: 1.15em;
     }
 
     table {
@@ -81,101 +150,154 @@
     }
 
     th, td {
-      padding: 12px;
+      padding: 10px 12px;
       text-align: left;
-      border-bottom: 1px solid #3d3d5c;
+      border-bottom: 1px solid #3d3226;
+      font-size: 0.9em;
     }
 
     th {
-      color: #FFD54F;
+      color: #d4a03c;
       font-weight: 600;
+      font-size: 0.8em;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     tr:hover {
-      background: rgba(255,255,255,0.05);
+      background: rgba(212,160,60,0.06);
     }
 
     .badge {
       display: inline-block;
-      padding: 4px 10px;
-      border-radius: 12px;
+      padding: 4px 12px;
+      border-radius: 20px;
       font-size: 0.8em;
-      font-weight: bold;
+      font-weight: 600;
+      white-space: nowrap;
     }
 
-    .badge.game-start { background: #2196F3; }
-    .badge.shift-complete { background: #4CAF50; }
-    .badge.game-over { background: #f44336; }
-    .badge.daily-start { background: #9C27B0; }
-    .badge.purchase { background: #FFD54F; color: #000; }
-    .badge.outfitter-open { background: #E91E63; }
-    .badge.outfitter-equip { background: #00BCD4; }
-    .badge.outfitter-purchase { background: #FF9800; }
-    .badge.outfitter-unlock { background: #8BC34A; }
+    .badge.game-start { background: #2563eb; color: #fff; }
+    .badge.shift-complete { background: #16a34a; color: #fff; }
+    .badge.game-over { background: #dc2626; color: #fff; }
+    .badge.daily-start { background: #9333ea; color: #fff; }
+    .badge.purchase { background: #d4a03c; color: #1c1710; }
+    .badge.outfitter-open { background: #db2777; color: #fff; }
+    .badge.outfitter-equip { background: #0891b2; color: #fff; }
+    .badge.outfitter-purchase { background: #ea580c; color: #fff; }
+    .badge.outfitter-unlock { background: #65a30d; color: #fff; }
 
     .loading {
-      color: #888;
+      color: #7a6a58;
       padding: 20px;
       text-align: center;
-    }
-
-    .refresh-btn {
-      background: #4CAF50;
-      color: #fff;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      margin-left: auto;
-    }
-
-    .refresh-btn:hover {
-      background: #45a049;
-    }
-
-    .header {
-      display: flex;
-      align-items: center;
-      margin-bottom: 20px;
     }
 
     .tabs {
       display: flex;
       gap: 8px;
       margin-bottom: 16px;
+      flex-wrap: wrap;
     }
 
     .tab {
-      padding: 8px 16px;
-      background: #3d3d5c;
+      padding: 8px 18px;
+      background: #3d3226;
       border: none;
-      border-radius: 8px;
-      color: #fff;
+      border-radius: 20px;
+      color: #c4b8a8;
       cursor: pointer;
+      font-size: 0.85em;
+      font-weight: 500;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .tab:hover {
+      background: #4d4236;
     }
 
     .tab.active {
-      background: #FFD54F;
-      color: #000;
+      background: #d4a03c;
+      color: #1c1710;
+      font-weight: 700;
     }
 
     .time-ago {
-      color: #888;
+      color: #7a6a58;
       font-size: 0.85em;
     }
 
     .empty {
-      color: #666;
+      color: #7a6a58;
       padding: 40px;
       text-align: center;
+      font-size: 0.95em;
+    }
+
+    .row-num {
+      color: #5a4e42;
+      font-weight: 600;
+      font-size: 0.85em;
+    }
+
+    .platform-icon {
+      font-size: 1.1em;
+    }
+
+    .status-text {
+      font-size: 0.85em;
+      padding: 3px 10px;
+      border-radius: 12px;
+      display: inline-block;
+    }
+
+    .status-visited { background: #3d3226; color: #a89070; }
+    .status-played { background: #1e2e18; color: #6abf4a; }
+    .status-completed { background: #182840; color: #5a9cf5; }
+    .status-purchased { background: #342a18; color: #d4a03c; }
+
+    .data-summary {
+      color: #c4b8a8;
+      font-size: 0.85em;
+    }
+
+    .data-summary strong {
+      color: #ede6db;
+    }
+
+    .player-name {
+      font-weight: 600;
+      color: #ede6db;
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 12px; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .stat-card { padding: 14px 10px; }
+      .stat-value { font-size: 1.5em; }
+      .header-text h1 { font-size: 1.2em; }
+      th, td { padding: 8px 6px; font-size: 0.8em; }
+      .tabs { gap: 6px; }
+      .tab { padding: 7px 14px; font-size: 0.8em; }
+
+      .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
     }
   </style>
 </head>
 <body>
   <div class="header">
-    <h1><span>🦫</span> Admin Dashboard</h1>
-    <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+    <div class="header-left">
+      <img src="/images/cosmetics/beaver_default.png" alt="Beaver" class="header-mascot"
+           onerror="this.style.display='none'">
+      <div class="header-text">
+        <h1>🦫 Beaver's Dashboard</h1>
+        <div class="subtitle">Dam Good Analytics</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="last-refreshed" id="last-refreshed"></span>
+      <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+    </div>
   </div>
 
   <!-- Stats Grid -->
@@ -197,14 +319,16 @@
     <div id="visitor-stats" class="stats-grid" style="margin-bottom: 16px;">
       <div class="loading">Loading visitor stats...</div>
     </div>
-    <div id="visitors-table">
-      <div class="loading">Loading visitors...</div>
+    <div class="table-scroll">
+      <div id="visitors-table">
+        <div class="loading">Loading visitors...</div>
+      </div>
     </div>
   </div>
 
   <!-- Users Section -->
   <div class="section">
-    <h2>👥 Registered Users</h2>
+    <h2>👥 Registered Players</h2>
     <div id="users-table">
       <div class="loading">Loading users...</div>
     </div>
@@ -223,8 +347,10 @@
       <button class="tab" data-outfitter-filter="outfitter_purchase">Purchases</button>
       <button class="tab" data-outfitter-filter="outfitter_unlock">Unlocks</button>
     </div>
-    <div id="outfitter-table">
-      <div class="loading">Loading outfitter events...</div>
+    <div class="table-scroll">
+      <div id="outfitter-table">
+        <div class="loading">Loading outfitter events...</div>
+      </div>
     </div>
   </div>
 
@@ -238,8 +364,10 @@
       <button class="tab" data-filter="game_over">Game Over</button>
       <button class="tab" data-filter="daily_start">Daily Challenge</button>
     </div>
-    <div id="events-table">
-      <div class="loading">Loading events...</div>
+    <div class="table-scroll">
+      <div id="events-table">
+        <div class="loading">Loading events...</div>
+      </div>
     </div>
   </div>
 
@@ -270,12 +398,112 @@
       const hours = Math.floor(minutes / 60);
       if (hours < 24) return `${hours}h ago`;
       const days = Math.floor(hours / 24);
-      return `${days}d ago`;
+      if (days === 1) return 'yesterday';
+      if (days < 7) return `${days}d ago`;
+      const weeks = Math.floor(days / 7);
+      return `${weeks}w ago`;
     }
 
-    // Format date
-    function formatDate(timestamp) {
-      return new Date(timestamp).toLocaleString();
+    // Friendly event type labels
+    const EVENT_LABELS = {
+      game_start: 'Started Game',
+      shift_complete: 'Completed Shift',
+      game_over: 'Game Over',
+      daily_start: 'Daily Challenge',
+      outfitter_open: 'Opened Outfitter',
+      outfitter_equip: 'Equipped',
+      outfitter_purchase: 'Purchased',
+      outfitter_unlock: 'Unlocked',
+    };
+
+    function friendlyEventType(type) {
+      return EVENT_LABELS[type] || type;
+    }
+
+    // Capitalize a string
+    function capitalize(s) {
+      if (!s) return '';
+      return s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    // Parse event data into human-readable text
+    function parseEventData(type, data) {
+      if (!data) return '-';
+      if (typeof data === 'string') {
+        try { data = JSON.parse(data); } catch { return data; }
+      }
+
+      // Outfitter events
+      if (type && type.startsWith('outfitter_')) {
+        const item = data.item ? capitalize(data.item.replace(/_/g, ' ')) : '';
+        const category = data.category ? capitalize(data.category) : '';
+        if (item && category) return `<span class="data-summary"><strong>${item}</strong> (${category})</span>`;
+        if (item) return `<span class="data-summary"><strong>${item}</strong></span>`;
+        if (data.source) return `<span class="data-summary">From ${capitalize(data.source)}</span>`;
+      }
+
+      // Shift complete
+      if (type === 'shift_complete') {
+        const parts = [];
+        if (data.shift != null) parts.push(`Shift ${data.shift + 1}`);
+        if (data.score != null) parts.push(`Score: ${data.score}`);
+        if (data.rating != null) parts.push(`${data.rating}%`);
+        return parts.length ? `<span class="data-summary">${parts.join(' · ')}</span>` : '-';
+      }
+
+      // Game over
+      if (type === 'game_over') {
+        const parts = [];
+        if (data.shift != null) parts.push(`Shift ${data.shift + 1}`);
+        if (data.score != null) parts.push(`Score: ${data.score}`);
+        if (data.reason) parts.push(capitalize(data.reason));
+        return parts.length ? `<span class="data-summary">${parts.join(' · ')}</span>` : '-';
+      }
+
+      // Game start
+      if (type === 'game_start') {
+        const parts = [];
+        if (data.restroom) parts.push(capitalize(data.restroom));
+        if (data.premium) parts.push('Premium');
+        return parts.length ? `<span class="data-summary">${parts.join(' · ')}</span>` : '-';
+      }
+
+      // Daily start
+      if (type === 'daily_start') {
+        if (data.date) return `<span class="data-summary">${data.date}</span>`;
+      }
+
+      // Fallback: show key-value pairs nicely
+      const pairs = Object.entries(data)
+        .filter(([k, v]) => v != null && k !== 'deviceId')
+        .map(([k, v]) => `${capitalize(k)}: ${v}`)
+        .slice(0, 3);
+      return pairs.length ? `<span class="data-summary">${pairs.join(' · ')}</span>` : '-';
+    }
+
+    // Visitor status text
+    function visitorStatus(v) {
+      if (v.hasPurchased) return '<span class="status-text status-purchased">Purchased</span>';
+      if (v.hasCompleted) return '<span class="status-text status-completed">Completed</span>';
+      if (v.hasPlayed) return '<span class="status-text status-played">Played</span>';
+      return '<span class="status-text status-visited">Visited only</span>';
+    }
+
+    // Platform icon
+    function platformIcon(platform) {
+      if (!platform) return '❓';
+      const p = platform.toLowerCase();
+      if (p === 'mobile' || p.includes('android') || p.includes('ios') || p.includes('phone')) return '📱';
+      return '🖥️';
+    }
+
+    // Update refresh timestamp
+    function updateRefreshTime() {
+      const el = document.getElementById('last-refreshed');
+      if (el) {
+        const now = new Date();
+        el.textContent = `Updated ${now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+      }
     }
 
     // Load stats
@@ -284,36 +512,44 @@
         const stats = await convexQuery("admin:getStats", {});
         document.getElementById('stats-grid').innerHTML = `
           <div class="stat-card revenue">
+            <div class="stat-icon">💰</div>
             <div class="stat-value">$${stats.totalRevenue.toFixed(2)}</div>
-            <div class="stat-label">Total Revenue</div>
+            <div class="stat-label">Revenue</div>
           </div>
           <div class="stat-card highlight">
+            <div class="stat-icon">🛒</div>
             <div class="stat-value">${stats.totalPurchases}</div>
-            <div class="stat-label">Total Purchases</div>
+            <div class="stat-label">Purchases</div>
           </div>
           <div class="stat-card">
+            <div class="stat-icon">👥</div>
             <div class="stat-value">${stats.totalUsers}</div>
-            <div class="stat-label">Registered Users</div>
+            <div class="stat-label">Players</div>
           </div>
           <div class="stat-card">
+            <div class="stat-icon">🎮</div>
             <div class="stat-value">${stats.totalGameStarts}</div>
-            <div class="stat-label">Total Game Starts</div>
+            <div class="stat-label">Games Played</div>
           </div>
           <div class="stat-card">
+            <div class="stat-icon">📅</div>
             <div class="stat-value">${stats.gameStartsToday}</div>
-            <div class="stat-label">Games Today</div>
+            <div class="stat-label">Today</div>
           </div>
           <div class="stat-card">
+            <div class="stat-icon">📅</div>
             <div class="stat-value">${stats.gameStartsThisWeek}</div>
-            <div class="stat-label">Games This Week</div>
+            <div class="stat-label">This Week</div>
           </div>
           <div class="stat-card">
+            <div class="stat-icon">🏆</div>
             <div class="stat-value">${stats.totalScoresSubmitted}</div>
-            <div class="stat-label">Scores Submitted</div>
+            <div class="stat-label">Scores</div>
           </div>
           <div class="stat-card">
+            <div class="stat-icon">📋</div>
             <div class="stat-value">${stats.totalDailyChallenges}</div>
-            <div class="stat-label">Daily Challenges</div>
+            <div class="stat-label">Dailies</div>
           </div>
         `;
       } catch (e) {
@@ -327,23 +563,23 @@
       try {
         const purchases = await convexQuery("admin:getPurchases", {});
         if (purchases.length === 0) {
-          document.getElementById('purchases-table').innerHTML = `<div class="empty">No purchases yet</div>`;
+          document.getElementById('purchases-table').innerHTML = `<div class="empty">No purchases yet — they'll show up here! 🦫</div>`;
           return;
         }
         document.getElementById('purchases-table').innerHTML = `
           <table>
             <tr>
+              <th>#</th>
               <th>Email</th>
               <th>Amount</th>
-              <th>Device ID</th>
-              <th>Date</th>
+              <th>When</th>
             </tr>
-            ${purchases.map(p => `
+            ${purchases.map((p, i) => `
               <tr>
+                <td class="row-num">${i + 1}</td>
                 <td>${p.email}</td>
-                <td>$${(p.amount / 100).toFixed(2)}</td>
-                <td><code>${p.deviceId ? p.deviceId.slice(0, 8) + '...' : 'N/A'}</code></td>
-                <td>${formatDate(p.createdAt)} <span class="time-ago">(${timeAgo(p.createdAt)})</span></td>
+                <td><strong>$${(p.amount / 100).toFixed(2)}</strong></td>
+                <td><span class="time-ago">${timeAgo(p.createdAt)}</span></td>
               </tr>
             `).join('')}
           </table>
@@ -359,21 +595,21 @@
       try {
         const users = await convexQuery("admin:getUsers", {});
         if (users.length === 0) {
-          document.getElementById('users-table').innerHTML = `<div class="empty">No users yet</div>`;
+          document.getElementById('users-table').innerHTML = `<div class="empty">No players yet — they'll register soon! 🦫</div>`;
           return;
         }
         document.getElementById('users-table').innerHTML = `
           <table>
             <tr>
-              <th>Name</th>
-              <th>Device ID</th>
+              <th>#</th>
+              <th>Player</th>
               <th>Joined</th>
             </tr>
-            ${users.map(u => `
+            ${users.map((u, i) => `
               <tr>
-                <td>${u.name}</td>
-                <td><code>${u.deviceId.slice(0, 12)}...</code></td>
-                <td>${formatDate(u.createdAt)} <span class="time-ago">(${timeAgo(u.createdAt)})</span></td>
+                <td class="row-num">${i + 1}</td>
+                <td class="player-name">${u.name}</td>
+                <td><span class="time-ago">${timeAgo(u.createdAt)}</span></td>
               </tr>
             `).join('')}
           </table>
@@ -399,16 +635,14 @@
         document.getElementById('events-table').innerHTML = `
           <table>
             <tr>
-              <th>Type</th>
-              <th>Device</th>
-              <th>Data</th>
-              <th>Time</th>
+              <th>Event</th>
+              <th>Details</th>
+              <th>When</th>
             </tr>
             ${events.map(e => `
               <tr>
-                <td><span class="badge ${e.type.replace('_', '-')}">${e.type}</span></td>
-                <td><code>${e.deviceId ? e.deviceId.slice(0, 8) + '...' : 'N/A'}</code></td>
-                <td>${e.data ? JSON.stringify(e.data).slice(0, 50) : '-'}</td>
+                <td><span class="badge ${e.type.replace('_', '-')}">${friendlyEventType(e.type)}</span></td>
+                <td>${parseEventData(e.type, e.data)}</td>
                 <td><span class="time-ago">${timeAgo(e.createdAt)}</span></td>
               </tr>
             `).join('')}
@@ -426,26 +660,32 @@
         const stats = await convexQuery("admin:getVisitorStats", {});
         document.getElementById('visitor-stats').innerHTML = `
           <div class="stat-card highlight">
+            <div class="stat-icon">👥</div>
             <div class="stat-value">${stats.totalVisitors}</div>
             <div class="stat-label">Total Visitors</div>
           </div>
           <div class="stat-card">
+            <div class="stat-icon">⚡</div>
             <div class="stat-value">${stats.visitorsToday}</div>
             <div class="stat-label">Active Today</div>
           </div>
           <div class="stat-card">
+            <div class="stat-icon">🆕</div>
             <div class="stat-value">${stats.newVisitorsToday}</div>
             <div class="stat-label">New Today</div>
           </div>
           <div class="stat-card">
+            <div class="stat-icon">🎮</div>
             <div class="stat-value">${stats.conversionToPlay}%</div>
-            <div class="stat-label">Played Game</div>
+            <div class="stat-label">Played</div>
           </div>
           <div class="stat-card">
+            <div class="stat-icon">🏆</div>
             <div class="stat-value">${stats.conversionToComplete}%</div>
-            <div class="stat-label">Completed Shift</div>
+            <div class="stat-label">Completed</div>
           </div>
           <div class="stat-card">
+            <div class="stat-icon">📱</div>
             <div class="stat-value">${stats.mobilePercent}%</div>
             <div class="stat-label">Mobile</div>
           </div>
@@ -467,19 +707,19 @@
         document.getElementById('visitors-table').innerHTML = `
           <table>
             <tr>
-              <th>Device</th>
+              <th>#</th>
               <th>Platform</th>
               <th>Visits</th>
-              <th>Played</th>
+              <th>Status</th>
               <th>First Seen</th>
               <th>Last Seen</th>
             </tr>
-            ${visitors.slice(0, 20).map(v => `
+            ${visitors.slice(0, 20).map((v, i) => `
               <tr>
-                <td><code>${v.deviceId.slice(0, 12)}...</code></td>
-                <td>${v.platform || 'unknown'}</td>
+                <td class="row-num">${i + 1}</td>
+                <td><span class="platform-icon">${platformIcon(v.platform)}</span></td>
                 <td>${v.visitCount}</td>
-                <td>${v.hasPlayed ? '✅' : '❌'} ${v.hasCompleted ? '🏆' : ''} ${v.hasPurchased ? '💰' : ''}</td>
+                <td>${visitorStatus(v)}</td>
                 <td><span class="time-ago">${timeAgo(v.firstSeen)}</span></td>
                 <td><span class="time-ago">${timeAgo(v.lastSeen)}</span></td>
               </tr>
@@ -503,22 +743,27 @@
         const unlocks = outfitterEvents.filter(e => e.type === 'outfitter_unlock').length;
         document.getElementById('outfitter-stats').innerHTML = `
           <div class="stat-card highlight">
+            <div class="stat-icon">🎨</div>
             <div class="stat-value">${outfitterEvents.length}</div>
-            <div class="stat-label">Total Outfitter Events</div>
+            <div class="stat-label">Total Activity</div>
           </div>
           <div class="stat-card">
+            <div class="stat-icon">👁️</div>
             <div class="stat-value">${opens}</div>
             <div class="stat-label">Opens</div>
           </div>
           <div class="stat-card">
+            <div class="stat-icon">👕</div>
             <div class="stat-value">${equips}</div>
             <div class="stat-label">Equips</div>
           </div>
           <div class="stat-card">
+            <div class="stat-icon">🛒</div>
             <div class="stat-value">${purchases}</div>
             <div class="stat-label">Purchases</div>
           </div>
           <div class="stat-card">
+            <div class="stat-icon">🎁</div>
             <div class="stat-value">${unlocks}</div>
             <div class="stat-label">Unlocks</div>
           </div>
@@ -545,16 +790,14 @@
         document.getElementById('outfitter-table').innerHTML = `
           <table>
             <tr>
-              <th>Type</th>
-              <th>Device</th>
-              <th>Details</th>
-              <th>Time</th>
+              <th>Action</th>
+              <th>Item</th>
+              <th>When</th>
             </tr>
             ${filtered.map(e => `
               <tr>
-                <td><span class="badge ${e.type.replace('_', '-')}">${e.type}</span></td>
-                <td><code>${e.deviceId ? e.deviceId.slice(0, 8) + '...' : 'N/A'}</code></td>
-                <td>${e.data ? JSON.stringify(e.data).slice(0, 50) : '-'}</td>
+                <td><span class="badge ${e.type.replace('_', '-')}">${friendlyEventType(e.type)}</span></td>
+                <td>${parseEventData(e.type, e.data)}</td>
                 <td><span class="time-ago">${timeAgo(e.createdAt)}</span></td>
               </tr>
             `).join('')}
@@ -578,6 +821,7 @@
         loadOutfitterEvents(currentOutfitterFilter),
         loadEvents(currentFilter),
       ]);
+      updateRefreshTime();
     };
 
     // Tab filtering for events
