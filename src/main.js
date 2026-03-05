@@ -376,6 +376,15 @@ const COSMETICS = [
   {id:'hat-party', category:'hats', name:'Party Hat', icon:'🥳', unlock:'streak7', desc:'7-day login streak', premium:true},
   {id:'hat-crown', category:'hats', name:'Golden Crown', icon:'👑', unlock:'allS', desc:'All S-grades', premium:true},
   {id:'hat-tophat', category:'hats', name:'Top Hat', icon:'🎩', unlock:'legend', desc:'Reach Legend rank', premium:true},
+  // Shirts
+  {id:'shirt-polo', category:'shirts', name:'Red Polo', icon:'👕', unlock:'default'},
+  {id:'shirt-none', category:'shirts', name:'No Shirt', icon:'🚫', unlock:'default'},
+  {id:'shirt-hawaiian', category:'shirts', name:'Hawaiian', icon:'🌺', unlock:'shift3', desc:'Complete Shift 3'},
+  {id:'shirt-overalls', category:'shirts', name:'Overalls', icon:'👷', unlock:'clean50', desc:'Clean 50 stalls'},
+  {id:'shirt-flannel', category:'shirts', name:'Flannel', icon:'🪓', unlock:'shift5', desc:'Complete Shift 5', premium:true},
+  {id:'shirt-jersey', category:'shirts', name:'Jersey #82', icon:'🏈', unlock:'combo20', desc:'Get a 20x combo', premium:true},
+  {id:'shirt-tuxedo', category:'shirts', name:'Tuxedo', icon:'🤵', unlock:'allS', desc:'All S-grades', premium:true},
+  {id:'shirt-hoodie', category:'shirts', name:'Hoodie', icon:'🧥', unlock:'coins300', desc:'Buy for 300 coins', cost:300},
   // Colors
   {id:'color-classic', category:'colors', name:'Classic Brown', icon:'🟤', unlock:'default'},
   {id:'color-golden', category:'colors', name:'Honey Gold', icon:'🟡', unlock:'manager', desc:'Reach Manager rank'},
@@ -385,9 +394,15 @@ const COSMETICS = [
 ];
 
 let cosmeticState = JSON.parse(localStorage.getItem('beaverCosmetics') || 'null') || {
-  unlocked: ['hat-none','hat-cap','color-classic'],
-  equipped: {hat:'hat-none', color:'color-classic'}
+  unlocked: ['hat-none','hat-cap','shirt-polo','shirt-none','color-classic'],
+  equipped: {hat:'hat-none', shirt:'shirt-polo', color:'color-classic'}
 };
+// Migrate old state missing shirt
+if (!cosmeticState.equipped.shirt) {
+  cosmeticState.equipped.shirt = 'shirt-polo';
+  if (!cosmeticState.unlocked.includes('shirt-polo')) cosmeticState.unlocked.push('shirt-polo');
+  if (!cosmeticState.unlocked.includes('shirt-none')) cosmeticState.unlocked.push('shirt-none');
+}
 
 function saveCosmeticState() {
   localStorage.setItem('beaverCosmetics', JSON.stringify(cosmeticState));
@@ -429,8 +444,12 @@ function checkCosmeticUnlocks() {
         earned = r.name === 'Manager' || r.name === 'Legend';
         break;
       }
+      case 'shift3': earned = achievementStats.shiftsCompleted >= 3; break;
+      case 'shift5': earned = achievementStats.shiftsCompleted >= 5; break;
+      case 'clean50': earned = achievementStats.totalCleaned >= 50; break;
+      case 'combo20': earned = achievementStats.maxCombo >= 20; break;
       case 'insane6': earned = localStorage.getItem('beaverInsane6') === 'true'; break;
-      // coins500 is purchased manually, not auto-unlocked
+      // coins are purchased manually, not auto-unlocked
     }
     if (earned) {
       cosmeticState.unlocked.push(c.id);
@@ -5961,11 +5980,12 @@ $('locker-modal').addEventListener('click', e => {
 });
 
 function getLockerPreviewSrc() {
-  // Show the equipped hat sprite, or color sprite if on colors tab
+  // Priority: hat > shirt > color for preview
   const hat = cosmeticState.equipped.hat;
+  const shirt = cosmeticState.equipped.shirt;
   const color = cosmeticState.equipped.color;
-  // Hat sprites take priority since they're more visually distinct
   if (hat && hat !== 'hat-none') return `/images/cosmetics/${hat}.png`;
+  if (shirt && shirt !== 'shirt-polo') return `/images/cosmetics/${shirt}.png`;
   return `/images/cosmetics/${color || 'color-classic'}.png`;
 }
 
@@ -5997,7 +6017,7 @@ function renderLockerTab(category) {
   const items = COSMETICS.filter(c => c.category === category);
   grid.innerHTML = items.map(c => {
     const owned = cosmeticState.unlocked.includes(c.id);
-    const equipped = cosmeticState.equipped.hat === c.id || cosmeticState.equipped.color === c.id;
+    const equipped = cosmeticState.equipped.hat === c.id || cosmeticState.equipped.shirt === c.id || cosmeticState.equipped.color === c.id;
     const locked = !owned;
     let status = '';
     if (equipped) status = '✓ Equipped';
@@ -6044,6 +6064,7 @@ function renderLockerTab(category) {
 
       // Equip
       if (cosmetic.category === 'hats') cosmeticState.equipped.hat = id;
+      else if (cosmetic.category === 'shirts') cosmeticState.equipped.shirt = id;
       else cosmeticState.equipped.color = id;
       saveCosmeticState();
       updateLockerPreview(id);
