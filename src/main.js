@@ -56,7 +56,7 @@ function decodeJwtPayload(token) {
 
 function initGoogleSignIn() {
   if (typeof google === 'undefined' || !google.accounts) return;
-  const clientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '237959676363-5fmv6r64v348jrahj6jb69f6pt7as2d3.apps.googleusercontent.com');
+  const clientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '237959676363-5fmvr6r64v348jrahj6jb69f6pt7as2d3.apps.googleusercontent.com');
   if (!clientId) return;
   google.accounts.id.initialize({
     client_id: clientId,
@@ -6670,7 +6670,7 @@ $('title-google-signin')?.addEventListener('click', () => {
 });
 
 function triggerGoogleSignIn() {
-  const clientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '237959676363-5fmv6r64v348jrahj6jb69f6pt7as2d3.apps.googleusercontent.com');
+  const clientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '237959676363-5fmvr6r64v348jrahj6jb69f6pt7as2d3.apps.googleusercontent.com');
   if (typeof google === 'undefined' || !google.accounts) {
     console.error('Google accounts library not loaded');
     return;
