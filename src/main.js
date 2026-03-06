@@ -61,6 +61,7 @@ function initGoogleSignIn() {
   google.accounts.id.initialize({
     client_id: clientId,
     callback: handleGoogleSignIn,
+    use_fedcm_for_prompt: false,
   });
 }
 
@@ -137,31 +138,11 @@ function showSignInModal(onComplete) {
   // Render Google button
   const btnContainer = modal.querySelector('#google-signin-btn-container');
   btnContainer.innerHTML = '';
-  const clientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '237959676363-5fmv6r64v348jrahj6jb69f6pt7as2d3.apps.googleusercontent.com');
-  if (typeof google !== 'undefined' && google.accounts && clientId) {
+  if (typeof google !== 'undefined' && google.accounts) {
     const btn = document.createElement('button');
     btn.style.cssText = 'background:#fff;color:#333;border:1px solid #ddd;border-radius:24px;padding:10px 24px;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-family:inherit;';
     btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.9 33.1 29.4 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 8 3l5.7-5.7C34 6 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.2-2.7-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 15.5 18.8 12 24 12c3.1 0 5.8 1.2 8 3l5.7-5.7C34 6 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.2 26.7 36 24 36c-5.4 0-9.9-3.5-11.3-8.3l-6.5 5C9.5 39.5 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C36.7 39.5 44 34 44 24c0-1.3-.2-2.7-.4-3.9z"/></svg> Sign in with Google';
-    btn.addEventListener('click', () => {
-      const tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: clientId,
-        scope: 'openid email profile',
-        callback: async (tokenResponse) => {
-          if (tokenResponse.access_token) {
-            try {
-              const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-                headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
-              });
-              const profile = await res.json();
-              await handleGoogleSignInFromProfile(profile);
-            } catch (e) {
-              console.error('Failed to get user info:', e);
-            }
-          }
-        },
-      });
-      tokenClient.requestAccessToken();
-    });
+    btn.addEventListener('click', () => triggerGoogleSignIn());
     btnContainer.appendChild(btn);
   } else {
     btnContainer.innerHTML = '<p style="color:#f88;font-size:13px;">Google Sign-In unavailable</p>';
@@ -6685,43 +6666,40 @@ $('start-btn').addEventListener('click', () => {
 
 // Title screen Google Sign-In button
 $('title-google-signin')?.addEventListener('click', () => {
-  const clientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '237959676363-5fmv6r64v348jrahj6jb69f6pt7as2d3.apps.googleusercontent.com');
-  if (typeof google !== 'undefined' && google.accounts && clientId) {
-    google.accounts.oauth2.initCodeClient({
-      client_id: clientId,
-      scope: 'openid email profile',
-      ux_mode: 'popup',
-      callback: (response) => {
-        // For code flow we'd exchange the code, but let's use the token flow instead
-      },
-    });
-    // Use token flow for simplicity - gets ID token directly
-    const tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: clientId,
-      scope: 'openid email profile',
-      callback: async (tokenResponse) => {
-        if (tokenResponse.access_token) {
-          try {
-            const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-              headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
-            });
-            const profile = await res.json();
-            // Manually trigger the same flow as GIS callback
-            await handleGoogleSignInFromProfile({
-              sub: profile.sub,
-              email: profile.email,
-              name: profile.name,
-              picture: profile.picture,
-            });
-          } catch (e) {
-            console.error('Failed to get user info:', e);
-          }
-        }
-      },
-    });
-    tokenClient.requestAccessToken();
-  }
+  triggerGoogleSignIn();
 });
+
+function triggerGoogleSignIn() {
+  const clientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '237959676363-5fmv6r64v348jrahj6jb69f6pt7as2d3.apps.googleusercontent.com');
+  if (typeof google === 'undefined' || !google.accounts) {
+    console.error('Google accounts library not loaded');
+    return;
+  }
+  const tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: clientId,
+    scope: 'openid email profile',
+    callback: async (tokenResponse) => {
+      console.log('Google token response:', tokenResponse);
+      if (tokenResponse.error) {
+        console.error('Google auth error:', tokenResponse.error);
+        return;
+      }
+      if (tokenResponse.access_token) {
+        try {
+          const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+          });
+          const profile = await res.json();
+          console.log('Google profile:', profile);
+          await handleGoogleSignInFromProfile(profile);
+        } catch (e) {
+          console.error('Failed to get user info:', e);
+        }
+      }
+    },
+  });
+  tokenClient.requestAccessToken();
+}
 
 // Beaver Outfitter
 $('outfitter-btn').addEventListener('click', () => {
