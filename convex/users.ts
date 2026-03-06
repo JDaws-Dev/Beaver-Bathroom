@@ -83,7 +83,12 @@ export const signInWithGoogle = mutation({
         avatarUrl: args.avatarUrl,
         deviceId: args.deviceId, // Update to current device
       });
-      return { ...byGoogle, name: args.name, email: args.email, avatarUrl: args.avatarUrl, deviceId: args.deviceId };
+      // Check if this email has any purchases (cross-device premium restore)
+      const purchase = await ctx.db
+        .query("purchases")
+        .withIndex("by_email", (q) => q.eq("email", args.email))
+        .first();
+      return { ...byGoogle, name: args.name, email: args.email, avatarUrl: args.avatarUrl, deviceId: args.deviceId, hasPurchase: !!purchase };
     }
 
     // 2. Look up by deviceId (linking existing anonymous user)
@@ -100,7 +105,12 @@ export const signInWithGoogle = mutation({
         name: args.name,
         avatarUrl: args.avatarUrl,
       });
-      return { ...byDevice, googleId: args.googleId, email: args.email, name: args.name, avatarUrl: args.avatarUrl };
+      // Check if this email has any purchases (cross-device premium restore)
+      const purchase = await ctx.db
+        .query("purchases")
+        .withIndex("by_email", (q) => q.eq("email", args.email))
+        .first();
+      return { ...byDevice, googleId: args.googleId, email: args.email, name: args.name, avatarUrl: args.avatarUrl, hasPurchase: !!purchase };
     }
 
     // 3. Create new user
@@ -113,6 +123,12 @@ export const signInWithGoogle = mutation({
       createdAt: Date.now(),
     });
 
+    // Check if this email has any purchases (cross-device premium restore)
+    const purchase = await ctx.db
+      .query("purchases")
+      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .first();
+
     return {
       _id: userId,
       deviceId: args.deviceId,
@@ -121,6 +137,7 @@ export const signInWithGoogle = mutation({
       googleId: args.googleId,
       avatarUrl: args.avatarUrl,
       createdAt: Date.now(),
+      hasPurchase: !!purchase,
     };
   },
 });

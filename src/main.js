@@ -93,6 +93,13 @@ async function handleGoogleSignInFromProfile(payload) {
       localStorage.setItem('beaverPlayerName', googleProfile.name);
       localStorage.setItem('beaverUserId', user._id);
 
+      // Restore premium if this email has a purchase (cross-device support)
+      if (user.hasPurchase && !isPremium()) {
+        localStorage.setItem('beaverPremium', 'true');
+        updatePremiumUI();
+        console.log('Premium restored via Google sign-in purchase lookup');
+      }
+
       currentUser = { id: user._id, name: googleProfile.name, deviceId };
       playerName = googleProfile.name;
       updateAuthUI();
