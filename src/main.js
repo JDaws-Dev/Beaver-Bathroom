@@ -6701,6 +6701,17 @@ function triggerGoogleSignIn() {
   tokenClient.requestAccessToken();
 }
 
+// Google Sign-Out button
+$('title-google-signout')?.addEventListener('click', () => {
+  localStorage.removeItem('beaverGoogleId');
+  localStorage.removeItem('beaverGoogleEmail');
+  localStorage.removeItem('beaverAvatarUrl');
+  if (typeof google !== 'undefined' && google.accounts) {
+    google.accounts.id.disableAutoSelect();
+  }
+  updateAuthUI();
+});
+
 // Beaver Outfitter
 $('outfitter-btn').addEventListener('click', () => {
   initAudio();
