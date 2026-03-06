@@ -42,6 +42,131 @@ async function createOrUpdateUser(name) {
   return null;
 }
 
+// Google Sign-In helpers
+function isGoogleSignedIn() {
+  return !!localStorage.getItem('beaverGoogleId');
+}
+
+function decodeJwtPayload(token) {
+  const base64Url = token.split('.')[1];
+  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+  const json = atob(base64);
+  return JSON.parse(json);
+}
+
+function initGoogleSignIn() {
+  if (typeof google === 'undefined' || !google.accounts) return;
+  const clientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '237959676363-5fmv6r64v348jrahj6jb69f6pt7as2d3.apps.googleusercontent.com');
+  if (!clientId) return;
+  google.accounts.id.initialize({
+    client_id: clientId,
+    callback: handleGoogleSignIn,
+  });
+}
+
+async function handleGoogleSignIn(response) {
+  try {
+    const payload = decodeJwtPayload(response.credential);
+    const googleProfile = {
+      googleId: payload.sub,
+      email: payload.email,
+      name: payload.name,
+      avatarUrl: payload.picture,
+    };
+
+    // Link/create user in Convex
+    const user = await convex.mutation(api.users.signInWithGoogle, {
+      ...googleProfile,
+      deviceId,
+    });
+
+    if (user) {
+      // Update local state
+      localStorage.setItem('beaverGoogleId', googleProfile.googleId);
+      localStorage.setItem('beaverGoogleEmail', googleProfile.email);
+      localStorage.setItem('beaverAvatarUrl', googleProfile.avatarUrl || '');
+      localStorage.setItem('beaverPlayerName', googleProfile.name);
+      localStorage.setItem('beaverUserId', user._id);
+
+      currentUser = { id: user._id, name: googleProfile.name, deviceId };
+      playerName = googleProfile.name;
+      updateAuthUI();
+    }
+
+    // Resolve pending sign-in promise
+    if (_googleSignInResolve) {
+      _googleSignInResolve(true);
+      _googleSignInResolve = null;
+    }
+  } catch (e) {
+    console.log('Google sign-in failed:', e);
+    if (_googleSignInResolve) {
+      _googleSignInResolve(false);
+      _googleSignInResolve = null;
+    }
+  }
+}
+
+let _googleSignInResolve = null;
+
+function showSignInModal(onComplete) {
+  // Create modal if it doesn't exist
+  let modal = $('google-signin-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'google-signin-modal';
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:10000;';
+    modal.innerHTML = `
+      <div style="background:linear-gradient(135deg,#5c3d1e,#8B6914);border-radius:20px;padding:32px 28px;max-width:360px;width:90%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.5);border:3px solid #d4a543;">
+        <div style="font-size:48px;margin-bottom:8px;">🦫</div>
+        <h2 style="color:#ffe4a0;margin:0 0 8px;font-size:22px;font-family:inherit;">Save Your Progress!</h2>
+        <p style="color:#ddd;margin:0 0 20px;font-size:14px;line-height:1.4;">Sign in to keep your scores across devices and see your name on the leaderboard.</p>
+        <div id="google-signin-btn-container" style="display:flex;justify-content:center;margin-bottom:16px;"></div>
+        <button id="google-signin-skip" style="background:none;border:none;color:#bbb;font-size:13px;cursor:pointer;text-decoration:underline;padding:8px;">Skip for now</button>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+
+  modal.style.display = 'flex';
+
+  // Render Google button
+  const btnContainer = modal.querySelector('#google-signin-btn-container');
+  btnContainer.innerHTML = '';
+  const clientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '237959676363-5fmv6r64v348jrahj6jb69f6pt7as2d3.apps.googleusercontent.com');
+  if (typeof google !== 'undefined' && google.accounts && clientId) {
+    google.accounts.id.renderButton(btnContainer, {
+      theme: 'outline',
+      size: 'large',
+      shape: 'pill',
+      text: 'signin_with',
+      width: 280,
+    });
+  } else {
+    btnContainer.innerHTML = '<p style="color:#f88;font-size:13px;">Google Sign-In unavailable</p>';
+  }
+
+  // Set up promise for Google callback
+  const googlePromise = new Promise(resolve => { _googleSignInResolve = resolve; });
+
+  // Skip button
+  const skipBtn = modal.querySelector('#google-signin-skip');
+  const handleSkip = () => {
+    modal.style.display = 'none';
+    skipBtn.removeEventListener('click', handleSkip);
+    _googleSignInResolve = null;
+    onComplete();
+  };
+  skipBtn.addEventListener('click', handleSkip);
+
+  // On Google sign-in success
+  googlePromise.then((success) => {
+    modal.style.display = 'none';
+    skipBtn.removeEventListener('click', handleSkip);
+    onComplete();
+  });
+}
+
 // Load existing user on startup
 async function initAuth() {
   const savedUserId = localStorage.getItem('beaverUserId');
@@ -67,6 +192,15 @@ async function initAuth() {
   }
 
   updateAuthUI();
+
+  // Init Google Sign-In library (waits for GIS script to load)
+  if (typeof google !== 'undefined' && google.accounts) {
+    initGoogleSignIn();
+  } else {
+    window.addEventListener('load', () => {
+      setTimeout(initGoogleSignIn, 500);
+    });
+  }
 }
 
 // Update auth UI elements
@@ -74,6 +208,21 @@ function updateAuthUI() {
   const nameDisplay = $('player-name-display');
   if (nameDisplay) {
     nameDisplay.textContent = currentUser ? currentUser.name : 'Guest';
+  }
+
+  // Update title screen sign-in row
+  const signinBtn = $('title-google-signin');
+  const signedInEl = $('title-signed-in');
+  const signedInName = $('title-signed-in-name');
+  if (signinBtn && signedInEl) {
+    if (isGoogleSignedIn()) {
+      signinBtn.style.display = 'none';
+      signedInEl.style.display = 'inline';
+      if (signedInName) signedInName.textContent = playerName || localStorage.getItem('beaverGoogleEmail') || 'Signed in';
+    } else {
+      signinBtn.style.display = 'inline-flex';
+      signedInEl.style.display = 'none';
+    }
   }
 }
 
@@ -6513,6 +6662,14 @@ $('start-btn').addEventListener('click', () => {
   showShiftIntro();
 });
 
+// Title screen Google Sign-In button
+$('title-google-signin')?.addEventListener('click', () => {
+  const clientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '237959676363-5fmv6r64v348jrahj6jb69f6pt7as2d3.apps.googleusercontent.com');
+  if (typeof google !== 'undefined' && google.accounts && clientId) {
+    google.accounts.id.prompt();
+  }
+});
+
 // Beaver Outfitter
 $('outfitter-btn').addEventListener('click', () => {
   initAudio();
@@ -6867,6 +7024,18 @@ $('next-btn').addEventListener('click', () => {
   const shouldSupplyRun = shouldTriggerSupplyRun();
   game.shift++;
 
+  // Google sign-in gate after Shift 1 (game.shift is now 1)
+  if (game.shift === 1 && !isGoogleSignedIn()) {
+    showSignInModal(() => {
+      continueAfterShift(shouldSpeedClean, shouldSupplyRun);
+    });
+    return;
+  }
+
+  continueAfterShift(shouldSpeedClean, shouldSupplyRun);
+});
+
+function continueAfterShift(shouldSpeedClean, shouldSupplyRun) {
   // Paywall after Shift 3 (game.shift is now 3, about to start Shift 4)
   // Only show for non-premium users
   if (game.shift === 3 && !isPremium()) {
@@ -6893,7 +7062,7 @@ $('next-btn').addEventListener('click', () => {
       showUpgradeScreen();
     }
   }
-});
+}
 
 $('skip-upgrades').addEventListener('click', () => {
   showShiftIntro();

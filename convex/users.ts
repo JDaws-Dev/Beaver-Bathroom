@@ -59,6 +59,72 @@ export const updateName = mutation({
   },
 });
 
+// Sign in with Google - links or creates user
+export const signInWithGoogle = mutation({
+  args: {
+    googleId: v.string(),
+    email: v.string(),
+    name: v.string(),
+    avatarUrl: v.optional(v.string()),
+    deviceId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // 1. Look up by googleId (returning user on new device)
+    const byGoogle = await ctx.db
+      .query("users")
+      .withIndex("by_google", (q) => q.eq("googleId", args.googleId))
+      .first();
+
+    if (byGoogle) {
+      // Update fields that may have changed
+      await ctx.db.patch(byGoogle._id, {
+        name: args.name,
+        email: args.email,
+        avatarUrl: args.avatarUrl,
+        deviceId: args.deviceId, // Update to current device
+      });
+      return { ...byGoogle, name: args.name, email: args.email, avatarUrl: args.avatarUrl, deviceId: args.deviceId };
+    }
+
+    // 2. Look up by deviceId (linking existing anonymous user)
+    const byDevice = await ctx.db
+      .query("users")
+      .withIndex("by_device", (q) => q.eq("deviceId", args.deviceId))
+      .first();
+
+    if (byDevice) {
+      // Link Google account to existing device user
+      await ctx.db.patch(byDevice._id, {
+        googleId: args.googleId,
+        email: args.email,
+        name: args.name,
+        avatarUrl: args.avatarUrl,
+      });
+      return { ...byDevice, googleId: args.googleId, email: args.email, name: args.name, avatarUrl: args.avatarUrl };
+    }
+
+    // 3. Create new user
+    const userId = await ctx.db.insert("users", {
+      deviceId: args.deviceId,
+      name: args.name,
+      email: args.email,
+      googleId: args.googleId,
+      avatarUrl: args.avatarUrl,
+      createdAt: Date.now(),
+    });
+
+    return {
+      _id: userId,
+      deviceId: args.deviceId,
+      name: args.name,
+      email: args.email,
+      googleId: args.googleId,
+      avatarUrl: args.avatarUrl,
+      createdAt: Date.now(),
+    };
+  },
+});
+
 // Get user by device ID
 export const getUser = query({
   args: { deviceId: v.string() },

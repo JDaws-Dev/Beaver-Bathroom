@@ -6,8 +6,12 @@ export default defineSchema({
   users: defineTable({
     deviceId: v.string(),
     name: v.string(),
+    email: v.optional(v.string()),
+    googleId: v.optional(v.string()),
+    avatarUrl: v.optional(v.string()),
     createdAt: v.number(),
-  }).index("by_device", ["deviceId"]),
+  }).index("by_device", ["deviceId"])
+    .index("by_google", ["googleId"]),
 
   // Scores table - global leaderboard
   scores: defineTable({
