@@ -120,6 +120,7 @@ export const joinRoom = mutation({
       gender: room.gender,
       difficulty: room.difficulty || "normal",
       hostCosmetics: room.hostCosmetics,
+      createdAt: room.createdAt,
     };
   },
 });
@@ -204,6 +205,7 @@ export const finishGame = mutation({
     score: v.number(),
     rating: v.number(),
     cleaned: v.number(),
+    grade: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const room = await ctx.db
@@ -213,20 +215,26 @@ export const finishGame = mutation({
 
     if (!room) return null;
 
-    // Update final scores
+    // Update final scores and mark this player as finished
     if (args.deviceId === room.hostDeviceId) {
+      const bothDone = !!room.guestFinished;
       await ctx.db.patch(room._id, {
         hostScore: args.score,
         hostRating: args.rating,
         hostCleaned: args.cleaned,
-        status: "finished",
+        hostGrade: args.grade,
+        hostFinished: true,
+        status: bothDone ? "finished" : room.status,
       });
     } else if (args.deviceId === room.guestDeviceId) {
+      const bothDone = !!room.hostFinished;
       await ctx.db.patch(room._id, {
         guestScore: args.score,
         guestRating: args.rating,
         guestCleaned: args.cleaned,
-        status: "finished",
+        guestGrade: args.grade,
+        guestFinished: true,
+        status: bothDone ? "finished" : room.status,
       });
     }
 

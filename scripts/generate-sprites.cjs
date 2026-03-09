@@ -82,6 +82,12 @@ const SPECIALS = [
   { id: 'special-pirate', prompt: `Transform this beaver into a pirate! Add a black eye patch over one eye, a pirate tricorn hat, a red-and-white striped pirate shirt, and a gold hoop earring. ${KEEP_SAME}` },
   { id: 'special-cowboy-full', prompt: `Transform this beaver into a full cowboy! Add a brown cowboy hat, a brown leather vest over a plaid western shirt, a sheriff's star badge, and a bandana around the neck. ${KEEP_SAME}` },
   { id: 'special-robot', prompt: `Transform this beaver into a robot! Replace fur with shiny silver/chrome metallic plating, add glowing blue LED eyes, antenna on top of the head, and visible circuit/panel lines on the body. ${KEEP_SAME}` },
+  // Season 2 specials
+  { id: 'special-luchador', prompt: `Transform this beaver into a luchador wrestler! Add a bright red and gold Mexican wrestling mask covering the whole face with eye holes, and a shiny red cape draped over the shoulders. ${KEEP_SAME}` },
+  { id: 'special-rockstar', prompt: `Transform this beaver into a rock star! Add a black leather jacket with studs, dark aviator sunglasses, a guitar pick necklace, and spiky styled head fur. ${KEEP_SAME}` },
+  { id: 'special-wizard', prompt: `Transform this beaver into a wizard! Add a tall purple pointy wizard hat with gold stars, a flowing purple robe, and a wooden wand with a glowing tip. ${KEEP_SAME}` },
+  { id: 'special-candyman', prompt: `Transform this beaver into a whimsical candy maker! Add a tall plum/purple velvet top hat, a fancy plum velvet coat over a colorful patterned vest, and a candy cane walking stick. Eccentric and charming. ${KEEP_SAME}` },
+  { id: 'special-madscientist', prompt: `Transform this beaver into a mad scientist! Add wild frizzy white hair sticking out in all directions, round silver goggles pushed up on the forehead, a white lab coat with scorch marks, and a bubbling green beaker in hand. ${KEEP_SAME}` },
 ];
 
 function generateBase() {

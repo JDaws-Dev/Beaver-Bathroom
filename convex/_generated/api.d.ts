@@ -10,6 +10,7 @@
 
 import type * as admin from "../admin.js";
 import type * as coupons from "../coupons.js";
+import type * as matchmaking from "../matchmaking.js";
 import type * as multiplayer from "../multiplayer.js";
 import type * as reviews from "../reviews.js";
 import type * as scores from "../scores.js";
@@ -25,6 +26,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   admin: typeof admin;
   coupons: typeof coupons;
+  matchmaking: typeof matchmaking;
   multiplayer: typeof multiplayer;
   reviews: typeof reviews;
   scores: typeof scores;

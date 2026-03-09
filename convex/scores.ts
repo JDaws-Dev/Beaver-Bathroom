@@ -1,14 +1,35 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
-// Get top scores for leaderboard
+const PROFANITY_LIST = [
+  "nigger", "nigga", "faggot", "fag", "retard", "kike", "spic", "chink",
+  "wetback", "coon", "darkie", "gook", "jap", "beaner", "tranny", "dyke",
+  "twat", "cunt", "bitch", "slut", "whore", "asshole", "bastard", "dick",
+  "cock", "pussy", "fuck", "shit", "piss", "damn", "wanker", "bollocks",
+  "arse", "tits", "boob", "penis", "vagina", "anal", "cum", "semen",
+  "nazi", "hitler", "kkk", "jihad", "rape", "molest", "pedo", "incest",
+];
+
+function cleanName(name: string): string {
+  const lower = name.toLowerCase().replace(/[\s_\-\.]/g, "");
+  for (const word of PROFANITY_LIST) {
+    if (lower.includes(word)) return "Player";
+  }
+  return name;
+}
+
+// Current season - increment when gameplay changes significantly
+const CURRENT_SEASON = 2;
+
+// Get top scores for leaderboard (current season only)
 export const getTopScores = query({
-  args: { limit: v.optional(v.number()) },
+  args: { limit: v.optional(v.number()), season: v.optional(v.number()) },
   handler: async (ctx, args) => {
     const limit = args.limit ?? 10;
+    const season = args.season ?? CURRENT_SEASON;
     const scores = await ctx.db
       .query("scores")
-      .withIndex("by_score")
+      .withIndex("by_season_score", (q) => q.eq("season", season))
       .order("desc")
       .take(limit);
     return scores;
@@ -27,11 +48,12 @@ export const submitScore = mutation({
   handler: async (ctx, args) => {
     const scoreId = await ctx.db.insert("scores", {
       userId: args.userId,
-      playerName: args.playerName,
+      playerName: cleanName(args.playerName),
       score: args.score,
       shift: args.shift,
       grade: args.grade,
       timestamp: Date.now(),
+      season: CURRENT_SEASON,
     });
     return scoreId;
   },
@@ -51,13 +73,13 @@ export const getUserScores = query({
   },
 });
 
-// Get player's rank
+// Get player's rank (current season)
 export const getPlayerRank = query({
   args: { score: v.number() },
   handler: async (ctx, args) => {
     const higherScores = await ctx.db
       .query("scores")
-      .withIndex("by_score")
+      .withIndex("by_season_score", (q) => q.eq("season", CURRENT_SEASON))
       .filter((q) => q.gt(q.field("score"), args.score))
       .collect();
     return higherScores.length + 1;
@@ -76,7 +98,7 @@ export const submitDailyScore = mutation({
   handler: async (ctx, args) => {
     const scoreId = await ctx.db.insert("dailyScores", {
       userId: args.userId,
-      playerName: args.playerName,
+      playerName: cleanName(args.playerName),
       score: args.score,
       grade: args.grade,
       date: args.date,

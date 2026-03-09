@@ -401,6 +401,11 @@ const CONFIG = {
     { level: 5, speedBoost: 4000, rating: 0.1, points: 100, msg: '⚡ UNSTOPPABLE!' },
     { level: 10, speedBoost: 5000, rating: 0.3, points: 250, msg: '🌟 LEGENDARY!' },
   ],
+  fightChance: 0.2,       // Chance per shift (after shift 1)
+  fightPenalty: 0.4,       // Rating loss if brawl not stopped
+  fightBonus: 75,          // Points for quick breakup
+  fightArgueTime: 5000,    // ms before arguing becomes brawl
+  fightBrawlDrain: 2,      // Patience drain multiplier on nearby customers
   towelSkipChance: 0.3,  // 30% of customers skip towel drying
   // Mess spawn chances per source (base values, scaled by shift)
   messChance: {
@@ -587,6 +592,13 @@ const COSMETICS = [
   {id:'special-pirate', category:'special', name:'Pirate Beaver', icon:'🏴‍☠️', unlock:'coins700', desc:'Buy for 700 coins', tier:3, cost:700},
   {id:'special-cowboy-full', category:'special', name:'Full Cowboy', icon:'🤠', unlock:'coins800', desc:'Buy for 800 coins', tier:4, cost:800},
   {id:'special-robot', category:'special', name:'Robo-Beaver', icon:'🤖', unlock:'coins1200', desc:'Buy for 1200 coins', tier:5, cost:1200},
+
+  // === SEASON 2 SPECIALS ===
+  {id:'special-luchador', category:'special', name:'Luchador', icon:'🤼', unlock:'coins500', desc:'Buy for 500 coins', tier:3, cost:500},
+  {id:'special-rockstar', category:'special', name:'Rockstar', icon:'🎸', unlock:'coins600', desc:'Buy for 600 coins', tier:3, cost:600},
+  {id:'special-wizard', category:'special', name:'Wizard Beaver', icon:'🧙', unlock:'coins700', desc:'Buy for 700 coins', tier:4, cost:700},
+  {id:'special-candyman', category:'special', name:'Candy Man', icon:'🍭', unlock:'coins800', desc:'Buy for 800 coins', tier:4, cost:800},
+  {id:'special-madscientist', category:'special', name:'Mad Scientist', icon:'🧪', unlock:'coins900', desc:'Buy for 900 coins', tier:4, cost:900},
 ];
 
 // Tier names and rank requirements
@@ -2453,6 +2465,7 @@ const perf = {
   hudUpdateInterval: 50, // Update HUD every 50ms instead of every frame
   lowPerfMode: false,
   lowPerfThreshold: 24, // FPS below this triggers low-perf mode
+  autoLiteNotified: false, // Prevent repeated auto-enable notifications
   frameCount: 0,
   lastFpsCheck: 0,
   currentFps: 60,
@@ -2461,8 +2474,8 @@ const perf = {
 // Check if device is likely mobile
 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-// Initialize low-perf mode from saved preference only (auto-enables when FPS drops)
-const savedLowPerf = localStorage.getItem('beaverLowPerf');
+// Initialize low-perf mode from manual preference only
+const savedLowPerf = localStorage.getItem('beaverLowPerfManual');
 if (savedLowPerf === 'true') {
   document.addEventListener('DOMContentLoaded', () => {
     document.body.classList.add('low-perf');
@@ -2470,6 +2483,8 @@ if (savedLowPerf === 'true') {
     perf.hudUpdateInterval = 100;
   });
 }
+// Clear old auto-saved key so users aren't stuck in lite mode
+localStorage.removeItem('beaverLowPerf');
 
 // Enable low performance mode (reduces visual effects)
 function setLowPerfMode(enabled) {
@@ -2492,11 +2507,13 @@ function updatePerfMonitor(now) {
     perf.frameCount = 0;
     perf.lastFpsCheck = now;
 
-    // Auto-enable low-perf mode if FPS drops
-    if (perf.currentFps < perf.lowPerfThreshold && !perf.lowPerfMode) {
+    // Auto-enable low-perf mode if FPS drops (session only, not saved)
+    if (perf.currentFps < perf.lowPerfThreshold && !perf.lowPerfMode && !perf.autoLiteNotified) {
       setLowPerfMode(true);
+      perf.autoLiteNotified = true;
+      // Don't save to localStorage — only persist if user manually toggles
+      console.log('Auto-enabled Lite Mode (FPS:', perf.currentFps, ')');
     }
-    // Don't auto-disable to avoid flicker - user can refresh to reset
   }
 }
 
@@ -2717,7 +2734,7 @@ function toggleMusic() {
 
 function togglePerfMode() {
   setLowPerfMode(!perf.lowPerfMode);
-  localStorage.setItem('beaverLowPerf', perf.lowPerfMode);
+  localStorage.setItem('beaverLowPerfManual', perf.lowPerfMode);
   updateSettingsUI();
 }
 
@@ -3294,7 +3311,8 @@ const BEAVER_SPEECH_TIPS = {
   comboStart: "Keep cleaning for combos!",
   lowTime: "Hurry! Time's running out!",
   vipCustomer: "VIP customer! Clean fast for 2x bonus!",
-  inspectorComing: "Keep stalls clean for inspection!"
+  inspectorComing: "Keep stalls clean for inspection!",
+  fightBreaking: "Break up that fight! Tap fast!"
 };
 let tipTimeout = null;
 let shownTips = {};
@@ -3324,8 +3342,8 @@ function showBeaverTip(tipKey, duration = 3500) {
 
 function $(id) { return document.getElementById(id); }
 function rand() {
-  // Use seeded RNG in daily mode, Math.random otherwise
-  return game.mode === 'daily' ? seededRng() : Math.random();
+  // Use seeded RNG in daily and multiplayer modes for fairness
+  return (game.mode === 'daily' || game.mode === 'multiplayer') ? seededRng() : Math.random();
 }
 function pick(arr) { return arr[Math.floor(rand() * arr.length)]; }
 function rnd(min, max) { return min + rand() * (max - min); }
@@ -3369,6 +3387,7 @@ function init() {
     activeStall: -1,
     activeTask: -1,
     taskProgress: 0,
+    _clickTimestamps: [],     // Anti-auto-clicker: recent click times
     stats: {cleaned: 0, served: 0, dirty: 0, abandoned: 0, saves: 0},
     personId: 0,
     gender: selectedGender,
@@ -3379,6 +3398,9 @@ function init() {
     inspector: null,          // Inspector object when active
     inspectorTimer: 0,        // Countdown until inspector appears
     inspectorWarning: 0,      // Warning countdown before inspector enters
+    fight: null,              // Fight object when active
+    fightTimer: 0,            // Countdown until fight starts
+    fightWarning: 0,          // Warning countdown before fight starts
     coins: 0,                 // Currency for items
     skills: {scrub: 0, patience: 0, tips: 0},  // Passive skills (earned per shift)
     comboBoost: 0,            // Remaining duration of combo speed boost
@@ -3896,6 +3918,7 @@ function endlessGameOver() {
   const inspectorEl = $('floor-area').querySelector('.inspector');
   if (inspectorEl) inspectorEl.remove();
   $('inspector-warning').style.display = 'none';
+  cleanupFight();
 
   const finalScore = Math.floor(game.score);
   const minutesSurvived = Math.floor(game.elapsed / 60000);
@@ -4062,6 +4085,7 @@ function startDailyMode() {
   showScreen('game-screen');
   $('rush-warning').style.display = 'none';
   $('inspector-warning').style.display = 'none';
+  $('fight-warning').style.display = 'none';
   $('pause-overlay').classList.remove('active');
 
   // Track daily challenge start
@@ -4087,6 +4111,7 @@ function dailyGameOver() {
   const inspectorEl = $('floor-area').querySelector('.inspector');
   if (inspectorEl) inspectorEl.remove();
   $('inspector-warning').style.display = 'none';
+  cleanupFight();
 
   const finalScore = Math.floor(game.score);
   const isNewRecord = finalScore > dailyHighScore;
@@ -4246,6 +4271,9 @@ function startShift() {
   game.inspector = null;
   game.inspectorTimer = 0;
   game.inspectorWarning = 0;
+  game.fight = null;
+  game.fightTimer = 0;
+  game.fightWarning = 0;
   game.puddles = [];
   document.querySelectorAll('.puddle').forEach(el => el.remove());
 
@@ -4256,14 +4284,22 @@ function startShift() {
     game.powerups = {speed: 1, slow: 1, auto: 0, mascot: 0};
   }
 
-  // Maybe trigger inspector visit (not on first shift, or always in daily)
-  if (rand() < CONFIG.inspectorChance && game.shift > 0) {
-    game.inspectorTimer = rnd(20000, 40000); // Inspector arrives after 20-40 seconds
-  }
+  // No random events in multiplayer — pure head-to-head cleaning
+  if (game.mode !== 'multiplayer') {
+    // Maybe trigger inspector visit (not on first shift, or always in daily)
+    if (rand() < CONFIG.inspectorChance && game.shift > 0) {
+      game.inspectorTimer = rnd(20000, 40000);
+    }
 
-  // Maybe trigger rush hour
-  if (rand() < CONFIG.rushChance && game.shift > 0) {
-    game.rushTimer = rnd(15000, 30000); // Rush starts after 15-30 seconds
+    // Maybe trigger fight (not on first shift)
+    if (rand() < CONFIG.fightChance && game.shift > 0) {
+      game.fightTimer = rnd(25000, 50000);
+    }
+
+    // Maybe trigger rush hour
+    if (rand() < CONFIG.rushChance && game.shift > 0) {
+      game.rushTimer = rnd(15000, 30000);
+    }
   }
 
   buildStalls();
@@ -4273,6 +4309,7 @@ function startShift() {
   showScreen('game-screen');
   $('rush-warning').style.display = 'none';
   $('inspector-warning').style.display = 'none';
+  $('fight-warning').style.display = 'none';
   $('pause-overlay').classList.remove('active');
 
   // Countdown before gameplay starts
@@ -4397,7 +4434,7 @@ function update(dt) {
       game.rushMode = false;
       $('rush-warning').style.display = 'none';
       $('rush-warning').textContent = '🚌 TOUR BUS ARRIVING! 🚌';
-      if (!game.inspector) setBeaverMood('idle', 0);
+      if (!game.inspector && !game.fight) setBeaverMood('idle', 0);
     }
   }
 
@@ -4425,6 +4462,33 @@ function update(dt) {
   // Update inspector
   if (game.inspector) {
     updateInspector(dt);
+  }
+
+  // Customer fight logic
+  if (game.fightTimer > 0 && !game.fight) {
+    game.fightTimer -= dt;
+    if (game.fightTimer <= 3000 && game.fightWarning === 0) {
+      game.fightWarning = 3000;
+      $('fight-warning').style.display = 'block';
+      haptic('warning');
+      setBeaverMood('worried', 0);
+      showBeaverTip('fightBreaking');
+    }
+    if (game.fightWarning > 0) {
+      game.fightWarning -= dt;
+    }
+    if (game.fightTimer <= 0) {
+      spawnFight();
+      // Keep banner visible during approaching phase — hide when fight zone appears
+      if (!game.fight) {
+        // spawnFight failed (not enough customers), banner stays for retry
+      }
+    }
+  }
+
+  // Update fight
+  if (game.fight) {
+    updateFight(dt);
   }
 
   // Spawn customers
@@ -4548,7 +4612,12 @@ function update(dt) {
   });
 
   if (game.rating <= 0) {
-    gameOver();
+    if (game.mode === 'multiplayer' && mpState.active) {
+      // In 1v1: hitting 0 stars = automatic loss, end the match
+      endShift();
+    } else {
+      gameOver();
+    }
   }
 }
 
@@ -4559,12 +4628,12 @@ function spawnCustomer() {
   const rect = floor.getBoundingClientRect();
   const exitDoor = $('exit-door').getBoundingClientRect();
 
-  // Check for special character spawn first (premium only)
+  // Check for special character spawn first (premium only, disabled in multiplayer for fairness)
   const genderFilter = game.gender === 'male' ? 'male' : 'female';
   let special = null;
 
-  // Special characters only for premium users
-  if (isPremium()) {
+  // Special characters only for premium users (disabled in MP for fairness)
+  if (isPremium() && game.mode !== 'multiplayer') {
     const eligibleSpecials = SPECIAL_CUSTOMERS.filter(c => c.gender === genderFilter);
     for (const sc of eligibleSpecials) {
       if (rand() < sc.chance) {
@@ -4593,8 +4662,8 @@ function spawnCustomer() {
     specialThoughts = null;
     icon = pick(getCustomers());
     isUrgent = rand() < 0.2; // 20% chance of urgent customer
-    // VIP customers only for premium users
-    isVip = isPremium() && !isUrgent && rand() < 0.12; // 12% chance of VIP (not if urgent)
+    // VIP customers only for premium users (disabled in MP for fairness)
+    isVip = isPremium() && game.mode !== 'multiplayer' && !isUrgent && rand() < 0.12;
 
     // Messiness: 0 = average, -1 = clean (sparkle), 1 = messy (more tasks)
     const messRoll = rand();
@@ -4721,6 +4790,9 @@ function updatePeople(dt) {
   for (let i = game.people.length - 1; i >= 0; i--) {
     const p = game.people[i];
     const speed = p.urgent ? baseSpeed * 1.4 : baseSpeed;
+
+    // Skip movement for frozen customers (in a fight)
+    if (p.frozen) continue;
 
     // Update thought timer
     if (p.thoughtTimer > 0) p.thoughtTimer -= dt;
@@ -5171,9 +5243,9 @@ function updatePeople(dt) {
       const dx = tx - p.x, dy = ty - p.y;
       const dist = Math.sqrt(dx*dx + dy*dy);
 
-      if (dist < 20) {
+      if (dist < 20 && !p.frozen) {
         game.people.splice(i, 1);
-      } else {
+      } else if (dist >= 20) {
         p.x += (dx / dist) * speed * 1.2;
         p.y += (dy / dist) * speed * 1.2;
         deflectFromTowels(p, floorRect);
@@ -5592,6 +5664,312 @@ function finishInspection() {
   }
 }
 
+// ---- Customer Fight Event ----
+
+function spawnFight() {
+  const floor = $('floor-area');
+  const floorRect = floor.getBoundingClientRect();
+
+  // Find eligible customers (visible, not about to leave)
+  // Prefer customers in longer-lasting phases so they don't vanish mid-fight
+  const eligiblePhases = ['findStall', 'toStall', 'toSink', 'washing', 'toTowels', 'enter'];
+  const eligible = game.people.filter(p => eligiblePhases.includes(p.phase) && !p.frozen);
+
+  if (eligible.length < 2) {
+    // Not enough customers yet — retry in 2 seconds (skip warning on retry)
+    game.fightTimer = 2000;
+    game.fightWarning = 1; // non-zero so warning doesn't re-trigger
+    return;
+  }
+
+  // Pick 2 random customers
+  const idx1 = Math.floor(rand() * eligible.length);
+  let idx2 = Math.floor(rand() * (eligible.length - 1));
+  if (idx2 >= idx1) idx2++;
+  const fighter1 = eligible[idx1];
+  const fighter2 = eligible[idx2];
+
+  // Freeze both customers — they'll walk toward each other first
+  fighter1.frozen = true;
+  fighter2.frozen = true;
+  fighter1.preFightPhase = fighter1.phase;
+  fighter2.preFightPhase = fighter2.phase;
+
+  const midX = (fighter1.x + fighter2.x) / 2;
+  const midY = (fighter1.y + fighter2.y) / 2;
+
+  game.fight = {
+    fighter1,
+    fighter2,
+    x: midX,
+    y: midY,
+    phase: 'approaching',  // approaching, arguing, brawl, breakup, done
+    argueTimer: CONFIG.fightArgueTime,
+    brawlTimer: 0,
+    brawlMaxTime: 8000,
+    breakupProgress: 0,
+    breakupTarget: 300,
+    shakeTimer: 0,
+    ratingDrainTimer: 0,
+    _clickTimestamps: [],
+  };
+
+  setBeaverMood('worried', 0);
+}
+
+function updateFightProgress(el) {
+  if (!game.fight || !el) return;
+  const pct = Math.min(100, Math.round((game.fight.breakupProgress / game.fight.breakupTarget) * 100));
+  const fill = el.querySelector('.fight-progress-fill');
+  if (fill) fill.style.width = pct + '%';
+  const pctEl = el.querySelector('.fight-pct');
+  if (pctEl) pctEl.textContent = pct + '%';
+}
+
+function createFightZone() {
+  const fight = game.fight;
+  if (!fight) return;
+  const floor = $('floor-area');
+
+  // Remove existing fight zone if any
+  const existing = floor.querySelector('.fight-zone');
+  if (existing) existing.remove();
+
+  const el = document.createElement('div');
+  el.className = 'fight-zone';
+  el.innerHTML = `
+    <div class="fight-label">👊 TAP HERE! 👊</div>
+    <div class="fight-emojis"><span>😠</span><span>!?!</span><span>😠</span></div>
+    <div class="fight-progress-bar"><div class="fight-progress-fill" style="width:0%"></div></div>
+    <div class="fight-pct">0%</div>`;
+  el.style.left = (fight.x - 50) + 'px';
+  el.style.top = (fight.y - 40) + 'px';
+
+  // Tap handler for breaking up the fight
+  const onTap = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (!game.fight || game.fight.phase === 'done' || game.fight.phase === 'approaching') return;
+
+    const now = Date.now();
+    game.fight._clickTimestamps.push(now);
+    if (game.fight._clickTimestamps.length > 5) game.fight._clickTimestamps = game.fight._clickTimestamps.slice(-5);
+    if (game.fight._clickTimestamps.length >= 5) {
+      const span = game.fight._clickTimestamps[4] - game.fight._clickTimestamps[0];
+      if (span / 4 < 30) return;
+    }
+
+    haptic('light');
+    playClick();
+
+    // Any tap during arguing or brawl enters breakup mode
+    const wasBrawl = game.fight.phase === 'brawl';
+    if (game.fight.phase === 'arguing' || game.fight.phase === 'brawl') {
+      game.fight.phase = 'breakup';
+      game.fight.wasBrawl = wasBrawl;
+    }
+
+    const boost = game.effects.speed > 0 ? CONFIG.clickBoost * 2 : CONFIG.clickBoost;
+    game.fight.breakupProgress += boost;
+
+    updateFightProgress(el);
+
+    if (game.fight.breakupProgress >= game.fight.breakupTarget) {
+      finishFight(game.fight.wasBrawl || false);
+    }
+  };
+
+  el.addEventListener('pointerdown', onTap);
+  el.addEventListener('click', onTap); // fallback for some browsers
+
+  floor.appendChild(el);
+}
+
+function updateFight(dt) {
+  const fight = game.fight;
+  if (!fight) return;
+
+  // Safety: if either fighter was removed from game, cancel fight
+  if (!game.people.includes(fight.fighter1) || !game.people.includes(fight.fighter2)) {
+    cleanupFight();
+    return;
+  }
+
+  const floor = $('floor-area');
+  const speed = CONFIG.walkSpeed * 1.2 * (dt / 1000); // Walk briskly toward each other
+
+  // Phase: approaching — fighters walk toward each other
+  if (fight.phase === 'approaching') {
+    const dx1 = fight.x - 18 - fight.fighter1.x;
+    const dy1 = fight.y - fight.fighter1.y;
+    const d1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+    if (d1 > 5) {
+      fight.fighter1.x += (dx1 / d1) * speed;
+      fight.fighter1.y += (dy1 / d1) * speed;
+    }
+
+    const dx2 = fight.x + 18 - fight.fighter2.x;
+    const dy2 = fight.y - fight.fighter2.y;
+    const d2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+    if (d2 > 5) {
+      fight.fighter2.x += (dx2 / d2) * speed;
+      fight.fighter2.y += (dy2 / d2) * speed;
+    }
+
+    // Both close enough — start arguing and show fight zone
+    if (d1 <= 5 && d2 <= 5) {
+      fight.phase = 'arguing';
+      fight.fighter1.fighting = true;
+      fight.fighter2.fighting = true;
+      $('fight-warning').style.display = 'none';
+      createFightZone();
+    }
+    return;
+  }
+
+  const el = floor.querySelector('.fight-zone');
+  if (!el) return;
+
+  // Update fight zone position to track fighters
+  el.style.left = (fight.x - 50) + 'px';
+  el.style.top = (fight.y - 40) + 'px';
+
+  if (fight.phase === 'arguing') {
+    fight.argueTimer -= dt;
+
+    // Escalate speech bubbles
+    const emojis = el.querySelector('.fight-emojis');
+    if (emojis) {
+      if (fight.argueTimer < CONFIG.fightArgueTime * 0.5) {
+        emojis.innerHTML = '<span>😡</span><span>💢</span><span>😡</span>';
+      }
+      if (fight.argueTimer < CONFIG.fightArgueTime * 0.2) {
+        emojis.innerHTML = '<span>🤬</span><span>💥</span><span>🤬</span>';
+      }
+    }
+
+    if (fight.argueTimer <= 0) {
+      fight.phase = 'brawl';
+      fight.brawlTimer = 0;
+      fight.wasBrawl = true;
+      screenShake(1.5);
+
+      if (emojis) emojis.innerHTML = '<span>🤜</span><span>💥</span><span>🤛</span>';
+      const label = el.querySelector('.fight-label');
+      if (label) label.textContent = '⚠️ BRAWL! TAP NOW!';
+    }
+  }
+
+  else if (fight.phase === 'brawl') {
+    fight.brawlTimer += dt;
+
+    fight.shakeTimer += dt;
+    if (fight.shakeTimer >= 2000) {
+      screenShake(1);
+      fight.shakeTimer = 0;
+    }
+
+    // Drain nearby customer patience at 2x
+    game.people.forEach(p => {
+      if (p === fight.fighter1 || p === fight.fighter2) return;
+      if (p.frozen) return;
+      const dx = p.x - fight.x, dy = p.y - fight.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 150) {
+        p.patience -= dt * (CONFIG.fightBrawlDrain - 1);
+      }
+    });
+
+    // Rating drains slowly during brawl
+    fight.ratingDrainTimer += dt;
+    if (fight.ratingDrainTimer >= 1000) {
+      game.rating = clamp(game.rating - 0.1, 0, 5);
+      fight.ratingDrainTimer = 0;
+    }
+
+    if (fight.brawlTimer >= fight.brawlMaxTime) {
+      finishFight(true);
+      return;
+    }
+
+    // Slow auto-progress
+    fight.breakupProgress += dt * 0.02;
+    updateFightProgress(el);
+  }
+
+  else if (fight.phase === 'breakup') {
+    fight.breakupProgress += dt * 0.1;
+    updateFightProgress(el);
+
+    if (fight.breakupProgress >= fight.breakupTarget) {
+      finishFight(fight.wasBrawl || false);
+    }
+  }
+}
+
+function finishFight(wasBrawl) {
+  const fight = game.fight;
+  if (!fight) return;
+
+  fight.phase = 'done';
+
+  if (!wasBrawl) {
+    // Quick breakup - bonus!
+    addScore(CONFIG.fightBonus);
+    game.rating = clamp(game.rating + 0.2, 0, 5);
+    floatMessage('FIGHT STOPPED! +' + CONFIG.fightBonus, fight.x, fight.y - 20, 'combo');
+    spawnConfetti(fight.x, fight.y, 8);
+    setBeaverMood('excited', 2000);
+  } else {
+    // Brawl happened - penalty
+    const ratingLoss = CONFIG.fightPenalty;
+    game.rating = clamp(game.rating - ratingLoss, 0, 5);
+    floatMessage('BRAWL! -' + ratingLoss.toFixed(1) + '⭐', fight.x, fight.y - 20, 'bad');
+    playBad();
+    screenShake(2);
+    setBeaverMood('sad', 2000);
+  }
+
+  // Unfreeze fighters and restore their movement
+  if (fight.fighter1) {
+    fight.fighter1.frozen = false;
+    fight.fighter1.fighting = false;
+    fight.fighter1.phase = fight.fighter1.preFightPhase || 'exit';
+  }
+  if (fight.fighter2) {
+    fight.fighter2.frozen = false;
+    fight.fighter2.fighting = false;
+    fight.fighter2.phase = fight.fighter2.preFightPhase || 'exit';
+  }
+
+  // Remove fight zone element
+  const floor = $('floor-area');
+  const el = floor.querySelector('.fight-zone');
+  if (el) el.remove();
+
+  game.fight = null;
+}
+
+function cleanupFight() {
+  if (game.fight) {
+    // Unfreeze fighters
+    if (game.fight.fighter1) {
+      game.fight.fighter1.frozen = false;
+      game.fight.fighter1.fighting = false;
+    }
+    if (game.fight.fighter2) {
+      game.fight.fighter2.frozen = false;
+      game.fight.fighter2.fighting = false;
+    }
+  }
+  game.fight = null;
+  game.fightTimer = 0;
+  game.fightWarning = 0;
+  const fightEl = $('floor-area').querySelector('.fight-zone');
+  if (fightEl) fightEl.remove();
+  $('fight-warning').style.display = 'none';
+}
+
 function renderPeople() {
   const floor = $('floor-area');
 
@@ -5637,6 +6015,7 @@ function renderPeople() {
     el.classList.toggle('distracted', p.distracted);
     el.classList.toggle('messy', p.messiness === 1);
     el.classList.toggle('clean', p.messiness === -1);
+    el.classList.toggle('fighting', !!p.fighting);
 
     // Add VIP badge if needed
     if (p.vip && !el.querySelector('.vip-badge')) {
@@ -5730,6 +6109,7 @@ function clickStall(i) {
       updateStallDOM(i);
     }
     game.activeStall = i;
+    game._clickTimestamps = []; // Reset anti-auto-clicker on stall switch
     // Always auto-select first incomplete task (reset when switching stalls)
     const firstTask = stall.tasks.findIndex(t => !t.done);
     if (firstTask >= 0) {
@@ -5761,6 +6141,15 @@ function showTaskPanel(stallIdx) {
       e.stopPropagation();
       const ti = parseInt(btn.dataset.idx);
       if (!stall.tasks[ti].done) {
+        // Anti-auto-clicker: track click rate
+        const now = Date.now();
+        game._clickTimestamps.push(now);
+        if (game._clickTimestamps.length > 5) game._clickTimestamps = game._clickTimestamps.slice(-5);
+        if (game._clickTimestamps.length >= 5) {
+          const span = game._clickTimestamps[4] - game._clickTimestamps[0];
+          if (span / 4 < 30) return; // avg interval < 30ms = inhuman, ignore
+        }
+
         btn.classList.remove('clicked');
         void btn.offsetWidth;
         btn.classList.add('clicked');
@@ -5778,6 +6167,7 @@ function showTaskPanel(stallIdx) {
         } else {
           game.activeTask = ti;
           game.taskProgress = 0;
+          game._clickTimestamps = []; // Reset on task switch
           playTaskSound(stall.tasks[ti].id);
           showTaskPanel(stallIdx);
         }
@@ -6145,9 +6535,31 @@ function purchaseItem(itemId) {
 }
 
 function showUpgradeScreen() {
-  // Upgrade shop is premium-only - free users skip directly to next shift
+  // Upgrade shop is premium-only - free users see a locked overlay with continue button
   if (!isPremium()) {
-    showShiftIntro();
+    renderSupplyShop();
+    showScreen('upgrade-screen');
+    let overlay = $('shop-locked-overlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'shop-locked-overlay';
+      overlay.style.cssText = 'position:absolute;inset:0;background:rgba(0,0,0,0.75);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200;gap:12px;border-radius:12px;';
+      overlay.innerHTML = `
+        <div style="font-size:2.5em;">🔒</div>
+        <div style="color:#FEF117;font-size:1.2em;font-weight:bold;">Supply Shop</div>
+        <div style="color:#c9a86c;font-size:0.85em;text-align:center;line-height:1.4;">Unlock with Premium ($2.99)<br>to buy items between shifts!</div>
+        <button id="shop-locked-continue" class="btn" style="margin-top:8px;padding:12px 32px;font-size:1em;">Next Shift →</button>
+      `;
+      $('upgrade-screen').appendChild(overlay);
+    }
+    overlay.style.display = 'flex';
+    const btn = $('shop-locked-continue');
+    const handler = () => {
+      btn.removeEventListener('click', handler);
+      overlay.style.display = 'none';
+      showShiftIntro();
+    };
+    btn.addEventListener('click', handler);
     return;
   }
   renderSupplyShop();
@@ -6180,6 +6592,7 @@ function endShift() {
   const inspectorEl = $('floor-area').querySelector('.inspector');
   if (inspectorEl) inspectorEl.remove();
   $('inspector-warning').style.display = 'none';
+  cleanupFight();
 
   const narrative = SHIFT_NARRATIVES[game.shift] || SHIFT_NARRATIVES[0];
   $('result-title').textContent = `${narrative.name} Complete!`;
@@ -6355,6 +6768,14 @@ function gameOver() {
   stopMusic();
   stopAutoSave();
   clearSavedState();
+
+  // Multiplayer: route to MP results instead of normal game over
+  if (game.mode === 'multiplayer' && mpState.active) {
+    haptic('error');
+    checkMPEnd();
+    return;
+  }
+
   const won = game.shift >= CONFIG.shifts.length - 1;
   haptic(won ? 'success' : 'error'); // Victory or defeat feedback
 
@@ -6368,6 +6789,7 @@ function gameOver() {
   const inspectorEl = $('floor-area').querySelector('.inspector');
   if (inspectorEl) inspectorEl.remove();
   $('inspector-warning').style.display = 'none';
+  cleanupFight();
 
   const finalScore = Math.floor(game.score);
   const isNewRecord = finalScore > highScore;
@@ -6445,15 +6867,8 @@ document.querySelectorAll('.restroom-btn').forEach(btn => {
   });
 });
 
-// Difficulty selector (now in MP modal only)
-document.querySelectorAll('.mp-difficulty-selector .difficulty-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.mp-difficulty-selector .difficulty-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    selectedDifficulty = btn.dataset.difficulty;
-    playClick();
-  });
-});
+// Difficulty is always "normal" for MP now
+// (removed difficulty selector from host settings)
 
 // How to Play (now accessible from settings too)
 $('settings-how-to-play')?.addEventListener('click', () => {
@@ -6664,7 +7079,34 @@ $('reset-modal')?.addEventListener('click', e => {
 $('start-btn').addEventListener('click', () => {
   initAudio();
   init();
+  // Show "What's New" once per season
+  const seenSeason = localStorage.getItem('beaverSeasonSeen');
+  if (seenSeason !== '2') {
+    $('whats-new-modal').classList.add('active');
+  } else {
+    showShiftIntro();
+  }
+});
+
+// What's New modal handlers
+$('whats-new-ok')?.addEventListener('click', () => {
+  playClick();
+  localStorage.setItem('beaverSeasonSeen', '2');
+  $('whats-new-modal').classList.remove('active');
   showShiftIntro();
+});
+$('close-whats-new')?.addEventListener('click', () => {
+  playClick();
+  localStorage.setItem('beaverSeasonSeen', '2');
+  $('whats-new-modal').classList.remove('active');
+  showShiftIntro();
+});
+$('whats-new-modal')?.addEventListener('click', e => {
+  if (e.target === $('whats-new-modal')) {
+    localStorage.setItem('beaverSeasonSeen', '2');
+    $('whats-new-modal').classList.remove('active');
+    showShiftIntro();
+  }
 });
 
 // Title screen Google Sign-In button
@@ -6770,10 +7212,29 @@ $('title-avatar-btn').addEventListener('click', () => {
 $('close-outfitter').addEventListener('click', () => {
   playClick();
   $('outfitter-modal').classList.remove('active');
+  returnToMPHostIfNeeded();
 });
 $('outfitter-modal').addEventListener('click', e => {
-  if (e.target === $('outfitter-modal')) $('outfitter-modal').classList.remove('active');
+  if (e.target === $('outfitter-modal')) {
+    $('outfitter-modal').classList.remove('active');
+    returnToMPHostIfNeeded();
+  }
 });
+
+function returnToMPHostIfNeeded() {
+  if (mpState._returnToMP) {
+    mpState._returnToMP = false;
+    // Restore host settings view if that's where we were
+    if (mpState._wasInHostSettings) {
+      $('mp-host-settings')?.classList.remove('hidden');
+      $('mp-main-buttons')?.classList.add('hidden');
+    }
+    // Update avatar
+    const mainAvatar = $('mp-avatar-main-img');
+    if (mainAvatar) mainAvatar.src = getComboSpriteSrc();
+    $('multiplayer-modal').classList.add('active');
+  }
+}
 
 function updateOutfitterPreview() {
   const img = $('outfitter-beaver-img');
@@ -7283,104 +7744,140 @@ function generateShareCanvas() {
   const w = 540;
   const h = 960;
 
-  // Background - wood grain texture effect
+  // Load player's equipped cosmetic avatar
+  const avatarImg = new Image();
+  avatarImg.src = getComboSpriteSrc();
+  avatarImg.onload = () => drawShareContent(ctx, w, h, avatarImg);
+  avatarImg.onerror = () => {
+    // Fallback to beaver logo
+    const fallback = new Image();
+    fallback.src = 'images/beaver-logo.png';
+    fallback.onload = () => drawShareContent(ctx, w, h, fallback);
+    fallback.onerror = () => drawShareContent(ctx, w, h, null);
+  };
+
+  // Draw immediately in case image is cached
+  if (avatarImg.complete && avatarImg.naturalWidth > 0) drawShareContent(ctx, w, h, avatarImg);
+}
+
+function drawShareContent(ctx, w, h, beaverImg) {
+  // Background - rich wood gradient
   const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
-  bgGrad.addColorStop(0, '#5a4030');
-  bgGrad.addColorStop(0.5, '#3d2814');
-  bgGrad.addColorStop(1, '#2d1f0f');
+  bgGrad.addColorStop(0, '#4a3020');
+  bgGrad.addColorStop(0.3, '#3d2814');
+  bgGrad.addColorStop(0.7, '#2d1f0f');
+  bgGrad.addColorStop(1, '#1a0e05');
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, w, h);
 
+  // Subtle radial glow behind beaver
+  const glowGrad = ctx.createRadialGradient(w / 2, 180, 20, w / 2, 180, 200);
+  glowGrad.addColorStop(0, 'rgba(245, 166, 35, 0.15)');
+  glowGrad.addColorStop(1, 'transparent');
+  ctx.fillStyle = glowGrad;
+  ctx.fillRect(0, 0, w, 400);
+
   // Decorative border
   ctx.strokeStyle = '#f5a623';
-  ctx.lineWidth = 8;
-  ctx.strokeRect(20, 20, w - 40, h - 40);
-
-  // Inner decorative line
-  ctx.strokeStyle = 'rgba(245, 166, 35, 0.3)';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(35, 35, w - 70, h - 70);
-
-  // Title - Beaver emoji + game name
-  ctx.textAlign = 'center';
-  ctx.fillStyle = '#f5a623';
-  ctx.font = 'bold 48px system-ui, sans-serif';
-  ctx.fillText("🦫 Beaver's", w / 2, 120);
-  ctx.fillText('Bathroom Blitz', w / 2, 175);
-
-  // Tagline
-  ctx.fillStyle = '#fdd835';
-  ctx.font = 'italic 22px system-ui, sans-serif';
-  ctx.fillText('Cleanest Restrooms in Texas!', w / 2, 215);
-
-  // Result badge
-  const badgeY = 300;
-  const badgeRadius = 70;
-
-  // Badge glow
-  ctx.shadowColor = shareData.isWin ? 'rgba(255, 215, 0, 0.6)' : 'rgba(245, 166, 35, 0.5)';
-  ctx.shadowBlur = 30;
-
-  // Badge background
-  const badgeGrad = ctx.createRadialGradient(w / 2, badgeY, 0, w / 2, badgeY, badgeRadius);
-  if (shareData.isWin) {
-    badgeGrad.addColorStop(0, '#ffd700');
-    badgeGrad.addColorStop(1, '#b8860b');
-  } else {
-    badgeGrad.addColorStop(0, '#e53935');
-    badgeGrad.addColorStop(1, '#b71c1c');
-  }
-  ctx.fillStyle = badgeGrad;
-  ctx.beginPath();
-  ctx.arc(w / 2, badgeY, badgeRadius, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.shadowBlur = 0;
-
-  // Badge border
-  ctx.strokeStyle = shareData.isWin ? '#ffd700' : '#fff';
-  ctx.lineWidth = 4;
+  ctx.lineWidth = 6;
+  roundRect(ctx, 16, 16, w - 32, h - 32, 20);
   ctx.stroke();
 
-  // Badge icon
-  ctx.font = '60px system-ui, sans-serif';
-  ctx.fillStyle = '#fff';
-  ctx.fillText(shareData.isWin ? '🏆' : '🚽', w / 2, badgeY + 20);
+  // Inner decorative line
+  ctx.strokeStyle = 'rgba(245, 166, 35, 0.2)';
+  ctx.lineWidth = 2;
+  roundRect(ctx, 30, 30, w - 60, h - 60, 16);
+  ctx.stroke();
 
-  // Score display
-  ctx.shadowColor = 'rgba(255, 215, 0, 0.5)';
-  ctx.shadowBlur = 20;
-  ctx.fillStyle = '#ffd700';
-  ctx.font = 'bold 80px system-ui, sans-serif';
-  ctx.fillText(shareData.score.toLocaleString(), w / 2, 450);
+  // Beaver avatar
+  if (beaverImg) {
+    const logoSize = 160;
+    const logoX = (w - logoSize) / 2;
+    const logoY = 60;
+    ctx.save();
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+    ctx.shadowBlur = 20;
+    ctx.shadowOffsetY = 6;
+    ctx.drawImage(beaverImg, logoX, logoY, logoSize, logoSize);
+    ctx.restore();
+  }
+
+  // Title
+  ctx.textAlign = 'center';
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+  ctx.shadowBlur = 8;
+  ctx.fillStyle = '#f5a623';
+  ctx.font = 'bold 36px system-ui, sans-serif';
+  ctx.fillText("Beaver's Bathroom Blitz", w / 2, 260);
   ctx.shadowBlur = 0;
 
+  // Result label
+  ctx.fillStyle = shareData.isWin ? '#ffd700' : '#e8c47a';
+  ctx.font = 'bold 28px system-ui, sans-serif';
+  ctx.fillText(shareData.isWin ? 'SHIFT COMPLETE!' : 'SHIFT REPORT', w / 2, 310);
+
+  // Score display with glow
+  ctx.save();
+  ctx.shadowColor = 'rgba(255, 215, 0, 0.5)';
+  ctx.shadowBlur = 25;
+  ctx.fillStyle = '#ffd700';
+  ctx.font = 'bold 90px system-ui, sans-serif';
+  ctx.fillText(shareData.score.toLocaleString(), w / 2, 410);
+  ctx.restore();
+
   ctx.fillStyle = '#c9a86c';
-  ctx.font = '24px system-ui, sans-serif';
-  ctx.fillText('POINTS', w / 2, 485);
+  ctx.font = 'bold 22px system-ui, sans-serif';
+  ctx.letterSpacing = '3px';
+  ctx.fillText('POINTS', w / 2, 445);
 
-  // Grade badge
+  // Grade circle
+  const gradeY = 530;
+  const gradeRadius = 55;
+
   const gradeColors = {
-    S: '#ffd700',
-    A: '#4caf50',
-    B: '#2196f3',
-    C: '#ff9800',
-    F: '#f44336'
+    S: { bg: '#ffd700', border: '#ffeb3b', glow: 'rgba(255, 215, 0, 0.6)' },
+    A: { bg: '#4caf50', border: '#66bb6a', glow: 'rgba(76, 175, 80, 0.5)' },
+    B: { bg: '#2196f3', border: '#42a5f5', glow: 'rgba(33, 150, 243, 0.5)' },
+    C: { bg: '#ff9800', border: '#ffa726', glow: 'rgba(255, 152, 0, 0.5)' },
+    F: { bg: '#f44336', border: '#ef5350', glow: 'rgba(244, 67, 54, 0.5)' }
   };
+  const gc = gradeColors[shareData.grade] || gradeColors.C;
 
-  ctx.fillStyle = gradeColors[shareData.grade] || '#ff9800';
-  ctx.font = 'bold 72px system-ui, sans-serif';
-  ctx.fillText(shareData.grade, w / 2, 570);
+  // Grade glow
+  ctx.save();
+  ctx.shadowColor = gc.glow;
+  ctx.shadowBlur = 30;
 
+  // Grade circle fill
+  const gradeGrad = ctx.createRadialGradient(w / 2, gradeY, 0, w / 2, gradeY, gradeRadius);
+  gradeGrad.addColorStop(0, gc.border);
+  gradeGrad.addColorStop(1, gc.bg);
+  ctx.fillStyle = gradeGrad;
+  ctx.beginPath();
+  ctx.arc(w / 2, gradeY, gradeRadius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // Grade border
+  ctx.strokeStyle = gc.border;
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Grade letter
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 64px system-ui, sans-serif';
+  ctx.fillText(shareData.grade, w / 2, gradeY + 22);
+
+  // Grade label
   ctx.fillStyle = '#a08060';
-  ctx.font = '20px system-ui, sans-serif';
-  ctx.fillText('GRADE', w / 2, 600);
+  ctx.font = 'bold 18px system-ui, sans-serif';
+  ctx.fillText('GRADE', w / 2, gradeY + gradeRadius + 30);
 
   // Stats section
-  const statsY = 660;
-  const statSpacing = 85;
+  const statsY = 650;
 
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-  roundRect(ctx, 60, statsY - 20, w - 120, 160, 15);
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+  roundRect(ctx, 50, statsY - 25, w - 100, 150, 16);
   ctx.fill();
 
   // Stat boxes
@@ -7391,29 +7888,33 @@ function generateShareCanvas() {
   ];
 
   stats.forEach((stat, i) => {
-    const x = 120 + i * (w - 240) / 2.5;
+    const x = 130 + i * 140;
     ctx.textAlign = 'center';
-    ctx.font = '32px system-ui, sans-serif';
+    ctx.font = '30px system-ui, sans-serif';
     ctx.fillStyle = '#fff';
-    ctx.fillText(stat.icon, x, statsY + 30);
-    ctx.font = 'bold 36px system-ui, sans-serif';
+    ctx.fillText(stat.icon, x, statsY + 20);
+    ctx.font = 'bold 38px system-ui, sans-serif';
     ctx.fillStyle = '#f5a623';
-    ctx.fillText(String(stat.value), x, statsY + 75);
-    ctx.font = '16px system-ui, sans-serif';
+    ctx.fillText(String(stat.value), x, statsY + 65);
+    ctx.font = '15px system-ui, sans-serif';
     ctx.fillStyle = '#a08060';
-    ctx.fillText(stat.label, x, statsY + 100);
+    ctx.fillText(stat.label, x, statsY + 90);
   });
 
   // Shift info
   ctx.textAlign = 'center';
   ctx.fillStyle = '#c9a86c';
-  ctx.font = '24px system-ui, sans-serif';
-  ctx.fillText(`Day ${shareData.shift} of 6`, w / 2, 870);
+  ctx.font = '22px system-ui, sans-serif';
+  ctx.fillText(`Shift ${shareData.shift} of 6`, w / 2, 860);
 
-  // CTA
+  // CTA with slight highlight
+  ctx.fillStyle = 'rgba(245, 166, 35, 0.15)';
+  roundRect(ctx, 80, 880, w - 160, 45, 10);
+  ctx.fill();
+
   ctx.fillStyle = '#f5a623';
   ctx.font = 'bold 20px system-ui, sans-serif';
-  ctx.fillText('Play at beaverbathroomblitz.com', w / 2, 915);
+  ctx.fillText('beaversbathroomblitz.com', w / 2, 910);
 }
 
 // Helper function for rounded rectangles
@@ -7909,7 +8410,34 @@ let mpState = {
   lobbyPollTimer: null,
   scoreSyncTimer: null,
   gamesPlayed: parseInt(localStorage.getItem('beaverMPGamesPlayed') || '0'),
+  mpCreatedAt: 0, // Room creation timestamp (used as RNG seed)
+  // Quick Match
+  isSearching: false,
+  searchStartTime: null,
+  isRandomMatch: false,
+  queuePollTimer: null,
+  searchTimerInterval: null,
+  myReady: false,
+  challengeSent: false,
+  challengeShown: null, // deviceId of challenger whose popup is showing
 };
+
+const MP_CHAT_MESSAGES = {
+  bring_it: "Bring it! 💪",
+  too_slow: "Too slow! 🐢",
+  clean_machine: "I'm a clean machine! 🧹",
+  eww: "Ewww! 🤢",
+  not_bad: "Not bad... 👀",
+  gg: "GG! 🤝",
+  panic: "HELP! 😱",
+  flex: "Easy money 💰",
+};
+
+const MP_LOADOUT_ITEMS = [
+  { id: 'speed', icon: '⚡', name: 'Speed Boost', desc: '2x cleaning speed for 12s' },
+  { id: 'slow', icon: '🐢', name: 'Slow Down', desc: '2x slower arrivals for 12s' },
+  { id: 'auto', icon: '✨', name: 'Auto Clean', desc: 'Instantly clean one dirty stall' },
+];
 
 function getMPGamesPlayed() {
   return parseInt(localStorage.getItem('beaverMPGamesPlayed') || '0');
@@ -7939,6 +8467,14 @@ $('multiplayer-btn')?.addEventListener('click', () => {
   const nameInput = $('mp-name-input');
   if (nameInput && playerName) nameInput.value = playerName;
 
+  // Always reset to main buttons view
+  $('mp-host-settings')?.classList.add('hidden');
+  $('mp-main-buttons')?.classList.remove('hidden');
+
+  // Show avatar preview
+  const mainAvatar = $('mp-avatar-main-img');
+  if (mainAvatar) mainAvatar.src = getComboSpriteSrc();
+
   $('multiplayer-modal').classList.add('active');
 });
 
@@ -7949,8 +8485,10 @@ $('multiplayer-modal')?.addEventListener('click', e => {
   if (e.target === $('multiplayer-modal')) $('multiplayer-modal').classList.remove('active');
 });
 
-// Host game
-$('mp-host-btn')?.addEventListener('click', async () => {
+// Host game — show settings first
+let mpHostShift = 0;
+
+$('mp-host-btn')?.addEventListener('click', () => {
   playClick();
   const name = $('mp-name-input')?.value?.trim();
   if (!name) {
@@ -7966,11 +8504,60 @@ $('mp-host-btn')?.addEventListener('click', async () => {
     createOrUpdateUser(name);
   }
 
+  // Show host settings, hide main buttons
+  $('mp-main-buttons').classList.add('hidden');
+  $('mp-host-settings').classList.remove('hidden');
+
+  // Sync gender buttons to current selection
+  document.querySelectorAll('.mp-gender-btn').forEach(b => {
+    b.classList.toggle('selected', b.dataset.mpGender === selectedGender);
+  });
+});
+
+// Change outfit from MP modal
+$('mp-change-avatar-main')?.addEventListener('click', () => {
+  playClick();
+  mpState._wasInHostSettings = !$('mp-host-settings')?.classList.contains('hidden');
+  $('multiplayer-modal').classList.remove('active');
+  showOutfitter();
+  mpState._returnToMP = true;
+});
+
+$('mp-host-back')?.addEventListener('click', () => {
+  playClick();
+  $('mp-host-settings').classList.add('hidden');
+  $('mp-main-buttons').classList.remove('hidden');
+});
+
+// Gender selector in host settings
+document.querySelectorAll('.mp-gender-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    playClick();
+    document.querySelectorAll('.mp-gender-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedGender = btn.dataset.mpGender;
+  });
+});
+
+// Shift selector
+document.querySelectorAll('.mp-shift-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    playClick();
+    document.querySelectorAll('.mp-shift-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    mpHostShift = parseInt(btn.dataset.shift);
+  });
+});
+
+// Create room (from host settings)
+$('mp-create-room-btn')?.addEventListener('click', async () => {
+  playClick();
+
   try {
     const result = await convex.mutation(api.multiplayer.createRoom, {
       hostDeviceId: deviceId,
-      hostName: name,
-      shift: 0,
+      hostName: playerName,
+      shift: mpHostShift,
       gender: selectedGender,
       difficulty: selectedDifficulty,
       hostCosmetics: {
@@ -7985,11 +8572,389 @@ $('mp-host-btn')?.addEventListener('click', async () => {
     mpState.roomCode = result.code;
     mpState.opponentName = '';
 
+    // Reset host settings view for next time
+    $('mp-host-settings').classList.add('hidden');
+    $('mp-main-buttons').classList.remove('hidden');
+
     $('multiplayer-modal').classList.remove('active');
-    showMPLobby(result.code, name, true);
+    showMPLobby(result.code, playerName, true);
   } catch (e) {
     console.error('Failed to create room:', e);
   }
+});
+
+// Quick Match
+$('mp-quickmatch-btn')?.addEventListener('click', async () => {
+  playClick();
+  const name = $('mp-name-input')?.value?.trim();
+  if (!name) {
+    $('mp-name-input').classList.add('shake');
+    setTimeout(() => $('mp-name-input').classList.remove('shake'), 400);
+    return;
+  }
+
+  if (name !== playerName) {
+    playerName = name;
+    localStorage.setItem('beaverPlayerName', name);
+    createOrUpdateUser(name);
+  }
+
+  $('multiplayer-modal').classList.remove('active');
+
+  // Show waiting room
+  mpState.isSearching = true;
+  mpState.searchStartTime = Date.now();
+  mpState.autoMatch = false;
+  const autoToggle = $('mp-auto-match-toggle');
+  if (autoToggle) autoToggle.checked = false;
+  $('waiting-status').textContent = 'Choose an opponent or enable auto-match';
+  $('waiting-timer').textContent = '0:00';
+  showScreen('mp-waiting');
+
+  // Start search timer display
+  mpState.searchTimerInterval = setInterval(() => {
+    if (!mpState.isSearching) return;
+    const elapsed = Math.floor((Date.now() - mpState.searchStartTime) / 1000);
+    const mins = Math.floor(elapsed / 60);
+    const secs = elapsed % 60;
+    $('waiting-timer').textContent = mins + ':' + (secs < 10 ? '0' : '') + secs;
+
+    // Auto-timeout after 5 minutes
+    if (elapsed >= 300) {
+      cancelQuickMatch();
+      $('waiting-status').textContent = 'No opponents found. Try again later!';
+      setTimeout(() => showScreen('title-screen'), 2000);
+    }
+  }, 1000);
+
+  try {
+    const result = await convex.mutation(api.matchmaking.joinQueue, {
+      deviceId,
+      playerName: name,
+      cosmetics: {
+        hat: cosmeticState.equipped.hat || undefined,
+        shirt: cosmeticState.equipped.shirt || undefined,
+        special: cosmeticState.equipped.special || null,
+      },
+      autoMatch: false,
+    });
+
+    if (result.status === 'matched') {
+      foundQuickMatch(result.roomCode);
+    } else {
+      startQueuePolling();
+    }
+  } catch (e) {
+    console.error('Failed to join queue:', e);
+    cancelQuickMatch();
+    showScreen('title-screen');
+  }
+});
+
+// Auto-match toggle
+$('mp-auto-match-toggle')?.addEventListener('change', async (e) => {
+  mpState.autoMatch = e.target.checked;
+  if (mpState.autoMatch && mpState.isSearching) {
+    $('waiting-status').textContent = 'Auto-matching with next available player...';
+    // Re-join queue with autoMatch enabled
+    try {
+      const result = await convex.mutation(api.matchmaking.joinQueue, {
+        deviceId,
+        playerName,
+        cosmetics: {
+          hat: cosmeticState.equipped.hat || undefined,
+          shirt: cosmeticState.equipped.shirt || undefined,
+          special: cosmeticState.equipped.special || null,
+        },
+        autoMatch: true,
+      });
+      if (result.status === 'matched') {
+        foundQuickMatch(result.roomCode);
+      }
+    } catch (e) {
+      console.log('Auto-match re-join failed:', e);
+    }
+  } else {
+    $('waiting-status').textContent = 'Choose an opponent or enable auto-match';
+  }
+});
+
+function startQueuePolling() {
+  stopQueuePolling();
+  mpState.queuePollTimer = setInterval(pollQueue, 1500);
+}
+
+function stopQueuePolling() {
+  if (mpState.queuePollTimer) {
+    clearInterval(mpState.queuePollTimer);
+    mpState.queuePollTimer = null;
+  }
+}
+
+async function pollQueue() {
+  if (!mpState.isSearching) return;
+  try {
+    const result = await convex.query(api.matchmaking.pollQueue, { deviceId });
+    if (result.status === 'matched' && result.roomCode) {
+      foundQuickMatch(result.roomCode);
+      return;
+    }
+
+    // Check for incoming challenge
+    if (result.challengeFrom && !mpState.challengeShown) {
+      mpState.challengeShown = result.challengeFrom;
+      showChallengePopup(result.challengeFromName, result.challengeFromCosmetics);
+    } else if (!result.challengeFrom && mpState.challengeShown) {
+      // Challenge was withdrawn or expired
+      mpState.challengeShown = null;
+      hideChallengePopup();
+    }
+
+    // If we sent a challenge and got declined (no longer matched, no challenge on us)
+    if (mpState.challengeSent && result.status === 'waiting' && !result.challengeFrom) {
+      // Check if our challenge was declined by re-enabling buttons
+      // The poll will show matched if accepted, so if still waiting, it was declined or timed out
+    }
+
+    // Update waiting players list
+    const players = await convex.query(api.matchmaking.getWaitingPlayers, {});
+    updateQueuePlayersList(players);
+  } catch (e) {
+    console.log('Queue poll failed:', e);
+  }
+}
+
+function updateQueuePlayersList(players) {
+  const container = $('mp-queue-players');
+  if (!container) return;
+
+  // Filter out self
+  const others = players.filter(p => p.deviceId !== deviceId);
+
+  if (others.length === 0) {
+    container.innerHTML = '<div class="mp-queue-empty">No other players online yet...</div>';
+    return;
+  }
+
+  container.innerHTML = '';
+  others.forEach(p => {
+    const row = document.createElement('div');
+    row.className = 'mp-queue-player-row';
+
+    // Build avatar src from cosmetics
+    let avatarSrc = BASE + 'images/cosmetics/combo-hat-cap-shirt-polo.png';
+    if (p.cosmetics) {
+      if (p.cosmetics.special) {
+        avatarSrc = BASE + 'images/cosmetics/' + p.cosmetics.special + '.png';
+      } else {
+        const hat = p.cosmetics.hat || 'hat-cap';
+        const shirt = p.cosmetics.shirt || 'shirt-polo';
+        avatarSrc = BASE + 'images/cosmetics/combo-' + hat + '-' + shirt + '.png';
+      }
+    }
+
+    const scoreText = p.bestScore > 0 ? p.bestScore.toLocaleString() + ' pts' : 'New player';
+
+    row.innerHTML = `
+      <img class="mp-queue-avatar" src="${avatarSrc}" alt="" style="width:36px;height:36px;image-rendering:pixelated;">
+      <div class="mp-queue-player-info">
+        <span class="mp-queue-player-name">${p.playerName}</span>
+        <span class="mp-queue-player-score">⭐ ${scoreText}</span>
+      </div>
+      <button class="btn mp-challenge-btn">Challenge</button>
+    `;
+
+    // Challenge button click
+    row.querySelector('.mp-challenge-btn').addEventListener('click', () => {
+      playClick();
+      challengePlayer(p.deviceId);
+    });
+
+    container.appendChild(row);
+  });
+}
+
+async function challengePlayer(targetDeviceId) {
+  if (!mpState.isSearching) return;
+  mpState.challengeSent = true;
+  $('waiting-status').textContent = 'Challenge sent! Waiting for response...';
+
+  // Disable all challenge buttons while waiting
+  document.querySelectorAll('.mp-challenge-btn').forEach(btn => {
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+  });
+
+  try {
+    const result = await convex.mutation(api.matchmaking.challengePlayer, {
+      deviceId,
+      playerName,
+      cosmetics: {
+        hat: cosmeticState.equipped.hat || undefined,
+        shirt: cosmeticState.equipped.shirt || undefined,
+        special: cosmeticState.equipped.special || null,
+      },
+      targetDeviceId,
+    });
+
+    if (result.error) {
+      mpState.challengeSent = false;
+      $('waiting-status').textContent = result.error + ' Pick another player.';
+      document.querySelectorAll('.mp-challenge-btn').forEach(btn => {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+      });
+      return;
+    }
+
+    // Challenge is now pending — pollQueue will detect match or timeout
+  } catch (e) {
+    console.error('Challenge failed:', e);
+    mpState.challengeSent = false;
+    $('waiting-status').textContent = 'Challenge failed. Try another player.';
+    document.querySelectorAll('.mp-challenge-btn').forEach(btn => {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    });
+  }
+}
+
+function showChallengePopup(challengerName, challengerCosmetics) {
+  const popup = $('mp-challenge-popup');
+  if (!popup) return;
+
+  // Set challenger info
+  $('mp-challenge-name').textContent = challengerName || 'Someone';
+
+  // Build avatar
+  let avatarSrc = BASE + 'images/cosmetics/combo-hat-cap-shirt-polo.png';
+  if (challengerCosmetics) {
+    if (challengerCosmetics.special) {
+      avatarSrc = BASE + 'images/cosmetics/' + challengerCosmetics.special + '.png';
+    } else {
+      const hat = challengerCosmetics.hat || 'hat-cap';
+      const shirt = challengerCosmetics.shirt || 'shirt-polo';
+      avatarSrc = BASE + 'images/cosmetics/combo-' + hat + '-' + shirt + '.png';
+    }
+  }
+  $('mp-challenge-avatar').src = avatarSrc;
+
+  popup.classList.remove('hidden');
+  popup.classList.add('mp-challenge-popup-show');
+}
+
+function hideChallengePopup() {
+  const popup = $('mp-challenge-popup');
+  if (!popup) return;
+  popup.classList.add('hidden');
+  popup.classList.remove('mp-challenge-popup-show');
+}
+
+async function acceptIncomingChallenge() {
+  hideChallengePopup();
+  $('waiting-status').textContent = 'Accepting challenge...';
+
+  try {
+    const result = await convex.mutation(api.matchmaking.acceptChallenge, { deviceId });
+    if (result.error) {
+      $('waiting-status').textContent = result.error;
+      return;
+    }
+    if (result.status === 'matched' && result.roomCode) {
+      foundQuickMatch(result.roomCode);
+    }
+  } catch (e) {
+    console.error('Accept challenge failed:', e);
+    $('waiting-status').textContent = 'Failed to accept. Try again.';
+  }
+}
+
+async function declineIncomingChallenge() {
+  hideChallengePopup();
+  try {
+    await convex.mutation(api.matchmaking.declineChallenge, { deviceId });
+  } catch (e) {
+    console.error('Decline challenge failed:', e);
+  }
+}
+
+function formatQueueTime(queuedAt) {
+  const elapsed = Math.floor((Date.now() - queuedAt) / 1000);
+  if (elapsed < 60) return elapsed + 's';
+  return Math.floor(elapsed / 60) + 'm';
+}
+
+async function foundQuickMatch(roomCode) {
+  stopQueuePolling();
+  if (mpState.searchTimerInterval) {
+    clearInterval(mpState.searchTimerInterval);
+    mpState.searchTimerInterval = null;
+  }
+  mpState.isSearching = false;
+  mpState.isRandomMatch = true;
+
+  $('waiting-status').textContent = 'Opponent found! 🎉';
+
+  // Get room details
+  try {
+    const room = await convex.query(api.multiplayer.getRoom, { code: roomCode });
+    if (!room) {
+      showScreen('title-screen');
+      return;
+    }
+
+    const isHost = room.hostDeviceId === deviceId;
+    mpState.active = true;
+    mpState.isHost = isHost;
+    mpState.roomCode = roomCode;
+    mpState.opponentName = isHost ? (room.guestName || '') : room.hostName;
+    mpState.opponentCosmetics = isHost ? (room.guestCosmetics || null) : (room.hostCosmetics || null);
+
+    selectedGender = room.gender;
+    selectedDifficulty = room.difficulty || 'normal';
+    mpState.mpShift = room.shift || 0;
+    mpState.mpCreatedAt = room.createdAt || 0;
+    if (isHost) mpHostShift = room.shift || 0;
+
+    setTimeout(() => {
+      showMPLobby(roomCode, playerName, isHost);
+    }, 800);
+  } catch (e) {
+    console.error('Failed to get room after match:', e);
+    showScreen('title-screen');
+  }
+}
+
+function cancelQuickMatch() {
+  stopQueuePolling();
+  if (mpState.searchTimerInterval) {
+    clearInterval(mpState.searchTimerInterval);
+    mpState.searchTimerInterval = null;
+  }
+  mpState.isSearching = false;
+  mpState.isRandomMatch = false;
+  mpState.challengeSent = false;
+  mpState.challengeShown = null;
+  hideChallengePopup();
+
+  convex.mutation(api.matchmaking.leaveQueue, { deviceId }).catch(() => {});
+}
+
+$('waiting-cancel')?.addEventListener('click', () => {
+  playClick();
+  cancelQuickMatch();
+  showScreen('title-screen');
+});
+
+// Challenge popup buttons
+$('mp-challenge-accept')?.addEventListener('click', () => {
+  playClick();
+  acceptIncomingChallenge();
+});
+
+$('mp-challenge-decline')?.addEventListener('click', () => {
+  playClick();
+  declineIncomingChallenge();
 });
 
 // Join game
@@ -8067,6 +9032,8 @@ $('mp-join-submit')?.addEventListener('click', async () => {
       b.classList.toggle('selected', b.dataset.gender === selectedGender);
     });
     selectedDifficulty = result.difficulty || 'normal';
+    mpState.mpShift = result.shift || 0;
+    mpState.mpCreatedAt = result.createdAt || 0;
 
     $('mp-join-modal').classList.remove('active');
     showMPLobby(code, playerName, false);
@@ -8086,7 +9053,8 @@ $('mp-code-input')?.addEventListener('keydown', e => {
 function showMPLobby(code, myName, isHost) {
   $('mp-lobby-code').textContent = code;
   $('mp-host-name').textContent = isHost ? myName : mpState.opponentName;
-  $('mp-lobby-shift').textContent = 'Shift 1';
+  const shiftNum = (mpState.isHost ? mpHostShift : (mpState.mpShift || 0)) + 1;
+  $('mp-lobby-shift').textContent = 'Shift ' + shiftNum;
   $('mp-lobby-gender').textContent = selectedGender === 'male' ? "Men's" : "Women's";
   const diffLabel = selectedDifficulty.charAt(0).toUpperCase() + selectedDifficulty.slice(1);
   if ($('mp-lobby-difficulty')) $('mp-lobby-difficulty').textContent = diffLabel;
@@ -8120,8 +9088,121 @@ function showMPLobby(code, myName, isHost) {
     if (gel) gel.src = getComboSpriteSrc();
   }
 
+  // Reset state
+  mpState.myReady = false;
+
+  // Hide code section for random matches
+  const codeSection = document.querySelector('.mp-lobby-code-section');
+  if (codeSection) codeSection.style.display = mpState.isRandomMatch ? 'none' : '';
+
   showScreen('mp-lobby');
   startLobbyPolling();
+}
+
+// Loadout UI
+function initLoadoutUI() {
+  // Reset slots
+  for (let i = 0; i < 3; i++) {
+    const slot = $('loadout-slot-' + i);
+    if (slot) {
+      slot.textContent = 'Empty';
+      slot.className = 'mp-loadout-slot';
+    }
+  }
+
+  // Build item picker
+  const container = $('loadout-items');
+  if (!container) return;
+  container.innerHTML = '';
+
+  MP_LOADOUT_ITEMS.forEach(item => {
+    const btn = document.createElement('button');
+    btn.className = 'mp-loadout-item-btn';
+    btn.innerHTML = `<span class="mp-loadout-item-icon">${item.icon}</span><span class="mp-loadout-item-name">${item.name}</span>`;
+    btn.title = item.desc;
+    btn.addEventListener('click', () => {
+      playClick();
+      addToLoadout(item.id, item.icon, item.name);
+    });
+    container.appendChild(btn);
+  });
+
+  // Hide opponent loadout
+  const oppSection = $('mp-opponent-loadout');
+  if (oppSection) oppSection.classList.add('hidden');
+}
+
+function addToLoadout(itemId, icon, name) {
+  // Find first empty slot
+  const emptyIdx = mpState.loadout.indexOf(null);
+  if (emptyIdx === -1) return; // All slots full
+
+  mpState.loadout[emptyIdx] = itemId;
+  const slot = $('loadout-slot-' + emptyIdx);
+  if (slot) {
+    slot.textContent = icon + ' ' + name;
+    slot.className = 'mp-loadout-slot filled';
+  }
+
+  syncLoadout();
+}
+
+// Click slot to remove item
+for (let i = 0; i < 3; i++) {
+  $('loadout-slot-' + i)?.addEventListener('click', () => {
+    if (mpState.loadout[i] === null) return;
+    playClick();
+    mpState.loadout[i] = null;
+    const slot = $('loadout-slot-' + i);
+    if (slot) {
+      slot.textContent = 'Empty';
+      slot.className = 'mp-loadout-slot';
+    }
+    syncLoadout();
+  });
+}
+
+async function syncLoadout() {
+  if (!mpState.roomCode) return;
+  const loadout = mpState.loadout.filter(x => x !== null);
+  try {
+    await convex.mutation(api.matchmaking.setLoadout, {
+      code: mpState.roomCode,
+      deviceId,
+      loadout,
+    });
+  } catch (e) {
+    console.log('Loadout sync failed:', e);
+  }
+}
+
+// Ready system
+$('mp-ready-btn')?.addEventListener('click', async () => {
+  playClick();
+  mpState.myReady = !mpState.myReady;
+  updateReadyUI();
+
+  try {
+    await convex.mutation(api.matchmaking.setReady, {
+      code: mpState.roomCode,
+      deviceId,
+      ready: mpState.myReady,
+    });
+  } catch (e) {
+    console.log('Ready sync failed:', e);
+  }
+});
+
+function updateReadyUI() {
+  const btn = $('mp-ready-btn');
+  if (!btn) return;
+  if (mpState.myReady) {
+    btn.textContent = '✅ Ready!';
+    btn.classList.add('mp-ready-active');
+  } else {
+    btn.textContent = 'Ready!';
+    btn.classList.remove('mp-ready-active');
+  }
 }
 
 // Copy room code
@@ -8155,6 +9236,7 @@ $('mp-leave-btn')?.addEventListener('click', async () => {
   mpState.active = false;
   mpState.roomCode = null;
   mpState.opponentCosmetics = null;
+  mpState.isRandomMatch = false;
   showScreen('title-screen');
 });
 
@@ -8218,19 +9300,19 @@ async function pollLobby() {
       if (room.guestName) {
         $('mp-guest-name').textContent = room.guestName;
         $('mp-guest-slot').classList.add('mp-player-ready');
-        $('mp-guest-status').textContent = 'Ready';
-        $('mp-guest-status').classList.add('mp-ready');
-        $('mp-start-btn').disabled = false;
-        $('mp-start-btn').textContent = 'Start Battle!';
+        $('mp-guest-status').textContent = 'Joined';
         mpState.opponentName = room.guestName;
         mpState.opponentCosmetics = room.guestCosmetics || null;
         const gel = $('mp-lobby-guest-beaver');
         if (gel) { gel.style.display = ''; gel.src = getOpponentSpriteSrc(); }
+
+        // Host can start when guest has joined
+        $('mp-start-btn').disabled = false;
+        $('mp-start-btn').textContent = 'Start Battle!';
       } else {
         $('mp-guest-name').textContent = 'Waiting...';
         $('mp-guest-slot').classList.remove('mp-player-ready');
         $('mp-guest-status').textContent = '--';
-        $('mp-guest-status').classList.remove('mp-ready');
         $('mp-start-btn').disabled = true;
         $('mp-start-btn').textContent = 'Waiting for opponent...';
       }
@@ -8252,7 +9334,16 @@ function startMPGame() {
   init();
   game.mode = 'multiplayer';
   game.isMultiplayer = true;
-  game.shift = 0;
+  game.shift = mpState.isHost ? mpHostShift : (mpState.mpShift || 0);
+
+  // Seed RNG from room code so both players get identical random sequences
+  const roomSeed = parseInt(mpState.roomCode || '1234') + (mpState.mpCreatedAt || 0);
+  seedRng(roomSeed);
+
+  // No powerups in 1v1 — pure skill
+  game.powerups = {speed: 0, slow: 0, auto: 0, mascot: 0};
+  const puBar = $('powerups');
+  if (puBar) puBar.style.display = 'none';
 
   // Show opponent HUD
   $('mp-opponent-hud')?.classList.remove('hidden');
@@ -8266,10 +9357,106 @@ function startMPGame() {
   startScoreSync();
 }
 
+// Apply loadout items as extra power-ups at game start
+function applyLoadout() {
+  const loadout = mpState.loadout.filter(x => x !== null);
+  if (loadout.length === 0) return;
+  for (const itemId of loadout) {
+    if (game.powerups && game.powerups[itemId] !== undefined) {
+      game.powerups[itemId]++;
+    }
+  }
+}
+
+// Chat system (in lobby)
+function initChatUI() {
+  const btnContainer = $('mp-chat-buttons');
+  if (!btnContainer) return;
+
+  mpState.chatLastFetch = Date.now();
+  mpState.chatCooldown = 0;
+
+  // Build preset message buttons
+  btnContainer.innerHTML = '';
+  Object.entries(MP_CHAT_MESSAGES).forEach(([id, text]) => {
+    const btn = document.createElement('button');
+    btn.className = 'mp-chat-msg-btn';
+    btn.textContent = text;
+    btn.addEventListener('click', () => sendChatMessage(id));
+    btnContainer.appendChild(btn);
+  });
+
+  // Clear messages area
+  const msgs = $('mp-chat-messages');
+  if (msgs) msgs.innerHTML = '';
+}
+
+async function sendChatMessage(messageId) {
+  if (!mpState.roomCode || !mpState.active) return;
+  if (Date.now() < mpState.chatCooldown) return; // Rate limit
+
+  mpState.chatCooldown = Date.now() + 2000;
+
+  // Show locally immediately
+  showChatBubble(MP_CHAT_MESSAGES[messageId], true);
+
+  try {
+    await convex.mutation(api.matchmaking.sendChat, {
+      roomCode: mpState.roomCode,
+      senderDeviceId: deviceId,
+      messageId,
+    });
+  } catch (e) {
+    console.log('Chat send failed:', e);
+  }
+}
+
+function showChatBubble(text, isSelf) {
+  const container = $('mp-chat-messages');
+  if (!container) return;
+
+  const bubble = document.createElement('div');
+  bubble.className = 'mp-chat-bubble ' + (isSelf ? 'mp-chat-self' : 'mp-chat-opp');
+  bubble.textContent = text;
+  container.appendChild(bubble);
+
+  // Auto-scroll
+  container.scrollTop = container.scrollHeight;
+
+  // Fade out after 4s
+  setTimeout(() => {
+    bubble.classList.add('mp-chat-fade');
+    setTimeout(() => bubble.remove(), 500);
+  }, 4000);
+}
+
+async function fetchChatMessages() {
+  if (!mpState.roomCode || !mpState.active) return;
+  try {
+    const messages = await convex.query(api.matchmaking.getChat, {
+      roomCode: mpState.roomCode,
+      since: mpState.chatLastFetch,
+    });
+
+    for (const msg of messages) {
+      if (msg.senderDeviceId !== deviceId && msg.sentAt > mpState.chatLastFetch) {
+        const text = MP_CHAT_MESSAGES[msg.messageId] || msg.messageId;
+        showChatBubble(text, false);
+      }
+    }
+
+    if (messages.length > 0) {
+      mpState.chatLastFetch = Math.max(...messages.map(m => m.sentAt));
+    }
+  } catch (e) {
+    // silent
+  }
+}
+
 // Sync scores during gameplay
 function startScoreSync() {
   stopScoreSync();
-  mpState.scoreSyncTimer = setInterval(syncScores, 2000);
+  mpState.scoreSyncTimer = setInterval(syncScores, 1000);
 }
 
 function stopScoreSync() {
@@ -8313,6 +9500,7 @@ async function syncScores() {
       hud.classList.toggle('mp-losing', game.score < oppScore);
       hud.classList.toggle('mp-winning', game.score > oppScore);
     }
+
   } catch (e) {
     console.log('Score sync failed:', e);
   }
@@ -8336,21 +9524,49 @@ function checkMPEnd() {
     score: Math.floor(game.score),
     rating: game.rating,
     cleaned: game.stats.cleaned,
+    grade: getGrade(game.score),
   }).catch(e => console.log('Finish game failed:', e));
 
   // Count this as a multiplayer game played
   incrementMPGames();
 
-  // Hide opponent HUD
+  // Hide opponent HUD, restore powerups bar
   $('mp-opponent-hud')?.classList.add('hidden');
+  const puBar = $('powerups');
+  if (puBar) puBar.style.display = '';
 
-  // Poll for final results after a short delay
-  setTimeout(showMPResults, 1500);
+  // Poll for final results — wait until both players have finished
+  pollForMPResults();
 }
 
-async function showMPResults() {
+async function pollForMPResults() {
   try {
     const room = await convex.query(api.multiplayer.getRoom, { code: mpState.roomCode });
+    if (!room) {
+      mpState.active = false;
+      showScreen('title-screen');
+      return;
+    }
+
+    // Wait until room is "finished" (both players reported scores)
+    if (room.status !== 'finished') {
+      setTimeout(pollForMPResults, 1000);
+      return;
+    }
+
+    showMPResults(room);
+  } catch (e) {
+    console.error('Failed to poll MP results:', e);
+    // Retry a few times
+    setTimeout(pollForMPResults, 2000);
+  }
+}
+
+async function showMPResults(room) {
+  try {
+    if (!room) {
+      room = await convex.query(api.multiplayer.getRoom, { code: mpState.roomCode });
+    }
     if (!room) {
       mpState.active = false;
       return;
@@ -8386,7 +9602,7 @@ async function showMPResults() {
 
     $('mp-result-opp-name').textContent = oppName;
     $('mp-result-opp-score').textContent = Math.floor(oppScore).toLocaleString();
-    const oppGrade = getGrade(oppScore);
+    const oppGrade = isHost ? (room.guestGrade || '?') : (room.hostGrade || '?');
     $('mp-result-opp-grade').textContent = oppGrade;
     $('mp-result-opp-grade').className = 'mp-result-grade grade ' + oppGrade;
     $('mp-result-opp-cleaned').textContent = oppCleaned + ' cleaned';
@@ -8420,5 +9636,6 @@ $('mp-result-done')?.addEventListener('click', () => {
   playClick();
   mpState.active = false;
   mpState.roomCode = null;
+  mpState.isRandomMatch = false;
   showScreen('title-screen');
 });

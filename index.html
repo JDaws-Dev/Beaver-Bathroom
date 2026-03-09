@@ -82,7 +82,8 @@
           </button>
           <span class="dock-label">Badges</span>
         </div>
-        <div class="dock-item">
+        <!-- Daily Challenge hidden for now -->
+        <div class="dock-item" style="display:none">
           <button class="dock-btn" id="daily-btn">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H18V1H16V3H8V1H6V3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V8H19V19ZM9 10H7V12H9V10ZM13 10H11V12H13V10ZM17 10H15V12H17V10ZM9 14H7V16H9V14ZM13 14H11V16H13V14Z"/></svg>
           </button>
@@ -133,12 +134,37 @@
     <!-- Leaderboard Panel -->
     <div id="leaderboard-panel" class="leaderboard-panel">
       <div class="lb-header">
-        <h3>🏆 Global Leaderboard</h3>
+        <h3>🏆 Leaderboard <span style="font-size:0.6em;color:#c9a86c;font-weight:normal;">Season 2</span></h3>
         <button class="lb-close" id="leaderboard-close">&times;</button>
       </div>
       <div id="leaderboard-list" class="lb-list">
         <div class="lb-empty">Loading...</div>
       </div>
+    </div>
+  </div>
+
+  <div id="whats-new-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title">🆕 Season 2</span>
+        <button class="modal-close" id="close-whats-new">&times;</button>
+      </div>
+      <div class="tutorial-body">
+        <div class="tutorial-item"><span class="tutorial-icon">👊</span><span><b>Customer Fights!</b> Break up brawls before they wreck your rating!</span></div>
+        <div class="tutorial-item"><span class="tutorial-icon">👗</span><span><b>New Outfits!</b> 5 fresh specials in the Outfitter!</span></div>
+        <div class="whats-new-outfits">
+          <img src="images/cosmetics/special-luchador.png" alt="Luchador" title="Luchador">
+          <img src="images/cosmetics/special-rockstar.png" alt="Rockstar" title="Rockstar">
+          <img src="images/cosmetics/special-wizard.png" alt="Wizard" title="Wizard">
+          <img src="images/cosmetics/special-candyman.png" alt="Candy Man" title="Candy Man">
+          <img src="images/cosmetics/special-madscientist.png" alt="Mad Scientist" title="Mad Scientist">
+        </div>
+        <div class="tutorial-item"><span class="tutorial-icon">⚔️</span><span><b>1v1 Battles!</b> Challenge friends to real-time cleaning duels!</span></div>
+        <div class="tutorial-item"><span class="tutorial-icon">⚡</span><span><b>Quick Match!</b> Find opponents instantly or browse & pick your rival.</span></div>
+        <div class="tutorial-item"><span class="tutorial-icon">🏆</span><span><b>Fresh Leaderboard!</b> Scores reset - climb to #1 this season!</span></div>
+        <div class="tutorial-item"><span class="tutorial-icon">⚖️</span><span><b>Rebalanced!</b> Tuned difficulty & scoring for a fair grind.</span></div>
+      </div>
+      <button class="btn btn-play" id="whats-new-ok">Let's Go!</button>
     </div>
   </div>
 
@@ -471,16 +497,7 @@
       <div class="hud-item hud-time"><div class="label">Time</div><div class="value" id="timer">1:00</div></div>
       <button id="settings-btn" aria-label="Settings">⚙️</button>
     </div>
-    <!-- Multiplayer opponent HUD (hidden unless in multiplayer) -->
-    <div id="mp-opponent-hud" class="mp-opponent-hud hidden">
-      <img id="mp-opp-hud-beaver" class="mp-opp-beaver" src="" alt="" style="width:32px;height:32px;image-rendering:pixelated;vertical-align:middle;margin-right:4px;">
-      <div class="mp-opp-label">Opponent</div>
-      <div class="mp-opp-row">
-        <span class="mp-opp-name" id="mp-opp-hud-name">---</span>
-        <span class="mp-opp-score" id="mp-opp-hud-score">0</span>
-        <span class="mp-opp-rating" id="mp-opp-hud-rating">⭐⭐⭐⭐⭐</span>
-      </div>
-    </div>
+    <!-- Hidden elements for JS compatibility (opponent HUD moved to bottom) -->
     <!-- Hidden elements for JS compatibility -->
     <div id="dirty-count" style="display:none">0</div>
     <div id="dirty-sinks" style="display:none">0</div>
@@ -501,6 +518,7 @@
       </div>
       <div id="rush-warning">🚌 TOUR BUS ARRIVING! 🚌</div>
       <div id="inspector-warning">🔍 HEALTH INSPECTOR! 🔍</div>
+      <div id="fight-warning">👊 FIGHT BREAKING OUT! 👊</div>
       <div id="pause-overlay">
         <div class="pause-menu">
           <span class="pause-title">⏸️ PAUSED</span>
@@ -521,6 +539,14 @@
       <div class="powerup disabled" id="pow-slow">🧊<span class="powerup-text"> Icee</span> <span class="count" id="cnt-slow">0</span></div>
       <div class="powerup disabled" id="pow-auto">🍿<span class="powerup-text"> Nuggets</span> <span class="count" id="cnt-auto">0</span></div>
       <div class="powerup disabled" id="pow-mascot">🦫<span class="powerup-text"> Beaver</span> <span class="count" id="cnt-mascot">0</span></div>
+    </div>
+    <div id="mp-opponent-hud" class="mp-opponent-hud hidden">
+      <img id="mp-opp-hud-beaver" class="mp-opp-beaver" src="" alt="" style="width:32px;height:32px;image-rendering:pixelated;">
+      <div class="mp-opp-info">
+        <span class="mp-opp-name" id="mp-opp-hud-name">---</span>
+        <span class="mp-opp-score" id="mp-opp-hud-score">0</span>
+      </div>
+      <span class="mp-opp-rating" id="mp-opp-hud-rating">⭐⭐⭐⭐⭐</span>
     </div>
   </div>
 
@@ -834,39 +860,46 @@
           <label class="mp-name-label">Your Name</label>
           <input type="text" id="mp-name-input" class="mp-name-input" placeholder="Enter name" maxlength="16">
         </div>
-        <!-- Difficulty selector (1v1 only) -->
-        <div class="mp-difficulty-selector">
-          <label class="mp-name-label">Difficulty</label>
-          <div class="difficulty-selector">
-            <button class="difficulty-btn" data-difficulty="easy">
-              <span>Easy</span>
-              <small>0.5x</small>
-            </button>
-            <button class="difficulty-btn selected" data-difficulty="normal">
-              <span>Normal</span>
-              <small>1x</small>
-            </button>
-            <button class="difficulty-btn" data-difficulty="hard">
-              <span>Hard</span>
-              <small>1.5x</small>
-            </button>
-            <button class="difficulty-btn" data-difficulty="insane">
-              <span>Insane</span>
-              <small>2x</small>
-            </button>
-          </div>
+        <div class="mp-avatar-preview">
+          <img id="mp-avatar-main-img" class="mp-avatar-img" src="" alt="" style="width:56px;height:56px;image-rendering:pixelated;">
+          <button class="btn-help" id="mp-change-avatar-main">Change Outfit</button>
         </div>
-        <div class="mp-buttons">
+        <div class="mp-buttons" id="mp-main-buttons">
+          <button class="btn btn-play mp-quickmatch-btn" id="mp-quickmatch-btn">
+            <span class="mp-btn-icon">⚡</span>
+            <span class="mp-btn-info"><span class="mp-btn-text">Quick Match</span><span class="mp-btn-sub">Random opponent, random settings</span></span>
+          </button>
           <button class="btn btn-play mp-host-btn" id="mp-host-btn">
             <span class="mp-btn-icon">🏠</span>
-            <span class="mp-btn-text">Host Game</span>
-            <span class="mp-btn-sub">Create a room & share the code</span>
+            <span class="mp-btn-info"><span class="mp-btn-text">Host Game</span><span class="mp-btn-sub">Create a room & share the code</span></span>
           </button>
           <button class="btn btn-play mp-join-btn" id="mp-join-btn">
             <span class="mp-btn-icon">🎯</span>
-            <span class="mp-btn-text">Join Game</span>
-            <span class="mp-btn-sub">Enter a 4-digit code to join</span>
+            <span class="mp-btn-info"><span class="mp-btn-text">Join Game</span><span class="mp-btn-sub">Enter a 4-digit code to join</span></span>
           </button>
+        </div>
+        <!-- Host settings (shown after clicking Host Game) -->
+        <div class="mp-host-settings hidden" id="mp-host-settings">
+          <div class="mp-setting-group">
+            <label class="mp-name-label">Restroom</label>
+            <div class="mp-gender-selector">
+              <button class="mp-gender-btn selected" data-mp-gender="female">🚺 Women's</button>
+              <button class="mp-gender-btn" data-mp-gender="male">🚹 Men's</button>
+            </div>
+          </div>
+          <div class="mp-setting-group">
+            <label class="mp-name-label">Shift</label>
+            <div class="mp-shift-selector" id="mp-shift-selector">
+              <button class="mp-shift-btn selected" data-shift="0">1</button>
+              <button class="mp-shift-btn" data-shift="1">2</button>
+              <button class="mp-shift-btn" data-shift="2">3</button>
+              <button class="mp-shift-btn" data-shift="3">4</button>
+              <button class="mp-shift-btn" data-shift="4">5</button>
+              <button class="mp-shift-btn" data-shift="5">6</button>
+            </div>
+          </div>
+          <button class="btn btn-play" id="mp-create-room-btn">Create Room</button>
+          <button class="btn-help" id="mp-host-back">Back</button>
         </div>
       </div>
     </div>
@@ -887,6 +920,36 @@
         <p id="mp-join-error" class="mp-error hidden"></p>
         <button class="btn btn-play" id="mp-join-submit">Join Room</button>
         <button class="btn-help" id="mp-join-back">Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Match Waiting Room -->
+  <div id="mp-waiting" class="screen">
+    <div class="mp-lobby-card mp-waiting-card">
+      <div class="mp-waiting-badge">⚡ QUICK MATCH</div>
+      <div id="waiting-status" class="mp-waiting-status">Choose an opponent or wait for auto-match</div>
+      <div id="waiting-timer" class="mp-waiting-timer">0:00</div>
+      <label class="mp-auto-toggle" id="mp-auto-toggle-label">
+        <input type="checkbox" id="mp-auto-match-toggle"> Auto-match with anyone
+      </label>
+      <div class="mp-queue-list" id="mp-queue-list">
+        <div class="mp-queue-label">Players Online</div>
+        <div class="mp-queue-players" id="mp-queue-players"></div>
+      </div>
+      <button class="btn-help" id="waiting-cancel">Cancel</button>
+    </div>
+
+    <!-- Challenge Incoming Popup -->
+    <div id="mp-challenge-popup" class="mp-challenge-popup hidden">
+      <div class="mp-challenge-popup-card">
+        <div class="mp-challenge-popup-header">⚔️ CHALLENGE!</div>
+        <img id="mp-challenge-avatar" class="mp-challenge-popup-avatar" src="" alt="" style="width:64px;height:64px;image-rendering:pixelated;">
+        <div class="mp-challenge-popup-name"><span id="mp-challenge-name">Player</span> wants to battle!</div>
+        <div class="mp-challenge-popup-buttons">
+          <button class="btn mp-challenge-accept-btn" id="mp-challenge-accept">Accept</button>
+          <button class="btn-help mp-challenge-decline-btn" id="mp-challenge-decline">Decline</button>
+        </div>
       </div>
     </div>
   </div>

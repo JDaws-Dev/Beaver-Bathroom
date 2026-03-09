@@ -1,37 +1,52 @@
 # Beaver's Bathroom Blitz
 
-A Buc-ee's themed single-file HTML browser game where you play as a bathroom attendant keeping stalls clean.
+A Buc-ee's themed browser game where you play as a bathroom attendant keeping stalls clean.
 
-## Current State (v5 - Cartoony Overhaul)
+## Current State (v5.1)
 
-Major visual and gameplay overhaul with cartoony art style, reactive beaver mascot, VIP customers, health inspector events, and upgrade system.
+Cartoony art style with reactive beaver mascot, VIP customers, health inspector events, customer fights, upgrade system, and premium features.
 
 ## File Structure
 ```
 /
-├── beaver.html      # Complete game (~1200+ lines)
+├── index.html       # Game HTML shell
+├── src/main.js      # All game logic (~8000+ lines)
+├── src/styles.css   # All styles
+├── src/UIOverlay.css # UI overlay styles
 ├── CLAUDE.md        # This file
 ├── AGENTS.md        # Agent instructions
+├── convex/          # Backend (Convex)
 ├── .beads/          # Issue tracking database
 └── .pocock/         # Autonomous loop scripts
 ```
 
-## Recent Changes (v5)
+## Recent Changes (v5.1)
 
-### Cartoony Visual Overhaul
-- **Wood-grain stall doors** with rounded shapes and door handles
-- **Reactive beaver mascot** in HUD with 4 expressions (happy, excited, worried, sad)
-- **CSS art customer bodies** with personality (not just emoji heads)
-- **Checkered floor tiles** and wall details with decorative elements
-- **Cartoony UI** - rounded buttons, panels, and HUD elements
-- **Professional title screen** with logo-like title and clear layout
+### Customer Fight Event
+- **Random event** (20% chance per shift, after shift 1)
+- Two customers walk toward each other, argue with escalating emojis
+- Player must **rapid-tap** the fight zone to break it up (same mechanic as cleaning)
+- Quick breakup: +75 pts, +0.2 rating. Brawl timeout: -0.4 rating penalty
+- During brawl: screen shakes, nearby customer patience drains 2x, rating drops
+- Fight phases: `approaching` → `arguing` → `brawl` → `breakup` → `done`
 
-### New Gameplay Features
-- **VIP Customers** (👑) - 2x rating impact, bigger tips, wear crowns
-- **Health Inspector Events** - Random inspections, keep all stalls clean!
-- **Upgrade System** - Spend points between shifts on permanent upgrades
-- **Messy vs Clean Customers** - Different customer types affect mess level
-- **Combo Streak Bonuses** - Visual fanfare at high combos
+### Supply Shop Premium Gate
+- Non-premium users see a locked overlay with "Next Shift →" button
+- Previously silently skipped with no explanation
+
+### Lite Mode Fix
+- Auto-enable (FPS < 24) is now session-only, not saved to localStorage
+- Old stuck `beaverLowPerf` key is cleared on load
+- Only manual toggle in settings persists across sessions
+
+### Previous (v5)
+- **Cartoony visual overhaul** — wood-grain doors, CSS art bodies, checkered floors
+- **Reactive beaver mascot** — 4 expressions (happy, excited, worried, sad)
+- **VIP Customers** (👑) — 2x rating impact, bigger tips
+- **Health Inspector Events** — random inspections, penalties for dirty stalls
+- **Upgrade System** — spend coins on items between shifts (premium)
+- **Messy vs Clean Customers** — different mess levels
+- **Combo Streak Bonuses** — visual fanfare at high combos
 
 ### Customer Types
 - Regular customers (normal behavior)
@@ -78,6 +93,15 @@ Click dirty stall → Task panel opens → Mash buttons to clean faster:
 - Penalty for each dirty stall found
 - Bonus for all-clean inspection
 
+### Customer Fight Events
+- 20% chance per shift (after shift 1)
+- Two customers walk toward each other and argue
+- Emojis escalate: 😠 → 😡 → 🤬 → 🤜💥🤛
+- Tap the fight zone rapidly to break it up
+- Progress bar + percentage shows breakup progress
+- If ignored: brawl with screen shake, nearby patience drain, rating loss
+- CONFIG: `fightChance`, `fightBonus`, `fightPenalty`, `fightArgueTime`, `fightBrawlDrain`
+
 ### Upgrade System
 Between shifts, spend points on:
 - **Faster Cleaning** - Reduce task time
@@ -101,13 +125,16 @@ Between shifts, spend points on:
 ### Key Config
 ```javascript
 shifts: [
-  {stalls:5, sinks:2, spawnMin:3000, spawnMax:4500, ...},
+  {stalls:5, sinks:2, spawnMin:4300, spawnMax:6400, ...},
   // ... 6 total shifts with scaling difficulty
 ],
 patience: 10000,      // Customer patience (ms)
 walkSpeed: 120,       // Pixels per second
-baseTaskTime: 500,    // Base time per task (ms)
-clickBoost: 80,       // Each click reduces task time
+baseTaskTime: 1200,   // Base time per task (ms)
+clickBoost: 50,       // Each click reduces task time
+fightChance: 0.2,     // 20% chance of fight per shift
+fightBonus: 75,       // Points for quick breakup
+fightArgueTime: 5000, // ms before arguing becomes brawl
 ```
 
 ### Customer Phases
@@ -138,15 +165,14 @@ bd show <id>         # View issue details
 ```
 
 ## How to Test
-1. Open `beaver.html` in browser
-2. See the new professional title screen
-3. Select Men's or Women's restroom
-4. Click "Clock In!"
-5. Watch customers with CSS art bodies walk around
-6. Notice the reactive beaver mascot in the HUD
-7. Look for VIP customers (crown icon)
-8. Survive health inspector visits
-9. Use the upgrade system between shifts
+1. Run `npx vite` and open the local URL
+2. Select Men's or Women's restroom
+3. Click "Clock In!"
+4. Play through shifts — fights can trigger on shift 2+
+5. Watch for the red "FIGHT BREAKING OUT!" banner
+6. Tap the fight zone rapidly to break it up
+7. Survive health inspector visits
+8. Non-premium users see locked Supply Shop overlay between shifts
 
 ## Buc-ee's Theme Elements
 - **Beaver mascot** with reactive expressions

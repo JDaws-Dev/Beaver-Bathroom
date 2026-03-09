@@ -22,8 +22,10 @@ export default defineSchema({
     shift: v.number(), // How far they got (1-6)
     grade: v.string(), // S, A, B, C, F
     timestamp: v.number(),
+    season: v.optional(v.number()), // Season number (undefined = season 1)
   }).index("by_score", ["score"])
-    .index("by_user", ["userId"]),
+    .index("by_user", ["userId"])
+    .index("by_season_score", ["season", "score"]),
 
   // Daily challenge scores - separate leaderboard per day
   dailyScores: defineTable({
@@ -91,6 +93,15 @@ export default defineSchema({
       accessory: v.optional(v.union(v.string(), v.null())),
       fur: v.optional(v.string()),
     })),
+    isRandomMatch: v.optional(v.boolean()),
+    hostLoadout: v.optional(v.array(v.string())),
+    guestLoadout: v.optional(v.array(v.string())),
+    hostReady: v.optional(v.boolean()),
+    guestReady: v.optional(v.boolean()),
+    hostFinished: v.optional(v.boolean()),
+    guestFinished: v.optional(v.boolean()),
+    hostGrade: v.optional(v.string()),
+    guestGrade: v.optional(v.string()),
     hostScore: v.number(),
     hostRating: v.number(),
     hostCombo: v.number(),
@@ -103,6 +114,40 @@ export default defineSchema({
   }).index("by_code", ["code"])
     .index("by_host", ["hostDeviceId"])
     .index("by_status", ["status"]),
+
+  // Matchmaking queue for random Quick Match
+  matchmakingQueue: defineTable({
+    deviceId: v.string(),
+    playerName: v.string(),
+    cosmetics: v.optional(v.object({
+      hat: v.optional(v.string()),
+      shirt: v.optional(v.string()),
+      special: v.optional(v.union(v.string(), v.null())),
+      accessory: v.optional(v.union(v.string(), v.null())),
+      fur: v.optional(v.string()),
+    })),
+    status: v.string(),             // "waiting", "matched", "expired"
+    roomCode: v.optional(v.string()),
+    challengeFrom: v.optional(v.string()),       // deviceId of challenger
+    challengeFromName: v.optional(v.string()),    // name of challenger
+    challengeFromCosmetics: v.optional(v.object({
+      hat: v.optional(v.string()),
+      shirt: v.optional(v.string()),
+      special: v.optional(v.union(v.string(), v.null())),
+      accessory: v.optional(v.union(v.string(), v.null())),
+      fur: v.optional(v.string()),
+    })),
+    queuedAt: v.number(),
+  }).index("by_status", ["status"])
+    .index("by_device", ["deviceId"]),
+
+  // Preset chat messages for 1v1 games
+  chatMessages: defineTable({
+    roomCode: v.string(),
+    senderDeviceId: v.string(),
+    messageId: v.string(),          // Preset message key
+    sentAt: v.number(),
+  }).index("by_room", ["roomCode"]),
 
   // Visitors - track unique visitors and their activity
   visitors: defineTable({

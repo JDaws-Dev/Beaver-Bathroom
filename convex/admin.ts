@@ -1,6 +1,58 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
+// Clean profane names from users table
+export const cleanProfaneNames = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const PROFANITY_LIST = [
+      "nigger", "nigga", "faggot", "fag", "retard", "kike", "spic", "chink",
+      "wetback", "coon", "darkie", "gook", "jap", "beaner", "tranny", "dyke",
+      "twat", "cunt", "bitch", "slut", "whore", "asshole", "bastard", "dick",
+      "cock", "pussy", "fuck", "shit", "piss", "damn", "wanker", "bollocks",
+      "arse", "tits", "boob", "penis", "vagina", "anal", "cum", "semen",
+      "nazi", "hitler", "kkk", "jihad", "rape", "molest", "pedo", "incest",
+    ];
+    const users = await ctx.db.query("users").collect();
+    let cleanedUsers = 0;
+    for (const user of users) {
+      const lower = (user.name || "").toLowerCase().replace(/[\s_\-\.]/g, "");
+      for (const word of PROFANITY_LIST) {
+        if (lower.includes(word)) {
+          await ctx.db.patch(user._id, { name: "Player" });
+          cleanedUsers++;
+          break;
+        }
+      }
+    }
+    // Also clean scores and dailyScores
+    let cleanedScores = 0;
+    const scores = await ctx.db.query("scores").collect();
+    for (const score of scores) {
+      const lower = (score.playerName || "").toLowerCase().replace(/[\s_\-\.]/g, "");
+      for (const word of PROFANITY_LIST) {
+        if (lower.includes(word)) {
+          await ctx.db.patch(score._id, { playerName: "Player" });
+          cleanedScores++;
+          break;
+        }
+      }
+    }
+    const dailyScores = await ctx.db.query("dailyScores").collect();
+    for (const score of dailyScores) {
+      const lower = (score.playerName || "").toLowerCase().replace(/[\s_\-\.]/g, "");
+      for (const word of PROFANITY_LIST) {
+        if (lower.includes(word)) {
+          await ctx.db.patch(score._id, { playerName: "Player" });
+          cleanedScores++;
+          break;
+        }
+      }
+    }
+    return { cleanedUsers, cleanedScores, totalUsers: users.length, totalScores: scores.length + dailyScores.length };
+  },
+});
+
 // Get all purchases
 export const getPurchases = query({
   args: {},
