@@ -278,24 +278,52 @@ async function submitScore(score, shift, grade) {
   }
 }
 
+function createLeaderboardRow(scoreEntry, rankIndex) {
+  const row = document.createElement('div');
+  row.className = 'lb-row';
+  if (scoreEntry.playerName === playerName) row.classList.add('lb-you');
+
+  const rank = document.createElement('span');
+  rank.className = 'lb-rank';
+  rank.textContent = String(rankIndex + 1);
+
+  const name = document.createElement('span');
+  name.className = 'lb-name';
+  name.textContent = scoreEntry.playerName || 'Anonymous';
+
+  const score = document.createElement('span');
+  score.className = 'lb-score';
+  score.textContent = Number(scoreEntry.score || 0).toLocaleString();
+
+  const grade = document.createElement('span');
+  grade.className = 'lb-grade';
+  grade.textContent = scoreEntry.grade || '-';
+
+  row.append(rank, name, score, grade);
+  return row;
+}
+
+function renderLeaderboardList(container, scores, emptyText) {
+  if (!container) return;
+  container.innerHTML = '';
+
+  if (!scores || scores.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'lb-empty';
+    empty.textContent = emptyText;
+    container.appendChild(empty);
+    return;
+  }
+
+  scores.forEach((scoreEntry, rankIndex) => {
+    container.appendChild(createLeaderboardRow(scoreEntry, rankIndex));
+  });
+}
+
 // Update leaderboard display
 function updateLeaderboardUI() {
-  const html = leaderboardData.length === 0
-    ? '<div class="lb-empty">No scores yet. Be the first!</div>'
-    : leaderboardData.map((s, i) => `
-      <div class="lb-row ${s.playerName === playerName ? 'lb-you' : ''}">
-        <span class="lb-rank">${i + 1}</span>
-        <span class="lb-name">${s.playerName}</span>
-        <span class="lb-score">${s.score.toLocaleString()}</span>
-        <span class="lb-grade">${s.grade}</span>
-      </div>
-    `).join('');
-
-  // Update both title screen and game-over leaderboards
-  const titleList = $('leaderboard-list');
-  const goList = $('go-leaderboard-list');
-  if (titleList) titleList.innerHTML = html;
-  if (goList) goList.innerHTML = html;
+  renderLeaderboardList($('leaderboard-list'), leaderboardData, 'No scores yet. Be the first!');
+  renderLeaderboardList($('go-leaderboard-list'), leaderboardData, 'No scores yet. Be the first!');
 }
 
 // Track page visit for analytics
@@ -594,11 +622,11 @@ const COSMETICS = [
   {id:'special-robot', category:'special', name:'Robo-Beaver', icon:'🤖', unlock:'coins1200', desc:'Buy for 1200 coins', tier:5, cost:1200},
 
   // === SEASON 2 SPECIALS ===
-  {id:'special-luchador', category:'special', name:'Luchador', icon:'🤼', unlock:'coins500', desc:'Buy for 500 coins', tier:3, cost:500},
-  {id:'special-rockstar', category:'special', name:'Rockstar', icon:'🎸', unlock:'coins600', desc:'Buy for 600 coins', tier:3, cost:600},
-  {id:'special-wizard', category:'special', name:'Wizard Beaver', icon:'🧙', unlock:'coins700', desc:'Buy for 700 coins', tier:4, cost:700},
-  {id:'special-candyman', category:'special', name:'Candy Man', icon:'🍭', unlock:'coins800', desc:'Buy for 800 coins', tier:4, cost:800},
-  {id:'special-madscientist', category:'special', name:'Mad Scientist', icon:'🧪', unlock:'coins900', desc:'Buy for 900 coins', tier:4, cost:900},
+  {id:'special-luchador', category:'special', name:'Luchador', icon:'🤼', unlock:'fight5', desc:'Break up 5 fights or buy', tier:3, cost:500},
+  {id:'special-rockstar', category:'special', name:'Rockstar', icon:'🎸', unlock:'score10k', desc:'Score 10,000+ in one game or buy', tier:3, cost:600},
+  {id:'special-wizard', category:'special', name:'Wizard Beaver', icon:'🧙', unlock:'clean500', desc:'Clean 500 stalls total or buy', tier:4, cost:700},
+  {id:'special-candyman', category:'special', name:'Candy Man', icon:'🍭', unlock:'perfect3', desc:'3 perfect shifts (5-star) or buy', tier:4, cost:800},
+  {id:'special-madscientist', category:'special', name:'Mad Scientist', icon:'🧪', unlock:'inspect10', desc:'Ace 10 inspections or buy', tier:4, cost:900},
 ];
 
 // Tier names and rank requirements
@@ -740,6 +768,10 @@ function checkCosmeticUnlocks() {
       case 'manager': earned = rank.name === 'Manager' || rank.name === 'Legend'; break;
       case 'inspect5': earned = (achievementStats.perfectInspections || 0) >= 5; break;
       case 'inspect10': earned = (achievementStats.perfectInspections || 0) >= 10; break;
+      case 'fight5': earned = (achievementStats.fightsWon || 0) >= 5; break;
+      case 'score10k': earned = (achievementStats.highestScore || 0) >= 10000; break;
+      case 'clean500': earned = achievementStats.totalCleaned >= 500; break;
+      case 'perfect3': earned = (achievementStats.perfectShifts || 0) >= 3; break;
       case 'insane6': earned = localStorage.getItem('beaverInsane6') === 'true'; break;
       // coins are purchased manually, not auto-unlocked
     }
@@ -909,6 +941,22 @@ const ACHIEVEMENTS = [
   // Service achievements
   {id:'serve_50', name:'Customer Service', icon:'👥', desc:'Serve 50 customers total', check: (g,s) => s.totalServed >= 50},
   {id:'serve_100', name:'Lodge Legend', icon:'🦫', desc:'Serve 100 customers total', check: (g,s) => s.totalServed >= 100},
+  {id:'serve_500', name:'Hospitality King', icon:'👑', desc:'Serve 500 customers total', check: (g,s) => s.totalServed >= 500},
+
+  // Fight achievements
+  {id:'peacemaker', name:'Peacemaker', icon:'🛡️', desc:'Break up a customer fight', check: (g,s) => (s.fightsWon || 0) >= 1},
+  {id:'bouncer', name:'Bouncer', icon:'🥊', desc:'Break up 5 customer fights', check: (g,s) => (s.fightsWon || 0) >= 5},
+  {id:'fight_club', name:'Fight Club', icon:'🏆', desc:'Break up 10 customer fights', check: (g,s) => (s.fightsWon || 0) >= 10},
+
+  // Inspection achievements
+  {id:'inspector_5', name:'Health Nut', icon:'🔍', desc:'Ace 5 health inspections', check: (g,s) => (s.perfectInspections || 0) >= 5},
+
+  // Mastery achievements
+  {id:'clean_500', name:'Clean Machine', icon:'🤖', desc:'Clean 500 stalls total', check: (g,s) => s.totalCleaned >= 500},
+  {id:'perfect_3', name:'Consistent', icon:'💎', desc:'Complete 3 perfect 5-star shifts', check: (g,s) => (s.perfectShifts || 0) >= 3},
+  {id:'combo_25', name:'Combo God', icon:'👼', desc:'Reach a 25x combo', check: (g,s) => s.maxCombo >= 25},
+  {id:'all_s', name:'Flawless', icon:'🏅', desc:'Get S-grade on all 6 shifts', check: (g,s) => s.sGrades >= 6},
+  {id:'save_50', name:'Last Second Hero', icon:'🦸', desc:'Make 50 "just in time" saves', check: (g,s) => s.totalSaves >= 50},
 ];
 
 // EMPLOYEE RANKS: Progression system
@@ -4127,7 +4175,7 @@ function dailyGameOver() {
   }
 
   // Calculate grade
-  const grade = getGrade(finalScore);
+  const grade = getGrade();
 
   // Show game over screen
   const today = new Date();
@@ -4203,20 +4251,7 @@ async function fetchDailyLeaderboard() {
 function updateDailyLeaderboardUI(scores) {
   const list = $('daily-leaderboard-list');
   if (!list) return;
-
-  if (!scores || scores.length === 0) {
-    list.innerHTML = '<div class="lb-empty">No daily scores yet!</div>';
-    return;
-  }
-
-  list.innerHTML = scores.map((s, i) => `
-    <div class="lb-row ${s.playerName === playerName ? 'lb-you' : ''}">
-      <span class="lb-rank">${i + 1}</span>
-      <span class="lb-name">${s.playerName}</span>
-      <span class="lb-score">${s.score.toLocaleString()}</span>
-      <span class="lb-grade">${s.grade}</span>
-    </div>
-  `).join('');
+  renderLeaderboardList(list, scores, 'No daily scores yet!');
 }
 
 function applyShiftTheme(shiftIdx) {
@@ -5914,7 +5949,9 @@ function finishFight(wasBrawl) {
   fight.phase = 'done';
 
   if (!wasBrawl) {
-    // Quick breakup - bonus!
+    // Quick breakup - bonus! Track for achievements
+    achievementStats.fightsWon = (achievementStats.fightsWon || 0) + 1;
+    saveAchievementData();
     addScore(CONFIG.fightBonus);
     game.rating = clamp(game.rating + 0.2, 0, 5);
     floatMessage('FIGHT STOPPED! +' + CONFIG.fightBonus, fight.x, fight.y - 20, 'combo');
@@ -6420,17 +6457,13 @@ $('pow-mascot').addEventListener('click', () => {
 });
 
 // Grade calculation based on performance
-function getGrade(score) {
-  const ratio = game.stats.dirty / Math.max(1, game.stats.served);
-  // Factor in score thresholds per shift for better grade differentiation
-  const shiftIdx = game.shift || 0;
-  const scoreThresholds = [800, 1200, 1800, 2500, 3500, 5000];
-  const highScore = score >= (scoreThresholds[shiftIdx] || 2000);
-  if (ratio === 0 && game.stats.abandoned === 0) return 'S';
-  if (ratio <= 0.1 || (ratio <= 0.15 && highScore)) return 'A';
-  if (ratio <= 0.2 || (ratio <= 0.25 && highScore)) return 'B';
-  if (ratio <= 0.35) return 'C';
-  if (ratio <= 0.5) return 'D';
+function getGrade() {
+  const r = game.rating;
+  if (r >= 5.0) return 'S';
+  if (r >= 4.0) return 'A';
+  if (r >= 3.0) return 'B';
+  if (r >= 2.0) return 'C';
+  if (r >= 1.0) return 'D';
   return 'F';
 }
 
@@ -6606,7 +6639,7 @@ function endShift() {
   `;
 
   const shiftsLeft = CONFIG.shifts.length - game.shift - 1;
-  const grade = getGrade(game.score);
+  const grade = getGrade();
   let comment;
   if (grade === 'S') comment = shiftsLeft > 0 ? 'PERFECT! That Golden Plunger is calling your name!' : 'PERFECT! You earned it, rookie!';
   else if (grade === 'A') comment = shiftsLeft > 0 ? 'Great work! Keep it up!' : 'Almost perfect! Well done!';
@@ -6657,6 +6690,8 @@ function endShift() {
   achievementStats.totalServed += game.stats.served;
   achievementStats.totalSaves += game.stats.saves;
   if (game.maxCombo > achievementStats.maxCombo) achievementStats.maxCombo = game.maxCombo;
+  if (game.score > (achievementStats.highestScore || 0)) achievementStats.highestScore = Math.floor(game.score);
+  if (game.rating >= 5.0) achievementStats.perfectShifts = (achievementStats.perfectShifts || 0) + 1;
   if (grade === 'S') achievementStats.sGrades++;
   // Track insane difficulty shift 6 completion
   if (game.difficulty === 'insane' && game.shift >= 5) {
@@ -6794,14 +6829,7 @@ function gameOver() {
   const finalScore = Math.floor(game.score);
   const isNewRecord = finalScore > highScore;
 
-  // Calculate grade for leaderboard
-  const ratio = game.stats.dirty / Math.max(1, game.stats.served);
-  let grade;
-  if (ratio === 0 && game.stats.abandoned === 0) grade = 'S';
-  else if (ratio <= 0.1) grade = 'A';
-  else if (ratio <= 0.2) grade = 'B';
-  else if (ratio <= 0.35) grade = 'C';
-  else grade = 'F';
+  const grade = getGrade();
 
   // Track game over
   trackEvent('game_over', {
@@ -6831,10 +6859,10 @@ function gameOver() {
   $('go-high-score-val').textContent = highScore;
 
   $('go-stats').innerHTML = `
+    <div class="stat"><div class="num grade-${grade}">${grade}</div><div class="lbl">Grade</div></div>
     <div class="stat"><div class="num">${game.stats.cleaned}</div><div class="lbl">Cleaned</div></div>
     <div class="stat"><div class="num">${game.stats.served}</div><div class="lbl">Served</div></div>
     <div class="stat"><div class="num">${game.maxCombo}x</div><div class="lbl">Best Combo</div></div>
-    <div class="stat"><div class="num">${game.stats.saves}</div><div class="lbl">Close Calls</div></div>
   `;
 
   // Show name input for leaderboard (premium only)
@@ -7936,17 +7964,9 @@ function roundRect(ctx, x, y, width, height, radius) {
 function openShareModal(source) {
   // Populate share data based on source
   if (source === 'result') {
-    const ratio = game.stats.dirty / Math.max(1, game.stats.served);
-    let grade;
-    if (ratio === 0 && game.stats.abandoned === 0) grade = 'S';
-    else if (ratio <= 0.1) grade = 'A';
-    else if (ratio <= 0.2) grade = 'B';
-    else if (ratio <= 0.35) grade = 'C';
-    else grade = 'F';
-
     shareData = {
       score: Math.floor(game.score),
-      grade: grade,
+      grade: getGrade(),
       shift: game.shift + 1,
       cleaned: game.stats.cleaned,
       served: game.stats.served,
@@ -7955,17 +7975,9 @@ function openShareModal(source) {
     };
   } else if (source === 'gameover') {
     const won = game.shift >= CONFIG.shifts.length - 1;
-    const ratio = game.stats.dirty / Math.max(1, game.stats.served);
-    let grade;
-    if (ratio === 0 && game.stats.abandoned === 0) grade = 'S';
-    else if (ratio <= 0.1) grade = 'A';
-    else if (ratio <= 0.2) grade = 'B';
-    else if (ratio <= 0.35) grade = 'C';
-    else grade = 'F';
-
     shareData = {
       score: Math.floor(game.score),
-      grade: grade,
+      grade: getGrade(),
       shift: game.shift + 1,
       cleaned: game.stats.cleaned,
       served: game.stats.served,
@@ -8322,7 +8334,7 @@ function resumeGame() {
 
   if (!isMusicMuted) startMusic();
 
-  floatMessage('Game Resumed!', window.innerWidth / 2, 100, 'good');
+  floatMessage('Autosave Restored!', window.innerWidth / 2, 100, 'good');
 }
 
 // Start new game (discard saved state)
@@ -8754,18 +8766,35 @@ function updateQueuePlayersList(players) {
     }
 
     const scoreText = p.bestScore > 0 ? p.bestScore.toLocaleString() + ' pts' : 'New player';
+    const avatar = document.createElement('img');
+    avatar.className = 'mp-queue-avatar';
+    avatar.src = avatarSrc;
+    avatar.alt = '';
+    avatar.style.width = '36px';
+    avatar.style.height = '36px';
+    avatar.style.imageRendering = 'pixelated';
 
-    row.innerHTML = `
-      <img class="mp-queue-avatar" src="${avatarSrc}" alt="" style="width:36px;height:36px;image-rendering:pixelated;">
-      <div class="mp-queue-player-info">
-        <span class="mp-queue-player-name">${p.playerName}</span>
-        <span class="mp-queue-player-score">⭐ ${scoreText}</span>
-      </div>
-      <button class="btn mp-challenge-btn">Challenge</button>
-    `;
+    const info = document.createElement('div');
+    info.className = 'mp-queue-player-info';
+
+    const name = document.createElement('span');
+    name.className = 'mp-queue-player-name';
+    name.textContent = p.playerName || 'Anonymous';
+
+    const score = document.createElement('span');
+    score.className = 'mp-queue-player-score';
+    score.textContent = `⭐ ${scoreText}`;
+
+    info.append(name, score);
+
+    const button = document.createElement('button');
+    button.className = 'btn mp-challenge-btn';
+    button.textContent = 'Challenge';
+
+    row.append(avatar, info, button);
 
     // Challenge button click
-    row.querySelector('.mp-challenge-btn').addEventListener('click', () => {
+    button.addEventListener('click', () => {
       playClick();
       challengePlayer(p.deviceId);
     });
@@ -9340,10 +9369,14 @@ function startMPGame() {
   const roomSeed = parseInt(mpState.roomCode || '1234') + (mpState.mpCreatedAt || 0);
   seedRng(roomSeed);
 
-  // No powerups in 1v1 — pure skill
+  // Multiplayer starts from a clean inventory, then applies each player's saved loadout.
   game.powerups = {speed: 0, slow: 0, auto: 0, mascot: 0};
+  applyLoadout();
   const puBar = $('powerups');
-  if (puBar) puBar.style.display = 'none';
+  if (puBar) {
+    const hasLoadoutItems = Object.values(game.powerups).some(count => count > 0);
+    puBar.style.display = hasLoadoutItems ? '' : 'none';
+  }
 
   // Show opponent HUD
   $('mp-opponent-hud')?.classList.remove('hidden');
@@ -9524,7 +9557,7 @@ function checkMPEnd() {
     score: Math.floor(game.score),
     rating: game.rating,
     cleaned: game.stats.cleaned,
-    grade: getGrade(game.score),
+    grade: getGrade(),
   }).catch(e => console.log('Finish game failed:', e));
 
   // Count this as a multiplayer game played
@@ -9595,7 +9628,7 @@ async function showMPResults(room) {
 
     $('mp-result-your-name').textContent = playerName || 'You';
     $('mp-result-your-score').textContent = Math.floor(myScore).toLocaleString();
-    const myGrade = getGrade(myScore);
+    const myGrade = getGrade();
     $('mp-result-your-grade').textContent = myGrade;
     $('mp-result-your-grade').className = 'mp-result-grade grade ' + myGrade;
     $('mp-result-your-cleaned').textContent = myCleaned + ' cleaned';
