@@ -2,184 +2,138 @@
 
 A Buc-ee's themed browser game where you play as a bathroom attendant keeping stalls clean.
 
-## Current State (v5.1)
+## Current State (Season 2 / v6)
 
-Cartoony art style with reactive beaver mascot, VIP customers, health inspector events, customer fights, upgrade system, and premium features.
+Cartoony art style with reactive beaver mascot, VIP customers, health inspector events, customer fights, upgrade system, premium features, 1v1 multiplayer, 28 achievement badges, and cosmetic unlocks.
 
 ## File Structure
 ```
 /
-├── index.html       # Game HTML shell
-├── src/main.js      # All game logic (~8000+ lines)
-├── src/styles.css   # All styles
-├── src/UIOverlay.css # UI overlay styles
-├── CLAUDE.md        # This file
-├── AGENTS.md        # Agent instructions
-├── convex/          # Backend (Convex)
-├── .beads/          # Issue tracking database
-└── .pocock/         # Autonomous loop scripts
+├── index.html            # Game HTML shell
+├── src/main.js           # All game logic (~9500+ lines)
+├── src/styles.css        # All styles
+├── src/UIOverlay.css     # UI overlay styles
+├── CLAUDE.md             # This file
+├── AGENTS.md             # Agent instructions
+├── convex/               # Backend (Convex)
+│   ├── schema.ts         # DB schema (rooms, scores, matchmaking, chat, users, purchases)
+│   ├── multiplayer.ts    # Room create/join/sync/finish
+│   ├── matchmaking.ts    # Queue, challenges, chat, loadout
+│   ├── scores.ts         # Leaderboard (season 2)
+│   ├── users.ts          # User management
+│   └── admin.ts          # Admin utilities
+├── promo-video/          # Remotion promo video project
+│   ├── src/PromoVideo.tsx
+│   ├── src/scenes/       # 5 scene components
+│   └── public/audio/     # ElevenLabs VO clips
+├── .beads/               # Issue tracking database
+└── .pocock/              # Autonomous loop scripts
 ```
 
-## Recent Changes (v5.1)
+## Season 2 Changes
 
-### Customer Fight Event
-- **Random event** (20% chance per shift, after shift 1)
-- Two customers walk toward each other, argue with escalating emojis
-- Player must **rapid-tap** the fight zone to break it up (same mechanic as cleaning)
-- Quick breakup: +75 pts, +0.2 rating. Brawl timeout: -0.4 rating penalty
-- During brawl: screen shakes, nearby customer patience drains 2x, rating drops
-- Fight phases: `approaching` → `arguing` → `brawl` → `breakup` → `done`
+### 1v1 Multiplayer
+- **Quick Match** — queue-based random matchmaking
+- **Challenge system** — browse waiting players, send/accept/decline
+- **Preset chat** — 10 predefined messages during 1v1 games
+- **Score sync** — 2s polling during match
+- Backend: `convex/matchmaking.ts` (new), updated `convex/multiplayer.ts` & `schema.ts`
 
-### Supply Shop Premium Gate
-- Non-premium users see a locked overlay with "Next Shift →" button
-- Previously silently skipped with no explanation
+### Unified Grade System
+- Grade based on **final star rating**: S (5.0), A (4+), B (3+), C (2+), D (1+), F (<1)
+- Previously was based on dirty/served ratio (hidden, confusing)
+- Shown on game over screen, leaderboard, and share canvas
 
-### Lite Mode Fix
-- Auto-enable (FPS < 24) is now session-only, not saved to localStorage
-- Old stuck `beaverLowPerf` key is cleared on load
-- Only manual toggle in settings persists across sessions
+### Share Screen Redesign
+- Player's equipped cosmetic avatar (not generic beaver logo)
+- Grade circle with colored glow
+- Polished layout with wood-grain background
 
-### Previous (v5)
-- **Cartoony visual overhaul** — wood-grain doors, CSS art bodies, checkered floors
-- **Reactive beaver mascot** — 4 expressions (happy, excited, worried, sad)
-- **VIP Customers** (👑) — 2x rating impact, bigger tips
-- **Health Inspector Events** — random inspections, penalties for dirty stalls
-- **Upgrade System** — spend coins on items between shifts (premium)
-- **Messy vs Clean Customers** — different mess levels
-- **Combo Streak Bonuses** — visual fanfare at high combos
+### Achievement Badges (28)
+Earned for milestones — displayed in Badges modal on title screen:
+- **Starter:** Punch In, Getting Started, On Fire
+- **Skill:** Unstoppable, Legendary, High Scorer, Score Legend, Perfect Shift
+- **Grind:** Scrub Master, Sanitation Expert, Clean Machine, Customer Service, Lodge Legend, Hospitality King
+- **Events:** Spotless, Peacemaker, Bouncer, Fight Club, Health Nut
+- **Mastery:** Golden Plunger, Consistent, Combo God, Flawless, Last Second Hero
+- **Stats tracked:** `achievementStats` in localStorage (shiftsCompleted, totalCleaned, totalServed, totalSaves, maxCombo, sGrades, perfectInspections, fightsWon, highestScore, perfectShifts)
 
-### Customer Types
-- Regular customers (normal behavior)
-- **VIP** 👑 - High stakes, 2x rating change
-- **Urgent** - Move faster, less patience
-- **Messy** - Leave more cleaning tasks
-- **Clean** - Leave fewer tasks
+### Season 2 Cosmetic Unlocks
+5 new specials with achievement paths (also buyable with coins):
+- Luchador (5 fights), Rockstar (10k score), Wizard (500 cleans), Candy Man (3 perfect shifts), Mad Scientist (10 inspections)
 
-## Features
+## Core Features
 
 ### Customer Flow (Animated)
-1. **Enter** - Spawn at exit door, walk into bathroom
-2. **Find Stall** - Look for empty stall (or dirty if desperate)
-3. **Walk to Stall** - Walk toward chosen stall
-4. **Enter Stall** - Door opens, customer walks in and fades
-5. **Use Stall** - Invisible inside, timer counts down
-6. **Exit Stall** - Door opens, customer walks out
-7. **Wash Hands** - Walk to sink at bottom of screen
-8. **Exit** - Walk to exit door and leave
+1. **Enter** → **Find Stall** → **Walk to Stall** → **Enter Stall** → **Use Stall** → **Exit Stall** → **Wash Hands** → **Exit**
+- ~30% skip towel phase (CONFIG.towelSkipChance)
 
-### Stall States
-- **Empty** (green light) - Clean and available
-- **Occupied** (red light) - Customer inside
-- **Dirty** (yellow flashing) - Needs cleaning, has tasks
-- **Cleaning** (blue light) - Player working on it
-
-### Reactive Beaver Mascot
-The beaver in the HUD reacts to gameplay:
-- 😊 **Happy** - Default state, things going well
-- 🤩 **Excited** - Combos, stalls cleaned, bonuses
-- 😰 **Worried** - Dirty stalls piling up, low time
-- 😢 **Sad** - Rating loss, customers leaving angry
+### Customer Types
+- Regular, **VIP** (2x rating impact), **Urgent** (faster, less patience), **Messy** (more tasks), **Clean** (fewer tasks)
 
 ### Multi-Step Cleaning
-Click dirty stall → Task panel opens → Mash buttons to clean faster:
-- 🪠 **Plunge** (30% chance)
-- 🧽 **Scrub** (75% chance)
-- 🧹 **Mop** (45% chance)
-- 🧻 **Restock** (40% chance)
+Click dirty stall → Task panel → Mash buttons: Plunge (30%), Scrub (75%), Mop (45%), Restock (40%)
 
-### Health Inspector Events
-- Random inspections during shifts
-- Inspector walks around checking stalls
-- Penalty for each dirty stall found
-- Bonus for all-clean inspection
-
-### Customer Fight Events
-- 20% chance per shift (after shift 1)
-- Two customers walk toward each other and argue
-- Emojis escalate: 😠 → 😡 → 🤬 → 🤜💥🤛
-- Tap the fight zone rapidly to break it up
-- Progress bar + percentage shows breakup progress
-- If ignored: brawl with screen shake, nearby patience drain, rating loss
-- CONFIG: `fightChance`, `fightBonus`, `fightPenalty`, `fightArgueTime`, `fightBrawlDrain`
+### Events
+- **Customer Fight** — 20% chance/shift, tap to break up, phases: approaching → arguing → brawl → breakup → done
+- **Health Inspector** — 25% chance/shift, penalties per dirty stall
+- **Rush Hour** — 15% chance/shift, faster spawns
 
 ### Upgrade System
-Between shifts, spend points on:
-- **Faster Cleaning** - Reduce task time
-- **More Patience** - Customers wait longer
-- **Better Tips** - Earn more per clean
-- **Auto-Sink** - Sinks clean themselves
+Between shifts: Faster Cleaning, More Patience, Better Tips, Auto-Sink
 
 ### Power-ups
-- ⚡ **Speed** - 2x cleaning speed for 12s
-- 🐢 **Slow** - 2x slower arrivals for 12s
-- ✨ **Auto** - Instantly clean one dirty stall
+- Speed (2x cleaning 12s), Slow (2x slower arrivals 12s), Auto (instant clean one stall)
 
 ### Controls
-- **Click/Tap** stalls, sinks, towels to interact
+- **Click/Tap** stalls, sinks, towels
 - **Mash** task buttons to clean faster
-- **Spacebar** - Quick-clean active task
-- **Keyboard**: Q-P for stalls 1-10, 1-3 for power-ups
+- **Spacebar** quick-clean, **Q-P** for stalls 1-10, **1-3** for power-ups
 
 ## Technical Details
 
 ### Key Config
 ```javascript
-shifts: [
-  {stalls:5, sinks:2, spawnMin:4300, spawnMax:6400, ...},
-  // ... 6 total shifts with scaling difficulty
-],
-patience: 10000,      // Customer patience (ms)
-walkSpeed: 120,       // Pixels per second
-baseTaskTime: 1200,   // Base time per task (ms)
-clickBoost: 50,       // Each click reduces task time
-fightChance: 0.2,     // 20% chance of fight per shift
-fightBonus: 75,       // Points for quick breakup
-fightArgueTime: 5000, // ms before arguing becomes brawl
+shifts: [/* 6 total with scaling difficulty */],
+patience: 10000, walkSpeed: 120, baseTaskTime: 1200, clickBoost: 50,
+fightChance: 0.2, fightBonus: 75, fightArgueTime: 5000
 ```
 
-### Customer Phases
-`enter` → `findStall` → `toStall` → `entering` → `inStall` → `exitStall` → `toSink` → `washing` → `toTowels` → `exit`
-Note: ~30% of customers skip `toTowels` phase (CONFIG.towelSkipChance)
+### Audio
+Web Audio API with procedural sounds (clicks, fanfares, beeps, alerts)
 
-### Audio System
-Uses Web Audio API with procedural sounds:
-- Task clicks, completions, stall clean fanfares
-- Urgent beeping when time is low
-- Rush hour alerts
-- Victory/failure sounds
+### Premium Gating
+- Supply Shop locked overlay for non-premium
+- Soft paywall after Shift 3
+- $2.99 one-time via Stripe
 
 ## Development
 
-### Issue Tracking (Beads)
+### Deploy
 ```bash
-bd list              # See all issues
-bd ready             # See available work
-bd show <id>         # View issue details
+npx convex deploy --yes                                    # Backend
+vercel pull && vercel build --prod && vercel deploy --prod --prebuilt  # Frontend
 ```
 
-### Autonomous Loop (Pocock)
+### Issue Tracking (Beads)
 ```bash
-./.pocock/once.sh                    # Single iteration
-./.pocock/loop.sh 10                 # 10 iterations
-./.pocock/loop.sh 5 --epic <id>      # Work on specific epic
+bd list / bd ready / bd show <id>
+```
+
+### Promo Video
+```bash
+cd promo-video && npm start  # Remotion Studio at localhost:3002
 ```
 
 ## How to Test
 1. Run `npx vite` and open the local URL
-2. Select Men's or Women's restroom
-3. Click "Clock In!"
-4. Play through shifts — fights can trigger on shift 2+
-5. Watch for the red "FIGHT BREAKING OUT!" banner
-6. Tap the fight zone rapidly to break it up
-7. Survive health inspector visits
-8. Non-premium users see locked Supply Shop overlay between shifts
+2. Select Men's or Women's restroom → "Clock In!"
+3. Play through shifts — fights trigger on shift 2+
+4. Check badges modal, outfitter, leaderboard
+5. Test 1v1: open two tabs → Quick Match → both should find each other
 
 ## Buc-ee's Theme Elements
-- **Beaver mascot** with reactive expressions
-- "Dam Good Restrooms - Since 1982" tagline
-- Warm brown/orange color palette
-- Wood-grain textures
-- Rest stop bathroom humor
-- Texas road trip references
-- Checkered tile floors
-- "Lodge quality" messaging
+- Beaver mascot with reactive expressions
+- Warm brown/orange color palette, wood-grain textures
+- Rest stop bathroom humor, Texas road trip references
+- Checkered tile floors, "Lodge quality" messaging
