@@ -138,6 +138,7 @@ export default defineSchema({
       fur: v.optional(v.string()),
     })),
     queuedAt: v.number(),
+    lastSeenAt: v.optional(v.number()),
   }).index("by_status", ["status"])
     .index("by_device", ["deviceId"]),
 

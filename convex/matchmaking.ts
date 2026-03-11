@@ -8,6 +8,13 @@ const VALID_CHAT_IDS = [
 
 // Valid loadout item IDs
 const VALID_LOADOUT_ITEMS = ["speed", "slow", "auto"];
+const QUEUE_STALE_MS = 20000;
+
+function isQueueEntryActive(entry: { status: string; queuedAt: number; lastSeenAt?: number }) {
+  if (entry.status !== "waiting") return false;
+  const lastSeenAt = entry.lastSeenAt ?? entry.queuedAt;
+  return Date.now() - lastSeenAt <= QUEUE_STALE_MS;
+}
 
 function generateCode(): string {
   return Math.floor(1000 + Math.random() * 9000).toString();
@@ -94,7 +101,10 @@ export const joinQueue = mutation({
         .withIndex("by_status", (q) => q.eq("status", "waiting"))
         .collect();
 
-      const opponent = waitingPlayers.find((p) => p.deviceId !== args.deviceId);
+      const opponent = waitingPlayers.find((p) => {
+        if (p.deviceId === args.deviceId) return false;
+        return isQueueEntryActive(p);
+      });
 
       if (opponent) {
         const code = await createQuickMatchRoom(ctx, opponent, {
@@ -112,6 +122,7 @@ export const joinQueue = mutation({
           status: "matched",
           roomCode: code,
           queuedAt: Date.now(),
+          lastSeenAt: Date.now(),
         });
 
         return { queueId, status: "matched", roomCode: code };
@@ -125,6 +136,7 @@ export const joinQueue = mutation({
       cosmetics: args.cosmetics,
       status: "waiting",
       queuedAt: Date.now(),
+      lastSeenAt: Date.now(),
     });
 
     return { queueId, status: "waiting" };
@@ -147,7 +159,7 @@ export const challengePlayer = mutation({
       .withIndex("by_device", (q) => q.eq("deviceId", args.targetDeviceId))
       .collect();
 
-    const target = targetEntries.find((e) => e.status === "waiting");
+    const target = targetEntries.find((e) => isQueueEntryActive(e));
     if (!target) {
       return { error: "Player is no longer available" };
     }
@@ -180,7 +192,7 @@ export const acceptChallenge = mutation({
       .withIndex("by_device", (q) => q.eq("deviceId", args.deviceId))
       .collect();
 
-    const myEntry = myEntries.find((e) => e.status === "waiting" && e.challengeFrom);
+    const myEntry = myEntries.find((e) => isQueueEntryActive(e) && e.challengeFrom);
     if (!myEntry || !myEntry.challengeFrom) {
       return { error: "No pending challenge" };
     }
@@ -191,7 +203,7 @@ export const acceptChallenge = mutation({
       .withIndex("by_device", (q) => q.eq("deviceId", myEntry.challengeFrom))
       .collect();
 
-    const challenger = challengerEntries.find((e) => e.status === "waiting");
+    const challenger = challengerEntries.find((e) => isQueueEntryActive(e));
     if (!challenger) {
       // Challenger left — clear the challenge
       await ctx.db.patch(myEntry._id, {
@@ -289,6 +301,35 @@ export const pollQueue = query({
   },
 });
 
+export const heartbeatQueue = mutation({
+  args: {
+    deviceId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+    const entries = await ctx.db
+      .query("matchmakingQueue")
+      .withIndex("by_device", (q) => q.eq("deviceId", args.deviceId))
+      .collect();
+
+    const latestWaiting = entries
+      .filter((entry) => entry.status === "waiting")
+      .sort((a, b) => b.queuedAt - a.queuedAt)[0];
+
+    for (const entry of entries) {
+      if (entry.status !== "waiting") continue;
+      const isLatest = latestWaiting && entry._id === latestWaiting._id;
+      if (isLatest) {
+        await ctx.db.patch(entry._id, { lastSeenAt: now });
+      } else {
+        await ctx.db.patch(entry._id, { status: "expired" });
+      }
+    }
+
+    return { success: true };
+  },
+});
+
 // Get all players currently waiting in the queue
 export const getWaitingPlayers = query({
   args: {},
@@ -298,8 +339,10 @@ export const getWaitingPlayers = query({
       .withIndex("by_status", (q) => q.eq("status", "waiting"))
       .collect();
 
+    const activePlayers = players.filter((player) => isQueueEntryActive(player));
+
     // Look up best score for each player
-    const results = await Promise.all(players.map(async (p) => {
+    const results = await Promise.all(activePlayers.map(async (p) => {
       // Find user by deviceId to get their scores
       const user = await ctx.db
         .query("users")

@@ -307,6 +307,7 @@ export function createMultiplayerPregameController({
     if (!mpState.isSearching) return;
 
     try {
+      await convex.mutation(api.matchmaking.heartbeatQueue, { deviceId: getDeviceId() });
       const result = await convex.query(api.matchmaking.pollQueue, { deviceId: getDeviceId() });
       if (result.status === 'matched' && result.roomCode) {
         foundQuickMatch(result.roomCode);
