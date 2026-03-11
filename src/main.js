@@ -377,9 +377,9 @@ const CONFIG = {
   towelSkipChance: 0.3,  // 30% of customers skip towel drying
   // Mess spawn chances per source (base values, scaled by shift)
   messChance: {
-    sinkSplash: 0.08,    // Water puddle after sink use
-    stallAccident: 0.15, // Pee puddle on angry leave
-    walkwayRandom: 0.02, // Random mess during rush
+    sinkSplash: 0.03,    // Water puddle after sink use
+    stallAccident: 0.08, // Pee puddle on angry leave
+    walkwayRandom: 0.008, // Random mess during rush
     vomitSick: 0.10,     // Vomit from sick customers
   },
   // Mess frequency scales up per shift: shift 0 = 0, shift 1 = 0.3, ... shift 5 = 1.0
@@ -2365,18 +2365,20 @@ const perf = {
   lastHudUpdate: 0,
   hudUpdateInterval: 50, // Update HUD every 50ms instead of every frame
   lowPerfMode: false,
-  lowPerfThreshold: 24, // FPS below this triggers low-perf mode
+  lowPerfThreshold: 18, // Only drop to lite mode on clearly poor sustained FPS
   autoLiteNotified: false, // Prevent repeated auto-enable notifications
   frameCount: 0,
   lastFpsCheck: 0,
   currentFps: 60,
+  lowPerfStrikeCount: 0,
+  lowPerfGracePeriod: 5000,
 };
 
 // Check if device is likely mobile
 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 // Initialize low-perf mode from manual preference only
-const savedLowPerf = localStorage.getItem('beaverLowPerfManual');
+const savedLowPerf = localStorage.getItem('beaverLowPerfOptIn');
 if (savedLowPerf === 'true') {
   document.addEventListener('DOMContentLoaded', () => {
     document.body.classList.add('low-perf');
@@ -2386,6 +2388,8 @@ if (savedLowPerf === 'true') {
 }
 // Clear old auto-saved key so users aren't stuck in lite mode
 localStorage.removeItem('beaverLowPerf');
+// Reset the old manual key so existing users start in full visual mode unless they opt back in.
+localStorage.removeItem('beaverLowPerfManual');
 
 // Enable low performance mode (reduces visual effects)
 function setLowPerfMode(enabled) {
@@ -2409,9 +2413,18 @@ function updatePerfMonitor(now) {
     perf.lastFpsCheck = now;
 
     // Auto-enable low-perf mode if FPS drops (session only, not saved)
-    if (perf.currentFps < perf.lowPerfThreshold && !perf.lowPerfMode && !perf.autoLiteNotified) {
+    if (now < perf.lowPerfGracePeriod) return;
+
+    if (perf.currentFps < perf.lowPerfThreshold) {
+      perf.lowPerfStrikeCount++;
+    } else {
+      perf.lowPerfStrikeCount = 0;
+    }
+
+    if (perf.lowPerfStrikeCount >= 3 && !perf.lowPerfMode && !perf.autoLiteNotified) {
       setLowPerfMode(true);
       perf.autoLiteNotified = true;
+      perf.lowPerfStrikeCount = 0;
       // Don't save to localStorage — only persist if user manually toggles
       console.log('Auto-enabled Lite Mode (FPS:', perf.currentFps, ')');
     }
@@ -2635,7 +2648,7 @@ function toggleMusic() {
 
 function togglePerfMode() {
   setLowPerfMode(!perf.lowPerfMode);
-  localStorage.setItem('beaverLowPerfManual', perf.lowPerfMode);
+  localStorage.setItem('beaverLowPerfOptIn', perf.lowPerfMode);
   updateSettingsUI();
 }
 
@@ -4548,15 +4561,15 @@ function spawnCustomer() {
   if (floor && mScale > 0) {
     const floorRect = floor.getBoundingClientRect();
     // Muddy boots on entry (messy customers or random chance)
-    if (rand() < (messiness === 1 ? 1.0 : 0.08) * mScale) {
+    if (rand() < (messiness === 1 ? 0.2 : 0.03) * mScale) {
       spawnPuddle(p.x + rnd(-20, 20), floorRect.height - rnd(10, floorRect.height * 0.6), 'muddy');
     }
     // Urgent customers might have a pee accident on entry
-    if (isUrgent && rand() < 0.2 * mScale) {
+    if (isUrgent && rand() < 0.05 * mScale) {
       spawnPuddle(p.x + rnd(-25, 25), floorRect.height - rnd(20, floorRect.height * 0.6), 'pee');
     }
     // Small chance of vomit on arrival (sick travelers)
-    if (rand() < (messiness === 1 ? 0.1 : 0.03) * mScale) {
+    if (rand() < (messiness === 1 ? 0.03 : 0.01) * mScale) {
       spawnPuddle(p.x + rnd(-20, 20), floorRect.height - rnd(15, floorRect.height * 0.6), 'vomit');
     }
   }
@@ -5124,7 +5137,7 @@ function customerLeaves(stallIdx) {
     person.phase = 'exitStall';
 
     // Chance of floor mess when exiting - messy customers more likely, scaled by shift
-    const baseMessChance = person.messiness === 1 ? 0.35 : (person.messiness === -1 ? 0.05 : 0.15);
+    const baseMessChance = person.messiness === 1 ? 0.14 : (person.messiness === -1 ? 0.02 : 0.06);
     if (rand() < baseMessChance * getMessScale()) {
       const messRoll = rand();
       const messType = messRoll < 0.4 ? 'pee' : (messRoll < 0.75 ? 'vomit' : 'muddy');
@@ -5990,6 +6003,7 @@ function updateTaskPanel() {
   const stall = game.stalls[game.activeStall];
   if (!stall || !stall.tasks) return;
   const btns = $('task-buttons').querySelectorAll('.task-btn');
+  $('task-title').textContent = `Stall ${game.activeStall + 1} - ${stall.tasks.filter(t => t.done).length}/${stall.tasks.length} done`;
 
   btns.forEach((btn, ti) => {
     if (ti >= stall.tasks.length) return;
@@ -5997,7 +6011,10 @@ function updateTaskPanel() {
     const progEl = btn.querySelector('.progress');
     if (progEl) progEl.style.width = Math.min(100, progress) + '%';
     btn.classList.toggle('active', game.activeTask === ti && !stall.tasks[ti].done);
+    btn.classList.toggle('done', !!stall.tasks[ti].done);
   });
+
+  updateStallDOM(game.activeStall);
 }
 
 function hideTaskPanel() {
