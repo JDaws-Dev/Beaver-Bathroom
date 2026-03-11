@@ -549,6 +549,12 @@ export function createMultiplayerPregameController({
         return;
       }
 
+      if (room.status === 'playing') {
+        stopLobbyPolling();
+        startMPGame();
+        return;
+      }
+
       if (mpState.isHost) {
         if (room.guestName) {
           $('mp-guest-name').textContent = room.guestName;
@@ -617,8 +623,9 @@ export function createMultiplayerPregameController({
         return;
       }
 
-      stopLobbyPolling();
-      startMPGame();
+      $('mp-start-btn').disabled = true;
+      $('mp-start-btn').textContent = 'Starting...';
+      await pollLobby();
     } catch (error) {
       console.error('Failed to start game:', error);
     }
