@@ -7800,6 +7800,7 @@ let mpState = {
   roomCode: null,
   opponentName: '',
   opponentCosmetics: null,
+  loadout: [null, null, null],
   lobbyPollTimer: null,
   scoreSyncTimer: null,
   gamesPlayed: parseInt(localStorage.getItem('beaverMPGamesPlayed') || '0'),
@@ -7918,6 +7919,9 @@ function initLoadoutUI() {
 }
 
 function addToLoadout(itemId, icon, name) {
+  if (!Array.isArray(mpState.loadout)) {
+    mpState.loadout = [null, null, null];
+  }
   // Find first empty slot
   const emptyIdx = mpState.loadout.indexOf(null);
   if (emptyIdx === -1) return; // All slots full
@@ -7949,7 +7953,7 @@ for (let i = 0; i < 3; i++) {
 
 async function syncLoadout() {
   if (!mpState.roomCode) return;
-  const loadout = mpState.loadout.filter(x => x !== null);
+  const loadout = Array.isArray(mpState.loadout) ? mpState.loadout.filter(x => x !== null) : [];
   try {
     await convex.mutation(api.matchmaking.setLoadout, {
       code: mpState.roomCode,
@@ -8024,7 +8028,7 @@ function startMPGame() {
 
 // Apply loadout items as extra power-ups at game start
 function applyLoadout() {
-  const loadout = mpState.loadout.filter(x => x !== null);
+  const loadout = Array.isArray(mpState.loadout) ? mpState.loadout.filter(x => x !== null) : [];
   if (loadout.length === 0) return;
   for (const itemId of loadout) {
     if (game.powerups && game.powerups[itemId] !== undefined) {
