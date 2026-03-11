@@ -65,68 +65,72 @@
       </div>
 
       <!-- Main action buttons -->
-      <button class="btn btn-play" id="start-btn">PLAY</button>
-      <button class="btn btn-1v1" id="multiplayer-btn">⚔️ 1v1 BATTLE</button>
-
-      <!-- Icon dock for menu items -->
-      <div class="title-dock">
-        <div class="dock-item">
-          <button class="dock-btn" id="leaderboard-btn">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-          </button>
-          <span class="dock-label">Ranks</span>
-        </div>
-        <div class="dock-item">
-          <button class="dock-btn" id="achievements-btn">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4C2.9 2 2 2.9 2 4V8C2 8.55 2.45 9 3 9H4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V9H21C21.55 9 22 8.55 22 8V4C22 2.9 21.1 2 20 2ZM18 20H6V9H18V20ZM20 7H4V4H20V7ZM13 11H11V14H8V16H11V19H13V16H16V14H13V11Z"/></svg>
-          </button>
-          <span class="dock-label">Badges</span>
-        </div>
-        <!-- Daily Challenge hidden for now -->
-        <div class="dock-item" style="display:none">
-          <button class="dock-btn" id="daily-btn">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H18V1H16V3H8V1H6V3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V8H19V19ZM9 10H7V12H9V10ZM13 10H11V12H13V10ZM17 10H15V12H17V10ZM9 14H7V16H9V14ZM13 14H11V16H13V14Z"/></svg>
-          </button>
-          <span class="dock-label">Daily</span>
-        </div>
-        <div class="dock-item">
-          <button class="dock-btn" id="outfitter-btn">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.6 18.2L13 11.75V5.3L15.45 2.55C15.85 2.1 15.55 1.5 14.95 1.5H9.05C8.45 1.5 8.15 2.1 8.55 2.55L11 5.3V11.75L2.4 18.2C1.6 18.8 2.05 20 3.05 20H20.95C21.95 20 22.4 18.8 21.6 18.2Z"/></svg>
-          </button>
-          <span class="dock-label">Outfitter</span>
-          <span class="dock-badge" id="outfitter-badge" style="display:none">0</span>
-        </div>
-        <div class="dock-item">
-          <button class="dock-btn" id="title-settings-btn">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94C19.18 12.64 19.2 12.33 19.2 12C19.2 11.68 19.18 11.36 19.13 11.06L21.16 9.48C21.34 9.34 21.39 9.07 21.28 8.87L19.36 5.55C19.24 5.33 18.99 5.26 18.77 5.33L16.38 6.29C15.88 5.91 15.35 5.59 14.76 5.35L14.4 2.81C14.36 2.57 14.16 2.4 13.92 2.4H10.08C9.84 2.4 9.65 2.57 9.61 2.81L9.25 5.35C8.66 5.59 8.12 5.92 7.63 6.29L5.24 5.33C5.02 5.25 4.77 5.33 4.65 5.55L2.74 8.87C2.62 9.08 2.66 9.34 2.86 9.48L4.89 11.06C4.84 11.36 4.8 11.69 4.8 12C4.8 12.31 4.82 12.64 4.87 12.94L2.84 14.52C2.66 14.66 2.61 14.93 2.72 15.13L4.64 18.45C4.76 18.67 5.01 18.74 5.23 18.67L7.62 17.71C8.12 18.09 8.65 18.41 9.24 18.65L9.6 21.19C9.65 21.43 9.84 21.6 10.08 21.6H13.92C14.16 21.6 14.36 21.43 14.39 21.19L14.75 18.65C15.34 18.41 15.88 18.09 16.37 17.71L18.76 18.67C18.98 18.75 19.23 18.67 19.35 18.45L21.27 15.13C21.39 14.91 21.34 14.66 21.15 14.52L19.14 12.94ZM12 15.6C10.02 15.6 8.4 13.98 8.4 12C8.4 10.02 10.02 8.4 12 8.4C13.98 8.4 15.6 10.02 15.6 12C15.6 13.98 13.98 15.6 12 15.6Z"/></svg>
-          </button>
-          <span class="dock-label">Settings</span>
-        </div>
+      <div class="title-main-actions">
+        <button class="btn btn-play" id="start-btn">PLAY</button>
+        <button class="btn btn-1v1" id="multiplayer-btn">⚔️ 1v1 BATTLE</button>
       </div>
 
-      <!-- Google Sign-In on title screen -->
-      <div id="title-signin-row" style="margin:8px auto 0;text-align:center;">
-        <button id="title-google-signin" style="background:none;border:none;color:#bbb;font-size:11px;cursor:pointer;text-decoration:underline;padding:4px 8px;">Sign in with Google</button>
-        <div id="title-signed-in" style="display:none;color:#ffe4a0;font-size:13px;">
-          <span id="title-signed-in-name"></span> ✓
-          <button id="title-google-signout" style="background:none;border:none;color:#999;font-size:11px;cursor:pointer;text-decoration:underline;padding:2px 6px;margin-left:4px;">Sign out</button>
+      <div class="title-utility">
+        <!-- Icon dock for menu items -->
+        <div class="title-dock">
+          <div class="dock-item">
+            <button class="dock-btn" id="leaderboard-btn">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+            </button>
+            <span class="dock-label">Ranks</span>
+          </div>
+          <div class="dock-item">
+            <button class="dock-btn" id="achievements-btn">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4C2.9 2 2 2.9 2 4V8C2 8.55 2.45 9 3 9H4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V9H21C21.55 9 22 8.55 22 8V4C22 2.9 21.1 2 20 2ZM18 20H6V9H18V20ZM20 7H4V4H20V7ZM13 11H11V14H8V16H11V19H13V16H16V14H13V11Z"/></svg>
+            </button>
+            <span class="dock-label">Badges</span>
+          </div>
+          <!-- Daily Challenge hidden for now -->
+          <div class="dock-item" style="display:none">
+            <button class="dock-btn" id="daily-btn">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H18V1H16V3H8V1H6V3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V8H19V19ZM9 10H7V12H9V10ZM13 10H11V12H13V10ZM17 10H15V12H17V10ZM9 14H7V16H9V14ZM13 14H11V16H13V14Z"/></svg>
+            </button>
+            <span class="dock-label">Daily</span>
+          </div>
+          <div class="dock-item">
+            <button class="dock-btn" id="outfitter-btn">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.6 18.2L13 11.75V5.3L15.45 2.55C15.85 2.1 15.55 1.5 14.95 1.5H9.05C8.45 1.5 8.15 2.1 8.55 2.55L11 5.3V11.75L2.4 18.2C1.6 18.8 2.05 20 3.05 20H20.95C21.95 20 22.4 18.8 21.6 18.2Z"/></svg>
+            </button>
+            <span class="dock-label">Outfitter</span>
+            <span class="dock-badge" id="outfitter-badge" style="display:none">0</span>
+          </div>
+          <div class="dock-item">
+            <button class="dock-btn" id="title-settings-btn">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94C19.18 12.64 19.2 12.33 19.2 12C19.2 11.68 19.18 11.36 19.13 11.06L21.16 9.48C21.34 9.34 21.39 9.07 21.28 8.87L19.36 5.55C19.24 5.33 18.99 5.26 18.77 5.33L16.38 6.29C15.88 5.91 15.35 5.59 14.76 5.35L14.4 2.81C14.36 2.57 14.16 2.4 13.92 2.4H10.08C9.84 2.4 9.65 2.57 9.61 2.81L9.25 5.35C8.66 5.59 8.12 5.92 7.63 6.29L5.24 5.33C5.02 5.25 4.77 5.33 4.65 5.55L2.74 8.87C2.62 9.08 2.66 9.34 2.86 9.48L4.89 11.06C4.84 11.36 4.8 11.69 4.8 12C4.8 12.31 4.82 12.64 4.87 12.94L2.84 14.52C2.66 14.66 2.61 14.93 2.72 15.13L4.64 18.45C4.76 18.67 5.01 18.74 5.23 18.67L7.62 17.71C8.12 18.09 8.65 18.41 9.24 18.65L9.6 21.19C9.65 21.43 9.84 21.6 10.08 21.6H13.92C14.16 21.6 14.36 21.43 14.39 21.19L14.75 18.65C15.34 18.41 15.88 18.09 16.37 17.71L18.76 18.67C18.98 18.75 19.23 18.67 19.35 18.45L21.27 15.13C21.39 14.91 21.34 14.66 21.15 14.52L19.14 12.94ZM12 15.6C10.02 15.6 8.4 13.98 8.4 12C8.4 10.02 10.02 8.4 12 8.4C13.98 8.4 15.6 10.02 15.6 12C15.6 13.98 13.98 15.6 12 15.6Z"/></svg>
+            </button>
+            <span class="dock-label">Settings</span>
+          </div>
         </div>
-      </div>
 
-      <!-- High score + premium link -->
-      <div class="title-bottom-row">
-        <p class="high-score" id="title-high-score">🏆 High Score: <span id="high-score-val">0</span></p>
-        <button class="btn-help btn-unlock-premium" id="unlock-premium-btn" style="display:none">🔓 Unlock Premium</button>
-      </div>
+        <!-- Google Sign-In on title screen -->
+        <div id="title-signin-row" style="margin:8px auto 0;text-align:center;">
+          <button id="title-google-signin" style="background:none;border:none;color:#bbb;font-size:11px;cursor:pointer;text-decoration:underline;padding:4px 8px;">Sign in with Google</button>
+          <div id="title-signed-in" style="display:none;color:#ffe4a0;font-size:13px;">
+            <span id="title-signed-in-name"></span> ✓
+            <button id="title-google-signout" style="background:none;border:none;color:#999;font-size:11px;cursor:pointer;text-decoration:underline;padding:2px 6px;margin-left:4px;">Sign out</button>
+          </div>
+        </div>
 
-      <!-- Legal footer -->
-      <div class="title-footer">
-        <div class="footer-links">
-          <button class="footer-link" id="privacy-btn">Privacy</button>
-          <span class="footer-sep">·</span>
-          <button class="footer-link" id="terms-btn">Terms</button>
-          <span class="footer-sep">·</span>
-          <a href="mailto:jeremiah@getsafefamily.com" class="footer-link">Contact</a>
+        <!-- High score + premium link -->
+        <div class="title-bottom-row">
+          <p class="high-score" id="title-high-score">🏆 High Score: <span id="high-score-val">0</span></p>
+          <button class="btn-help btn-unlock-premium" id="unlock-premium-btn" style="display:none">🔓 Unlock Premium</button>
+        </div>
+
+        <!-- Legal footer -->
+        <div class="title-footer">
+          <div class="footer-links">
+            <button class="footer-link" id="privacy-btn">Privacy</button>
+            <span class="footer-sep">·</span>
+            <button class="footer-link" id="terms-btn">Terms</button>
+            <span class="footer-sep">·</span>
+            <a href="mailto:jeremiah@getsafefamily.com" class="footer-link">Contact</a>
+          </div>
         </div>
       </div>
     </div>
@@ -216,6 +220,7 @@
         <hr class="setting-divider">
         <div class="settings-actions">
           <button id="settings-how-to-play" class="settings-action-btn">❓ How to Play</button>
+          <button id="settings-whats-new" class="settings-action-btn">🆕 Season Notes</button>
           <button id="settings-main-menu" class="settings-action-btn">🏠 Main Menu</button>
           <button id="reset-progress" class="settings-action-btn danger">🗑️ Reset Progress</button>
         </div>

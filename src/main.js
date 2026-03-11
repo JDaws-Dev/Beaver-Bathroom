@@ -1,5 +1,11 @@
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../convex/_generated/api";
+import { createTitleScreenController } from "./titleScreen.js";
+import { createSaveStateController } from "./saveState.js";
+import { createLeaderboardsController } from "./leaderboards.js";
+import { createSettingsController } from "./settingsController.js";
+import { createDailyChallengeController } from "./dailyChallengeModal.js";
+import { createMultiplayerPregameController } from "./multiplayerPregame.js";
 
 // Initialize Convex client
 const convex = new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL);
@@ -246,85 +252,19 @@ function trackEvent(type, data = {}) {
   }
 }
 
-// Leaderboard state
-let leaderboardData = [];
+const leaderboardsController = createLeaderboardsController({
+  $,
+  convex,
+  api,
+  getPlayerName: () => playerName,
+  getCurrentUserId: () => currentUser?.id || null,
+  getTodayString,
+});
 
-// Fetch leaderboard on load
-async function fetchLeaderboard() {
-  try {
-    leaderboardData = await convex.query(api.scores.getTopScores, { limit: 10 });
-    updateLeaderboardUI();
-  } catch (e) {
-    console.log('Leaderboard offline:', e);
-  }
-}
-
-// Submit score to leaderboard
-async function submitScore(score, shift, grade) {
-  if (!playerName) return null;
-  try {
-    const scoreId = await convex.mutation(api.scores.submitScore, {
-      playerName,
-      score,
-      shift,
-      grade,
-      userId: currentUser?.id || null,
-    });
-    await fetchLeaderboard();
-    return scoreId;
-  } catch (e) {
-    console.log('Score submit failed:', e);
-    return null;
-  }
-}
-
-function createLeaderboardRow(scoreEntry, rankIndex) {
-  const row = document.createElement('div');
-  row.className = 'lb-row';
-  if (scoreEntry.playerName === playerName) row.classList.add('lb-you');
-
-  const rank = document.createElement('span');
-  rank.className = 'lb-rank';
-  rank.textContent = String(rankIndex + 1);
-
-  const name = document.createElement('span');
-  name.className = 'lb-name';
-  name.textContent = scoreEntry.playerName || 'Anonymous';
-
-  const score = document.createElement('span');
-  score.className = 'lb-score';
-  score.textContent = Number(scoreEntry.score || 0).toLocaleString();
-
-  const grade = document.createElement('span');
-  grade.className = 'lb-grade';
-  grade.textContent = scoreEntry.grade || '-';
-
-  row.append(rank, name, score, grade);
-  return row;
-}
-
-function renderLeaderboardList(container, scores, emptyText) {
-  if (!container) return;
-  container.innerHTML = '';
-
-  if (!scores || scores.length === 0) {
-    const empty = document.createElement('div');
-    empty.className = 'lb-empty';
-    empty.textContent = emptyText;
-    container.appendChild(empty);
-    return;
-  }
-
-  scores.forEach((scoreEntry, rankIndex) => {
-    container.appendChild(createLeaderboardRow(scoreEntry, rankIndex));
-  });
-}
-
-// Update leaderboard display
-function updateLeaderboardUI() {
-  renderLeaderboardList($('leaderboard-list'), leaderboardData, 'No scores yet. Be the first!');
-  renderLeaderboardList($('go-leaderboard-list'), leaderboardData, 'No scores yet. Be the first!');
-}
+const fetchLeaderboard = (...args) => leaderboardsController.fetchLeaderboard(...args);
+const submitScore = (...args) => leaderboardsController.submitScore(...args);
+const submitDailyScore = (...args) => leaderboardsController.submitDailyScore(...args);
+const fetchDailyLeaderboard = (...args) => leaderboardsController.fetchDailyLeaderboard(...args);
 
 // Track page visit for analytics
 async function trackPageVisit() {
@@ -1256,107 +1196,6 @@ function closeAchievementsModal() {
 }
 
 // =============================================================================
-// PREVIEW MODAL (for locked premium features)
-// =============================================================================
-
-const PREVIEW_CONTENT = {
-  achievements: {
-    icon: '🎖️',
-    title: 'Badges',
-    desc: 'Track your progress with achievements and show off your skills!',
-    count: `${ACHIEVEMENTS.length} achievements to earn!`,
-    items: ACHIEVEMENTS.slice(0, 6).map(a => ({
-      icon: a.icon,
-      name: a.name,
-      desc: a.desc
-    }))
-  },
-  leaderboard: {
-    icon: '🏆',
-    title: 'Leaderboard',
-    desc: 'Compete with players worldwide for the highest scores!',
-    count: 'Global rankings updated in real-time!',
-    items: [
-      { icon: '🥇', name: 'Gold Trophy', desc: 'Top 1 worldwide' },
-      { icon: '🥈', name: 'Silver Trophy', desc: 'Top 2-3 worldwide' },
-      { icon: '🥉', name: 'Bronze Trophy', desc: 'Top 4-10 worldwide' },
-      { icon: '📊', name: 'Your Rank', desc: 'See where you stand' },
-      { icon: '🔄', name: 'Live Updates', desc: 'Real-time score tracking' }
-    ]
-  },
-  shop: {
-    icon: '🛒',
-    title: 'Supply Shop',
-    desc: 'Purchase permanent upgrades to boost your bathroom cleaning skills!',
-    count: '12 upgrades available!',
-    items: [
-      { icon: '🧹', name: 'Quick Scrub', desc: 'Faster cleaning speed' },
-      { icon: '🕐', name: 'Patience Plus', desc: 'Customers wait longer' },
-      { icon: '🎯', name: 'Auto-Assist', desc: 'Tasks auto-complete sometimes' },
-      { icon: '⚡', name: 'Speed Boost', desc: '2x cleaning for 10s' },
-      { icon: '🧊', name: 'Icee Freeze', desc: 'Slow down spawns' }
-    ]
-  },
-  badges: {
-    icon: '🎖️',
-    title: 'Badges',
-    desc: 'Earn badges for completing challenges and milestones!',
-    count: `${ACHIEVEMENTS.length} achievements to earn!`,
-    items: ACHIEVEMENTS.slice(0, 5).map(a => ({
-      icon: a.icon,
-      name: a.name,
-      desc: a.desc
-    }))
-  }
-};
-
-function showPreviewModal(feature) {
-  const content = PREVIEW_CONTENT[feature];
-  if (!content) return;
-
-  $('preview-icon').textContent = content.icon;
-  $('preview-title').textContent = content.title;
-  $('preview-desc').textContent = content.desc;
-  $('preview-count').textContent = content.count;
-
-  const list = $('preview-list');
-  list.innerHTML = content.items.map(item => `
-    <div class="preview-item">
-      <span class="preview-item-icon">${item.icon}</span>
-      <span class="preview-item-name">${item.name}</span>
-      <span class="preview-item-lock">🔒</span>
-    </div>
-  `).join('');
-
-  $('preview-modal').classList.add('active');
-  playClick();
-}
-
-function closePreviewModal() {
-  $('preview-modal').classList.remove('active');
-}
-
-// Update title screen buttons based on premium status
-function updateTitleButtonStates() {
-  const achievementsBtn = $('achievements-btn');
-  const leaderboardBtn = $('leaderboard-btn');
-  const unlockPremiumBtn = $('unlock-premium-btn');
-
-  if (isPremium()) {
-    // Premium users see unlocked buttons
-    achievementsBtn?.classList.remove('locked');
-    leaderboardBtn?.classList.remove('locked');
-    // Hide unlock premium button
-    unlockPremiumBtn?.classList.add('hidden');
-  } else {
-    // Free users see locked buttons
-    achievementsBtn?.classList.add('locked');
-    leaderboardBtn?.classList.add('locked');
-    // Show unlock premium button
-    unlockPremiumBtn?.classList.remove('hidden');
-  }
-}
-
 // =============================================================================
 // DAILY LOGIN REWARD SYSTEM
 // =============================================================================
@@ -1753,7 +1592,7 @@ async function handleRestoreCheck() {
       setTimeout(() => {
         closePaywallModal();
         floatMessage('🎉 Premium Restored!', window.innerWidth / 2, 100, 'good');
-        updateTitleButtonStates();
+        titleScreenController.updateTitleButtonStates();
       }, 1500);
       return true;
     } else {
@@ -1798,7 +1637,7 @@ async function checkStripeReturn() {
         window.history.replaceState({}, document.title, cleanUrl);
 
         // Update title screen buttons to show unlocked state
-        updateTitleButtonStates();
+        titleScreenController.updateTitleButtonStates();
         updatePremiumUI();
 
         // Show payment success modal
@@ -1822,7 +1661,7 @@ async function checkStripeReturn() {
     setPremium();
     const cleanUrl = window.location.origin + window.location.pathname;
     window.history.replaceState({}, document.title, cleanUrl);
-    updateTitleButtonStates();
+    titleScreenController.updateTitleButtonStates();
     setTimeout(() => {
       playWin();
       showPaymentSuccessModal();
@@ -1870,7 +1709,7 @@ async function redeemCoupon() {
       closePaywallModal();
       playWin();
       floatMessage('🎉 Premium Unlocked!', window.innerWidth / 2, 100, 'good');
-      updateTitleButtonStates();
+      titleScreenController.updateTitleButtonStates();
 
       // Clear input
       input.value = '';
@@ -1894,6 +1733,20 @@ async function redeemCoupon() {
     redeemBtn.disabled = false;
   }
 }
+
+const titleScreenController = createTitleScreenController({
+  $,
+  achievements: ACHIEVEMENTS,
+  isPremium,
+  playClick,
+  fetchLeaderboard,
+  handlePurchase,
+  initAudio,
+  initGame: init,
+  getCurrentShift: () => game.shift || 0,
+  startShift,
+  showShiftIntro,
+});
 
 // =============================================================================
 // MINI-GAME: SPEED CLEAN CHALLENGE
@@ -2784,58 +2637,6 @@ function togglePerfMode() {
   setLowPerfMode(!perf.lowPerfMode);
   localStorage.setItem('beaverLowPerfManual', perf.lowPerfMode);
   updateSettingsUI();
-}
-
-function resetProgress() {
-  // Show in-game confirmation modal
-  $('reset-modal').classList.add('active');
-}
-
-function confirmReset() {
-  // Clear all game data
-  localStorage.removeItem('beaverHighScore');
-  localStorage.removeItem('beaverCoins');
-  localStorage.removeItem('beaverAchievements');
-  localStorage.removeItem('beaverAchievementStats');
-  localStorage.removeItem('beaverDailyHighScore');
-  localStorage.removeItem('beaverDailyDate');
-  localStorage.removeItem('beaverDailyAttempts');
-  localStorage.removeItem('beaverPremiumHintShown');
-  localStorage.removeItem('beaverEmployeeRank');
-  localStorage.removeItem('beaverEmployeeXP');
-  localStorage.removeItem('beaverDailyReward');
-  localStorage.removeItem('beaverSavedGame');
-  // Reload the page to reset state
-  location.reload();
-}
-
-function closeResetModal() {
-  $('reset-modal').classList.remove('active');
-}
-
-function openSettings() {
-  initAudio();
-  updateSettingsUI();
-  $('settings-modal').classList.add('active');
-  // Pause game if running
-  if (game.running && !game.paused) {
-    game.paused = true;
-    $('pause-overlay').classList.add('active');
-    stopMusic();
-  }
-}
-
-function closeSettings() {
-  $('settings-modal').classList.remove('active');
-  // Resume game if it was paused by settings
-  if (game.running && game.paused) {
-    game.paused = false;
-    $('pause-overlay').classList.remove('active');
-    // Reset lastTime to avoid large dt on resume
-    game.lastTime = performance.now();
-    // Resume music if not muted
-    if (!isMuted && !isMusicMuted) startMusic();
-  }
 }
 
 // === UI SOUNDS ===
@@ -4218,42 +4019,6 @@ function dailyGameOver() {
   showScreen('gameover-screen');
 }
 
-async function submitDailyScore(score, grade) {
-  if (!playerName) return null;
-  try {
-    const scoreId = await convex.mutation(api.scores.submitDailyScore, {
-      playerName,
-      score,
-      grade,
-      date: getTodayString(),
-      userId: currentUser?.id || null,
-    });
-    await fetchDailyLeaderboard();
-    return scoreId;
-  } catch (e) {
-    console.log('Daily score submit failed:', e);
-    return null;
-  }
-}
-
-async function fetchDailyLeaderboard() {
-  try {
-    const scores = await convex.query(api.scores.getDailyScores, {
-      date: getTodayString(),
-      limit: 10
-    });
-    updateDailyLeaderboardUI(scores);
-  } catch (e) {
-    console.log('Daily leaderboard offline:', e);
-  }
-}
-
-function updateDailyLeaderboardUI(scores) {
-  const list = $('daily-leaderboard-list');
-  if (!list) return;
-  renderLeaderboardList(list, scores, 'No daily scores yet!');
-}
-
 function applyShiftTheme(shiftIdx) {
   const theme = SHIFT_THEMES[shiftIdx] || SHIFT_THEMES[0];
   const bathroom = $('bathroom');
@@ -4361,6 +4126,10 @@ function startShift() {
       cdOverlay.classList.add('hidden');
       game.running = true;
       game.lastTime = performance.now();
+      if (game.people.length === 0) {
+        spawnCustomer();
+        game.spawnTimer = rnd(Math.max(900, cfg.spawnMin * 0.55), Math.max(1400, cfg.spawnMin * 0.8));
+      }
       startMusic();
       startAutoSave();
       requestAnimationFrame(gameLoop);
@@ -6904,6 +6673,11 @@ $('settings-how-to-play')?.addEventListener('click', () => {
   $('tutorial-modal').classList.add('active');
 });
 
+$('settings-whats-new')?.addEventListener('click', () => {
+  $('settings-modal').classList.remove('active');
+  titleScreenController.openWhatsNewModal();
+});
+
 // Tutorial modal (kept for settings access)
 $('tutorial-modal')?.addEventListener('click', e => {
   if (e.target === $('tutorial-modal')) $('tutorial-modal').classList.remove('active');
@@ -6948,7 +6722,7 @@ $('achievements-btn').addEventListener('click', () => {
   if (isPremium()) {
     openAchievementsModal();
   } else {
-    showPreviewModal('achievements');
+    titleScreenController.showPreviewModal('achievements');
   }
 });
 $('close-achievements').addEventListener('click', closeAchievementsModal);
@@ -6956,18 +6730,8 @@ $('achievements-modal').addEventListener('click', e => {
   if (e.target === $('achievements-modal')) closeAchievementsModal();
 });
 
-// Preview modal handlers
-$('preview-close-btn')?.addEventListener('click', closePreviewModal);
-$('preview-unlock-btn')?.addEventListener('click', () => {
-  closePreviewModal();
-  handlePurchase();
-});
-$('preview-modal')?.addEventListener('click', e => {
-  if (e.target === $('preview-modal')) closePreviewModal();
-});
-
 // Update title button states on load
-updateTitleButtonStates();
+titleScreenController.updateTitleButtonStates();
 
 // Daily reward modal
 $('dr-claim-btn')?.addEventListener('click', () => {
@@ -6984,158 +6748,6 @@ setTimeout(() => {
     showDailyRewardModal();
   }
 }, 500);
-
-// Settings modal
-$('settings-btn').addEventListener('click', openSettings);
-$('title-settings-btn').addEventListener('click', openSettings);
-$('close-settings').addEventListener('click', closeSettings);
-$('settings-modal').addEventListener('click', e => {
-  if (e.target === $('settings-modal')) closeSettings();
-});
-$('sfx-volume').addEventListener('input', e => setSfxVolume(e.target.value));
-$('music-volume').addEventListener('input', e => setMusicVolume(e.target.value));
-$('sfx-toggle')?.addEventListener('click', toggleSfx);
-$('music-toggle')?.addEventListener('click', toggleMusic);
-$('haptics-toggle').addEventListener('click', toggleHaptics);
-$('perf-toggle')?.addEventListener('click', togglePerfMode);
-$('reset-progress')?.addEventListener('click', resetProgress);
-
-// Pause menu buttons
-$('pause-resume')?.addEventListener('click', () => {
-  playClick();
-  if (game.running && game.paused) {
-    game.paused = false;
-    $('pause-overlay').classList.remove('active');
-    game.lastTime = performance.now();
-    if (!isMuted && !isMusicMuted) startMusic();
-  }
-});
-// Pause menu quit now uses confirmation modal (see below)
-
-updateSettingsUI();
-
-// Main menu button in settings - with confirmation if game is running
-$('settings-main-menu')?.addEventListener('click', () => {
-  playClick();
-  if (game.running) {
-    // Show quit confirmation
-    $('quit-modal').classList.add('active');
-  } else {
-    // Not in game, just go to title
-    closeSettings();
-    showScreen('title-screen');
-  }
-});
-
-// Quit confirmation modal handlers
-function closeQuitModal() {
-  $('quit-modal').classList.remove('active');
-}
-
-function confirmQuit() {
-  closeQuitModal();
-  closeSettings();
-  game.running = false;
-  game.paused = false;
-  stopMusic();
-  stopAutoSave();
-  clearSavedState();
-  $('pause-overlay').classList.remove('active');
-  showScreen('title-screen');
-}
-
-$('quit-cancel')?.addEventListener('click', () => {
-  playClick();
-  closeQuitModal();
-});
-$('quit-confirm')?.addEventListener('click', () => {
-  playClick();
-  confirmQuit();
-});
-$('quit-modal')?.addEventListener('click', e => {
-  if (e.target === $('quit-modal')) closeQuitModal();
-});
-
-// Also update pause menu to use confirmation
-$('pause-menu')?.addEventListener('click', () => {
-  playClick();
-  $('quit-modal').classList.add('active');
-});
-
-// Legal modals
-function openPrivacyModal() { $('privacy-modal').classList.add('active'); }
-function closePrivacyModal() { $('privacy-modal').classList.remove('active'); }
-function openTermsModal() { $('terms-modal').classList.add('active'); }
-function closeTermsModal() { $('terms-modal').classList.remove('active'); }
-
-// Payment success modal
-function showPaymentSuccessModal() {
-  paymentModalActive = true; // Block other notifications
-  $('payment-success-modal')?.classList.add('active');
-}
-function closePaymentSuccessModal() {
-  $('payment-success-modal')?.classList.remove('active');
-  paymentModalActive = false;
-  // Process any queued notifications now
-  processNotificationQueue();
-}
-
-$('payment-success-close')?.addEventListener('click', closePaymentSuccessModal);
-$('payment-success-modal')?.addEventListener('click', e => {
-  if (e.target === $('payment-success-modal')) closePaymentSuccessModal();
-});
-
-$('privacy-btn').addEventListener('click', openPrivacyModal);
-$('close-privacy').addEventListener('click', closePrivacyModal);
-$('privacy-modal').addEventListener('click', e => {
-  if (e.target === $('privacy-modal')) closePrivacyModal();
-});
-
-$('terms-btn').addEventListener('click', openTermsModal);
-$('close-terms').addEventListener('click', closeTermsModal);
-$('terms-modal').addEventListener('click', e => {
-  if (e.target === $('terms-modal')) closeTermsModal();
-});
-
-// Reset confirmation modal
-$('reset-cancel')?.addEventListener('click', closeResetModal);
-$('reset-confirm')?.addEventListener('click', confirmReset);
-$('reset-modal')?.addEventListener('click', e => {
-  if (e.target === $('reset-modal')) closeResetModal();
-});
-
-$('start-btn').addEventListener('click', () => {
-  initAudio();
-  init();
-  // Show "What's New" once per season
-  const seenSeason = localStorage.getItem('beaverSeasonSeen');
-  if (seenSeason !== '2') {
-    $('whats-new-modal').classList.add('active');
-  } else {
-    showShiftIntro();
-  }
-});
-
-// What's New modal handlers
-$('whats-new-ok')?.addEventListener('click', () => {
-  playClick();
-  localStorage.setItem('beaverSeasonSeen', '2');
-  $('whats-new-modal').classList.remove('active');
-  showShiftIntro();
-});
-$('close-whats-new')?.addEventListener('click', () => {
-  playClick();
-  localStorage.setItem('beaverSeasonSeen', '2');
-  $('whats-new-modal').classList.remove('active');
-  showShiftIntro();
-});
-$('whats-new-modal')?.addEventListener('click', e => {
-  if (e.target === $('whats-new-modal')) {
-    localStorage.setItem('beaverSeasonSeen', '2');
-    $('whats-new-modal').classList.remove('active');
-    showShiftIntro();
-  }
-});
 
 // Title screen Google Sign-In button
 $('title-google-signin')?.addEventListener('click', () => {
@@ -7535,60 +7147,6 @@ function renderOutfitterTab(category) {
   });
 }
 
-$('daily-btn').addEventListener('click', () => {
-  initAudio();
-  playClick();
-  showDailyChallengeModal();
-});
-
-// Daily Challenge Modal
-function showDailyChallengeModal() {
-  if (!isDailyUnlocked()) {
-    showPaywallModal('landing');
-    return;
-  }
-
-  checkDailyReset();
-
-  // Generate today's config to show info
-  const seed = getDailySeed();
-  const config = generateDailyConfig(seed);
-
-  // Populate stats
-  $('dc-stalls').textContent = config.stalls;
-  $('dc-duration').textContent = config.duration + 's';
-  $('dc-sinks').textContent = config.sinks;
-  $('dc-high-score').textContent = dailyHighScore;
-  $('dc-attempts').textContent = dailyAttempts;
-
-  // Show modifiers
-  const modifiers = [];
-  modifiers.push({ name: '🔍 Inspector', active: config.hasInspector });
-  modifiers.push({ name: '🏃 Rush Hour', active: config.hasRushHour });
-  modifiers.push({ name: '👑 VIP Boost', active: config.vipBoost });
-
-  $('dc-modifiers').innerHTML = modifiers.map(m =>
-    `<div class="dc-mod ${m.active ? 'active' : 'inactive'}">${m.name}</div>`
-  ).join('');
-
-  $('daily-challenge-modal').classList.add('active');
-}
-
-function closeDailyChallengeModal() {
-  $('daily-challenge-modal').classList.remove('active');
-}
-
-$('close-daily-challenge')?.addEventListener('click', closeDailyChallengeModal);
-$('daily-challenge-modal')?.addEventListener('click', e => {
-  if (e.target === $('daily-challenge-modal')) closeDailyChallengeModal();
-});
-
-$('dc-start-btn')?.addEventListener('click', () => {
-  playClick();
-  closeDailyChallengeModal();
-  startDailyMode();
-});
-
 $('shift-start-btn').addEventListener('click', () => {
   startShift();
 });
@@ -7645,10 +7203,10 @@ $('skip-upgrades').addEventListener('click', () => {
 
 // Result screen premium button handlers (show preview for locked features)
 $('result-shop-btn')?.addEventListener('click', () => {
-  showPreviewModal('shop');
+  titleScreenController.showPreviewModal('shop');
 });
 $('result-badges-btn')?.addEventListener('click', () => {
-  showPreviewModal('badges');
+  titleScreenController.showPreviewModal('badges');
 });
 
 $('retry-btn').addEventListener('click', () => {
@@ -7728,29 +7286,7 @@ if (submitBtn) {
   });
 }
 
-// Leaderboard toggle on title screen
-const lbBtn = $('leaderboard-btn');
-if (lbBtn) {
-  lbBtn.addEventListener('click', () => {
-    // Show preview for free users
-    if (!isPremium()) {
-      showPreviewModal('leaderboard');
-      return;
-    }
-    const panel = $('leaderboard-panel');
-    if (panel) {
-      panel.classList.toggle('active');
-      fetchLeaderboard();
-    }
-  });
-}
-
-const lbClose = $('leaderboard-close');
-if (lbClose) {
-  lbClose.addEventListener('click', () => {
-    $('leaderboard-panel')?.classList.remove('active');
-  });
-}
+titleScreenController.bindEvents();
 
 // ==================== SHARE SCORE SYSTEM ====================
 
@@ -8150,262 +7686,107 @@ $('paywall-modal')?.addEventListener('click', e => {
 checkStripeReturn();
 
 // ==================== SESSION PERSISTENCE ====================
-
-const GAME_STATE_KEY = 'beaverGameState';
-const STATE_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
-
-// Save current game state to localStorage
-function saveGameState() {
-  // Only save during active gameplay
-  if (!game.running || game.paused) return;
-
-  // Don't save minigame state
-  if (minigame.active) return;
-
-  const state = {
-    timestamp: Date.now(),
-    // Core game state
-    mode: game.mode,
-    shift: game.shift,
-    score: game.score,
-    rating: game.rating,
-    combo: game.combo,
-    maxCombo: game.maxCombo,
-    time: game.time,
-    elapsed: game.elapsed,
-    coins: game.coins,
-    towels: game.towels,
-    gender: game.gender,
-    // Skills and items
-    skills: { ...game.skills },
-    powerups: { ...game.powerups },
-    effects: { ...game.effects },
-    // Stats
-    stats: { ...game.stats },
-    // Stall states (simplified - just dirty/cleaning info)
-    stalls: game.stalls.map(s => ({
-      state: s.state,
-      tasks: s.tasks.map(t => ({ id: t.id, done: t.done })),
-      wasVip: s.wasVip,
-    })),
-    // Sink states
-    sinks: game.sinks.map(s => ({
-      dirty: s.dirty,
-      cleaning: s.cleaning,
-      progress: s.progress,
-    })),
-    // Rush mode
-    rushMode: game.rushMode,
-    rushTimer: game.rushTimer,
-    // Daily mode config
-    dailyShiftOverride: game.dailyShiftOverride || null,
-  };
-
-  localStorage.setItem(GAME_STATE_KEY, JSON.stringify(state));
-}
-
-// Load saved game state from localStorage
-function loadGameState() {
-  const saved = localStorage.getItem(GAME_STATE_KEY);
-  if (!saved) return null;
-
-  try {
-    const state = JSON.parse(saved);
-
-    // Check expiry
-    if (Date.now() - state.timestamp > STATE_EXPIRY_MS) {
-      clearSavedState();
-      return null;
-    }
-
-    return state;
-  } catch (e) {
-    clearSavedState();
-    return null;
-  }
-}
-
-// Clear saved game state
-function clearSavedState() {
-  localStorage.removeItem(GAME_STATE_KEY);
-}
-
-// Check for saved state and show resume modal
-function checkForSavedGame() {
-  const state = loadGameState();
-  if (!state) return;
-
-  // Show resume modal
-  const modal = $('resume-modal');
-  if (modal) {
-    // Update modal with saved state info
-    const modeText = state.mode === 'endless' ? 'Overtime' :
-                     state.mode === 'daily' ? 'Daily Challenge' :
-                     `Shift ${state.shift + 1}`;
-    $('resume-mode').textContent = modeText;
-    $('resume-score').textContent = state.score.toLocaleString();
-    $('resume-rating').textContent = '⭐'.repeat(Math.floor(state.rating));
-
-    modal.classList.add('active');
-  }
-}
-
-// Resume game from saved state
-function resumeGame() {
-  const state = loadGameState();
-  if (!state) {
-    closeResumeModal();
-    return;
-  }
-
-  closeResumeModal();
-
-  // Set gender before init
-  selectedGender = state.gender || 'female';
-  document.querySelectorAll('.restroom-btn').forEach(b => {
-    b.classList.toggle('selected', b.dataset.gender === selectedGender);
-  });
-
-  // Initialize game structure
-  init();
-
-  // Restore core state
-  game.mode = state.mode;
-  game.shift = state.shift;
-  game.score = state.score;
-  game.rating = state.rating;
-  game.combo = state.combo;
-  game.maxCombo = state.maxCombo;
-  game.time = state.time;
-  game.elapsed = state.elapsed;
-  game.coins = state.coins;
-  game.towels = state.towels;
-  game.gender = state.gender;
-  game.skills = state.skills;
-  game.powerups = state.powerups;
-  game.effects = state.effects;
-  game.stats = state.stats;
-  game.rushMode = state.rushMode;
-  game.rushTimer = state.rushTimer;
-  game.dailyShiftOverride = state.dailyShiftOverride;
-
-  // Build UI for current shift
-  buildStalls();
-  buildSinks();
-
-  // Restore stall states
-  state.stalls.forEach((savedStall, i) => {
-    if (i < game.stalls.length) {
-      game.stalls[i].state = savedStall.state;
-      game.stalls[i].wasVip = savedStall.wasVip;
-      if (savedStall.tasks && savedStall.tasks.length > 0) {
-        game.stalls[i].tasks = savedStall.tasks.map(t => ({
-          ...TASKS.find(task => task.id === t.id),
-          done: t.done,
-        }));
-      }
-      updateStallDOM(i);
-    }
-  });
-
-  // Restore sink states
-  state.sinks.forEach((savedSink, i) => {
-    if (i < game.sinks.length) {
-      game.sinks[i].dirty = savedSink.dirty;
-      game.sinks[i].cleaning = savedSink.cleaning;
-      game.sinks[i].progress = savedSink.progress;
-      updateSinkDOM(i);
-    }
-  });
-
-  // Update UI
-  updateHUD();
-
-  // Clear saved state - we've restored it
-  clearSavedState();
-
-  // Start game
-  showScreen('game-screen');
-  game.running = true;
-  game.paused = false;
-  game.lastTime = performance.now();
-  startAutoSave();
-  requestAnimationFrame(gameLoop);
-
-  if (!isMusicMuted) startMusic();
-
-  floatMessage('Autosave Restored!', window.innerWidth / 2, 100, 'good');
-}
-
-// Start new game (discard saved state)
-function startNewGame() {
-  clearSavedState();
-  closeResumeModal();
-}
-
-// Close resume modal
-function closeResumeModal() {
-  const modal = $('resume-modal');
-  if (modal) modal.classList.remove('active');
-}
-
-// Auto-save interval during gameplay
-let autoSaveInterval = null;
-
-function startAutoSave() {
-  stopAutoSave();
-  autoSaveInterval = setInterval(() => {
-    if (game.running && !game.paused) {
-      saveGameState();
-    }
-  }, 30000); // Every 30 seconds
-}
-
-function stopAutoSave() {
-  if (autoSaveInterval) {
-    clearInterval(autoSaveInterval);
-    autoSaveInterval = null;
-  }
-}
-
-// beforeunload handler - warn user during active gameplay
-window.addEventListener('beforeunload', (e) => {
-  if (game.running && !game.paused) {
-    // Save state before leaving
-    saveGameState();
-    // Show browser confirmation
-    e.preventDefault();
-    return '';
-  }
+const saveStateController = createSaveStateController({
+  $,
+  tasks: TASKS,
+  getGame: () => game,
+  isMinigameActive: () => minigame.active,
+  initGame: init,
+  setSelectedGender: (gender) => { selectedGender = gender; },
+  syncSelectedGenderUI: () => {
+    document.querySelectorAll('.restroom-btn').forEach((button) => {
+      button.classList.toggle('selected', button.dataset.gender === selectedGender);
+    });
+  },
+  buildStalls,
+  buildSinks,
+  updateStallDOM,
+  updateSinkDOM,
+  updateHUD,
+  showScreen,
+  startMusic,
+  isMusicMuted: () => isMusicMuted,
+  floatMessage,
+  playClick,
+  scheduleGameLoop: () => requestAnimationFrame(gameLoop),
 });
 
-// visibilitychange handler - save when switching tabs
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden && game.running) {
-    saveGameState();
-  }
+const saveGameState = (...args) => saveStateController.saveGameState(...args);
+const loadGameState = (...args) => saveStateController.loadGameState(...args);
+const clearSavedState = (...args) => saveStateController.clearSavedState(...args);
+const checkForSavedGame = (...args) => saveStateController.checkForSavedGame(...args);
+const resumeGame = (...args) => saveStateController.resumeGame(...args);
+const startNewGame = (...args) => saveStateController.startNewGame(...args);
+const closeResumeModal = (...args) => saveStateController.closeResumeModal(...args);
+const startAutoSave = (...args) => saveStateController.startAutoSave(...args);
+const stopAutoSave = (...args) => saveStateController.stopAutoSave(...args);
+
+saveStateController.bindEvents();
+
+const resetApp = () => {
+  localStorage.removeItem('beaverHighScore');
+  localStorage.removeItem('beaverCoins');
+  localStorage.removeItem('beaverAchievements');
+  localStorage.removeItem('beaverAchievementStats');
+  localStorage.removeItem('beaverDailyHighScore');
+  localStorage.removeItem('beaverDailyDate');
+  localStorage.removeItem('beaverDailyAttempts');
+  localStorage.removeItem('beaverPremiumHintShown');
+  localStorage.removeItem('beaverEmployeeRank');
+  localStorage.removeItem('beaverEmployeeXP');
+  localStorage.removeItem('beaverDailyReward');
+  localStorage.removeItem('beaverSavedGame');
+  location.reload();
+};
+
+const settingsController = createSettingsController({
+  $,
+  initAudio,
+  updateSettingsUI,
+  getGame: () => game,
+  showPauseOverlay: () => $('pause-overlay').classList.add('active'),
+  hidePauseOverlay: () => $('pause-overlay').classList.remove('active'),
+  stopMusic,
+  startMusic,
+  isMuted: () => isMuted,
+  isMusicMuted: () => isMusicMuted,
+  playClick,
+  setSfxVolume,
+  setMusicVolume,
+  toggleSfx,
+  toggleMusic,
+  toggleHaptics,
+  togglePerfMode,
+  showScreen,
+  stopAutoSave,
+  clearSavedState,
+  processNotificationQueue,
+  setPaymentModalActive: (active) => { paymentModalActive = active; },
+  resetApp,
 });
 
-// Resume modal handlers
-$('resume-yes')?.addEventListener('click', () => {
-  playClick();
-  resumeGame();
+const openSettings = (...args) => settingsController.openSettings(...args);
+const closeSettings = (...args) => settingsController.closeSettings(...args);
+const showPaymentSuccessModal = (...args) => settingsController.showPaymentSuccessModal(...args);
+const closePaymentSuccessModal = (...args) => settingsController.closePaymentSuccessModal(...args);
+
+settingsController.bindEvents();
+
+const dailyChallengeController = createDailyChallengeController({
+  $,
+  initAudio,
+  playClick,
+  isDailyUnlocked,
+  showPaywallModal,
+  checkDailyReset,
+  getDailySeed,
+  generateDailyConfig,
+  getDailyHighScore: () => dailyHighScore,
+  getDailyAttempts: () => dailyAttempts,
+  startDailyMode,
 });
 
-$('resume-no')?.addEventListener('click', () => {
-  playClick();
-  startNewGame();
-});
-
-$('resume-modal')?.addEventListener('click', e => {
-  if (e.target === $('resume-modal')) {
-    // Clicking outside = start new game
-    startNewGame();
-  }
-});
-
-// Check for saved game on page load (after small delay for other init)
-setTimeout(checkForSavedGame, 300);
+dailyChallengeController.bindEvents();
 
 // ============================================================
 // MULTIPLAYER (1v1 Battle Mode)
@@ -8465,668 +7846,43 @@ function canPlayMultiplayer() {
   return isPremium() || getMPGamesPlayed() < MP_FREE_GAME_LIMIT;
 }
 
-// Open multiplayer modal
-$('multiplayer-btn')?.addEventListener('click', () => {
-  initAudio();
-  playClick();
-
-  if (!canPlayMultiplayer()) {
-    showPaywallModal('landing');
-    return;
-  }
-
-  // Pre-fill name
-  const nameInput = $('mp-name-input');
-  if (nameInput && playerName) nameInput.value = playerName;
-
-  // Always reset to main buttons view
-  $('mp-host-settings')?.classList.add('hidden');
-  $('mp-main-buttons')?.classList.remove('hidden');
-
-  // Show avatar preview
-  const mainAvatar = $('mp-avatar-main-img');
-  if (mainAvatar) mainAvatar.src = getComboSpriteSrc();
-
-  $('multiplayer-modal').classList.add('active');
-});
-
-$('close-multiplayer')?.addEventListener('click', () => {
-  $('multiplayer-modal').classList.remove('active');
-});
-$('multiplayer-modal')?.addEventListener('click', e => {
-  if (e.target === $('multiplayer-modal')) $('multiplayer-modal').classList.remove('active');
-});
-
-// Host game — show settings first
 let mpHostShift = 0;
 
-$('mp-host-btn')?.addEventListener('click', () => {
-  playClick();
-  const name = $('mp-name-input')?.value?.trim();
-  if (!name) {
-    $('mp-name-input').classList.add('shake');
-    setTimeout(() => $('mp-name-input').classList.remove('shake'), 400);
-    return;
-  }
-
-  // Save name
-  if (name !== playerName) {
-    playerName = name;
-    localStorage.setItem('beaverPlayerName', name);
-    createOrUpdateUser(name);
-  }
-
-  // Show host settings, hide main buttons
-  $('mp-main-buttons').classList.add('hidden');
-  $('mp-host-settings').classList.remove('hidden');
-
-  // Sync gender buttons to current selection
-  document.querySelectorAll('.mp-gender-btn').forEach(b => {
-    b.classList.toggle('selected', b.dataset.mpGender === selectedGender);
-  });
-});
-
-// Change outfit from MP modal
-$('mp-change-avatar-main')?.addEventListener('click', () => {
-  playClick();
-  mpState._wasInHostSettings = !$('mp-host-settings')?.classList.contains('hidden');
-  $('multiplayer-modal').classList.remove('active');
-  showOutfitter();
-  mpState._returnToMP = true;
-});
-
-$('mp-host-back')?.addEventListener('click', () => {
-  playClick();
-  $('mp-host-settings').classList.add('hidden');
-  $('mp-main-buttons').classList.remove('hidden');
-});
-
-// Gender selector in host settings
-document.querySelectorAll('.mp-gender-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    playClick();
-    document.querySelectorAll('.mp-gender-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    selectedGender = btn.dataset.mpGender;
-  });
-});
-
-// Shift selector
-document.querySelectorAll('.mp-shift-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    playClick();
-    document.querySelectorAll('.mp-shift-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    mpHostShift = parseInt(btn.dataset.shift);
-  });
-});
-
-// Create room (from host settings)
-$('mp-create-room-btn')?.addEventListener('click', async () => {
-  playClick();
-
-  try {
-    const result = await convex.mutation(api.multiplayer.createRoom, {
-      hostDeviceId: deviceId,
-      hostName: playerName,
-      shift: mpHostShift,
-      gender: selectedGender,
-      difficulty: selectedDifficulty,
-      hostCosmetics: {
-        hat: cosmeticState.equipped.hat || undefined,
-        shirt: cosmeticState.equipped.shirt || undefined,
-        special: cosmeticState.equipped.special || null,
-      },
+const multiplayerPregameController = createMultiplayerPregameController({
+  $,
+  convex,
+  api,
+  BASE,
+  mpState,
+  getDeviceId: () => deviceId,
+  getPlayerName: () => playerName,
+  setPlayerName: (name) => { playerName = name; },
+  persistPlayerName: (name) => localStorage.setItem('beaverPlayerName', name),
+  createOrUpdateUser,
+  getCosmeticState: () => cosmeticState,
+  getSelectedGender: () => selectedGender,
+  setSelectedGender: (gender) => { selectedGender = gender; },
+  syncSelectedGenderUI: () => {
+    document.querySelectorAll('.restroom-btn').forEach((button) => {
+      button.classList.toggle('selected', button.dataset.gender === selectedGender);
     });
-
-    mpState.active = true;
-    mpState.isHost = true;
-    mpState.roomCode = result.code;
-    mpState.opponentName = '';
-
-    // Reset host settings view for next time
-    $('mp-host-settings').classList.add('hidden');
-    $('mp-main-buttons').classList.remove('hidden');
-
-    $('multiplayer-modal').classList.remove('active');
-    showMPLobby(result.code, playerName, true);
-  } catch (e) {
-    console.error('Failed to create room:', e);
-  }
+  },
+  getSelectedDifficulty: () => selectedDifficulty,
+  setSelectedDifficulty: (difficulty) => { selectedDifficulty = difficulty; },
+  getMPHostShift: () => mpHostShift,
+  setMPHostShift: (shift) => { mpHostShift = shift; },
+  canPlayMultiplayer,
+  showPaywallModal,
+  initAudio,
+  playClick,
+  showOutfitter,
+  getComboSpriteSrc,
+  getOpponentSpriteSrc,
+  showScreen,
+  startMPGame,
 });
 
-// Quick Match
-$('mp-quickmatch-btn')?.addEventListener('click', async () => {
-  playClick();
-  const name = $('mp-name-input')?.value?.trim();
-  if (!name) {
-    $('mp-name-input').classList.add('shake');
-    setTimeout(() => $('mp-name-input').classList.remove('shake'), 400);
-    return;
-  }
-
-  if (name !== playerName) {
-    playerName = name;
-    localStorage.setItem('beaverPlayerName', name);
-    createOrUpdateUser(name);
-  }
-
-  $('multiplayer-modal').classList.remove('active');
-
-  // Show waiting room
-  mpState.isSearching = true;
-  mpState.searchStartTime = Date.now();
-  mpState.autoMatch = false;
-  const autoToggle = $('mp-auto-match-toggle');
-  if (autoToggle) autoToggle.checked = false;
-  $('waiting-status').textContent = 'Choose an opponent or enable auto-match';
-  $('waiting-timer').textContent = '0:00';
-  showScreen('mp-waiting');
-
-  // Start search timer display
-  mpState.searchTimerInterval = setInterval(() => {
-    if (!mpState.isSearching) return;
-    const elapsed = Math.floor((Date.now() - mpState.searchStartTime) / 1000);
-    const mins = Math.floor(elapsed / 60);
-    const secs = elapsed % 60;
-    $('waiting-timer').textContent = mins + ':' + (secs < 10 ? '0' : '') + secs;
-
-    // Auto-timeout after 5 minutes
-    if (elapsed >= 300) {
-      cancelQuickMatch();
-      $('waiting-status').textContent = 'No opponents found. Try again later!';
-      setTimeout(() => showScreen('title-screen'), 2000);
-    }
-  }, 1000);
-
-  try {
-    const result = await convex.mutation(api.matchmaking.joinQueue, {
-      deviceId,
-      playerName: name,
-      cosmetics: {
-        hat: cosmeticState.equipped.hat || undefined,
-        shirt: cosmeticState.equipped.shirt || undefined,
-        special: cosmeticState.equipped.special || null,
-      },
-      autoMatch: false,
-    });
-
-    if (result.status === 'matched') {
-      foundQuickMatch(result.roomCode);
-    } else {
-      startQueuePolling();
-    }
-  } catch (e) {
-    console.error('Failed to join queue:', e);
-    cancelQuickMatch();
-    showScreen('title-screen');
-  }
-});
-
-// Auto-match toggle
-$('mp-auto-match-toggle')?.addEventListener('change', async (e) => {
-  mpState.autoMatch = e.target.checked;
-  if (mpState.autoMatch && mpState.isSearching) {
-    $('waiting-status').textContent = 'Auto-matching with next available player...';
-    // Re-join queue with autoMatch enabled
-    try {
-      const result = await convex.mutation(api.matchmaking.joinQueue, {
-        deviceId,
-        playerName,
-        cosmetics: {
-          hat: cosmeticState.equipped.hat || undefined,
-          shirt: cosmeticState.equipped.shirt || undefined,
-          special: cosmeticState.equipped.special || null,
-        },
-        autoMatch: true,
-      });
-      if (result.status === 'matched') {
-        foundQuickMatch(result.roomCode);
-      }
-    } catch (e) {
-      console.log('Auto-match re-join failed:', e);
-    }
-  } else {
-    $('waiting-status').textContent = 'Choose an opponent or enable auto-match';
-  }
-});
-
-function startQueuePolling() {
-  stopQueuePolling();
-  mpState.queuePollTimer = setInterval(pollQueue, 1500);
-}
-
-function stopQueuePolling() {
-  if (mpState.queuePollTimer) {
-    clearInterval(mpState.queuePollTimer);
-    mpState.queuePollTimer = null;
-  }
-}
-
-async function pollQueue() {
-  if (!mpState.isSearching) return;
-  try {
-    const result = await convex.query(api.matchmaking.pollQueue, { deviceId });
-    if (result.status === 'matched' && result.roomCode) {
-      foundQuickMatch(result.roomCode);
-      return;
-    }
-
-    // Check for incoming challenge
-    if (result.challengeFrom && !mpState.challengeShown) {
-      mpState.challengeShown = result.challengeFrom;
-      showChallengePopup(result.challengeFromName, result.challengeFromCosmetics);
-    } else if (!result.challengeFrom && mpState.challengeShown) {
-      // Challenge was withdrawn or expired
-      mpState.challengeShown = null;
-      hideChallengePopup();
-    }
-
-    // If we sent a challenge and got declined (no longer matched, no challenge on us)
-    if (mpState.challengeSent && result.status === 'waiting' && !result.challengeFrom) {
-      // Check if our challenge was declined by re-enabling buttons
-      // The poll will show matched if accepted, so if still waiting, it was declined or timed out
-    }
-
-    // Update waiting players list
-    const players = await convex.query(api.matchmaking.getWaitingPlayers, {});
-    updateQueuePlayersList(players);
-  } catch (e) {
-    console.log('Queue poll failed:', e);
-  }
-}
-
-function updateQueuePlayersList(players) {
-  const container = $('mp-queue-players');
-  if (!container) return;
-
-  // Filter out self
-  const others = players.filter(p => p.deviceId !== deviceId);
-
-  if (others.length === 0) {
-    container.innerHTML = '<div class="mp-queue-empty">No other players online yet...</div>';
-    return;
-  }
-
-  container.innerHTML = '';
-  others.forEach(p => {
-    const row = document.createElement('div');
-    row.className = 'mp-queue-player-row';
-
-    // Build avatar src from cosmetics
-    let avatarSrc = BASE + 'images/cosmetics/combo-hat-cap-shirt-polo.png';
-    if (p.cosmetics) {
-      if (p.cosmetics.special) {
-        avatarSrc = BASE + 'images/cosmetics/' + p.cosmetics.special + '.png';
-      } else {
-        const hat = p.cosmetics.hat || 'hat-cap';
-        const shirt = p.cosmetics.shirt || 'shirt-polo';
-        avatarSrc = BASE + 'images/cosmetics/combo-' + hat + '-' + shirt + '.png';
-      }
-    }
-
-    const scoreText = p.bestScore > 0 ? p.bestScore.toLocaleString() + ' pts' : 'New player';
-    const avatar = document.createElement('img');
-    avatar.className = 'mp-queue-avatar';
-    avatar.src = avatarSrc;
-    avatar.alt = '';
-    avatar.style.width = '36px';
-    avatar.style.height = '36px';
-    avatar.style.imageRendering = 'pixelated';
-
-    const info = document.createElement('div');
-    info.className = 'mp-queue-player-info';
-
-    const name = document.createElement('span');
-    name.className = 'mp-queue-player-name';
-    name.textContent = p.playerName || 'Anonymous';
-
-    const score = document.createElement('span');
-    score.className = 'mp-queue-player-score';
-    score.textContent = `⭐ ${scoreText}`;
-
-    info.append(name, score);
-
-    const button = document.createElement('button');
-    button.className = 'btn mp-challenge-btn';
-    button.textContent = 'Challenge';
-
-    row.append(avatar, info, button);
-
-    // Challenge button click
-    button.addEventListener('click', () => {
-      playClick();
-      challengePlayer(p.deviceId);
-    });
-
-    container.appendChild(row);
-  });
-}
-
-async function challengePlayer(targetDeviceId) {
-  if (!mpState.isSearching) return;
-  mpState.challengeSent = true;
-  $('waiting-status').textContent = 'Challenge sent! Waiting for response...';
-
-  // Disable all challenge buttons while waiting
-  document.querySelectorAll('.mp-challenge-btn').forEach(btn => {
-    btn.disabled = true;
-    btn.style.opacity = '0.5';
-  });
-
-  try {
-    const result = await convex.mutation(api.matchmaking.challengePlayer, {
-      deviceId,
-      playerName,
-      cosmetics: {
-        hat: cosmeticState.equipped.hat || undefined,
-        shirt: cosmeticState.equipped.shirt || undefined,
-        special: cosmeticState.equipped.special || null,
-      },
-      targetDeviceId,
-    });
-
-    if (result.error) {
-      mpState.challengeSent = false;
-      $('waiting-status').textContent = result.error + ' Pick another player.';
-      document.querySelectorAll('.mp-challenge-btn').forEach(btn => {
-        btn.disabled = false;
-        btn.style.opacity = '1';
-      });
-      return;
-    }
-
-    // Challenge is now pending — pollQueue will detect match or timeout
-  } catch (e) {
-    console.error('Challenge failed:', e);
-    mpState.challengeSent = false;
-    $('waiting-status').textContent = 'Challenge failed. Try another player.';
-    document.querySelectorAll('.mp-challenge-btn').forEach(btn => {
-      btn.disabled = false;
-      btn.style.opacity = '1';
-    });
-  }
-}
-
-function showChallengePopup(challengerName, challengerCosmetics) {
-  const popup = $('mp-challenge-popup');
-  if (!popup) return;
-
-  // Set challenger info
-  $('mp-challenge-name').textContent = challengerName || 'Someone';
-
-  // Build avatar
-  let avatarSrc = BASE + 'images/cosmetics/combo-hat-cap-shirt-polo.png';
-  if (challengerCosmetics) {
-    if (challengerCosmetics.special) {
-      avatarSrc = BASE + 'images/cosmetics/' + challengerCosmetics.special + '.png';
-    } else {
-      const hat = challengerCosmetics.hat || 'hat-cap';
-      const shirt = challengerCosmetics.shirt || 'shirt-polo';
-      avatarSrc = BASE + 'images/cosmetics/combo-' + hat + '-' + shirt + '.png';
-    }
-  }
-  $('mp-challenge-avatar').src = avatarSrc;
-
-  popup.classList.remove('hidden');
-  popup.classList.add('mp-challenge-popup-show');
-}
-
-function hideChallengePopup() {
-  const popup = $('mp-challenge-popup');
-  if (!popup) return;
-  popup.classList.add('hidden');
-  popup.classList.remove('mp-challenge-popup-show');
-}
-
-async function acceptIncomingChallenge() {
-  hideChallengePopup();
-  $('waiting-status').textContent = 'Accepting challenge...';
-
-  try {
-    const result = await convex.mutation(api.matchmaking.acceptChallenge, { deviceId });
-    if (result.error) {
-      $('waiting-status').textContent = result.error;
-      return;
-    }
-    if (result.status === 'matched' && result.roomCode) {
-      foundQuickMatch(result.roomCode);
-    }
-  } catch (e) {
-    console.error('Accept challenge failed:', e);
-    $('waiting-status').textContent = 'Failed to accept. Try again.';
-  }
-}
-
-async function declineIncomingChallenge() {
-  hideChallengePopup();
-  try {
-    await convex.mutation(api.matchmaking.declineChallenge, { deviceId });
-  } catch (e) {
-    console.error('Decline challenge failed:', e);
-  }
-}
-
-function formatQueueTime(queuedAt) {
-  const elapsed = Math.floor((Date.now() - queuedAt) / 1000);
-  if (elapsed < 60) return elapsed + 's';
-  return Math.floor(elapsed / 60) + 'm';
-}
-
-async function foundQuickMatch(roomCode) {
-  stopQueuePolling();
-  if (mpState.searchTimerInterval) {
-    clearInterval(mpState.searchTimerInterval);
-    mpState.searchTimerInterval = null;
-  }
-  mpState.isSearching = false;
-  mpState.isRandomMatch = true;
-
-  $('waiting-status').textContent = 'Opponent found! 🎉';
-
-  // Get room details
-  try {
-    const room = await convex.query(api.multiplayer.getRoom, { code: roomCode });
-    if (!room) {
-      showScreen('title-screen');
-      return;
-    }
-
-    const isHost = room.hostDeviceId === deviceId;
-    mpState.active = true;
-    mpState.isHost = isHost;
-    mpState.roomCode = roomCode;
-    mpState.opponentName = isHost ? (room.guestName || '') : room.hostName;
-    mpState.opponentCosmetics = isHost ? (room.guestCosmetics || null) : (room.hostCosmetics || null);
-
-    selectedGender = room.gender;
-    selectedDifficulty = room.difficulty || 'normal';
-    mpState.mpShift = room.shift || 0;
-    mpState.mpCreatedAt = room.createdAt || 0;
-    if (isHost) mpHostShift = room.shift || 0;
-
-    setTimeout(() => {
-      showMPLobby(roomCode, playerName, isHost);
-    }, 800);
-  } catch (e) {
-    console.error('Failed to get room after match:', e);
-    showScreen('title-screen');
-  }
-}
-
-function cancelQuickMatch() {
-  stopQueuePolling();
-  if (mpState.searchTimerInterval) {
-    clearInterval(mpState.searchTimerInterval);
-    mpState.searchTimerInterval = null;
-  }
-  mpState.isSearching = false;
-  mpState.isRandomMatch = false;
-  mpState.challengeSent = false;
-  mpState.challengeShown = null;
-  hideChallengePopup();
-
-  convex.mutation(api.matchmaking.leaveQueue, { deviceId }).catch(() => {});
-}
-
-$('waiting-cancel')?.addEventListener('click', () => {
-  playClick();
-  cancelQuickMatch();
-  showScreen('title-screen');
-});
-
-// Challenge popup buttons
-$('mp-challenge-accept')?.addEventListener('click', () => {
-  playClick();
-  acceptIncomingChallenge();
-});
-
-$('mp-challenge-decline')?.addEventListener('click', () => {
-  playClick();
-  declineIncomingChallenge();
-});
-
-// Join game
-$('mp-join-btn')?.addEventListener('click', () => {
-  playClick();
-  const name = $('mp-name-input')?.value?.trim();
-  if (!name) {
-    $('mp-name-input').classList.add('shake');
-    setTimeout(() => $('mp-name-input').classList.remove('shake'), 400);
-    return;
-  }
-
-  // Save name
-  if (name !== playerName) {
-    playerName = name;
-    localStorage.setItem('beaverPlayerName', name);
-    createOrUpdateUser(name);
-  }
-
-  $('multiplayer-modal').classList.remove('active');
-  $('mp-code-input').value = '';
-  $('mp-join-error').classList.add('hidden');
-  $('mp-join-modal').classList.add('active');
-  $('mp-code-input').focus();
-});
-
-$('close-mp-join')?.addEventListener('click', () => {
-  $('mp-join-modal').classList.remove('active');
-});
-$('mp-join-modal')?.addEventListener('click', e => {
-  if (e.target === $('mp-join-modal')) $('mp-join-modal').classList.remove('active');
-});
-$('mp-join-back')?.addEventListener('click', () => {
-  $('mp-join-modal').classList.remove('active');
-  $('multiplayer-modal').classList.add('active');
-});
-
-// Submit join code
-$('mp-join-submit')?.addEventListener('click', async () => {
-  playClick();
-  const code = $('mp-code-input')?.value?.trim();
-  if (!code || code.length !== 4) {
-    $('mp-join-error').textContent = 'Please enter a 4-digit code.';
-    $('mp-join-error').classList.remove('hidden');
-    return;
-  }
-
-  try {
-    const result = await convex.mutation(api.multiplayer.joinRoom, {
-      code,
-      guestDeviceId: deviceId,
-      guestName: playerName,
-      guestCosmetics: {
-        hat: cosmeticState.equipped.hat || undefined,
-        shirt: cosmeticState.equipped.shirt || undefined,
-        special: cosmeticState.equipped.special || null,
-      },
-    });
-
-    if (result.error) {
-      $('mp-join-error').textContent = result.error;
-      $('mp-join-error').classList.remove('hidden');
-      return;
-    }
-
-    mpState.active = true;
-    mpState.isHost = false;
-    mpState.roomCode = code;
-    mpState.opponentName = result.hostName;
-    mpState.opponentCosmetics = result.hostCosmetics || null;
-
-    // Use host's gender and difficulty settings
-    selectedGender = result.gender;
-    document.querySelectorAll('.restroom-btn').forEach(b => {
-      b.classList.toggle('selected', b.dataset.gender === selectedGender);
-    });
-    selectedDifficulty = result.difficulty || 'normal';
-    mpState.mpShift = result.shift || 0;
-    mpState.mpCreatedAt = result.createdAt || 0;
-
-    $('mp-join-modal').classList.remove('active');
-    showMPLobby(code, playerName, false);
-  } catch (e) {
-    console.error('Failed to join room:', e);
-    $('mp-join-error').textContent = 'Connection failed. Try again.';
-    $('mp-join-error').classList.remove('hidden');
-  }
-});
-
-// Also allow enter key on code input
-$('mp-code-input')?.addEventListener('keydown', e => {
-  if (e.key === 'Enter') $('mp-join-submit')?.click();
-});
-
-// Show multiplayer lobby
-function showMPLobby(code, myName, isHost) {
-  $('mp-lobby-code').textContent = code;
-  $('mp-host-name').textContent = isHost ? myName : mpState.opponentName;
-  const shiftNum = (mpState.isHost ? mpHostShift : (mpState.mpShift || 0)) + 1;
-  $('mp-lobby-shift').textContent = 'Shift ' + shiftNum;
-  $('mp-lobby-gender').textContent = selectedGender === 'male' ? "Men's" : "Women's";
-  const diffLabel = selectedDifficulty.charAt(0).toUpperCase() + selectedDifficulty.slice(1);
-  if ($('mp-lobby-difficulty')) $('mp-lobby-difficulty').textContent = diffLabel;
-
-  if (isHost) {
-    $('mp-guest-name').textContent = 'Waiting...';
-    $('mp-guest-slot').classList.remove('mp-player-ready');
-    $('mp-guest-status').textContent = '--';
-    $('mp-guest-status').classList.remove('mp-ready');
-    $('mp-start-btn').disabled = true;
-    $('mp-start-btn').textContent = 'Waiting for opponent...';
-  } else {
-    $('mp-guest-name').textContent = myName;
-    $('mp-guest-slot').classList.add('mp-player-ready');
-    $('mp-guest-status').textContent = 'Ready';
-    $('mp-guest-status').classList.add('mp-ready');
-    $('mp-start-btn').disabled = true;
-    $('mp-start-btn').textContent = 'Waiting for host to start...';
-  }
-
-  // Set beaver sprites in lobby
-  if (isHost) {
-    const el = $('mp-lobby-host-beaver');
-    if (el) el.src = getComboSpriteSrc();
-    const gel = $('mp-lobby-guest-beaver');
-    if (gel) { gel.src = ''; gel.style.display = 'none'; } // Will be set when guest joins
-  } else {
-    const hel = $('mp-lobby-host-beaver');
-    if (hel) hel.src = mpState.opponentCosmetics ? getOpponentSpriteSrc() : (BASE + 'images/cosmetics/combo-hat-cap-shirt-polo.png');
-    const gel = $('mp-lobby-guest-beaver');
-    if (gel) gel.src = getComboSpriteSrc();
-  }
-
-  // Reset state
-  mpState.myReady = false;
-
-  // Hide code section for random matches
-  const codeSection = document.querySelector('.mp-lobby-code-section');
-  if (codeSection) codeSection.style.display = mpState.isRandomMatch ? 'none' : '';
-
-  showScreen('mp-lobby');
-  startLobbyPolling();
-}
+multiplayerPregameController.bindEvents();
 
 // Loadout UI
 function initLoadoutUI() {
@@ -9231,130 +7987,6 @@ function updateReadyUI() {
   } else {
     btn.textContent = 'Ready!';
     btn.classList.remove('mp-ready-active');
-  }
-}
-
-// Copy room code
-$('mp-copy-code')?.addEventListener('click', () => {
-  playClick();
-  const code = $('mp-lobby-code').textContent;
-  navigator.clipboard?.writeText(code).then(() => {
-    $('mp-copy-code').textContent = 'Copied!';
-    setTimeout(() => { $('mp-copy-code').textContent = 'Copy Code'; }, 2000);
-  }).catch(() => {
-    // Fallback: select text
-    $('mp-copy-code').textContent = code + ' (copied)';
-    setTimeout(() => { $('mp-copy-code').textContent = 'Copy Code'; }, 2000);
-  });
-});
-
-// Leave room
-$('mp-leave-btn')?.addEventListener('click', async () => {
-  playClick();
-  stopLobbyPolling();
-  if (mpState.roomCode) {
-    try {
-      await convex.mutation(api.multiplayer.leaveRoom, {
-        code: mpState.roomCode,
-        deviceId,
-      });
-    } catch (e) {
-      console.log('Leave room failed:', e);
-    }
-  }
-  mpState.active = false;
-  mpState.roomCode = null;
-  mpState.opponentCosmetics = null;
-  mpState.isRandomMatch = false;
-  showScreen('title-screen');
-});
-
-// Host starts game
-$('mp-start-btn')?.addEventListener('click', async () => {
-  if (!mpState.isHost || $('mp-start-btn').disabled) return;
-  playClick();
-
-  try {
-    const result = await convex.mutation(api.multiplayer.startGame, {
-      code: mpState.roomCode,
-      hostDeviceId: deviceId,
-    });
-
-    if (result.error) {
-      console.log('Start game error:', result.error);
-      return;
-    }
-
-    stopLobbyPolling();
-    startMPGame();
-  } catch (e) {
-    console.error('Failed to start game:', e);
-  }
-});
-
-// Poll lobby for updates
-function startLobbyPolling() {
-  stopLobbyPolling();
-  mpState.lobbyPollTimer = setInterval(pollLobby, 1500);
-}
-
-function stopLobbyPolling() {
-  if (mpState.lobbyPollTimer) {
-    clearInterval(mpState.lobbyPollTimer);
-    mpState.lobbyPollTimer = null;
-  }
-}
-
-async function pollLobby() {
-  if (!mpState.roomCode) return;
-
-  try {
-    const room = await convex.query(api.multiplayer.getRoom, { code: mpState.roomCode });
-    if (!room) {
-      stopLobbyPolling();
-      mpState.active = false;
-      showScreen('title-screen');
-      return;
-    }
-
-    if (room.status === 'finished') {
-      stopLobbyPolling();
-      mpState.active = false;
-      showScreen('title-screen');
-      return;
-    }
-
-    // Update lobby UI
-    if (mpState.isHost) {
-      if (room.guestName) {
-        $('mp-guest-name').textContent = room.guestName;
-        $('mp-guest-slot').classList.add('mp-player-ready');
-        $('mp-guest-status').textContent = 'Joined';
-        mpState.opponentName = room.guestName;
-        mpState.opponentCosmetics = room.guestCosmetics || null;
-        const gel = $('mp-lobby-guest-beaver');
-        if (gel) { gel.style.display = ''; gel.src = getOpponentSpriteSrc(); }
-
-        // Host can start when guest has joined
-        $('mp-start-btn').disabled = false;
-        $('mp-start-btn').textContent = 'Start Battle!';
-      } else {
-        $('mp-guest-name').textContent = 'Waiting...';
-        $('mp-guest-slot').classList.remove('mp-player-ready');
-        $('mp-guest-status').textContent = '--';
-        $('mp-start-btn').disabled = true;
-        $('mp-start-btn').textContent = 'Waiting for opponent...';
-      }
-    } else {
-      // Guest: check if game started
-      $('mp-host-name').textContent = room.hostName;
-      if (room.status === 'playing') {
-        stopLobbyPolling();
-        startMPGame();
-      }
-    }
-  } catch (e) {
-    console.log('Lobby poll failed:', e);
   }
 }
 
