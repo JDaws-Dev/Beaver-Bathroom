@@ -4,12 +4,22 @@ import { v } from "convex/values";
 export default defineSchema({
   // Users table - simple device-based accounts
   users: defineTable({
-    deviceId: v.string(),
-    name: v.string(),
+    deviceId: v.optional(v.string()),
+    name: v.optional(v.string()),
     email: v.optional(v.string()),
     googleId: v.optional(v.string()),
     avatarUrl: v.optional(v.string()),
-    createdAt: v.number(),
+    imageUrl: v.optional(v.string()),
+    image: v.optional(v.string()),
+    clerkId: v.optional(v.string()),
+    createdAt: v.optional(v.number()),
+    emailVerificationTime: v.optional(v.number()),
+    analysisCount: v.optional(v.number()),
+    subscriptionStatus: v.optional(v.string()),
+    subscriptionCurrentPeriodEnd: v.optional(v.number()),
+    stripeCustomerId: v.optional(v.string()),
+    stripeSubscriptionId: v.optional(v.string()),
+    onboardingComplete: v.optional(v.boolean()),
   }).index("by_device", ["deviceId"])
     .index("by_google", ["googleId"]),
 
