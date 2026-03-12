@@ -3309,6 +3309,13 @@ function getEffectiveTaskTime() {
   return time;
 }
 
+function getTaskProgressPercent(taskIndex) {
+  if (game.activeTask !== taskIndex) return 0;
+  const effectiveTaskTime = getEffectiveTaskTime();
+  if (!effectiveTaskTime || effectiveTaskTime <= 0) return 0;
+  return Math.min(100, Math.max(0, (game.taskProgress / effectiveTaskTime) * 100));
+}
+
 function getEffectivePatience() {
   // Patience skill increases customer patience
   const patienceBonus = getSkillEffect('patience');
@@ -5948,10 +5955,10 @@ function showTaskPanel(stallIdx) {
 
   const btns = $('task-buttons');
   btns.innerHTML = stall.tasks.map((t, ti) => {
-    const progress = game.activeTask === ti ? (game.taskProgress / getEffectiveTaskTime()) * 100 : 0;
+    const progress = getTaskProgressPercent(ti);
     return `<div class="task-btn ${t.done ? 'done' : ''} ${game.activeTask === ti ? 'active' : ''}" data-idx="${ti}">
-      ${t.icon} ${t.label}
       <div class="progress" style="width:${progress}%"></div>
+      <span class="task-btn-label">${t.icon} ${t.label}</span>
     </div>`;
   }).join('');
 
@@ -5987,8 +5994,14 @@ function showTaskPanel(stallIdx) {
           game.activeTask = ti;
           game.taskProgress = 0;
           game._clickTimestamps = []; // Reset on task switch
+          const boost = game.effects.speed > 0 ? CONFIG.clickBoost * 2 : CONFIG.clickBoost;
+          game.taskProgress += boost;
           playTaskSound(stall.tasks[ti].id);
-          showTaskPanel(stallIdx);
+          if (game.taskProgress >= getEffectiveTaskTime()) {
+            completeTask();
+          } else {
+            showTaskPanel(stallIdx);
+          }
         }
       }
     });
@@ -6007,9 +6020,9 @@ function updateTaskPanel() {
 
   btns.forEach((btn, ti) => {
     if (ti >= stall.tasks.length) return;
-    const progress = game.activeTask === ti ? (game.taskProgress / getEffectiveTaskTime()) * 100 : 0;
+    const progress = getTaskProgressPercent(ti);
     const progEl = btn.querySelector('.progress');
-    if (progEl) progEl.style.width = Math.min(100, progress) + '%';
+    if (progEl) progEl.style.width = progress + '%';
     btn.classList.toggle('active', game.activeTask === ti && !stall.tasks[ti].done);
     btn.classList.toggle('done', !!stall.tasks[ti].done);
   });
