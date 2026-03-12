@@ -785,6 +785,22 @@ const THOUGHTS = {
 const CUSTOMERS_MALE = ['👨','👴','👦','🧔','👨‍🦰','👨‍🦱','👨‍🦳','👱‍♂️','🧑‍🦰','👨‍🦲'];
 const CUSTOMERS_FEMALE = ['👩','👵','👧','👩‍🦰','👩‍🦱','👩‍🦳','👱‍♀️','👩‍🦲','🧑‍🦱','👩‍🔧'];
 
+const CUSTOMER_VISUALS_MALE = [
+  { hair:'cap', accessory:'none', build:'broad', skin:'#f2c39b', hairColor:'#6d4c41' },
+  { hair:'short', accessory:'none', build:'average', skin:'#d9a37c', hairColor:'#3e2723' },
+  { hair:'buzz', accessory:'shades', build:'broad', skin:'#b97a56', hairColor:'#4e342e' },
+  { hair:'part', accessory:'mustache', build:'tall', skin:'#8d5a3c', hairColor:'#212121' },
+  { hair:'beanie', accessory:'none', build:'stocky', skin:'#f0d2b6', hairColor:'#5d4037' },
+];
+
+const CUSTOMER_VISUALS_FEMALE = [
+  { hair:'bun', accessory:'glasses', build:'average', skin:'#f2c39b', hairColor:'#5d4037' },
+  { hair:'bob', accessory:'none', build:'petite', skin:'#d9a37c', hairColor:'#6d4c41' },
+  { hair:'pony', accessory:'earrings', build:'tall', skin:'#b97a56', hairColor:'#3e2723' },
+  { hair:'visor', accessory:'none', build:'athletic', skin:'#8d5a3c', hairColor:'#212121' },
+  { hair:'curl', accessory:'glasses', build:'average', skin:'#f0d2b6', hairColor:'#4e342e' },
+];
+
 // Named special characters that create memorable moments
 const SPECIAL_CUSTOMERS = [
   // Male bathroom characters
@@ -826,6 +842,39 @@ const SPECIAL_CUSTOMERS = [
    patience:0.8, messiness:0, // Standards, but fair
    thoughts:{enter:'Pit stop, y\'all!',happy:'LOVE this place!',impatient:'Hmm...'}}
 ];
+
+function getCustomerVisualProfile(gender, specialName) {
+  if (specialName) {
+    const specials = {
+      'Big Rig Bill': { hair:'cap', accessory:'mustache', build:'stocky', skin:'#c58b63', hairColor:'#4e342e' },
+      'Road Trip Randy': { hair:'spike', accessory:'none', build:'athletic', skin:'#d9a37c', hairColor:'#bf360c' },
+      'Business Bob': { hair:'part', accessory:'glasses', build:'tall', skin:'#b97a56', hairColor:'#212121' },
+      'Weekend Warrior': { hair:'visor', accessory:'none', build:'athletic', skin:'#e0b18a', hairColor:'#6d4c41' },
+      'Trucker Tom': { hair:'beanie', accessory:'mustache', build:'stocky', skin:'#8d5a3c', hairColor:'#3e2723' },
+      'Soccer Mom': { hair:'pony', accessory:'none', build:'athletic', skin:'#d9a37c', hairColor:'#5d4037' },
+      'Tourist Tina': { hair:'visor', accessory:'glasses', build:'petite', skin:'#f2c39b', hairColor:'#8d6e63' },
+      'Snack Sally': { hair:'bob', accessory:'earrings', build:'average', skin:'#f0d2b6', hairColor:'#6d4c41' },
+      'Road Queen': { hair:'curl', accessory:'shades', build:'tall', skin:'#b97a56', hairColor:'#212121' },
+    };
+    if (specials[specialName]) return specials[specialName];
+  }
+  const source = gender === 'male' ? CUSTOMER_VISUALS_MALE : CUSTOMER_VISUALS_FEMALE;
+  return { ...pick(source) };
+}
+
+function getCustomerVisualStyle(p) {
+  const visual = p.visual || {};
+  const shirt = p.shirt || { top:'#5a8dd8', bot:'#3d6cb8', border:'#2d5090' };
+  const jacketTop = p.vip ? '#fff4b0' : shirt.top;
+  const jacketBot = p.vip ? '#d7b24a' : shirt.bot;
+  return [
+    `--shirt-top:${jacketTop}`,
+    `--shirt-bot:${jacketBot}`,
+    `--shirt-border:${shirt.border}`,
+    `--skin-tone:${visual.skin || '#d9a37c'}`,
+    `--hair-color:${visual.hairColor || '#5d4037'}`,
+  ].join(';');
+}
 
 const CLEAN_MESSAGES = [
   'Sparkling! ✨', 'Spotless!', 'Super clean!', 'Fresh!', 'Pristine!',
@@ -4549,6 +4598,7 @@ function spawnCustomer() {
   // Special characters get an enter thought
   const enterThought = specialThoughts && specialThoughts.enter ? specialThoughts.enter : '';
   const enterTimer = enterThought ? 2500 : 0;
+  const visual = getCustomerVisualProfile(genderFilter, specialName);
 
   game.people.push({
     id: ++game.personId,
@@ -4566,6 +4616,7 @@ function spawnCustomer() {
     thoughtMood: 'neutral',
     thoughtTimer: enterTimer,
     shirt: shirt,
+    visual,
     specialName: specialName,
     specialBadge: specialBadge,
     specialThoughts: specialThoughts,
@@ -5832,18 +5883,37 @@ function renderPeople() {
       el = document.createElement('div');
       el.className = 'person walking';
       el.dataset.id = p.id;
-      // CSS art body with emoji head - custom shirt color
-      const shirt = p.shirt || {top:'#5a8dd8',bot:'#3d6cb8',border:'#2d5090'};
       el.innerHTML = `
         <div class="person-body">
-          <div class="person-icon">${p.icon}</div>
-          <div class="person-torso" style="background:linear-gradient(180deg,${shirt.top} 0%,${shirt.bot} 100%);border-color:${shirt.border}"></div>
+          <div class="person-shadow"></div>
+          <div class="person-head-wrap">
+            <div class="person-hair"></div>
+            <div class="person-headgear"></div>
+            <div class="person-head">
+              <div class="person-icon">${p.icon}</div>
+            </div>
+            <div class="person-accessory"></div>
+          </div>
+          <div class="person-arms"><div class="person-arm left"></div><div class="person-arm right"></div></div>
+          <div class="person-torso"></div>
           <div class="person-legs"><div class="person-leg"></div><div class="person-leg"></div></div>
         </div>
         <div class="patience-bar"><div class="patience-fill"></div></div>
         <div class="thought"></div>`;
       floor.appendChild(el);
     }
+
+    const visual = p.visual || {};
+    const body = el.querySelector('.person-body');
+    if (body) body.style.cssText = getCustomerVisualStyle(p);
+    const hairEl = el.querySelector('.person-hair');
+    const gearEl = el.querySelector('.person-headgear');
+    const accessoryEl = el.querySelector('.person-accessory');
+    const torsoEl = el.querySelector('.person-torso');
+    if (hairEl) hairEl.className = `person-hair hair-${visual.hair || 'short'}`;
+    if (gearEl) gearEl.className = `person-headgear gear-${visual.hair || 'short'}`;
+    if (accessoryEl) accessoryEl.className = `person-accessory accessory-${visual.accessory || 'none'}`;
+    if (torsoEl) torsoEl.className = `person-torso build-${visual.build || 'average'}`;
 
     el.style.left = p.x + 'px';
     el.style.top = p.y + 'px';
