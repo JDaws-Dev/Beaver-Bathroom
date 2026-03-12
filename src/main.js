@@ -3316,6 +3316,22 @@ function getTaskProgressPercent(taskIndex) {
   return Math.min(100, Math.max(0, (game.taskProgress / effectiveTaskTime) * 100));
 }
 
+function setTaskProgressFill(el, progress) {
+  if (!el) return;
+  const scale = Math.min(1, Math.max(0, progress / 100));
+  el.style.transform = `scaleX(${scale})`;
+}
+
+function updateActiveTaskProgressUI() {
+  if (game.activeStall < 0 || game.activeTask < 0) return;
+  const buttons = $('task-buttons');
+  if (!buttons) return;
+  const activeBtn = buttons.querySelector('.task-btn.active');
+  if (!activeBtn) return;
+  const progress = getTaskProgressPercent(game.activeTask);
+  setTaskProgressFill(activeBtn.querySelector('.progress'), progress);
+}
+
 function getEffectivePatience() {
   // Patience skill increases customer patience
   const patienceBonus = getSkillEffect('patience');
@@ -4364,7 +4380,7 @@ function update(dt) {
         completeTask();
       }
       updateStallDOM(game.activeStall);
-      updateTaskPanel();
+      updateActiveTaskProgressUI();
     }
   }
 
@@ -5957,7 +5973,7 @@ function showTaskPanel(stallIdx) {
   btns.innerHTML = stall.tasks.map((t, ti) => {
     const progress = getTaskProgressPercent(ti);
     return `<div class="task-btn ${t.done ? 'done' : ''} ${game.activeTask === ti ? 'active' : ''}" data-idx="${ti}">
-      <div class="progress" style="width:${progress}%"></div>
+      <div class="progress" style="transform:scaleX(${progress / 100})"></div>
       <span class="task-btn-label">${t.icon} ${t.label}</span>
     </div>`;
   }).join('');
@@ -6022,7 +6038,7 @@ function updateTaskPanel() {
     if (ti >= stall.tasks.length) return;
     const progress = getTaskProgressPercent(ti);
     const progEl = btn.querySelector('.progress');
-    if (progEl) progEl.style.width = progress + '%';
+    setTaskProgressFill(progEl, progress);
     btn.classList.toggle('active', game.activeTask === ti && !stall.tasks[ti].done);
     btn.classList.toggle('done', !!stall.tasks[ti].done);
   });
