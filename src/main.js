@@ -6200,6 +6200,7 @@ $('pow-speed').addEventListener('click', () => {
   if (game.powerups.speed > 0 && game.effects.speed <= 0) {
     game.powerups.speed--;
     game.effects.speed = getItemDuration('speed');
+    updatePowerupTimer('pow-speed', game.effects.speed);
     playPowerup();
     haptic('strong'); // Powerup activation feedback
     floatMessage('🥩 BRISKET POWER!', 400, 200, 'combo');
@@ -6212,6 +6213,7 @@ $('pow-slow').addEventListener('click', () => {
   if (game.powerups.slow > 0 && game.effects.slow <= 0) {
     game.powerups.slow--;
     game.effects.slow = getItemDuration('slow');
+    updatePowerupTimer('pow-slow', game.effects.slow);
     playPowerup();
     haptic('strong'); // Powerup activation feedback
     floatMessage('🧊 BRAIN FREEZE!', 400, 200, 'combo');
@@ -6262,6 +6264,7 @@ $('pow-mascot').addEventListener('click', () => {
     console.log('STARTING BEAVER WALK');
     game.powerups.mascot--;
     game.effects.mascot = getItemDuration('mascot');
+    updatePowerupTimer('pow-mascot', game.effects.mascot);
     startMascotWalk();
     playPowerup();
     haptic('strong');

@@ -804,7 +804,7 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .task-btn .progress{position:absolute;inset:0;height:100%;background:linear-gradient(90deg,rgba(76,175,80,0.72),rgba(139,195,74,0.72));transition:transform 0.05s;transform-origin:left center;transform:scaleX(0);pointer-events:none;z-index:0;will-change:transform}
 .task-btn-label{position:relative;z-index:1;display:block}
 #powerups{display:flex;gap:8px;padding:10px 8px;background:repeating-linear-gradient(90deg,#3d2814 0px,#4a3424 2px,#2d1f0f 4px,#3d2814 6px),linear-gradient(180deg,#3d2814 0%,#2d1f0f 100%);background-blend-mode:overlay;border-top:4px solid #FEF117;justify-content:center;box-shadow:inset 0 4px 8px rgba(0,0,0,0.3);flex-wrap:wrap}
-.powerup{padding:8px 12px;background:linear-gradient(180deg,#5a4a38 0%,#4a3a28 50%,#3a2a18 100%);border:3px solid #6a5a48;border-radius:10px;color:#fff;font-size:0.7em;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all 0.18s cubic-bezier(0.34,1.56,0.64,1);box-shadow:inset 0 2px 0 rgba(255,255,255,0.15),inset 0 -2px 4px rgba(0,0,0,0.3),0 3px 6px rgba(0,0,0,0.3);text-shadow:0 1px 2px rgba(0,0,0,0.4);white-space:nowrap}
+.powerup{padding:8px 12px;background:linear-gradient(180deg,#5a4a38 0%,#4a3a28 50%,#3a2a18 100%);border:3px solid #6a5a48;border-radius:10px;color:#fff;font-size:0.7em;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all 0.18s cubic-bezier(0.34,1.56,0.64,1);box-shadow:inset 0 2px 0 rgba(255,255,255,0.15),inset 0 -2px 4px rgba(0,0,0,0.3),0 3px 6px rgba(0,0,0,0.3);text-shadow:0 1px 2px rgba(0,0,0,0.4);white-space:nowrap;position:relative;overflow:visible}
 .powerup-text{display:inline}
 .powerup:hover{background:linear-gradient(180deg,#6a5a48 0%,#5a4a38 50%,#4a3a28 100%);transform:scale(1.08) translateY(-2px);box-shadow:inset 0 2px 0 rgba(255,255,255,0.2),0 5px 10px rgba(0,0,0,0.4)}
 .powerup:active{transform:scale(0.95);box-shadow:inset 0 2px 4px rgba(0,0,0,0.4)}
@@ -1533,7 +1533,7 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 
 
 /* Powerup countdown timer */
-.pow-timer{position:absolute;bottom:-2px;right:-2px;background:#e53935;color:#fff;font-size:0.6em;font-weight:bold;padding:1px 4px;border-radius:6px;min-width:18px;text-align:center;line-height:1.3}
+.pow-timer{position:absolute;bottom:-2px;right:-2px;background:#e53935;color:#fff;font-size:0.6em;font-weight:bold;padding:1px 4px;border-radius:6px;min-width:18px;text-align:center;line-height:1.3;z-index:3}
 /* Floating coin particle */
 .float-coin{position:absolute;font-size:1.1em;animation:coin-float 0.8s ease-out forwards;pointer-events:none;z-index:100}
 @keyframes coin-float{0%{transform:translateY(0) scale(1);opacity:1}50%{transform:translateY(-25px) scale(1.2);opacity:0.9}100%{transform:translateY(-50px) scale(0.6);opacity:0}}
