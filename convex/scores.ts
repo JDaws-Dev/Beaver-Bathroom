@@ -27,12 +27,23 @@ export const getTopScores = query({
   handler: async (ctx, args) => {
     const limit = args.limit ?? 10;
     const season = args.season ?? CURRENT_SEASON;
-    const scores = await ctx.db
+    const seasonalScores = await ctx.db
       .query("scores")
       .withIndex("by_season_score", (q) => q.eq("season", season))
       .order("desc")
       .take(limit);
-    return scores;
+
+    if (seasonalScores.length > 0) {
+      return seasonalScores;
+    }
+
+    // Fall back to all-time scores so a backend migration or new season
+    // doesn't make the board look broken.
+    return await ctx.db
+      .query("scores")
+      .withIndex("by_score")
+      .order("desc")
+      .take(limit);
   },
 });
 
