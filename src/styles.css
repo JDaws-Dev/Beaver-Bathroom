@@ -52,7 +52,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .difficulty-btn.selected span,.difficulty-btn.selected small{opacity:1}
 /* Main action buttons */
 .btn-play{width:100%;padding:18px;font-size:1.6em;letter-spacing:4px;margin-bottom:8px;animation:start-pulse 1.5s ease-in-out infinite;position:relative;overflow:hidden;background:linear-gradient(180deg,#ff6b8a 0%,#e8305a 15%,#D31145 50%,#b80d3a 85%,#8a0d2e 100%)}
-.btn-1v1{width:100%;padding:16px;font-size:1.3em;letter-spacing:3px;margin-bottom:14px;position:relative;overflow:hidden;background:linear-gradient(180deg,#6bc5ff 0%,#3094e8 15%,#1170D3 50%,#0d5ab8 85%,#0d3e8a 100%);animation:start-pulse 1.5s ease-in-out infinite 0.3s}
+.btn-1v1{width:100%;padding:18px;font-size:1.6em;letter-spacing:4px;margin-bottom:8px;position:relative;overflow:hidden;background:linear-gradient(180deg,#6bc5ff 0%,#3094e8 15%,#1170D3 50%,#0d5ab8 85%,#0d3e8a 100%);animation:start-pulse 1.5s ease-in-out infinite 0.3s}
 .btn-1v1::before{content:'';position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(180deg,rgba(255,255,255,0.25),rgba(255,255,255,0.05));pointer-events:none}
 .btn-1v1::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.5),transparent);animation:start-shine 3s ease-in-out infinite 1s;transform:skewX(-20deg)}
 .btn-play::before{content:'';position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(180deg,rgba(255,255,255,0.25),rgba(255,255,255,0.05));pointer-events:none}
@@ -131,7 +131,7 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
   .player-row{margin-bottom:14px}
   .restroom-selector{margin:0 auto 14px;max-width:360px}
   .title-main-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
-  .title-main-actions .btn-play,.title-main-actions .btn-1v1{margin-bottom:0}
+.title-main-actions .btn-play,.title-main-actions .btn-1v1{margin-bottom:0}
   .title-utility{gap:10px;padding-top:12px;border-top:1px solid rgba(245,166,35,0.18)}
   .title-dock{justify-content:space-between;gap:10px}
   #title-signin-row{margin:0 auto!important}
@@ -1041,7 +1041,7 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .title-beaver .beaver-cheek{top:17px;width:8px;height:5px}
 .title-tagline{font-size:0.7em;margin-top:3px}
 .btn-play{padding:10px 0;font-size:1.05em;margin-bottom:5px}
-.btn-1v1{padding:9px 0;font-size:0.95em;margin-bottom:8px}
+.btn-1v1{padding:10px 0;font-size:1.05em;margin-bottom:5px}
 .title-dock{gap:6px;margin-bottom:6px}
 .dock-btn{width:34px;height:34px;border-width:2px}
 .dock-btn svg{width:17px;height:17px}
