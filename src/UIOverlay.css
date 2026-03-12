@@ -116,52 +116,72 @@
 
 
 /* 3. TACTILE "JUICY" BUTTONS - 3D Arcade Style */
-.btn-play {
+.btn-play,
+.btn-1v1 {
   padding: 18px 55px;
   font-size: clamp(1.2rem, 4vw, 1.5rem);
   letter-spacing: 4px;
   font-weight: 900;
   text-transform: uppercase;
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
 
-  /* 3D Effect - Thick bottom border */
+.btn-play {
   background: linear-gradient(180deg,
     #ff4060 0%,
     #e8305a 15%,
     #D31145 40%,
     #b80d3a 70%,
     #a00d35 100%);
-  border: none;
-  border-radius: 12px;
   border-bottom: 8px solid #7a0828;
-
-  color: #fff;
   text-shadow:
     0 2px 0 #8a0d2e,
     0 3px 6px rgba(0,0,0,0.5);
-
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-
   box-shadow:
     inset 0 4px 0 rgba(255,255,255,0.35),
     inset 0 -2px 8px rgba(0,0,0,0.3),
     0 4px 8px rgba(0,0,0,0.4),
     0 0 20px rgba(211,17,69,0.4);
+}
 
-  transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+.btn-1v1 {
+  background: linear-gradient(180deg,
+    #6bc5ff 0%,
+    #3094e8 15%,
+    #1170D3 40%,
+    #0d5ab8 70%,
+    #0d3e8a 100%);
+  border-bottom: 8px solid #0a2f69;
+  text-shadow:
+    0 2px 0 #0d3e8a,
+    0 3px 6px rgba(0,0,0,0.5);
+  box-shadow:
+    inset 0 4px 0 rgba(255,255,255,0.35),
+    inset 0 -2px 8px rgba(0,0,0,0.3),
+    0 4px 8px rgba(0,0,0,0.4),
+    0 0 20px rgba(17,112,211,0.35);
 }
 
 /* Hover - scale up 1.05 */
-.btn-play:hover {
+.btn-play:hover,
+.btn-1v1:hover {
   transform: scale(1.05) translateY(-2px);
+  border-bottom-width: 10px;
+}
+
+.btn-play:hover {
   background: linear-gradient(180deg,
     #ff5070 0%,
     #f04060 15%,
     #e8305a 40%,
     #D31145 70%,
     #b80d3a 100%);
-  border-bottom-width: 10px;
   box-shadow:
     inset 0 4px 0 rgba(255,255,255,0.4),
     inset 0 -2px 8px rgba(0,0,0,0.25),
@@ -170,10 +190,29 @@
     0 0 70px rgba(211,17,69,0.6);
 }
 
-/* Active state - shrink to 0.95, darker red */
-.btn-play:active {
+.btn-1v1:hover {
+  background: linear-gradient(180deg,
+    #7bd0ff 0%,
+    #42a1ef 15%,
+    #2581e0 40%,
+    #1170D3 70%,
+    #0d5ab8 100%);
+  box-shadow:
+    inset 0 4px 0 rgba(255,255,255,0.4),
+    inset 0 -2px 8px rgba(0,0,0,0.25),
+    0 8px 16px rgba(0,0,0,0.5),
+    0 0 35px rgba(255,255,255,0.35),
+    0 0 60px rgba(17,112,211,0.5);
+}
+
+/* Active state - shrink to 0.95 */
+.btn-play:active,
+.btn-1v1:active {
   transform: scale(0.95) translateY(4px);
   border-bottom-width: 2px;
+}
+
+.btn-play:active {
   background: linear-gradient(180deg,
     #c82040 0%,
     #a01535 15%,
@@ -185,6 +224,35 @@
     0 1px 2px rgba(0,0,0,0.4),
     0 0 15px rgba(255,255,255,0.2),
     0 0 25px rgba(211,17,69,0.4);
+}
+
+.btn-1v1:active {
+  background: linear-gradient(180deg,
+    #1157a8 0%,
+    #0f4c91 15%,
+    #0d3e8a 40%,
+    #0a2f69 70%,
+    #082551 100%);
+  box-shadow:
+    inset 0 4px 8px rgba(0,0,0,0.6),
+    0 1px 2px rgba(0,0,0,0.4),
+    0 0 12px rgba(255,255,255,0.15),
+    0 0 22px rgba(17,112,211,0.35);
+}
+
+@media (min-width: 900px) {
+  .title-main-actions .btn-play {
+    padding: 20px 18px;
+    font-size: 1.65em;
+    letter-spacing: 4px;
+  }
+
+  .title-main-actions .btn-1v1 {
+    padding: 16px 18px;
+    font-size: 1.28em;
+    letter-spacing: 3px;
+    align-self: center;
+  }
 }
 
 
@@ -253,12 +321,14 @@
     border-width: 3px;
   }
 
-  .btn-play {
+  .btn-play,
+  .btn-1v1 {
     padding: 14px 40px;
     border-bottom-width: 6px;
   }
 
-  .btn-play:active {
+  .btn-play:active,
+  .btn-1v1:active {
     border-bottom-width: 2px;
   }
 
