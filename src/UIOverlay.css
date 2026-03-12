@@ -241,6 +241,21 @@
 }
 
 @media (min-width: 900px) {
+  .title-card {
+    max-width: 560px;
+    width: min(560px, 92vw);
+    padding: 24px 30px 20px;
+  }
+
+  .title-hero {
+    margin-bottom: 12px;
+  }
+
+  .title-hero .title-beaver-img {
+    width: 116px;
+    margin-bottom: 10px;
+  }
+
   .title-main-actions .btn-play {
     padding: 20px 18px;
     font-size: 1.65em;
