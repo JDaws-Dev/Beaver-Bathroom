@@ -131,7 +131,9 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
   .player-row{margin-bottom:14px}
   .restroom-selector{margin:0 auto 14px;max-width:360px}
   .title-main-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
-.title-main-actions .btn-play,.title-main-actions .btn-1v1{margin-bottom:0}
+  .title-main-actions .btn-play,.title-main-actions .btn-1v1{margin-bottom:0}
+  .title-main-actions .btn-play{padding:20px 18px;font-size:1.65em;letter-spacing:4px}
+  .title-main-actions .btn-1v1{padding:16px 18px;font-size:1.28em;letter-spacing:3px;align-self:center;border:3px solid rgba(255,255,255,0.18);box-shadow:0 8px 18px rgba(13,62,138,0.35),inset 0 1px 0 rgba(255,255,255,0.18)}
   .title-utility{gap:10px;padding-top:12px;border-top:1px solid rgba(245,166,35,0.18)}
   .title-dock{justify-content:space-between;gap:10px}
   #title-signin-row{margin:0 auto!important}
