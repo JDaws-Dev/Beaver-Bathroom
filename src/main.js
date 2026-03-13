@@ -4713,12 +4713,17 @@ function getLocalObstacleRect(el, floorRect, padX = 0, padTop = 0, padBottom = 0
   };
 }
 
+const CUSTOMER_BODY_HEIGHT = 64;
+const CUSTOMER_BODY_WIDTH = 50;
+
 function pushCustomerOutOfRect(p, obstacle) {
   if (!obstacle) return;
-  if (p.x <= obstacle.left || p.x >= obstacle.right || p.y <= obstacle.top || p.y >= obstacle.bottom) return;
+  const footX = p.x + CUSTOMER_BODY_WIDTH * 0.5;
+  const footY = p.y + CUSTOMER_BODY_HEIGHT;
+  if (footX <= obstacle.left || footX >= obstacle.right || footY <= obstacle.top || footY >= obstacle.bottom) return;
 
-  const sidePush = p.x < obstacle.centerX ? obstacle.left - 10 : obstacle.right + 10;
-  const pushUp = obstacle.top - 8;
+  const sidePush = footX < obstacle.centerX ? obstacle.left - CUSTOMER_BODY_WIDTH * 0.6 : obstacle.right - CUSTOMER_BODY_WIDTH * 0.4;
+  const pushUp = obstacle.top - CUSTOMER_BODY_HEIGHT - 6;
   const distUp = Math.abs(p.y - pushUp);
   const distSide = Math.abs(p.x - sidePush);
 
@@ -4726,7 +4731,7 @@ function pushCustomerOutOfRect(p, obstacle) {
     p.y = pushUp;
   } else {
     p.x = sidePush;
-    p.y = Math.min(p.y, obstacle.top - 2);
+    p.y = Math.min(p.y, obstacle.top - CUSTOMER_BODY_HEIGHT * 0.75);
   }
 }
 
@@ -4735,9 +4740,11 @@ function deflectFromFixtures(p, floorRect) {
   const platformRect = getLocalObstacleRect($('sink-towel-area'), floorRect, 18, 22, 10);
   const sinksRect = getLocalObstacleRect($('sinks-area'), floorRect, 18, 20, 12);
   const towelsRect = getLocalObstacleRect($('towels'), floorRect, 18, 20, 10);
+  const footX = p.x + CUSTOMER_BODY_WIDTH * 0.5;
+  const footY = p.y + CUSTOMER_BODY_HEIGHT;
 
-  if (platformRect && p.x > platformRect.left && p.x < platformRect.right && p.y > platformRect.top) {
-    p.y = platformRect.top - 10;
+  if (platformRect && footX > platformRect.left && footX < platformRect.right && footY > platformRect.top) {
+    p.y = platformRect.top - CUSTOMER_BODY_HEIGHT - 6;
   }
   pushCustomerOutOfRect(p, sinksRect);
   pushCustomerOutOfRect(p, towelsRect);
@@ -4746,7 +4753,7 @@ function deflectFromFixtures(p, floorRect) {
 function getFixtureStandY(el, floorRect, offset = 48) {
   if (!el) return floorRect.height - 120;
   const rect = el.getBoundingClientRect();
-  return rect.top - floorRect.top - offset;
+  return rect.top - floorRect.top - CUSTOMER_BODY_HEIGHT - offset;
 }
 
 function isCustomerMovingOnFloor(p) {
