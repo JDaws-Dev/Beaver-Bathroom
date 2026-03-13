@@ -4678,6 +4678,35 @@ function deflectFromTowels(p, floorRect) {
   }
 }
 
+function isCustomerMovingOnFloor(p) {
+  return ['enter', 'findStall', 'toStall', 'entering', 'exitStall', 'toSink', 'toTowels', 'exit'].includes(p.phase) && !p.frozen;
+}
+
+function separateCustomers() {
+  const movers = game.people.filter(isCustomerMovingOnFloor);
+  const minDist = 22;
+
+  for (let i = 0; i < movers.length; i++) {
+    for (let j = i + 1; j < movers.length; j++) {
+      const a = movers[i];
+      const b = movers[j];
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const dist = Math.sqrt(dx * dx + dy * dy) || 0.001;
+      if (dist >= minDist) continue;
+
+      const overlap = (minDist - dist) * 0.5;
+      const nx = dx / dist;
+      const ny = dy / dist;
+
+      a.x -= nx * overlap;
+      a.y -= ny * overlap;
+      b.x += nx * overlap;
+      b.y += ny * overlap;
+    }
+  }
+}
+
 function updatePeople(dt) {
   const cfg = getShiftConfig();
   const floor = $('floor-area');
@@ -4878,7 +4907,7 @@ function updatePeople(dt) {
       const dx = tx - p.x, dy = ty - p.y;
       const dist = Math.sqrt(dx*dx + dy*dy);
 
-      if (dist < 10) {
+      if (dist < 12) {
         const stall = game.stalls[p.target];
 
         // If stall is being cleaned, redirect customer to find another stall
@@ -4890,7 +4919,9 @@ function updatePeople(dt) {
         }
 
         p.phase = 'entering';
-        p.enterTimer = 350;
+        p.enterTimer = 420;
+        p.enterTargetX = tx;
+        p.enterTargetY = ty - 18;
 
         if (stall.state === 'dirty') {
           // Start grace period - player has 200ms to finish cleaning
@@ -4910,7 +4941,16 @@ function updatePeople(dt) {
     }
     else if (p.phase === 'entering') {
       p.enterTimer -= dt;
-      p.y -= speed * 0.6;
+      const enterSpeed = speed * 0.8;
+      const tx = p.enterTargetX ?? p.x;
+      const ty = p.enterTargetY ?? (p.y - 10);
+      const dx = tx - p.x;
+      const dy = ty - p.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist > 1) {
+        p.x += (dx / dist) * Math.min(dist, enterSpeed * 0.5);
+        p.y += (dy / dist) * Math.min(dist, enterSpeed);
+      }
 
       // Grace period handling - check if stall was cleaned in time
       if (p.gracePending) {
@@ -5164,6 +5204,8 @@ function updatePeople(dt) {
       }
     }
   }
+
+  separateCustomers();
 }
 
 function customerLeaves(stallIdx) {
