@@ -5319,19 +5319,6 @@ function updatePeople(dt) {
       }
     }
     else if (p.phase === 'exit') {
-      // Tip system — happy customers tip coins on exit
-      if (!p.tipped && !p.angry && !p.steppedInPuddle) {
-        p.tipped = true;
-        const baseTip = p.vip ? 3 : 1;
-        const tipAmount = Math.floor(baseTip * getCoinBonus());
-        if (tipAmount > 0) {
-          game.coins += tipAmount;
-          game.tipsEarned += tipAmount;
-          floatCoin(p.x, p.y - 10);
-          if (p.vip) floatCoin(p.x + 10, p.y - 15);
-        }
-      }
-
       const exitDoor = $('exit-door').getBoundingClientRect();
       const tx = exitDoor.left - floorRect.left + 15;
       const ty = exitDoor.top - floorRect.top + 20;
@@ -5340,6 +5327,18 @@ function updatePeople(dt) {
       if (dist < 60) openExitDoor(360);
 
       if (dist < 20 && !p.frozen && game.exitDoorOpen) {
+        // Tip only when the customer is actually leaving through the door.
+        if (!p.tipped && !p.angry && !p.steppedInPuddle) {
+          p.tipped = true;
+          const baseTip = p.vip ? 3 : 1;
+          const tipAmount = Math.floor(baseTip * getCoinBonus());
+          if (tipAmount > 0) {
+            game.coins += tipAmount;
+            game.tipsEarned += tipAmount;
+            floatCoin(p.x + 4, p.y - 14);
+            if (p.vip) floatCoin(p.x + 14, p.y - 18);
+          }
+        }
         game.people.splice(i, 1);
       } else if (dist >= 20) {
         p.x += (dx / dist) * speed * 1.2;
