@@ -797,14 +797,14 @@ const CUSTOMER_VISUALS_MALE = [
 ];
 
 const CUSTOMER_VISUALS_FEMALE = [
-  { hair:'part-long', accessory:'none', build:'average', face:'soft', headShape:'oval', skin:'#f2c39b', hairColor:'#5d4037' },
-  { hair:'wave-long', accessory:'none', build:'petite', face:'smile', headShape:'round', skin:'#d9a37c', hairColor:'#8d5a46' },
-  { hair:'braids-long', accessory:'none', build:'tall', face:'neutral', headShape:'oval', skin:'#b97a56', hairColor:'#3e2723' },
-  { hair:'pony-long', accessory:'none', build:'athletic', face:'stern', headShape:'square', skin:'#8d5a3c', hairColor:'#212121' },
-  { hair:'curl-volume', accessory:'none', build:'average', face:'smile', headShape:'round', skin:'#f0d2b6', hairColor:'#4e342e' },
-  { hair:'part-long', accessory:'none', build:'tall', face:'smirk', headShape:'square', skin:'#c98d66', hairColor:'#212121' },
-  { hair:'wave-long', accessory:'none', build:'petite', face:'soft', headShape:'round', skin:'#e0b18a', hairColor:'#b36b4d' },
-  { hair:'pony-long', accessory:'none', build:'athletic', face:'neutral', headShape:'oval', skin:'#7a4f35', hairColor:'#3e2723' },
+  { hair:'pageboy', accessory:'none', build:'average', face:'soft', headShape:'oval', skin:'#f2c39b', hairColor:'#5d4037' },
+  { hair:'flip', accessory:'none', build:'petite', face:'smile', headShape:'round', skin:'#d9a37c', hairColor:'#8d5a46' },
+  { hair:'beehive', accessory:'none', build:'tall', face:'neutral', headShape:'oval', skin:'#b97a56', hairColor:'#3e2723' },
+  { hair:'bouffant-pony', accessory:'none', build:'athletic', face:'stern', headShape:'square', skin:'#8d5a3c', hairColor:'#212121' },
+  { hair:'set-curls', accessory:'none', build:'average', face:'smile', headShape:'round', skin:'#f0d2b6', hairColor:'#4e342e' },
+  { hair:'pageboy', accessory:'none', build:'tall', face:'smirk', headShape:'square', skin:'#c98d66', hairColor:'#212121' },
+  { hair:'flip', accessory:'none', build:'petite', face:'soft', headShape:'round', skin:'#e0b18a', hairColor:'#b36b4d' },
+  { hair:'bouffant-pony', accessory:'none', build:'athletic', face:'neutral', headShape:'oval', skin:'#7a4f35', hairColor:'#3e2723' },
 ];
 
 // Named special characters that create memorable moments
@@ -857,10 +857,10 @@ function getCustomerVisualProfile(gender, specialName) {
       'Business Bob': { hair:'part', accessory:'none', build:'tall', face:'stern', headShape:'oval', skin:'#b97a56', hairColor:'#212121' },
       'Weekend Warrior': { hair:'visor', accessory:'none', build:'athletic', face:'soft', headShape:'round', skin:'#e0b18a', hairColor:'#6d4c41' },
       'Trucker Tom': { hair:'beanie', accessory:'none', build:'stocky', face:'neutral', headShape:'square', skin:'#8d5a3c', hairColor:'#3e2723' },
-      'Soccer Mom': { hair:'pony-long', accessory:'none', build:'athletic', face:'neutral', headShape:'oval', skin:'#d9a37c', hairColor:'#5d4037' },
-      'Tourist Tina': { hair:'wave-long', accessory:'none', build:'petite', face:'smile', headShape:'round', skin:'#f2c39b', hairColor:'#b36b4d' },
-      'Snack Sally': { hair:'braids-long', accessory:'none', build:'average', face:'smile', headShape:'round', skin:'#f0d2b6', hairColor:'#6d4c41' },
-      'Road Queen': { hair:'curl-volume', accessory:'none', build:'tall', face:'smirk', headShape:'square', skin:'#b97a56', hairColor:'#212121' },
+      'Soccer Mom': { hair:'bouffant-pony', accessory:'none', build:'athletic', face:'neutral', headShape:'oval', skin:'#d9a37c', hairColor:'#5d4037' },
+      'Tourist Tina': { hair:'flip', accessory:'none', build:'petite', face:'smile', headShape:'round', skin:'#f2c39b', hairColor:'#b36b4d' },
+      'Snack Sally': { hair:'pageboy', accessory:'none', build:'average', face:'smile', headShape:'round', skin:'#f0d2b6', hairColor:'#6d4c41' },
+      'Road Queen': { hair:'set-curls', accessory:'none', build:'tall', face:'smirk', headShape:'square', skin:'#b97a56', hairColor:'#212121' },
     };
     if (specials[specialName]) return specials[specialName];
   }
@@ -4732,8 +4732,13 @@ function pushCustomerOutOfRect(p, obstacle) {
 
 // Keep roaming customers off the sink block and towel dispenser.
 function deflectFromFixtures(p, floorRect) {
+  const platformRect = getLocalObstacleRect($('sink-towel-area'), floorRect, 18, 22, 10);
   const sinksRect = getLocalObstacleRect($('sinks-area'), floorRect, 18, 20, 12);
   const towelsRect = getLocalObstacleRect($('towels'), floorRect, 18, 20, 10);
+
+  if (platformRect && p.x > platformRect.left && p.x < platformRect.right && p.y > platformRect.top) {
+    p.y = platformRect.top - 10;
+  }
   pushCustomerOutOfRect(p, sinksRect);
   pushCustomerOutOfRect(p, towelsRect);
 }
