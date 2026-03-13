@@ -818,8 +818,8 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .person-torso{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:26px;height:24px;background:linear-gradient(180deg,var(--shirt-top) 0%,var(--shirt-bot) 100%);border-radius:10px 10px 6px 6px;z-index:2;border:2px solid var(--shirt-border);box-shadow:inset 0 2px 0 rgba(255,255,255,0.18),0 2px 4px rgba(0,0,0,0.28)}
 .person-torso::after{content:'';position:absolute;top:3px;left:50%;transform:translateX(-50%);width:10px;height:3px;border-radius:3px;background:rgba(255,255,255,0.18)}
 .person.female .person-body{width:54px;height:68px}
-.person.female .person-head-wrap{width:46px;height:54px}
-.person.female .person-head{top:9px;width:32px;height:30px;z-index:4}
+.person.female .person-head-wrap{width:44px;height:50px}
+.person.female .person-head{top:10px;width:31px;height:29px;z-index:4}
 .person.female .person-face{top:14px}
 .person.female .person-hair{z-index:5}
 .person.female .hair-pageboy,.person.female .hair-flip,.person.female .hair-beehive,.person.female .hair-bouffant-pony,.person.female .hair-set-curls{top:-4px}
@@ -829,9 +829,9 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .person.female .hair-bouffant-pony{top:-6px}
 .person.female .hair-set-curls::before,.person.female .hair-set-curls::after{top:9px;height:16px}
 .person.male .person-torso{border-radius:10px 10px 6px 6px}
-.person.female .person-torso{bottom:10px;width:22px;height:23px;border-radius:10px 10px 4px 4px;clip-path:polygon(18% 0,82% 0,100% 100%,0 100%)}
+.person.female .person-torso{bottom:11px;width:22px;height:24px;border-radius:10px 10px 4px 4px;clip-path:polygon(18% 0,82% 0,100% 100%,0 100%)}
 .person.female .person-torso::before{content:'';position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);width:30px;height:13px;background:linear-gradient(180deg,color-mix(in srgb,var(--shirt-top) 92%, #ffffff),var(--shirt-bot));border:2px solid var(--shirt-border);border-top:none;border-radius:0 0 12px 12px;clip-path:polygon(10% 0,90% 0,100% 100%,0 100%)}
-.person.female .person-arms{top:30px;width:32px}
+.person.female .person-arms{top:29px;width:32px}
 .person.female .person-arm.left{left:1px}
 .person.female .person-arm.right{right:1px}
 .person-torso.build-broad{width:30px}
@@ -841,12 +841,15 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .person-torso.build-athletic{width:27px;height:25px;clip-path:polygon(12% 0,88% 0,100% 100%,0 100%)}
 .person.female .person-torso.build-broad{width:24px}
 .person.female .person-torso.build-stocky{width:26px;height:22px}
-.person.female .person-torso.build-tall{height:25px}
-.person.female .person-torso.build-petite{width:21px;height:23px}
+.person.female .person-torso.build-tall{height:26px}
+.person.female .person-torso.build-petite{width:22px;height:25px}
 .person.female .person-torso.build-athletic{width:23px;height:23px}
-.person.female .person-head-wrap.head-square{transform:translateX(-50%)}
+.person.female .person-legs{width:19px;gap:3px}
+.person.female .person-legs .person-leg{border-radius:0 0 4px 4px}
 .person.greeted .person-head{box-shadow:0 0 0 2px rgba(255,239,184,0.35),inset 0 2px 0 rgba(255,255,255,0.16),0 2px 3px rgba(0,0,0,0.22)}
 .person.greeted .person-body{filter:drop-shadow(0 0 4px rgba(255,239,184,0.25))}
+.person.can-greet::after{content:'HI';position:absolute;top:-18px;left:50%;transform:translateX(-50%);padding:1px 5px;border-radius:999px;background:linear-gradient(180deg,#fff8d1,#f1d97a);border:1px solid rgba(120,90,20,0.55);font-size:0.34em;font-weight:800;color:#6a4d10;letter-spacing:0.4px;box-shadow:0 1px 4px rgba(0,0,0,0.18);animation:greet-bob 0.8s ease-in-out infinite;pointer-events:none}
+.person.greeted::after{display:none}
 .person-legs{position:absolute;bottom:0;width:22px;height:12px;display:flex;gap:4px;z-index:0}
 .person-leg{flex:1;background:linear-gradient(180deg,#4a4a4a,#333);border-radius:0 0 3px 3px;transition:transform 0.1s}
 .person.female .person-legs{width:18px;gap:3px}
@@ -902,6 +905,7 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 @keyframes leg-walk-l{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(3px) rotate(8deg)}}
 @keyframes leg-walk-r{0%,100%{transform:translateY(3px) rotate(8deg)}50%{transform:translateY(0) rotate(-8deg)}}
 @keyframes urgent-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}
+@keyframes greet-bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-2px)}}
 @keyframes thought-bounce{0%{transform:translateX(-50%) scale(0.8)}50%{transform:translateX(-50%) scale(1.1)}100%{transform:translateX(-50%) scale(1)}}
 @keyframes happy-bounce{0%{transform:scale(1)}30%{transform:scale(1.15)}60%{transform:scale(0.95)}100%{transform:scale(1)}}
 @keyframes disgust-recoil{0%{transform:translateX(0)}30%{transform:translateX(-5px)}100%{transform:translateX(0)}}
