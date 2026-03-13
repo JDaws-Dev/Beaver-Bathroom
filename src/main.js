@@ -4743,6 +4743,12 @@ function deflectFromFixtures(p, floorRect) {
   pushCustomerOutOfRect(p, towelsRect);
 }
 
+function getFixtureStandY(el, floorRect, offset = 48) {
+  if (!el) return floorRect.height - 120;
+  const rect = el.getBoundingClientRect();
+  return rect.top - floorRect.top - offset;
+}
+
 function isCustomerMovingOnFloor(p) {
   return ['enterDoor', 'enter', 'findStall', 'toStall', 'entering', 'exitStall', 'toSink', 'toTowels', 'exit'].includes(p.phase) && !p.frozen;
 }
@@ -4772,7 +4778,7 @@ function separateCustomers(floorRect) {
   }
 
   for (const p of movers) {
-    if (p.phase === 'toSink' || p.phase === 'toTowels' || p.phase === 'washing') continue;
+    if (p.phase === 'washing') continue;
     deflectFromFixtures(p, floorRect);
   }
 }
@@ -5142,12 +5148,12 @@ function updatePeople(dt) {
 
       const sinkRect = sinkEl.getBoundingClientRect();
       const tx = sinkRect.left - floorRect.left + sinkRect.width/2 - 12;
-      // Stand in front of sink (above it), not inside it
-      const ty = sinkRect.top - floorRect.top - 35;
+      const ty = getFixtureStandY(sinkEl, floorRect, 48);
       const dx = tx - p.x, dy = ty - p.y;
       const dist = Math.sqrt(dx*dx + dy*dy);
 
       if (dist < 12) {
+        p.y = ty;
         p.phase = 'washing';
         p.washTime = 1000;
         p.sinkIdx = sinkIdx;
@@ -5155,6 +5161,7 @@ function updatePeople(dt) {
       } else {
         p.x += (dx / dist) * speed;
         p.y += (dy / dist) * speed;
+        deflectFromFixtures(p, floorRect);
       }
     }
     else if (p.phase === 'washing') {
@@ -5188,6 +5195,8 @@ function updatePeople(dt) {
           p.thoughtMood = 'good';
           playCustomerHappy();
           p.thoughtTimer = 1500;
+          const sinkEl = $('sinks-area').children[p.sinkIdx];
+          p.y = Math.min(p.y, getFixtureStandY(sinkEl, floorRect, 48));
           p.phase = 'exit';
         } else {
           // Walk to towel dispenser
@@ -5199,12 +5208,12 @@ function updatePeople(dt) {
       const towelEl = $('towels');
       const towelRect = towelEl.getBoundingClientRect();
       const tx = towelRect.left - floorRect.left + towelRect.width/2;
-      // Stand in front of towels (above them), not inside them
-      const ty = towelRect.top - floorRect.top - 35;
+      const ty = getFixtureStandY(towelEl, floorRect, 48);
       const dx = tx - p.x, dy = ty - p.y;
       const dist = Math.sqrt(dx*dx + dy*dy);
 
       if (dist < 15) {
+        p.y = ty;
         // Arrived at towels
         if (game.towels > 0) {
           game.towels--;
@@ -5233,6 +5242,7 @@ function updatePeople(dt) {
       } else {
         p.x += (dx / dist) * speed;
         p.y += (dy / dist) * speed;
+        deflectFromFixtures(p, floorRect);
       }
     }
     else if (p.phase === 'exit') {
