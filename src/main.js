@@ -3535,18 +3535,20 @@ function floatCoin(x, y) {
   setTimeout(() => el.remove(), 800);
 }
 
-function greetCustomer(personId) {
+function interactWithCustomer(personId) {
   const p = game.people.find(person => person.id === personId);
   if (!p || p.greeted || p.frozen) return;
   if (!['enterDoor', 'enter', 'findStall', 'toStall', 'entering', 'exitStall', 'toSink', 'toTowels', 'exit'].includes(p.phase)) return;
 
   p.greeted = true;
-  const points = addScore(p.vip ? 25 : (p.urgent ? 15 : 10));
-  p.patience = Math.min(p.maxPatience, p.patience + (p.vip ? 900 : (p.urgent ? 850 : 450)));
-  if (p.vip) {
+  const isCalming = p.urgent;
+  const points = addScore(p.vip ? 25 : (isCalming ? 18 : 10));
+  p.patience = Math.min(p.maxPatience, p.patience + (p.vip ? 900 : (isCalming ? 1200 : 450)));
+  if (isCalming) {
+    p.urgent = false;
+    p.thought = pick(['Okay, okay...', 'Made it in time!', 'Whew, thanks!']);
+  } else if (p.vip) {
     p.thought = pick(['Excellent service.', 'Much appreciated.', 'Classy place!']);
-  } else if (p.urgent) {
-    p.thought = pick(['Thank you!', 'Almost there!', 'Appreciate it!']);
   } else if (p.gender === 'female') {
     p.thought = pick(['Why, hello!', 'Much obliged!', 'Well hi there!']);
   } else {
@@ -3554,7 +3556,7 @@ function greetCustomer(personId) {
   }
   p.thoughtMood = 'good';
   p.thoughtTimer = 1400;
-  floatMessage(`+${points} GREET`, p.x + 10, p.y - 18, 'good');
+  floatMessage(`+${points} ${isCalming ? 'CALM' : 'GREET'}`, p.x + 10, p.y - 18, 'good');
   bumpValue('score');
   playClick();
   haptic('light');
@@ -6139,7 +6141,7 @@ function renderPeople() {
         <div class="thought"></div>`;
       el.addEventListener('click', (e) => {
         e.stopPropagation();
-        greetCustomer(parseInt(el.dataset.id, 10));
+        interactWithCustomer(parseInt(el.dataset.id, 10));
       });
       floor.appendChild(el);
     }
@@ -6176,7 +6178,9 @@ function renderPeople() {
     el.classList.toggle('clean', p.messiness === -1);
     el.classList.toggle('fighting', !!p.fighting);
     el.classList.toggle('greeted', !!p.greeted);
-    el.classList.toggle('can-greet', !p.greeted && !p.frozen && ['enterDoor', 'enter', 'findStall', 'toStall', 'entering', 'exitStall', 'toSink', 'toTowels', 'exit'].includes(p.phase));
+    const canInteract = !p.greeted && !p.frozen && ['enterDoor', 'enter', 'findStall', 'toStall', 'entering', 'exitStall', 'toSink', 'toTowels', 'exit'].includes(p.phase);
+    el.classList.toggle('can-greet', canInteract && !p.urgent);
+    el.classList.toggle('can-calm', canInteract && p.urgent);
 
     // Add VIP badge if needed
     if (p.vip && !el.querySelector('.vip-badge')) {

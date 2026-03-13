@@ -849,10 +849,10 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .person.greeted .person-head{box-shadow:0 0 0 2px rgba(255,239,184,0.35),inset 0 2px 0 rgba(255,255,255,0.16),0 2px 3px rgba(0,0,0,0.22)}
 .person.greeted .person-body{filter:drop-shadow(0 0 4px rgba(255,239,184,0.25))}
 .person.can-greet::after{content:'HI';position:absolute;top:-18px;left:50%;transform:translateX(-50%);padding:1px 5px;border-radius:999px;background:linear-gradient(180deg,#fff8d1,#f1d97a);border:1px solid rgba(120,90,20,0.55);font-size:0.34em;font-weight:800;color:#6a4d10;letter-spacing:0.4px;box-shadow:0 1px 4px rgba(0,0,0,0.18);animation:greet-bob 0.8s ease-in-out infinite;pointer-events:none}
+.person.can-calm::after{content:'CALM';position:absolute;top:-18px;left:50%;transform:translateX(-50%);padding:1px 5px;border-radius:999px;background:linear-gradient(180deg,#ffe2e2,#ffaaaa);border:1px solid rgba(150,40,40,0.55);font-size:0.31em;font-weight:800;color:#8a2020;letter-spacing:0.35px;box-shadow:0 1px 4px rgba(0,0,0,0.18);animation:greet-bob 0.8s ease-in-out infinite;pointer-events:none}
 .person.greeted::after{display:none}
 .person-legs{position:absolute;bottom:0;width:22px;height:12px;display:flex;gap:4px;z-index:0}
 .person-leg{flex:1;background:linear-gradient(180deg,#4a4a4a,#333);border-radius:0 0 3px 3px;transition:transform 0.1s}
-.person.female .person-legs{width:18px;gap:3px}
 .person.walking{animation:none}
 .person.walking .person-head-wrap{animation:head-bob-centered 0.25s infinite}
 .person.walking .person-arm.left{animation:arm-swing-l 0.25s infinite}
