@@ -818,15 +818,15 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .person-torso{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:26px;height:24px;background:linear-gradient(180deg,var(--shirt-top) 0%,var(--shirt-bot) 100%);border-radius:10px 10px 6px 6px;z-index:2;border:2px solid var(--shirt-border);box-shadow:inset 0 2px 0 rgba(255,255,255,0.18),0 2px 4px rgba(0,0,0,0.28)}
 .person-torso::after{content:'';position:absolute;top:3px;left:50%;transform:translateX(-50%);width:10px;height:3px;border-radius:3px;background:rgba(255,255,255,0.18)}
 .person.female .person-body{width:54px;height:68px}
-.person.female .person-head-wrap{width:44px;height:50px}
-.person.female .person-head{top:10px;width:31px;height:29px;z-index:4}
+.person.female .person-head-wrap{width:42px;height:48px}
+.person.female .person-head{top:11px;width:30px;height:28px;z-index:4}
 .person.female .person-face{top:14px}
 .person.female .person-hair{z-index:5}
-.person.female .hair-pageboy,.person.female .hair-flip,.person.female .hair-beehive,.person.female .hair-bouffant-pony,.person.female .hair-set-curls{top:-3px}
+.person.female .hair-pageboy,.person.female .hair-flip,.person.female .hair-beehive,.person.female .hair-bouffant-pony,.person.female .hair-set-curls{top:-2px}
 .person.female .hair-pageboy::before,.person.female .hair-pageboy::after{top:10px;height:14px}
 .person.female .hair-flip::before,.person.female .hair-flip::after{top:10px;height:14px}
-.person.female .hair-beehive{top:-8px}
-.person.female .hair-bouffant-pony{top:-6px}
+.person.female .hair-beehive{top:-7px}
+.person.female .hair-bouffant-pony{top:-5px}
 .person.female .hair-set-curls::before,.person.female .hair-set-curls::after{top:10px;height:14px}
 .person.male .person-torso{border-radius:10px 10px 6px 6px}
 .person.female .person-torso{bottom:11px;width:22px;height:24px;border-radius:10px 10px 4px 4px;clip-path:polygon(18% 0,82% 0,100% 100%,0 100%)}
@@ -852,6 +852,11 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .person.can-calm::after{content:'CALM';position:absolute;top:-18px;left:50%;transform:translateX(-50%);padding:1px 5px;border-radius:999px;background:linear-gradient(180deg,#ffe2e2,#ffaaaa);border:1px solid rgba(150,40,40,0.55);font-size:0.31em;font-weight:800;color:#8a2020;letter-spacing:0.35px;box-shadow:0 1px 4px rgba(0,0,0,0.18);animation:greet-bob 0.8s ease-in-out infinite;pointer-events:none}
 .person.can-charm::after{content:'VIP';position:absolute;top:-18px;left:50%;transform:translateX(-50%);padding:1px 5px;border-radius:999px;background:linear-gradient(180deg,#fff4c3,#ffd24a);border:1px solid rgba(168,120,12,0.55);font-size:0.31em;font-weight:800;color:#7a5600;letter-spacing:0.35px;box-shadow:0 1px 4px rgba(0,0,0,0.18);animation:greet-bob 0.8s ease-in-out infinite;pointer-events:none}
 .person.greeted::after{display:none}
+.person.can-greet .person-body,.person.can-calm .person-body,.person.can-charm .person-body{filter:drop-shadow(0 0 5px rgba(255,244,170,0.22))}
+.person.can-calm .person-body{filter:drop-shadow(0 0 6px rgba(255,120,120,0.24))}
+.person.can-charm .person-body{filter:drop-shadow(0 0 6px rgba(255,215,0,0.26))}
+.person.interaction-pop .person-body{animation:interaction-pop 0.35s ease-out}
+.person.interaction-pop .person-head{animation:interaction-head 0.35s ease-out}
 .person-legs{position:absolute;bottom:0;width:22px;height:12px;display:flex;gap:4px;z-index:0}
 .person-leg{flex:1;background:linear-gradient(180deg,#4a4a4a,#333);border-radius:0 0 3px 3px;transition:transform 0.1s}
 .person.walking{animation:none}
@@ -907,6 +912,8 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 @keyframes leg-walk-r{0%,100%{transform:translateY(3px) rotate(8deg)}50%{transform:translateY(0) rotate(-8deg)}}
 @keyframes urgent-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}
 @keyframes greet-bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-2px)}}
+@keyframes interaction-pop{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes interaction-head{0%{transform:translateX(-50%) scale(1)}40%{transform:translateX(-50%) scale(1.08)}100%{transform:translateX(-50%) scale(1)}}
 @keyframes thought-bounce{0%{transform:translateX(-50%) scale(0.8)}50%{transform:translateX(-50%) scale(1.1)}100%{transform:translateX(-50%) scale(1)}}
 @keyframes happy-bounce{0%{transform:scale(1)}30%{transform:scale(1.15)}60%{transform:scale(0.95)}100%{transform:scale(1)}}
 @keyframes disgust-recoil{0%{transform:translateX(0)}30%{transform:translateX(-5px)}100%{transform:translateX(0)}}

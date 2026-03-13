@@ -3557,6 +3557,7 @@ function interactWithCustomer(personId) {
   }
   p.thoughtMood = 'good';
   p.thoughtTimer = 1400;
+  p.interactionPulse = 420;
   floatMessage(`+${points} ${isCalming ? 'CALM' : (isCharming ? 'CHARM' : 'GREET')}`, p.x + 10, p.y - 18, 'good');
   bumpValue('score');
   playClick();
@@ -4836,6 +4837,7 @@ function updatePeople(dt) {
 
     // Update thought timer
     if (p.thoughtTimer > 0) p.thoughtTimer -= dt;
+    if (p.interactionPulse > 0) p.interactionPulse -= dt;
 
     // Check if customer steps in mess (walking phases only)
     if (['enter', 'findStall', 'toStall', 'toSink', 'toTowels', 'exit'].includes(p.phase)) {
@@ -6179,6 +6181,7 @@ function renderPeople() {
     el.classList.toggle('clean', p.messiness === -1);
     el.classList.toggle('fighting', !!p.fighting);
     el.classList.toggle('greeted', !!p.greeted);
+    el.classList.toggle('interaction-pop', (p.interactionPulse || 0) > 0);
     const canInteract = !p.greeted && !p.frozen && ['enterDoor', 'enter', 'findStall', 'toStall', 'entering', 'exitStall', 'toSink', 'toTowels', 'exit'].includes(p.phase);
     el.classList.toggle('can-greet', canInteract && !p.urgent && !p.vip);
     el.classList.toggle('can-calm', canInteract && p.urgent);
