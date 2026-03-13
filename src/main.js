@@ -3328,6 +3328,8 @@ function init() {
     isMultiplayer: false,     // Set true for 1v1 games (enables difficulty modifiers)
     exitDoorOpen: false,
     exitDoorTimer: 0,
+    spotlessChain: 0,
+    wasBathroomSpotless: true,
   };
 
   // Apply any pending daily reward coins
@@ -3774,6 +3776,35 @@ function getDirtyCount() {
   return game.stalls.filter(s => s.state === 'dirty').length;
 }
 
+function getDirtySinkCount() {
+  return game.sinks ? game.sinks.filter(s => s.dirty).length : 0;
+}
+
+function checkSpotlessRecovery() {
+  const totalDirty = getDirtyCount() + getDirtySinkCount();
+  const isSpotless = totalDirty === 0;
+
+  if (isSpotless && !game.wasBathroomSpotless) {
+    game.spotlessChain++;
+    const bonus = 20 + Math.min(30, game.spotlessChain * 5);
+    addScore(bonus);
+    game.rating = clamp(game.rating + 0.05, 0, 5);
+    bumpValue('score');
+    bumpValue('rating');
+
+    const playRect = $('play-area')?.getBoundingClientRect();
+    const x = playRect ? playRect.width * 0.5 : 400;
+    const y = playRect ? playRect.height * 0.34 : 220;
+    floatMessage(`SPOTLESS! +${bonus}`, x, y, 'combo');
+    spawnSparkles(x, y + 20, Math.min(18, 8 + game.spotlessChain * 2));
+    setBeaverMood('happy', 1000);
+  } else if (!isSpotless && game.wasBathroomSpotless) {
+    game.spotlessChain = 0;
+  }
+
+  game.wasBathroomSpotless = isSpotless;
+}
+
 function updateHUD() {
   let stars = '';
   for (let i = 0; i < 5; i++) {
@@ -3810,7 +3841,7 @@ function updateHUD() {
   playArea.classList.toggle('combo-edge-legendary', game.combo >= 10);
 
   const dirtyCount = getDirtyCount();
-  const dirtySinks = game.sinks ? game.sinks.filter(s => s.dirty).length : 0;
+  const dirtySinks = getDirtySinkCount();
   const totalDirty = dirtyCount + dirtySinks;
   $('dirty-count').textContent = totalDirty > 0 ? `⚠️ ${dirtyCount}🚽${dirtySinks > 0 ? `+${dirtySinks}🚿` : ''}` : '✓';
   $('dirty-count').style.color = totalDirty > 3 ? '#e53935' : (totalDirty > 0 ? '#fdd835' : '#43a047');
@@ -4257,6 +4288,8 @@ function startShift() {
   game.fightTimer = 0;
   game.fightWarning = 0;
   game.puddles = [];
+  game.spotlessChain = 0;
+  game.wasBathroomSpotless = true;
   document.querySelectorAll('.puddle').forEach(el => el.remove());
 
   // Set starting item counts based on item upgrades
@@ -4554,6 +4587,8 @@ function update(dt) {
       updateSinkDOM(i);
     }
   }
+
+  checkSpotlessRecovery();
 
   updatePeople(dt);
 
