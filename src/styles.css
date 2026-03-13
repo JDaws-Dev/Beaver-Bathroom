@@ -672,7 +672,7 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .exit-door-panel{position:absolute;inset:6px 8px 0 8px;background:repeating-linear-gradient(90deg,#cfb07a 0,#d9bd88 3px,#bd975b 6px,#cfb07a 9px),linear-gradient(180deg,#d4b87a 0%,#a67c52 55%,#825936 100%);background-blend-mode:overlay;border:3px solid #573823;border-bottom:none;border-radius:8px 8px 0 0;transform-origin:right center;transition:transform 0.36s cubic-bezier(0.34,1.2,0.64,1),filter 0.2s ease;box-shadow:inset 2px 0 7px rgba(0,0,0,0.24),inset -2px 0 5px rgba(255,255,255,0.15)}
 .exit-door-panel::before{content:'';position:absolute;left:50%;top:14px;transform:translateX(-50%);width:28px;height:8px;border-radius:4px;background:linear-gradient(180deg,#4e342e,#2f2018);box-shadow:0 2px 4px rgba(0,0,0,0.3)}
 .exit-door-panel::after{content:'';position:absolute;left:9px;top:54px;width:9px;height:22px;border-radius:4px;background:linear-gradient(90deg,#4d3525,#7f5c42,#4d3525);border:2px solid #2d1b10}
-.exit-door-sign{position:absolute;left:50%;top:14px;transform:translateX(-50%);font-size:0.7em;letter-spacing:1.2px;font-weight:800;color:#ffefb8;text-shadow:0 1px 3px rgba(0,0,0,0.55);z-index:2}
+.exit-door-marquee{position:absolute;left:50%;top:-16px;transform:translateX(-50%);min-width:56px;padding:2px 8px;border-radius:8px 8px 4px 4px;background:linear-gradient(180deg,#775537,#49301d);border:2px solid #2f1c0f;color:#ffefb8;font-size:0.62em;letter-spacing:1.3px;font-weight:800;text-align:center;text-shadow:0 1px 2px rgba(0,0,0,0.55);box-shadow:0 2px 6px rgba(0,0,0,0.2);z-index:3}
 #exit-door.open .exit-door-panel{transform:perspective(800px) rotateY(112deg);filter:brightness(1.08)}
 /* CSS-art paper towel dispenser */
 #towels{
@@ -821,7 +821,11 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .person.female .person-head-wrap{width:46px;height:54px}
 .person.female .person-head{top:7px;width:32px;height:30px;z-index:4}
 .person.female .person-face{top:13px}
-.person.female .person-hair{z-index:3}
+.person.female .person-hair{z-index:5}
+.person.female .hair-part-long::before,.person.female .hair-part-long::after{top:8px;width:12px;height:24px}
+.person.female .hair-wave-long::before,.person.female .hair-wave-long::after{top:9px;width:13px;height:25px}
+.person.female .hair-braids-long::before,.person.female .hair-braids-long::after{top:10px}
+.person.female .hair-curl-volume::before,.person.female .hair-curl-volume::after{top:10px;width:13px;height:24px}
 .person.male .person-torso{border-radius:10px 10px 6px 6px}
 .person.female .person-torso{width:22px;height:22px;border-radius:10px 10px 4px 4px;clip-path:polygon(18% 0,82% 0,100% 100%,0 100%)}
 .person.female .person-torso::before{content:'';position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);width:30px;height:13px;background:linear-gradient(180deg,color-mix(in srgb,var(--shirt-top) 92%, #ffffff),var(--shirt-bot));border:2px solid var(--shirt-border);border-top:none;border-radius:0 0 12px 12px;clip-path:polygon(10% 0,90% 0,100% 100%,0 100%)}
@@ -1106,7 +1110,7 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 #towels{width:52px;height:64px;min-width:44px}.towel-sheet{width:22px;height:9px}.towel-sheet:first-child{width:24px}
 #exit-door{width:66px;height:86px}
 .exit-door-panel::after{top:44px;height:20px}
-.exit-door-sign{top:11px;font-size:0.58em}
+.exit-door-marquee{top:-14px;min-width:46px;font-size:0.52em;padding:2px 6px}
 #task-panel{padding:12px 14px;max-width:90%}
 .task-btn{padding:14px 20px;font-size:1em;min-height:48px;min-width:60px}
 #task-buttons{gap:10px}
@@ -1205,7 +1209,7 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .exit-door-panel{inset:5px 6px 0 6px}
 .exit-door-panel::before{top:10px;width:20px;height:6px}
 .exit-door-panel::after{top:34px;left:7px;width:7px;height:16px}
-.exit-door-sign{top:9px;font-size:0.5em}
+.exit-door-marquee{top:-12px;min-width:40px;font-size:0.46em;padding:2px 5px}
 #task-panel{padding:10px 12px}
 #task-panel h3{font-size:0.85em}
 #task-panel .hint{font-size:0.55em}
