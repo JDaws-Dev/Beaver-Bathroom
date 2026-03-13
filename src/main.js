@@ -786,19 +786,25 @@ const CUSTOMERS_MALE = ['👨','👴','👦','🧔','👨‍🦰','👨‍🦱',
 const CUSTOMERS_FEMALE = ['👩','👵','👧','👩‍🦰','👩‍🦱','👩‍🦳','👱‍♀️','👩‍🦲','🧑‍🦱','👩‍🔧'];
 
 const CUSTOMER_VISUALS_MALE = [
-  { hair:'cap', accessory:'none', build:'broad', skin:'#f2c39b', hairColor:'#6d4c41' },
-  { hair:'short', accessory:'none', build:'average', skin:'#d9a37c', hairColor:'#3e2723' },
-  { hair:'buzz', accessory:'shades', build:'broad', skin:'#b97a56', hairColor:'#4e342e' },
-  { hair:'part', accessory:'mustache', build:'tall', skin:'#8d5a3c', hairColor:'#212121' },
-  { hair:'beanie', accessory:'none', build:'stocky', skin:'#f0d2b6', hairColor:'#5d4037' },
+  { hair:'cap', accessory:'none', build:'broad', face:'neutral', headShape:'round', skin:'#f2c39b', hairColor:'#6d4c41' },
+  { hair:'short', accessory:'none', build:'average', face:'soft', headShape:'oval', skin:'#d9a37c', hairColor:'#3e2723' },
+  { hair:'buzz', accessory:'none', build:'broad', face:'smirk', headShape:'square', skin:'#b97a56', hairColor:'#4e342e' },
+  { hair:'part', accessory:'none', build:'tall', face:'stern', headShape:'oval', skin:'#8d5a3c', hairColor:'#212121' },
+  { hair:'beanie', accessory:'none', build:'stocky', face:'soft', headShape:'round', skin:'#f0d2b6', hairColor:'#5d4037' },
+  { hair:'spike', accessory:'none', build:'athletic', face:'smirk', headShape:'square', skin:'#c98d66', hairColor:'#8d6e63' },
+  { hair:'short', accessory:'none', build:'petite', face:'neutral', headShape:'oval', skin:'#e0b18a', hairColor:'#4e342e' },
+  { hair:'buzz', accessory:'none', build:'stocky', face:'stern', headShape:'square', skin:'#7a4f35', hairColor:'#212121' },
 ];
 
 const CUSTOMER_VISUALS_FEMALE = [
-  { hair:'bun', accessory:'glasses', build:'average', skin:'#f2c39b', hairColor:'#5d4037' },
-  { hair:'bob', accessory:'none', build:'petite', skin:'#d9a37c', hairColor:'#6d4c41' },
-  { hair:'pony', accessory:'earrings', build:'tall', skin:'#b97a56', hairColor:'#3e2723' },
-  { hair:'visor', accessory:'none', build:'athletic', skin:'#8d5a3c', hairColor:'#212121' },
-  { hair:'curl', accessory:'glasses', build:'average', skin:'#f0d2b6', hairColor:'#4e342e' },
+  { hair:'bun', accessory:'none', build:'average', face:'soft', headShape:'oval', skin:'#f2c39b', hairColor:'#5d4037' },
+  { hair:'bob', accessory:'none', build:'petite', face:'smile', headShape:'round', skin:'#d9a37c', hairColor:'#6d4c41' },
+  { hair:'pony', accessory:'none', build:'tall', face:'neutral', headShape:'oval', skin:'#b97a56', hairColor:'#3e2723' },
+  { hair:'visor', accessory:'none', build:'athletic', face:'stern', headShape:'square', skin:'#8d5a3c', hairColor:'#212121' },
+  { hair:'curl', accessory:'none', build:'average', face:'smile', headShape:'round', skin:'#f0d2b6', hairColor:'#4e342e' },
+  { hair:'bob', accessory:'none', build:'tall', face:'smirk', headShape:'square', skin:'#c98d66', hairColor:'#212121' },
+  { hair:'bun', accessory:'none', build:'petite', face:'soft', headShape:'round', skin:'#e0b18a', hairColor:'#8d6e63' },
+  { hair:'pony', accessory:'none', build:'athletic', face:'neutral', headShape:'oval', skin:'#7a4f35', hairColor:'#3e2723' },
 ];
 
 // Named special characters that create memorable moments
@@ -846,15 +852,15 @@ const SPECIAL_CUSTOMERS = [
 function getCustomerVisualProfile(gender, specialName) {
   if (specialName) {
     const specials = {
-      'Big Rig Bill': { hair:'cap', accessory:'mustache', build:'stocky', skin:'#c58b63', hairColor:'#4e342e' },
-      'Road Trip Randy': { hair:'spike', accessory:'none', build:'athletic', skin:'#d9a37c', hairColor:'#bf360c' },
-      'Business Bob': { hair:'part', accessory:'glasses', build:'tall', skin:'#b97a56', hairColor:'#212121' },
-      'Weekend Warrior': { hair:'visor', accessory:'none', build:'athletic', skin:'#e0b18a', hairColor:'#6d4c41' },
-      'Trucker Tom': { hair:'beanie', accessory:'mustache', build:'stocky', skin:'#8d5a3c', hairColor:'#3e2723' },
-      'Soccer Mom': { hair:'pony', accessory:'none', build:'athletic', skin:'#d9a37c', hairColor:'#5d4037' },
-      'Tourist Tina': { hair:'visor', accessory:'glasses', build:'petite', skin:'#f2c39b', hairColor:'#8d6e63' },
-      'Snack Sally': { hair:'bob', accessory:'earrings', build:'average', skin:'#f0d2b6', hairColor:'#6d4c41' },
-      'Road Queen': { hair:'curl', accessory:'shades', build:'tall', skin:'#b97a56', hairColor:'#212121' },
+      'Big Rig Bill': { hair:'cap', accessory:'none', build:'stocky', face:'stern', headShape:'square', skin:'#c58b63', hairColor:'#4e342e' },
+      'Road Trip Randy': { hair:'spike', accessory:'none', build:'athletic', face:'smirk', headShape:'oval', skin:'#d9a37c', hairColor:'#bf360c' },
+      'Business Bob': { hair:'part', accessory:'none', build:'tall', face:'stern', headShape:'oval', skin:'#b97a56', hairColor:'#212121' },
+      'Weekend Warrior': { hair:'visor', accessory:'none', build:'athletic', face:'soft', headShape:'round', skin:'#e0b18a', hairColor:'#6d4c41' },
+      'Trucker Tom': { hair:'beanie', accessory:'none', build:'stocky', face:'neutral', headShape:'square', skin:'#8d5a3c', hairColor:'#3e2723' },
+      'Soccer Mom': { hair:'pony', accessory:'none', build:'athletic', face:'neutral', headShape:'oval', skin:'#d9a37c', hairColor:'#5d4037' },
+      'Tourist Tina': { hair:'visor', accessory:'none', build:'petite', face:'smile', headShape:'round', skin:'#f2c39b', hairColor:'#8d6e63' },
+      'Snack Sally': { hair:'bob', accessory:'none', build:'average', face:'smile', headShape:'round', skin:'#f0d2b6', hairColor:'#6d4c41' },
+      'Road Queen': { hair:'curl', accessory:'none', build:'tall', face:'smirk', headShape:'square', skin:'#b97a56', hairColor:'#212121' },
     };
     if (specials[specialName]) return specials[specialName];
   }
@@ -5890,7 +5896,10 @@ function renderPeople() {
             <div class="person-hair"></div>
             <div class="person-headgear"></div>
             <div class="person-head">
-              <div class="person-icon">${p.icon}</div>
+              <div class="person-face">
+                <div class="person-eyes"><span></span><span></span></div>
+                <div class="person-mouth"></div>
+              </div>
             </div>
             <div class="person-accessory"></div>
           </div>
@@ -5910,10 +5919,14 @@ function renderPeople() {
     const gearEl = el.querySelector('.person-headgear');
     const accessoryEl = el.querySelector('.person-accessory');
     const torsoEl = el.querySelector('.person-torso');
+    const headEl = el.querySelector('.person-head');
+    const faceEl = el.querySelector('.person-face');
     if (hairEl) hairEl.className = `person-hair hair-${visual.hair || 'short'}`;
     if (gearEl) gearEl.className = `person-headgear gear-${visual.hair || 'short'}`;
     if (accessoryEl) accessoryEl.className = `person-accessory accessory-${visual.accessory || 'none'}`;
     if (torsoEl) torsoEl.className = `person-torso build-${visual.build || 'average'}`;
+    if (headEl) headEl.className = `person-head head-${visual.headShape || 'oval'}`;
+    if (faceEl) faceEl.className = `person-face face-${visual.face || 'neutral'}`;
 
     el.style.left = p.x + 'px';
     el.style.top = p.y + 'px';
