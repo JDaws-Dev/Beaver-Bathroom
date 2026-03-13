@@ -892,22 +892,26 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .person.urgent .person-face{filter:drop-shadow(0 0 4px rgba(229,57,53,0.35))}
 .person.urgent .person-eyes span{background:#7a2e2e;transform:scaleY(0.8)}
 .person.urgent .person-mouth{width:7px;height:3px;border-bottom:1.5px solid #b71c1c}
-.person.urgent .person-torso,.person.urgent .person-arm{background:linear-gradient(180deg,#e57373,#c62828);border-color:#b71c1c}
+.person.urgent .person-torso{box-shadow:0 0 0 2px rgba(229,57,53,0.3),inset 0 2px 0 rgba(255,255,255,0.18),0 2px 4px rgba(0,0,0,0.28)}
+.person.urgent .person-arm{box-shadow:0 0 0 1px rgba(229,57,53,0.28)}
 .person.vip .person-face{filter:drop-shadow(0 0 4px rgba(255,215,0,0.25))}
 .person.vip .person-head{box-shadow:0 0 0 2px rgba(255,215,0,0.35),inset 0 2px 0 rgba(255,255,255,0.18),0 2px 3px rgba(0,0,0,0.25)}
 .person.vip .person-torso,.person.vip .person-arm{background:linear-gradient(180deg,#ffd700,#daa520);border-color:#b8860b}
-.person.vip .vip-badge{position:absolute;top:-10px;right:-6px;font-size:0.65em;z-index:15}
+.person.vip .vip-badge{position:absolute;top:21px;right:2px;width:12px;height:12px;display:flex;align-items:center;justify-content:center;font-size:0.42em;z-index:9;border-radius:999px;background:linear-gradient(180deg,#fff5bf,#ffd54f);border:1px solid rgba(168,120,12,0.72);box-shadow:0 1px 3px rgba(0,0,0,0.28)}
 .person.vip .patience-bar{border-color:#ffd700;box-shadow:0 0 6px rgba(255,215,0,0.5)}
 .person.messy .person-face{filter:drop-shadow(0 0 3px rgba(139,90,43,0.25))}
-.person.messy .messy-badge{position:absolute;top:-10px;left:-6px;font-size:0.6em;z-index:15;animation:messy-drip 0.8s infinite alternate}
+.person.messy .messy-badge{position:absolute;top:22px;left:4px;width:12px;height:8px;border-radius:55% 45% 60% 40%;background:radial-gradient(circle at 35% 35%,rgba(133,94,66,0.92) 0%,rgba(109,76,46,0.95) 55%,rgba(77,52,33,0.95) 100%);box-shadow:6px 2px 0 -2px rgba(109,76,46,0.72),3px 6px 0 -3px rgba(77,52,33,0.66);z-index:6;animation:messy-drip 0.8s infinite alternate}
 .person.messy .person-torso{background:linear-gradient(180deg,#a67c52,#8b5a2b);border-color:#6d4c2a}
 .person.clean .person-face{filter:drop-shadow(0 0 4px rgba(100,200,255,0.25))}
-.person.clean .clean-badge{position:absolute;top:-10px;left:-6px;font-size:0.6em;z-index:15;animation:sparkle 0.6s infinite alternate}
+.person.clean .clean-badge{position:absolute;top:20px;right:3px;width:10px;height:10px;z-index:7;animation:sparkle 0.6s infinite alternate}
+.person.clean .clean-badge::before,.person.clean .clean-badge::after{content:'';position:absolute;left:50%;top:50%;background:linear-gradient(180deg,#e3f7ff,#8be0ff);border-radius:999px;transform:translate(-50%,-50%)}
+.person.clean .clean-badge::before{width:10px;height:3px}
+.person.clean .clean-badge::after{width:3px;height:10px}
 .person.clean .person-torso{background:linear-gradient(180deg,#81d4fa,#4fc3f7);border-color:#0288d1}
 .person.special .person-face{filter:drop-shadow(0 0 4px rgba(255,165,0,0.25))}
 .person.special .person-head{box-shadow:0 0 0 2px rgba(255,165,0,0.25),inset 0 2px 0 rgba(255,255,255,0.18),0 2px 3px rgba(0,0,0,0.25)}
-.person.special .special-badge{position:absolute;top:-10px;left:-6px;font-size:0.65em;z-index:15}
-.person.special .special-name{position:absolute;bottom:-28px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#5d4037,#3e2723);padding:2px 6px;border-radius:8px;font-size:0.35em;white-space:nowrap;color:#ffd54f;font-weight:bold;text-shadow:0 1px 2px rgba(0,0,0,0.6);border:1px solid #f5a623;box-shadow:0 2px 4px rgba(0,0,0,0.4);letter-spacing:0.5px}
+.person.special .special-badge{position:absolute;top:21px;left:2px;width:12px;height:12px;display:flex;align-items:center;justify-content:center;font-size:0.4em;z-index:9;border-radius:999px;background:linear-gradient(180deg,#fff0de,#ffbf6f);border:1px solid rgba(173,96,22,0.75);box-shadow:0 1px 3px rgba(0,0,0,0.28)}
+.person.special .special-name{position:absolute;bottom:-24px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,rgba(93,64,55,0.94),rgba(62,39,35,0.96));padding:2px 5px;border-radius:8px;font-size:0.33em;white-space:nowrap;color:#ffd54f;font-weight:bold;text-shadow:0 1px 2px rgba(0,0,0,0.6);border:1px solid rgba(245,166,35,0.7);box-shadow:0 2px 4px rgba(0,0,0,0.28);letter-spacing:0.45px}
 @keyframes messy-drip{0%{transform:translateY(0)}100%{transform:translateY(2px)}}
 @keyframes sparkle{0%{transform:scale(1)}100%{transform:scale(1.2);filter:brightness(1.3)}}
 .person.happy .person-face{animation:happy-bounce 0.4s ease-out;filter:drop-shadow(0 0 4px rgba(255,235,59,0.35))}
