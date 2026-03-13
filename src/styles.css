@@ -868,13 +868,14 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .person.female .person-legs .person-leg{border-radius:0 0 4px 4px}
 .person.greeted .person-head{box-shadow:0 0 0 2px rgba(255,239,184,0.35),inset 0 2px 0 rgba(255,255,255,0.16),0 2px 3px rgba(0,0,0,0.22)}
 .person.greeted .person-body{filter:drop-shadow(0 0 4px rgba(255,239,184,0.25))}
-.person.can-greet::after{content:'CHAT';position:absolute;top:-18px;left:50%;transform:translateX(-50%);padding:1px 5px;border-radius:999px;background:linear-gradient(180deg,#fff8d1,#f1d97a);border:1px solid rgba(120,90,20,0.55);font-size:0.31em;font-weight:800;color:#6a4d10;letter-spacing:0.35px;box-shadow:0 1px 4px rgba(0,0,0,0.18);animation:greet-bob 0.8s ease-in-out infinite;pointer-events:none}
-.person.can-calm::after{content:'CALM';position:absolute;top:-18px;left:50%;transform:translateX(-50%);padding:1px 5px;border-radius:999px;background:linear-gradient(180deg,#ffe2e2,#ffaaaa);border:1px solid rgba(150,40,40,0.55);font-size:0.31em;font-weight:800;color:#8a2020;letter-spacing:0.35px;box-shadow:0 1px 4px rgba(0,0,0,0.18);animation:greet-bob 0.8s ease-in-out infinite;pointer-events:none}
-.person.can-charm::after{content:'VIP';position:absolute;top:-18px;left:50%;transform:translateX(-50%);padding:1px 5px;border-radius:999px;background:linear-gradient(180deg,#fff4c3,#ffd24a);border:1px solid rgba(168,120,12,0.55);font-size:0.31em;font-weight:800;color:#7a5600;letter-spacing:0.35px;box-shadow:0 1px 4px rgba(0,0,0,0.18);animation:greet-bob 0.8s ease-in-out infinite;pointer-events:none}
+.person.can-greet::after,.person.can-calm::after,.person.can-charm::after{position:absolute;top:-24px;left:50%;transform:translateX(-50%);min-width:32px;padding:3px 7px 2px;border-radius:999px;font-size:0.44em;font-weight:900;line-height:1;letter-spacing:0.45px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,0.26);animation:greet-bob 0.8s ease-in-out infinite;pointer-events:none;z-index:18}
+.person.can-greet::after{content:'TALK';background:linear-gradient(180deg,#fff8d1,#f1d97a);border:1px solid rgba(120,90,20,0.65);color:#6a4d10}
+.person.can-calm::after{content:'HELP';background:linear-gradient(180deg,#ffe2e2,#ffaaaa);border:1px solid rgba(150,40,40,0.65);color:#8a2020}
+.person.can-charm::after{content:'VIP';background:linear-gradient(180deg,#fff4c3,#ffd24a);border:1px solid rgba(168,120,12,0.65);color:#7a5600}
 .person.greeted::after{display:none}
-.person.can-greet .person-body,.person.can-calm .person-body,.person.can-charm .person-body{filter:drop-shadow(0 0 5px rgba(255,244,170,0.22))}
-.person.can-calm .person-body{filter:drop-shadow(0 0 6px rgba(255,120,120,0.24))}
-.person.can-charm .person-body{filter:drop-shadow(0 0 6px rgba(255,215,0,0.26))}
+.person.can-greet .person-body,.person.can-calm .person-body,.person.can-charm .person-body{filter:drop-shadow(0 0 7px rgba(255,244,170,0.28))}
+.person.can-calm .person-body{filter:drop-shadow(0 0 9px rgba(255,120,120,0.34))}
+.person.can-charm .person-body{filter:drop-shadow(0 0 9px rgba(255,215,0,0.34))}
 .person.interaction-pop .person-body{animation:interaction-pop 0.35s ease-out}
 .person.interaction-pop .person-head{animation:interaction-head 0.35s ease-out}
 .person-legs{position:absolute;bottom:0;width:22px;height:12px;display:flex;gap:4px;z-index:0}
@@ -1163,6 +1164,7 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .person-arm{width:8px;height:14px}
 .person-legs{width:18px;height:11px}
 .person .patience-bar{width:28px;height:5px;bottom:-12px}
+.person.can-greet::after,.person.can-calm::after,.person.can-charm::after{top:-22px;min-width:28px;padding:2px 6px 2px;font-size:0.39em}
 .person.special .special-name{bottom:-24px;font-size:0.3em;padding:1px 5px}
 }
 /* Phone breakpoint - extra touch-friendly */
@@ -1271,6 +1273,7 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .person-torso{width:18px;height:14px}
 .person-legs{width:14px;height:8px}
 .person .patience-bar{width:24px;height:4px;bottom:-10px}
+.person.can-greet::after,.person.can-calm::after,.person.can-charm::after{top:-19px;min-width:24px;padding:2px 5px 1px;font-size:0.34em}
 .person.special .special-name{bottom:-22px;font-size:0.28em;padding:1px 4px}
 .float-msg{font-size:1em}
 .stats-grid{gap:8px;max-width:280px}
