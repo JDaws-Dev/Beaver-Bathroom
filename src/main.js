@@ -3542,12 +3542,13 @@ function interactWithCustomer(personId) {
 
   p.greeted = true;
   const isCalming = p.urgent;
-  const points = addScore(p.vip ? 25 : (isCalming ? 18 : 10));
-  p.patience = Math.min(p.maxPatience, p.patience + (p.vip ? 900 : (isCalming ? 1200 : 450)));
+  const isCharming = p.vip && !isCalming;
+  const points = addScore(isCharming ? 28 : (isCalming ? 18 : 10));
+  p.patience = Math.min(p.maxPatience, p.patience + (isCharming ? 1050 : (isCalming ? 1200 : 450)));
   if (isCalming) {
     p.urgent = false;
     p.thought = pick(['Okay, okay...', 'Made it in time!', 'Whew, thanks!']);
-  } else if (p.vip) {
+  } else if (isCharming) {
     p.thought = pick(['Excellent service.', 'Much appreciated.', 'Classy place!']);
   } else if (p.gender === 'female') {
     p.thought = pick(['Why, hello!', 'Much obliged!', 'Well hi there!']);
@@ -3556,7 +3557,7 @@ function interactWithCustomer(personId) {
   }
   p.thoughtMood = 'good';
   p.thoughtTimer = 1400;
-  floatMessage(`+${points} ${isCalming ? 'CALM' : 'GREET'}`, p.x + 10, p.y - 18, 'good');
+  floatMessage(`+${points} ${isCalming ? 'CALM' : (isCharming ? 'CHARM' : 'GREET')}`, p.x + 10, p.y - 18, 'good');
   bumpValue('score');
   playClick();
   haptic('light');
@@ -6179,8 +6180,9 @@ function renderPeople() {
     el.classList.toggle('fighting', !!p.fighting);
     el.classList.toggle('greeted', !!p.greeted);
     const canInteract = !p.greeted && !p.frozen && ['enterDoor', 'enter', 'findStall', 'toStall', 'entering', 'exitStall', 'toSink', 'toTowels', 'exit'].includes(p.phase);
-    el.classList.toggle('can-greet', canInteract && !p.urgent);
+    el.classList.toggle('can-greet', canInteract && !p.urgent && !p.vip);
     el.classList.toggle('can-calm', canInteract && p.urgent);
+    el.classList.toggle('can-charm', canInteract && p.vip && !p.urgent);
 
     // Add VIP badge if needed
     if (p.vip && !el.querySelector('.vip-badge')) {
