@@ -6228,21 +6228,10 @@ function renderPeople() {
       el.querySelector('.person-body').appendChild(badge);
     }
 
-    // Add messy/clean badge if needed
-    if (p.messiness === 1 && !el.querySelector('.messy-badge')) {
-      const badge = document.createElement('div');
-      badge.className = 'messy-badge';
-      el.querySelector('.person-body').appendChild(badge);
-    }
-    if (p.messiness === -1 && !el.querySelector('.clean-badge')) {
-      const badge = document.createElement('div');
-      badge.className = 'clean-badge';
-      el.querySelector('.person-body').appendChild(badge);
-    }
     const messyBadge = el.querySelector('.messy-badge');
-    if (messyBadge) messyBadge.textContent = '';
+    if (messyBadge) messyBadge.remove();
     const cleanBadge = el.querySelector('.clean-badge');
-    if (cleanBadge) cleanBadge.textContent = '';
+    if (cleanBadge) cleanBadge.remove();
 
     // Add special character badge and name
     el.classList.toggle('special', !!p.specialName);
