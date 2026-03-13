@@ -775,26 +775,26 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .hair-curl::before{left:2px}
 .hair-curl::after{right:2px}
 .hair-spike{top:2px;left:7px;width:24px;height:10px;clip-path:polygon(0 100%,12% 35%,24% 88%,38% 16%,54% 82%,70% 12%,84% 78%,100% 28%,100% 100%)}
-.hair-part-long{top:-2px;left:3px;width:36px;height:20px;border-radius:16px 16px 11px 11px;clip-path:polygon(0 0,100% 0,100% 82%,72% 100%,28% 100%,0 82%)}
-.hair-part-long::before,.hair-part-long::after{content:'';position:absolute;top:8px;width:10px;height:22px;background:var(--hair-color);border-radius:0 0 10px 10px}
-.hair-part-long::before{left:1px}
-.hair-part-long::after{right:1px}
-.hair-wave-long{top:-2px;left:2px;width:38px;height:21px;border-radius:17px 17px 12px 12px}
-.hair-wave-long::before,.hair-wave-long::after{content:'';position:absolute;top:8px;width:10px;height:22px;background:var(--hair-color);border-radius:0 0 11px 11px}
-.hair-wave-long::before{left:1px;transform:rotate(7deg)}
-.hair-wave-long::after{right:1px;transform:rotate(-7deg)}
-.hair-wave-long{box-shadow:inset 0 1px 0 rgba(255,255,255,0.14),0 1px 0 rgba(0,0,0,0.08)}
-.hair-braids-long{top:-1px;left:4px;width:34px;height:18px;border-radius:15px 15px 10px 10px}
-.hair-braids-long::before,.hair-braids-long::after{content:'';position:absolute;top:9px;width:7px;height:22px;background:repeating-linear-gradient(180deg,var(--hair-color) 0 4px,color-mix(in srgb,var(--hair-color) 74%, #111) 4px 8px);border-radius:0 0 7px 7px}
-.hair-braids-long::before{left:3px}
-.hair-braids-long::after{right:3px}
-.hair-pony-long{top:-2px;left:4px;width:34px;height:18px;border-radius:16px 16px 10px 10px}
-.hair-pony-long::before{content:'';position:absolute;top:8px;right:-6px;width:11px;height:20px;background:var(--hair-color);border-radius:4px 8px 10px 10px;transform:rotate(14deg)}
-.hair-pony-long::after{content:'';position:absolute;top:5px;left:10px;width:14px;height:6px;border-radius:4px;background:rgba(255,255,255,0.16)}
-.hair-curl-volume{top:-2px;left:2px;width:38px;height:20px;border-radius:18px 18px 12px 12px}
-.hair-curl-volume::before,.hair-curl-volume::after{content:'';position:absolute;top:9px;width:10px;height:22px;background:var(--hair-color);border-radius:0 0 12px 12px}
-.hair-curl-volume::before{left:0;clip-path:polygon(18% 0,100% 0,84% 100%,0 100%)}
-.hair-curl-volume::after{right:0;clip-path:polygon(0 0,82% 0,100% 100%,16% 100%)}
+.hair-pageboy{top:-1px;left:3px;width:36px;height:19px;border-radius:17px 17px 12px 12px}
+.hair-pageboy::before,.hair-pageboy::after{content:'';position:absolute;top:10px;width:11px;height:14px;background:var(--hair-color);border-radius:0 0 12px 12px}
+.hair-pageboy::before{left:1px}
+.hair-pageboy::after{right:1px}
+.hair-flip{top:-2px;left:2px;width:38px;height:18px;border-radius:18px 18px 11px 11px}
+.hair-flip::before,.hair-flip::after{content:'';position:absolute;top:11px;width:11px;height:13px;background:var(--hair-color);border-radius:0 0 12px 12px}
+.hair-flip::before{left:1px;transform:rotate(16deg)}
+.hair-flip::after{right:1px;transform:rotate(-16deg)}
+.hair-flip{box-shadow:inset 0 1px 0 rgba(255,255,255,0.14),0 1px 0 rgba(0,0,0,0.08)}
+.hair-beehive{top:-6px;left:5px;width:32px;height:24px;border-radius:16px 16px 10px 10px;clip-path:polygon(18% 100%,0 34%,18% 4%,50% 0,82% 4%,100% 34%,82% 100%)}
+.hair-beehive::before,.hair-beehive::after{content:'';position:absolute;top:13px;width:8px;height:14px;background:var(--hair-color);border-radius:0 0 10px 10px}
+.hair-beehive::before{left:2px}
+.hair-beehive::after{right:2px}
+.hair-bouffant-pony{top:-4px;left:3px;width:36px;height:22px;border-radius:18px 18px 10px 10px}
+.hair-bouffant-pony::before{content:'';position:absolute;top:11px;right:-6px;width:12px;height:18px;background:var(--hair-color);border-radius:4px 8px 10px 10px;transform:rotate(14deg)}
+.hair-bouffant-pony::after{content:'';position:absolute;top:5px;left:10px;width:15px;height:6px;border-radius:4px;background:rgba(255,255,255,0.16)}
+.hair-set-curls{top:-2px;left:1px;width:40px;height:19px;border-radius:18px 18px 12px 12px}
+.hair-set-curls::before,.hair-set-curls::after{content:'';position:absolute;top:10px;width:12px;height:15px;background:var(--hair-color);border-radius:0 0 13px 13px}
+.hair-set-curls::before{left:0;clip-path:polygon(18% 0,100% 0,84% 100%,0 100%)}
+.hair-set-curls::after{right:0;clip-path:polygon(0 0,82% 0,100% 100%,16% 100%)}
 .person-headgear{display:none}
 .accessory-none{display:none}
 .accessory-glasses{top:13px;left:7px;width:22px;height:8px;border-top:2px solid #263238}
@@ -822,11 +822,12 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .person.female .person-head{top:9px;width:32px;height:30px;z-index:4}
 .person.female .person-face{top:14px}
 .person.female .person-hair{z-index:5}
-.person.female .hair-part-long,.person.female .hair-wave-long,.person.female .hair-braids-long,.person.female .hair-pony-long,.person.female .hair-curl-volume{top:-3px}
-.person.female .hair-part-long::before,.person.female .hair-part-long::after{top:7px;width:10px;height:21px}
-.person.female .hair-wave-long::before,.person.female .hair-wave-long::after{top:7px;width:10px;height:22px}
-.person.female .hair-braids-long::before,.person.female .hair-braids-long::after{top:8px;height:21px}
-.person.female .hair-curl-volume::before,.person.female .hair-curl-volume::after{top:8px;width:10px;height:22px}
+.person.female .hair-pageboy,.person.female .hair-flip,.person.female .hair-beehive,.person.female .hair-bouffant-pony,.person.female .hair-set-curls{top:-4px}
+.person.female .hair-pageboy::before,.person.female .hair-pageboy::after{top:10px;height:16px}
+.person.female .hair-flip::before,.person.female .hair-flip::after{top:10px;height:15px}
+.person.female .hair-beehive{top:-8px}
+.person.female .hair-bouffant-pony{top:-6px}
+.person.female .hair-set-curls::before,.person.female .hair-set-curls::after{top:9px;height:16px}
 .person.male .person-torso{border-radius:10px 10px 6px 6px}
 .person.female .person-torso{width:22px;height:22px;border-radius:10px 10px 4px 4px;clip-path:polygon(18% 0,82% 0,100% 100%,0 100%)}
 .person.female .person-torso::before{content:'';position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);width:30px;height:13px;background:linear-gradient(180deg,color-mix(in srgb,var(--shirt-top) 92%, #ffffff),var(--shirt-bot));border:2px solid var(--shirt-border);border-top:none;border-radius:0 0 12px 12px;clip-path:polygon(10% 0,90% 0,100% 100%,0 100%)}
