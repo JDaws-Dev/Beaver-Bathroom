@@ -566,12 +566,12 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .stall:hover{transform:scale(1.08) translateY(-2px)}
 .stall:active{transform:scale(0.95)}
 .stall-light{width:18px;height:18px;border-radius:50%;margin-bottom:5px;border:3px solid #1a0f05;box-shadow:inset 0 -3px 0 rgba(0,0,0,0.4),0 0 8px rgba(0,0,0,0.3),0 3px 6px rgba(0,0,0,0.5);transition:all 0.3s}
-.stall-body{width:90%;max-width:56px;height:78px;background:linear-gradient(180deg,#fff8f0 0%,#f5ebe0 50%,#e8dcc8 100%);border:4px solid #5d4037;border-bottom:none;border-radius:10px 10px 0 0;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;box-shadow:inset 0 0 20px rgba(93,64,55,0.15),0 6px 12px rgba(0,0,0,0.3)}
+.stall-body{width:90%;max-width:56px;height:78px;background:linear-gradient(180deg,#fff8f0 0%,#f5ebe0 50%,#e8dcc8 100%);border:4px solid #5d4037;border-bottom:none;border-radius:10px 10px 0 0;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;box-shadow:inset 0 0 20px rgba(93,64,55,0.15),0 6px 12px rgba(0,0,0,0.3);perspective:700px}
 .stall-body::before{content:'';position:absolute;top:0;left:0;right:0;height:10px;background:linear-gradient(180deg,rgba(255,255,255,0.5),transparent);border-radius:10px 10px 0 0}
-.stall-door{position:absolute;inset:0;background:repeating-linear-gradient(90deg,#c9a86c 0px,#d4b87a 2px,#bf9b5c 4px,#c9a86c 6px),linear-gradient(180deg,#d4b87a 0%,#a67c52 50%,#8b6342 100%);background-blend-mode:overlay;border:3px solid #5d4037;border-bottom:none;border-radius:10px 10px 0 0;transform-origin:left;transition:transform 0.4s cubic-bezier(0.4,0,0.2,1);z-index:5;box-shadow:inset 3px 0 8px rgba(0,0,0,0.2),inset -2px 0 5px rgba(255,255,255,0.15)}
+.stall-door{position:absolute;inset:0;background:repeating-linear-gradient(90deg,#c9a86c 0px,#d4b87a 2px,#bf9b5c 4px,#c9a86c 6px),linear-gradient(180deg,#d4b87a 0%,#a67c52 50%,#8b6342 100%);background-blend-mode:overlay;border:3px solid #5d4037;border-bottom:none;border-radius:10px 10px 0 0;transform-origin:left;transition:transform 0.34s cubic-bezier(0.34,1.2,0.64,1),filter 0.2s ease;z-index:5;box-shadow:inset 3px 0 8px rgba(0,0,0,0.2),inset -2px 0 5px rgba(255,255,255,0.15);will-change:transform}
 .stall-door::before{content:'';position:absolute;top:10px;left:50%;transform:translateX(-50%);width:22px;height:6px;background:linear-gradient(180deg,#4e342e,#3e2723);border-radius:3px;box-shadow:0 2px 3px rgba(0,0,0,0.3)}
 .stall-door::after{content:'';position:absolute;right:6px;top:50%;transform:translateY(-50%);width:8px;height:26px;background:linear-gradient(90deg,#5d4037,#8d6e63,#5d4037);border-radius:4px;border:2px solid #3e2723;box-shadow:inset 0 -3px 4px rgba(0,0,0,0.3),2px 2px 4px rgba(0,0,0,0.4)}
-.stall-door.open{transform:rotateY(-100deg)}
+.stall-door.open{transform:rotateY(-108deg);filter:brightness(1.05)}
 .stall-icon{font-size:1.5em;z-index:1;filter:drop-shadow(0 2px 2px rgba(0,0,0,0.15))}
 .stall-label{font-size:0.55em;font-weight:bold;z-index:1;margin-top:2px;text-shadow:0 1px 2px rgba(0,0,0,0.5);color:#ffd54f}
 .stall-bar{position:absolute;bottom:0;left:0;height:6px;background:linear-gradient(90deg,#1e88e5,#64b5f6);z-index:6;transition:width 0.08s;border-radius:0 4px 4px 0;box-shadow:0 0 10px rgba(30,136,229,0.5)}
@@ -666,9 +666,14 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .sink.dirty .sink-bowl{background:#ffcc80;animation:pulse-dirty 0.5s infinite alternate}
 .sink.cleaning .sink-bowl{background:#81d4fa}
 .sink-label{font-size:0.45em;color:#333;font-weight:bold;margin-top:2px}
-#exit-door{position:absolute;bottom:0;right:10px;width:68px;height:92px;background:linear-gradient(#6b5847,#3a2a1a);border:3px solid #2a1a0a;border-bottom:none;border-radius:10px 10px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:1.55em;pointer-events:none;box-shadow:0 -3px 10px rgba(0,0,0,0.18)}
-#exit-door::before{content:'';position:absolute;bottom:-3px;left:50%;transform:translateX(-50%);width:84px;height:16px;background:linear-gradient(180deg,#7a6149,#4a3426);border:2px solid #3b2418;border-bottom:none;border-radius:12px 12px 0 0;box-shadow:0 -2px 8px rgba(0,0,0,0.16);z-index:-1}
-#exit-door::after{content:'EXIT';font-size:0.38em;color:#c9c9c9;margin-top:4px;letter-spacing:1px}
+#exit-door{position:absolute;bottom:0;right:10px;width:84px;height:110px;pointer-events:none;z-index:7}
+#exit-door::before{content:'';position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);width:98px;height:18px;background:linear-gradient(180deg,#7a6149,#4a3426);border:2px solid #3b2418;border-bottom:none;border-radius:14px 14px 0 0;box-shadow:0 -2px 8px rgba(0,0,0,0.16);z-index:0}
+.exit-door-frame{position:absolute;inset:0;background:linear-gradient(180deg,#5d4636,#332114);border:4px solid #241409;border-bottom:none;border-radius:12px 12px 0 0;box-shadow:0 -3px 12px rgba(0,0,0,0.22),inset 0 2px 0 rgba(255,255,255,0.06);overflow:visible}
+.exit-door-panel{position:absolute;inset:6px 8px 0 8px;background:repeating-linear-gradient(90deg,#cfb07a 0,#d9bd88 3px,#bd975b 6px,#cfb07a 9px),linear-gradient(180deg,#d4b87a 0%,#a67c52 55%,#825936 100%);background-blend-mode:overlay;border:3px solid #573823;border-bottom:none;border-radius:8px 8px 0 0;transform-origin:right center;transition:transform 0.36s cubic-bezier(0.34,1.2,0.64,1),filter 0.2s ease;box-shadow:inset 2px 0 7px rgba(0,0,0,0.24),inset -2px 0 5px rgba(255,255,255,0.15)}
+.exit-door-panel::before{content:'';position:absolute;left:50%;top:14px;transform:translateX(-50%);width:28px;height:8px;border-radius:4px;background:linear-gradient(180deg,#4e342e,#2f2018);box-shadow:0 2px 4px rgba(0,0,0,0.3)}
+.exit-door-panel::after{content:'';position:absolute;left:9px;top:54px;width:9px;height:22px;border-radius:4px;background:linear-gradient(90deg,#4d3525,#7f5c42,#4d3525);border:2px solid #2d1b10}
+.exit-door-sign{position:absolute;left:50%;top:14px;transform:translateX(-50%);font-size:0.7em;letter-spacing:1.2px;font-weight:800;color:#ffefb8;text-shadow:0 1px 3px rgba(0,0,0,0.55);z-index:2}
+#exit-door.open .exit-door-panel{transform:perspective(800px) rotateY(112deg);filter:brightness(1.08)}
 /* CSS-art paper towel dispenser */
 #towels{
   position:relative;
@@ -770,22 +775,26 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .hair-curl::before{left:2px}
 .hair-curl::after{right:2px}
 .hair-spike{top:2px;left:7px;width:24px;height:10px;clip-path:polygon(0 100%,12% 35%,24% 88%,38% 16%,54% 82%,70% 12%,84% 78%,100% 28%,100% 100%)}
-.hair-long{top:1px;left:6px;width:28px;height:16px;border-radius:14px 14px 8px 8px}
-.hair-long::before,.hair-long::after{content:'';position:absolute;top:8px;width:8px;height:20px;background:var(--hair-color);border-radius:0 0 8px 8px}
-.hair-long::before{left:0}
-.hair-long::after{right:0}
-.hair-wave{top:1px;left:5px;width:30px;height:15px;border-radius:14px 14px 9px 9px}
-.hair-wave::before,.hair-wave::after{content:'';position:absolute;top:9px;width:9px;height:19px;background:var(--hair-color);border-radius:0 0 9px 9px}
-.hair-wave::before{left:1px;transform:rotate(6deg)}
-.hair-wave::after{right:1px;transform:rotate(-6deg)}
-.hair-braid{top:1px;left:6px;width:28px;height:14px;border-radius:14px 14px 7px 7px}
-.hair-braid::before,.hair-braid::after{content:'';position:absolute;top:10px;width:6px;height:20px;background:repeating-linear-gradient(180deg,var(--hair-color) 0 4px,color-mix(in srgb,var(--hair-color) 72%, #111) 4px 8px);border-radius:0 0 6px 6px}
-.hair-braid::before{left:2px}
-.hair-braid::after{right:2px}
-.hair-curl-long{top:1px;left:5px;width:30px;height:16px;border-radius:15px 15px 9px 9px}
-.hair-curl-long::before,.hair-curl-long::after{content:'';position:absolute;top:10px;width:10px;height:18px;background:var(--hair-color);border-radius:0 0 10px 10px}
-.hair-curl-long::before{left:0;clip-path:polygon(15% 0,100% 0,88% 100%,0 100%)}
-.hair-curl-long::after{right:0;clip-path:polygon(0 0,85% 0,100% 100%,12% 100%)}
+.hair-part-long{top:-1px;left:3px;width:36px;height:18px;border-radius:16px 16px 10px 10px;clip-path:polygon(0 0,100% 0,100% 78%,72% 100%,28% 100%,0 78%)}
+.hair-part-long::before,.hair-part-long::after{content:'';position:absolute;top:10px;width:11px;height:24px;background:var(--hair-color);border-radius:0 0 10px 10px}
+.hair-part-long::before{left:1px}
+.hair-part-long::after{right:1px}
+.hair-wave-long{top:-1px;left:2px;width:38px;height:19px;border-radius:17px 17px 11px 11px}
+.hair-wave-long::before,.hair-wave-long::after{content:'';position:absolute;top:11px;width:12px;height:24px;background:var(--hair-color);border-radius:0 0 11px 11px}
+.hair-wave-long::before{left:0;transform:rotate(9deg)}
+.hair-wave-long::after{right:0;transform:rotate(-9deg)}
+.hair-wave-long{box-shadow:inset 0 1px 0 rgba(255,255,255,0.14),0 1px 0 rgba(0,0,0,0.08)}
+.hair-braids-long{top:0;left:4px;width:34px;height:16px;border-radius:15px 15px 9px 9px}
+.hair-braids-long::before,.hair-braids-long::after{content:'';position:absolute;top:11px;width:7px;height:24px;background:repeating-linear-gradient(180deg,var(--hair-color) 0 4px,color-mix(in srgb,var(--hair-color) 74%, #111) 4px 8px);border-radius:0 0 7px 7px}
+.hair-braids-long::before{left:2px}
+.hair-braids-long::after{right:2px}
+.hair-pony-long{top:-1px;left:4px;width:34px;height:16px;border-radius:16px 16px 9px 9px}
+.hair-pony-long::before{content:'';position:absolute;top:9px;right:-7px;width:12px;height:21px;background:var(--hair-color);border-radius:4px 8px 10px 10px;transform:rotate(14deg)}
+.hair-pony-long::after{content:'';position:absolute;top:3px;left:12px;width:10px;height:5px;border-radius:4px;background:rgba(255,255,255,0.18)}
+.hair-curl-volume{top:-1px;left:2px;width:38px;height:18px;border-radius:18px 18px 11px 11px}
+.hair-curl-volume::before,.hair-curl-volume::after{content:'';position:absolute;top:12px;width:12px;height:22px;background:var(--hair-color);border-radius:0 0 12px 12px}
+.hair-curl-volume::before{left:0;clip-path:polygon(18% 0,100% 0,84% 100%,0 100%)}
+.hair-curl-volume::after{right:0;clip-path:polygon(0 0,82% 0,100% 100%,16% 100%)}
 .person-headgear{display:none}
 .accessory-none{display:none}
 .accessory-glasses{top:13px;left:7px;width:22px;height:8px;border-top:2px solid #263238}
@@ -808,8 +817,10 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .person-arm.right{right:0;transform:rotate(-18deg)}
 .person-torso{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:26px;height:24px;background:linear-gradient(180deg,var(--shirt-top) 0%,var(--shirt-bot) 100%);border-radius:10px 10px 6px 6px;z-index:2;border:2px solid var(--shirt-border);box-shadow:inset 0 2px 0 rgba(255,255,255,0.18),0 2px 4px rgba(0,0,0,0.28)}
 .person-torso::after{content:'';position:absolute;top:3px;left:50%;transform:translateX(-50%);width:10px;height:3px;border-radius:3px;background:rgba(255,255,255,0.18)}
-.person.female .person-head-wrap{height:50px}
-.person.female .person-head{top:6px;z-index:4}
+.person.female .person-body{width:54px;height:68px}
+.person.female .person-head-wrap{width:46px;height:54px}
+.person.female .person-head{top:7px;width:32px;height:30px;z-index:4}
+.person.female .person-face{top:13px}
 .person.female .person-hair{z-index:3}
 .person.male .person-torso{border-radius:10px 10px 6px 6px}
 .person.female .person-torso{width:22px;height:22px;border-radius:10px 10px 4px 4px;clip-path:polygon(18% 0,82% 0,100% 100%,0 100%)}
@@ -1093,7 +1104,9 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 #sinks-area{gap:8px;padding:6px 10px}
 .sink{width:52px;height:46px;min-width:44px;min-height:44px}
 #towels{width:52px;height:64px;min-width:44px}.towel-sheet{width:22px;height:9px}.towel-sheet:first-child{width:24px}
-#exit-door{width:56px;height:76px}
+#exit-door{width:66px;height:86px}
+.exit-door-panel::after{top:44px;height:20px}
+.exit-door-sign{top:11px;font-size:0.58em}
 #task-panel{padding:12px 14px;max-width:90%}
 .task-btn{padding:14px 20px;font-size:1em;min-height:48px;min-width:60px}
 #task-buttons{gap:10px}
@@ -1188,7 +1201,11 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .sink{width:44px;height:38px}
 .sink-bowl{width:26px;height:10px}
 #towels{width:42px;height:48px}.towel-sheet{width:18px;height:8px}.towel-sheet:first-child{width:20px}
-#exit-door{width:48px;height:58px;font-size:1.05em}
+#exit-door{width:58px;height:70px}
+.exit-door-panel{inset:5px 6px 0 6px}
+.exit-door-panel::before{top:10px;width:20px;height:6px}
+.exit-door-panel::after{top:34px;left:7px;width:7px;height:16px}
+.exit-door-sign{top:9px;font-size:0.5em}
 #task-panel{padding:10px 12px}
 #task-panel h3{font-size:0.85em}
 #task-panel .hint{font-size:0.55em}

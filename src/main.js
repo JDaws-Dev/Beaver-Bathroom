@@ -797,14 +797,14 @@ const CUSTOMER_VISUALS_MALE = [
 ];
 
 const CUSTOMER_VISUALS_FEMALE = [
-  { hair:'long', accessory:'none', build:'average', face:'soft', headShape:'oval', skin:'#f2c39b', hairColor:'#5d4037' },
-  { hair:'wave', accessory:'none', build:'petite', face:'smile', headShape:'round', skin:'#d9a37c', hairColor:'#6d4c41' },
-  { hair:'braid', accessory:'none', build:'tall', face:'neutral', headShape:'oval', skin:'#b97a56', hairColor:'#3e2723' },
-  { hair:'long', accessory:'none', build:'athletic', face:'stern', headShape:'square', skin:'#8d5a3c', hairColor:'#212121' },
-  { hair:'curl-long', accessory:'none', build:'average', face:'smile', headShape:'round', skin:'#f0d2b6', hairColor:'#4e342e' },
-  { hair:'wave', accessory:'none', build:'tall', face:'smirk', headShape:'square', skin:'#c98d66', hairColor:'#212121' },
-  { hair:'braid', accessory:'none', build:'petite', face:'soft', headShape:'round', skin:'#e0b18a', hairColor:'#8d6e63' },
-  { hair:'curl-long', accessory:'none', build:'athletic', face:'neutral', headShape:'oval', skin:'#7a4f35', hairColor:'#3e2723' },
+  { hair:'part-long', accessory:'none', build:'average', face:'soft', headShape:'oval', skin:'#f2c39b', hairColor:'#5d4037' },
+  { hair:'wave-long', accessory:'none', build:'petite', face:'smile', headShape:'round', skin:'#d9a37c', hairColor:'#8d5a46' },
+  { hair:'braids-long', accessory:'none', build:'tall', face:'neutral', headShape:'oval', skin:'#b97a56', hairColor:'#3e2723' },
+  { hair:'pony-long', accessory:'none', build:'athletic', face:'stern', headShape:'square', skin:'#8d5a3c', hairColor:'#212121' },
+  { hair:'curl-volume', accessory:'none', build:'average', face:'smile', headShape:'round', skin:'#f0d2b6', hairColor:'#4e342e' },
+  { hair:'part-long', accessory:'none', build:'tall', face:'smirk', headShape:'square', skin:'#c98d66', hairColor:'#212121' },
+  { hair:'wave-long', accessory:'none', build:'petite', face:'soft', headShape:'round', skin:'#e0b18a', hairColor:'#b36b4d' },
+  { hair:'pony-long', accessory:'none', build:'athletic', face:'neutral', headShape:'oval', skin:'#7a4f35', hairColor:'#3e2723' },
 ];
 
 // Named special characters that create memorable moments
@@ -857,10 +857,10 @@ function getCustomerVisualProfile(gender, specialName) {
       'Business Bob': { hair:'part', accessory:'none', build:'tall', face:'stern', headShape:'oval', skin:'#b97a56', hairColor:'#212121' },
       'Weekend Warrior': { hair:'visor', accessory:'none', build:'athletic', face:'soft', headShape:'round', skin:'#e0b18a', hairColor:'#6d4c41' },
       'Trucker Tom': { hair:'beanie', accessory:'none', build:'stocky', face:'neutral', headShape:'square', skin:'#8d5a3c', hairColor:'#3e2723' },
-      'Soccer Mom': { hair:'long', accessory:'none', build:'athletic', face:'neutral', headShape:'oval', skin:'#d9a37c', hairColor:'#5d4037' },
-      'Tourist Tina': { hair:'wave', accessory:'none', build:'petite', face:'smile', headShape:'round', skin:'#f2c39b', hairColor:'#8d6e63' },
-      'Snack Sally': { hair:'braid', accessory:'none', build:'average', face:'smile', headShape:'round', skin:'#f0d2b6', hairColor:'#6d4c41' },
-      'Road Queen': { hair:'curl-long', accessory:'none', build:'tall', face:'smirk', headShape:'square', skin:'#b97a56', hairColor:'#212121' },
+      'Soccer Mom': { hair:'pony-long', accessory:'none', build:'athletic', face:'neutral', headShape:'oval', skin:'#d9a37c', hairColor:'#5d4037' },
+      'Tourist Tina': { hair:'wave-long', accessory:'none', build:'petite', face:'smile', headShape:'round', skin:'#f2c39b', hairColor:'#b36b4d' },
+      'Snack Sally': { hair:'braids-long', accessory:'none', build:'average', face:'smile', headShape:'round', skin:'#f0d2b6', hairColor:'#6d4c41' },
+      'Road Queen': { hair:'curl-volume', accessory:'none', build:'tall', face:'smirk', headShape:'square', skin:'#b97a56', hairColor:'#212121' },
     };
     if (specials[specialName]) return specials[specialName];
   }
@@ -3326,10 +3326,13 @@ function init() {
     comboTimerMax: 0,         // Max combo timer for progress bar
     tipsEarned: 0,            // Total coins earned from customer tips this shift
     isMultiplayer: false,     // Set true for 1v1 games (enables difficulty modifiers)
+    exitDoorOpen: false,
+    exitDoorTimer: 0,
   };
 
   // Apply any pending daily reward coins
   applyPendingDailyCoins();
+  updateExitDoorDOM();
 }
 
 function getCustomers() {
@@ -3597,6 +3600,7 @@ function buildStalls() {
       tasks: [],
       customer: '',
       doorOpen: false,
+      doorTimer: 0,
       wasVip: false,
       reservedBy: null
     });
@@ -3670,6 +3674,32 @@ function updateStallDOM(i) {
     label.textContent = '';
     bar.style.width = '0';
   }
+}
+
+function setStallDoor(i, isOpen, holdMs = 0) {
+  const stall = game.stalls[i];
+  if (!stall) return;
+  stall.doorOpen = isOpen;
+  stall.doorTimer = isOpen ? holdMs : 0;
+  updateStallDOM(i);
+}
+
+function updateExitDoorDOM() {
+  const exitDoor = $('exit-door');
+  if (!exitDoor) return;
+  exitDoor.classList.toggle('open', !!game.exitDoorOpen);
+}
+
+function openExitDoor(holdMs = 0) {
+  game.exitDoorOpen = true;
+  game.exitDoorTimer = Math.max(game.exitDoorTimer || 0, holdMs);
+  updateExitDoorDOM();
+}
+
+function closeExitDoor() {
+  game.exitDoorOpen = false;
+  game.exitDoorTimer = 0;
+  updateExitDoorDOM();
 }
 
 function updateSinkDOM(i) {
@@ -4275,6 +4305,11 @@ function gameLoop(now) {
 function update(dt) {
   const cfg = getShiftConfig();
 
+  if (game.exitDoorTimer > 0) {
+    game.exitDoorTimer -= dt;
+    if (game.exitDoorTimer <= 0) closeExitDoor();
+  }
+
   // Endless mode: count up, end on rating 0
   if (game.mode === 'endless') {
     game.elapsed += dt;
@@ -4413,9 +4448,11 @@ function update(dt) {
       }
     }
 
-    if (stall.doorOpen && stall.state !== 'occupied' && stall.state !== 'dirty') {
-      stall.doorOpen = false;
-      updateStallDOM(i);
+    if (stall.doorOpen && stall.doorTimer > 0) {
+      stall.doorTimer -= dt;
+      if (stall.doorTimer <= 0 && stall.state !== 'occupied') {
+        setStallDoor(i, false);
+      }
     }
   }
 
@@ -4605,6 +4642,7 @@ function spawnCustomer() {
   const enterThought = specialThoughts && specialThoughts.enter ? specialThoughts.enter : '';
   const enterTimer = enterThought ? 2500 : 0;
   const visual = getCustomerVisualProfile(genderFilter, specialName);
+  openExitDoor(520);
 
   game.people.push({
     id: ++game.personId,
@@ -4612,7 +4650,8 @@ function spawnCustomer() {
     gender: genderFilter,
     x: exitDoor.left - rect.left + 15,
     y: exitDoor.top - rect.top + 20,
-    phase: 'enter',
+    phase: 'enterDoor',
+    doorTimer: 220,
     target: -1,
     patience: patience,
     maxPatience: patience,
@@ -4680,7 +4719,7 @@ function deflectFromTowels(p, floorRect) {
 }
 
 function isCustomerMovingOnFloor(p) {
-  return ['enter', 'findStall', 'toStall', 'entering', 'exitStall', 'toSink', 'toTowels', 'exit'].includes(p.phase) && !p.frozen;
+  return ['enterDoor', 'enter', 'findStall', 'toStall', 'entering', 'exitStall', 'toSink', 'toTowels', 'exit'].includes(p.phase) && !p.frozen;
 }
 
 function separateCustomers() {
@@ -4802,7 +4841,14 @@ function updatePeople(dt) {
       }
     }
 
-    if (p.phase === 'enter') {
+    if (p.phase === 'enterDoor') {
+      openExitDoor(220);
+      p.doorTimer = Math.max(0, (p.doorTimer || 0) - dt);
+      if (p.doorTimer <= 0) {
+        p.phase = 'enter';
+      }
+    }
+    else if (p.phase === 'enter') {
       // If distracted by mascot, show thought (movement handled in updateMascotWalk)
       if (p.distracted) {
         if (!p.distractedThought) {
@@ -4930,9 +4976,8 @@ function updatePeople(dt) {
           p.graceTimer = 200;
         }
 
-        stall.doorOpen = true;
+        setStallDoor(p.target, true);
         playDoorOpen();
-        updateStallDOM(p.target);
       } else {
         p.x += (dx / dist) * speed;
         p.y += (dy / dist) * speed;
@@ -5018,9 +5063,8 @@ function updatePeople(dt) {
         // redirect them to find another stall
         if (stall.state === 'cleaning' && !p.enteredDirty) {
           stall.reservedBy = null; // Release reservation
-          stall.doorOpen = false;
+          setStallDoor(p.target, false);
           playDoorClose();
-          updateStallDOM(p.target);
           p.phase = 'findStall'; // Go back to finding a stall
           p.target = -1;
           continue;
@@ -5032,7 +5076,7 @@ function updatePeople(dt) {
         stall.wasVip = p.vip; // Track if VIP used this stall
         stall.messiness = p.messiness; // Track messiness for task generation
         stall.timer = rnd(cfg.occMin, cfg.occMax);
-        stall.doorOpen = false;
+        setStallDoor(p.target, false);
         playDoorClose();
         stall.tasks = [];
 
@@ -5180,8 +5224,9 @@ function updatePeople(dt) {
       const ty = exitDoor.top - floorRect.top + 20;
       const dx = tx - p.x, dy = ty - p.y;
       const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 60) openExitDoor(360);
 
-      if (dist < 20 && !p.frozen) {
+      if (dist < 20 && !p.frozen && game.exitDoorOpen) {
         game.people.splice(i, 1);
       } else if (dist >= 20) {
         p.x += (dx / dist) * speed * 1.2;
@@ -5212,7 +5257,7 @@ function updatePeople(dt) {
 function customerLeaves(stallIdx) {
   const stall = game.stalls[stallIdx];
   stall.state = 'dirty';
-  stall.doorOpen = true;
+  setStallDoor(stallIdx, true, 850);
   playFlush(); // Toilet flush sound
   playDoorOpen(); // Door opening
 
@@ -5243,8 +5288,6 @@ function customerLeaves(stallIdx) {
     stall.tasks.push({...TASKS[1], done: false});
   }
 
-
-  updateStallDOM(stallIdx);
   showBeaverTip('dirtyStall');
 
   const person = game.people.find(p => p.phase === 'inStall' && p.target === stallIdx);
