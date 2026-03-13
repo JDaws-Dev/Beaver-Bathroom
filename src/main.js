@@ -1256,13 +1256,13 @@ function closeAchievementsModal() {
 // =============================================================================
 
 const DAILY_REWARDS = [
-  { day: 1, coins: 25,  label: '25 🪙' },
-  { day: 2, coins: 50,  label: '50 🪙' },
-  { day: 3, coins: 75,  label: '75 🪙' },
-  { day: 4, coins: 100, label: '100 🪙' },
-  { day: 5, coins: 150, label: '150 🪙' },
-  { day: 6, coins: 200, label: '200 🪙' },
-  { day: 7, coins: 300, label: '300 🪙 + 🍿', bonus: 'beaverNuggets' },
+  { day: 1, coins: 25,  label: '25 $' },
+  { day: 2, coins: 50,  label: '50 $' },
+  { day: 3, coins: 75,  label: '75 $' },
+  { day: 4, coins: 100, label: '100 $' },
+  { day: 5, coins: 150, label: '150 $' },
+  { day: 6, coins: 200, label: '200 $' },
+  { day: 7, coins: 300, label: '300 $ + 🍿', bonus: 'beaverNuggets' },
 ];
 
 // Streak multipliers
@@ -1368,7 +1368,7 @@ function showDailyRewardModal() {
       const isToday = i === reward.day - 1;
       return `<div class="dr-cal-day ${isPast ? 'claimed' : ''} ${isToday ? 'today' : ''}">
         <span class="dr-cal-num">${i + 1}</span>
-        <span class="dr-cal-reward">${r.coins}🪙</span>
+        <span class="dr-cal-reward">${r.coins}$</span>
       </div>`;
     }).join('');
   }
@@ -1422,7 +1422,7 @@ function applyPendingDailyCoins() {
 function showCoinCollect(amount) {
   const float = document.createElement('div');
   float.className = 'coin-float';
-  float.textContent = '+' + amount + ' 🪙';
+  float.textContent = '+' + amount + ' $';
   const titleCard = document.querySelector('.title-card');
   if (titleCard) {
     titleCard.appendChild(float);
@@ -3552,7 +3552,7 @@ function floatMessage(text, x, y, type = 'good') {
 function floatCoin(x, y) {
   const el = document.createElement('div');
   el.className = 'float-coin';
-  el.textContent = '🪙';
+  el.textContent = '$';
   el.style.left = (x + rnd(-15, 15)) + 'px';
   el.style.top = y + 'px';
   $('play-area').appendChild(el);
@@ -6691,7 +6691,7 @@ function renderSupplyShop() {
             <span class="shop-icon">${item.icon}</span>
             <span class="shop-name">${item.name}</span>
             <span class="shop-desc">${item.desc}</span>
-            <span class="shop-cost">🪙 ${cost}</span>
+            <span class="shop-cost">$ ${cost}</span>
           </button>
         `;
       }).join('')}
@@ -6909,7 +6909,7 @@ function endShift() {
     let rewardsHtml = `
       <div class="rewards-row">
         <div class="reward-item coins-reward">
-          <div class="reward-icon">🪙</div>
+          <div class="reward-icon">$</div>
           <div class="reward-val">+${coinsEarned}</div>
           <div class="reward-lbl">Coins</div>
         </div>
@@ -6939,7 +6939,7 @@ function endShift() {
     $('pick-row').innerHTML = `
       <div class="rewards-row">
         <div class="reward-item coins-reward">
-          <div class="reward-icon">🪙</div>
+          <div class="reward-icon">$</div>
           <div class="reward-val">+${coinsEarned}</div>
           <div class="reward-lbl">Final Bonus</div>
         </div>
@@ -7354,7 +7354,7 @@ function showLockedPreview(cosmetic) {
       <div class="lp-progress">You have ${employeeXP.toLocaleString()} / ${reqRank.xp.toLocaleString()} XP</div>`;
   } else if (cosmetic.cost) {
     const coins = game.coins || parseInt(localStorage.getItem('beaverCoins')) || 0;
-    reqText = `<div class="lp-req">🪙 ${cosmetic.cost} coins</div>
+    reqText = `<div class="lp-req">$ ${cosmetic.cost} coins</div>
       <div class="lp-progress">You have ${coins} coins</div>`;
   } else if (cosmetic.desc) {
     reqText = `<div class="lp-req">🔒 ${cosmetic.desc}</div>`;
@@ -7423,7 +7423,7 @@ function renderOutfitterTab(category) {
       if (isActive) status = '✓ ACTIVE';
       else if (owned) status = 'Owned';
       else if (tierLocked) status = `🔒 ${tierInfo ? tierInfo.rankRequired : 'Locked'}`;
-      else if (c.cost && !c.premium) status = `🪙 ${c.cost}`;
+      else if (c.cost && !c.premium) status = `$ ${c.cost}`;
       else if (c.premium && !isPremium()) status = '🔒 Premium';
       else if (c.desc) status = c.desc;
       else status = '🔒';
@@ -7481,7 +7481,7 @@ function renderOutfitterTab(category) {
             if (!el.dataset.confirming) {
               el.dataset.confirming = 'true';
               const origHTML = el.innerHTML;
-              el.innerHTML = `<div style="text-align:center;padding:4px"><div style="font-size:0.8em;color:#fdd835">Buy ${cosmetic.name}?</div><div style="font-size:1.1em;margin:4px 0">🪙 ${cosmetic.cost}</div><div style="font-size:0.7em;color:#aaa">Tap again to confirm</div></div>`;
+              el.innerHTML = `<div style="text-align:center;padding:4px"><div style="font-size:0.8em;color:#fdd835">Buy ${cosmetic.name}?</div><div style="font-size:1.1em;margin:4px 0">$ ${cosmetic.cost}</div><div style="font-size:0.7em;color:#aaa">Tap again to confirm</div></div>`;
               el.classList.add('confirming');
               setTimeout(() => {
                 if (el.dataset.confirming) {
