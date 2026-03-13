@@ -3535,6 +3535,23 @@ function floatCoin(x, y) {
   setTimeout(() => el.remove(), 800);
 }
 
+function greetCustomer(personId) {
+  const p = game.people.find(person => person.id === personId);
+  if (!p || p.greeted || p.frozen) return;
+  if (!['enterDoor', 'enter', 'findStall', 'toStall', 'entering', 'exitStall', 'toSink', 'toTowels', 'exit'].includes(p.phase)) return;
+
+  p.greeted = true;
+  const points = addScore(p.vip ? 20 : 10);
+  p.patience = Math.min(p.maxPatience, p.patience + (p.vip ? 700 : 450));
+  p.thought = p.gender === 'female' ? pick(['Why, hello!', 'Much obliged!', 'Well hi there!']) : pick(['Howdy!', 'Thanks, friend!', 'Hey there!']);
+  p.thoughtMood = 'good';
+  p.thoughtTimer = 1400;
+  floatMessage(`+${points} GREET`, p.x + 10, p.y - 18, 'good');
+  bumpValue('score');
+  playClick();
+  haptic('light');
+}
+
 function checkComboMilestone() {
   // Find highest milestone we've reached
   const milestones = CONFIG.comboMilestones;
@@ -4667,6 +4684,7 @@ function spawnCustomer() {
     specialBadge: specialBadge,
     specialThoughts: specialThoughts,
     enterOffsetX: rnd(-30, 30), // Random X offset for natural-looking enter paths
+    greeted: false,
   });
 
   if (isVip) {
@@ -6111,6 +6129,10 @@ function renderPeople() {
         </div>
         <div class="patience-bar"><div class="patience-fill"></div></div>
         <div class="thought"></div>`;
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        greetCustomer(parseInt(el.dataset.id, 10));
+      });
       floor.appendChild(el);
     }
 
@@ -6145,6 +6167,7 @@ function renderPeople() {
     el.classList.toggle('messy', p.messiness === 1);
     el.classList.toggle('clean', p.messiness === -1);
     el.classList.toggle('fighting', !!p.fighting);
+    el.classList.toggle('greeted', !!p.greeted);
 
     // Add VIP badge if needed
     if (p.vip && !el.querySelector('.vip-badge')) {

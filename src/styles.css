@@ -744,7 +744,7 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
   width:28px;
   background:linear-gradient(180deg,#faf7f0 0%,#f0e8d5 100%);
 }
-.person{position:absolute;font-size:1.8em;z-index:10;transition:opacity 0.15s,transform 0.2s}
+.person{position:absolute;font-size:1.8em;z-index:10;transition:opacity 0.15s,transform 0.2s;cursor:pointer}
 .person-body{position:relative;width:50px;height:64px;display:flex;flex-direction:column;align-items:center;--shirt-top:#5a8dd8;--shirt-bot:#3d6cb8;--shirt-border:#2d5090;--skin-tone:#d9a37c;--hair-color:#5d4037}
 .person-shadow{position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);width:32px;height:9px;border-radius:50%;background:rgba(0,0,0,0.18);filter:blur(1px);z-index:0}
 .person-head-wrap{position:absolute;top:0;left:50%;transform:translateX(-50%);width:40px;height:36px;z-index:3}
@@ -829,9 +829,9 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .person.female .hair-bouffant-pony{top:-6px}
 .person.female .hair-set-curls::before,.person.female .hair-set-curls::after{top:9px;height:16px}
 .person.male .person-torso{border-radius:10px 10px 6px 6px}
-.person.female .person-torso{width:22px;height:22px;border-radius:10px 10px 4px 4px;clip-path:polygon(18% 0,82% 0,100% 100%,0 100%)}
+.person.female .person-torso{bottom:10px;width:22px;height:23px;border-radius:10px 10px 4px 4px;clip-path:polygon(18% 0,82% 0,100% 100%,0 100%)}
 .person.female .person-torso::before{content:'';position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);width:30px;height:13px;background:linear-gradient(180deg,color-mix(in srgb,var(--shirt-top) 92%, #ffffff),var(--shirt-bot));border:2px solid var(--shirt-border);border-top:none;border-radius:0 0 12px 12px;clip-path:polygon(10% 0,90% 0,100% 100%,0 100%)}
-.person.female .person-arms{width:32px}
+.person.female .person-arms{top:30px;width:32px}
 .person.female .person-arm.left{left:1px}
 .person.female .person-arm.right{right:1px}
 .person-torso.build-broad{width:30px}
@@ -842,8 +842,11 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .person.female .person-torso.build-broad{width:24px}
 .person.female .person-torso.build-stocky{width:26px;height:22px}
 .person.female .person-torso.build-tall{height:25px}
-.person.female .person-torso.build-petite{width:20px;height:20px}
+.person.female .person-torso.build-petite{width:21px;height:23px}
 .person.female .person-torso.build-athletic{width:23px;height:23px}
+.person.female .person-head-wrap.head-square{transform:translateX(-50%)}
+.person.greeted .person-head{box-shadow:0 0 0 2px rgba(255,239,184,0.35),inset 0 2px 0 rgba(255,255,255,0.16),0 2px 3px rgba(0,0,0,0.22)}
+.person.greeted .person-body{filter:drop-shadow(0 0 4px rgba(255,239,184,0.25))}
 .person-legs{position:absolute;bottom:0;width:22px;height:12px;display:flex;gap:4px;z-index:0}
 .person-leg{flex:1;background:linear-gradient(180deg,#4a4a4a,#333);border-radius:0 0 3px 3px;transition:transform 0.1s}
 .person.female .person-legs{width:18px;gap:3px}
