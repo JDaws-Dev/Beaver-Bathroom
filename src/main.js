@@ -4701,28 +4701,48 @@ function getMessScale() {
   return CONFIG.messScaleByShift[idx];
 }
 
-// Deflect customer away from the towel dispenser if overlapping it.
-// Called after movement in phases where customers should not walk through it.
-function deflectFromTowels(p, floorRect) {
-  const towelEl = $("towels");
-  if (!towelEl) return;
-  const towelRect = towelEl.getBoundingClientRect();
-  const tLeft   = towelRect.left   - floorRect.left - 20;
-  const tRight  = towelRect.right  - floorRect.left + 20;
-  const tTop    = towelRect.top    - floorRect.top  - 20;
-  const tBottom = towelRect.bottom - floorRect.top  + 10;
+function getLocalObstacleRect(el, floorRect, padX = 0, padTop = 0, padBottom = 0) {
+  if (!el) return null;
+  const rect = el.getBoundingClientRect();
+  return {
+    left: rect.left - floorRect.left - padX,
+    right: rect.right - floorRect.left + padX,
+    top: rect.top - floorRect.top - padTop,
+    bottom: rect.bottom - floorRect.top + padBottom,
+    centerX: rect.left - floorRect.left + rect.width / 2,
+  };
+}
 
-  if (p.x > tLeft && p.x < tRight && p.y > tTop && p.y < tBottom) {
-    // Push customer above the dispenser so they can path around it
-    p.y = tTop - 5;
+function pushCustomerOutOfRect(p, obstacle) {
+  if (!obstacle) return;
+  if (p.x <= obstacle.left || p.x >= obstacle.right || p.y <= obstacle.top || p.y >= obstacle.bottom) return;
+
+  const sidePush = p.x < obstacle.centerX ? obstacle.left - 10 : obstacle.right + 10;
+  const pushUp = obstacle.top - 8;
+  const distUp = Math.abs(p.y - pushUp);
+  const distSide = Math.abs(p.x - sidePush);
+
+  if (distUp <= distSide * 1.15) {
+    p.y = pushUp;
+  } else {
+    p.x = sidePush;
+    p.y = Math.min(p.y, obstacle.top - 2);
   }
+}
+
+// Keep roaming customers off the sink block and towel dispenser.
+function deflectFromFixtures(p, floorRect) {
+  const sinksRect = getLocalObstacleRect($('sinks-area'), floorRect, 18, 20, 12);
+  const towelsRect = getLocalObstacleRect($('towels'), floorRect, 18, 20, 10);
+  pushCustomerOutOfRect(p, sinksRect);
+  pushCustomerOutOfRect(p, towelsRect);
 }
 
 function isCustomerMovingOnFloor(p) {
   return ['enterDoor', 'enter', 'findStall', 'toStall', 'entering', 'exitStall', 'toSink', 'toTowels', 'exit'].includes(p.phase) && !p.frozen;
 }
 
-function separateCustomers() {
+function separateCustomers(floorRect) {
   const movers = game.people.filter(isCustomerMovingOnFloor);
   const minDist = 22;
 
@@ -4744,6 +4764,11 @@ function separateCustomers() {
       b.x += nx * overlap;
       b.y += ny * overlap;
     }
+  }
+
+  for (const p of movers) {
+    if (p.phase === 'toSink' || p.phase === 'toTowels' || p.phase === 'washing') continue;
+    deflectFromFixtures(p, floorRect);
   }
 }
 
@@ -4981,7 +5006,7 @@ function updatePeople(dt) {
       } else {
         p.x += (dx / dist) * speed;
         p.y += (dy / dist) * speed;
-        deflectFromTowels(p, floorRect);
+        deflectFromFixtures(p, floorRect);
       }
       }  // End of else (not distracted)
     }
@@ -5097,7 +5122,7 @@ function updatePeople(dt) {
       const ty = 80;
       if (p.y < ty) {
         p.y += speed;
-        deflectFromTowels(p, floorRect);
+        deflectFromFixtures(p, floorRect);
       } else {
         p.phase = 'toSink';
       }
@@ -5231,7 +5256,7 @@ function updatePeople(dt) {
       } else if (dist >= 20) {
         p.x += (dx / dist) * speed * 1.2;
         p.y += (dy / dist) * speed * 1.2;
-        deflectFromTowels(p, floorRect);
+        deflectFromFixtures(p, floorRect);
       }
     }
 
@@ -5251,7 +5276,7 @@ function updatePeople(dt) {
     }
   }
 
-  separateCustomers();
+  separateCustomers(floorRect);
 }
 
 function customerLeaves(stallIdx) {
