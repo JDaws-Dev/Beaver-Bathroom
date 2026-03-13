@@ -3543,8 +3543,9 @@ function interactWithCustomer(personId) {
   p.greeted = true;
   const isCalming = p.urgent;
   const isCharming = p.vip && !isCalming;
-  const points = addScore(isCharming ? 28 : (isCalming ? 18 : 10));
-  p.patience = Math.min(p.maxPatience, p.patience + (isCharming ? 1050 : (isCalming ? 1200 : 450)));
+  const isChatting = !isCharming && !isCalming;
+  const points = addScore(isCharming ? 28 : (isCalming ? 18 : 12));
+  p.patience = Math.min(p.maxPatience, p.patience + (isCharming ? 1050 : (isCalming ? 1200 : 525)));
   if (isCalming) {
     p.urgent = false;
     p.thought = pick(['Okay, okay...', 'Made it in time!', 'Whew, thanks!']);
@@ -3558,7 +3559,7 @@ function interactWithCustomer(personId) {
   p.thoughtMood = 'good';
   p.thoughtTimer = 1400;
   p.interactionPulse = 420;
-  floatMessage(`+${points} ${isCalming ? 'CALM' : (isCharming ? 'CHARM' : 'GREET')}`, p.x + 10, p.y - 18, 'good');
+  floatMessage(`+${points} ${isCalming ? 'CALM' : (isCharming ? 'CHARM' : 'CHAT')}`, p.x + 10, p.y - 18, 'good');
   bumpValue('score');
   playClick();
   haptic('light');

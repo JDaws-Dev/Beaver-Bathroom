@@ -828,6 +828,17 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .person.female .hair-beehive{top:-7px}
 .person.female .hair-bouffant-pony{top:-5px}
 .person.female .hair-set-curls::before,.person.female .hair-set-curls::after{top:10px;height:14px}
+.person.female .head-round + .person-accessory{transform:translateX(0)}
+.person.female .hair-pageboy + .person-headgear + .head-round{top:12px}
+.person.female .hair-flip + .person-headgear + .head-round{top:12px}
+.person.female .hair-beehive + .person-headgear + .head-oval{top:13px}
+.person.female .hair-bouffant-pony + .person-headgear + .head-square{top:12px}
+.person.female .hair-set-curls + .person-headgear + .head-round{top:12px}
+.person.female .hair-pageboy{left:5px}
+.person.female .hair-flip{left:4px}
+.person.female .hair-beehive{left:7px}
+.person.female .hair-bouffant-pony{left:5px}
+.person.female .hair-set-curls{left:3px}
 .person.male .person-torso{border-radius:10px 10px 6px 6px}
 .person.female .person-torso{bottom:11px;width:22px;height:24px;border-radius:10px 10px 4px 4px;clip-path:polygon(18% 0,82% 0,100% 100%,0 100%)}
 .person.female .person-torso::before{content:'';position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);width:30px;height:13px;background:linear-gradient(180deg,color-mix(in srgb,var(--shirt-top) 92%, #ffffff),var(--shirt-bot));border:2px solid var(--shirt-border);border-top:none;border-radius:0 0 12px 12px;clip-path:polygon(10% 0,90% 0,100% 100%,0 100%)}
@@ -848,7 +859,7 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .person.female .person-legs .person-leg{border-radius:0 0 4px 4px}
 .person.greeted .person-head{box-shadow:0 0 0 2px rgba(255,239,184,0.35),inset 0 2px 0 rgba(255,255,255,0.16),0 2px 3px rgba(0,0,0,0.22)}
 .person.greeted .person-body{filter:drop-shadow(0 0 4px rgba(255,239,184,0.25))}
-.person.can-greet::after{content:'HI';position:absolute;top:-18px;left:50%;transform:translateX(-50%);padding:1px 5px;border-radius:999px;background:linear-gradient(180deg,#fff8d1,#f1d97a);border:1px solid rgba(120,90,20,0.55);font-size:0.34em;font-weight:800;color:#6a4d10;letter-spacing:0.4px;box-shadow:0 1px 4px rgba(0,0,0,0.18);animation:greet-bob 0.8s ease-in-out infinite;pointer-events:none}
+.person.can-greet::after{content:'CHAT';position:absolute;top:-18px;left:50%;transform:translateX(-50%);padding:1px 5px;border-radius:999px;background:linear-gradient(180deg,#fff8d1,#f1d97a);border:1px solid rgba(120,90,20,0.55);font-size:0.31em;font-weight:800;color:#6a4d10;letter-spacing:0.35px;box-shadow:0 1px 4px rgba(0,0,0,0.18);animation:greet-bob 0.8s ease-in-out infinite;pointer-events:none}
 .person.can-calm::after{content:'CALM';position:absolute;top:-18px;left:50%;transform:translateX(-50%);padding:1px 5px;border-radius:999px;background:linear-gradient(180deg,#ffe2e2,#ffaaaa);border:1px solid rgba(150,40,40,0.55);font-size:0.31em;font-weight:800;color:#8a2020;letter-spacing:0.35px;box-shadow:0 1px 4px rgba(0,0,0,0.18);animation:greet-bob 0.8s ease-in-out infinite;pointer-events:none}
 .person.can-charm::after{content:'VIP';position:absolute;top:-18px;left:50%;transform:translateX(-50%);padding:1px 5px;border-radius:999px;background:linear-gradient(180deg,#fff4c3,#ffd24a);border:1px solid rgba(168,120,12,0.55);font-size:0.31em;font-weight:800;color:#7a5600;letter-spacing:0.35px;box-shadow:0 1px 4px rgba(0,0,0,0.18);animation:greet-bob 0.8s ease-in-out infinite;pointer-events:none}
 .person.greeted::after{display:none}
