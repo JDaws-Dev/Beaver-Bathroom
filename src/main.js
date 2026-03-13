@@ -5229,6 +5229,9 @@ function customerLeaves(stallIdx) {
 }
 
 function spawnPuddle(x, y, type) {
+  const safePos = getSafePuddlePosition(x, y);
+  x = safePos.x;
+  y = safePos.y;
   const messType = MESS_TYPES[type] || MESS_TYPES.water;
   const id = Date.now() + Math.random();
   game.puddles.push({ id, x, y, type, age: 0, cleaning: false, cleanProgress: 0 });
@@ -5242,6 +5245,70 @@ function spawnPuddle(x, y, type) {
     playSplash();
   }
   floatMessage(messType.message, x, y - 20, 'bad');
+}
+
+function getFloorObstacleRects() {
+  const floor = $('floor-area');
+  if (!floor) return [];
+  const floorRect = floor.getBoundingClientRect();
+  const obstacleIds = ['exit-door', 'sinks-area', 'towels'];
+  return obstacleIds.map((id) => {
+    const el = $(id);
+    if (!el) return null;
+    const rect = el.getBoundingClientRect();
+    return {
+      left: rect.left - floorRect.left - 18,
+      right: rect.right - floorRect.left + 18,
+      top: rect.top - floorRect.top - 18,
+      bottom: rect.bottom - floorRect.top + 18,
+    };
+  }).filter(Boolean);
+}
+
+function pointInRect(x, y, rect) {
+  return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+}
+
+function getSafePuddlePosition(x, y) {
+  const floor = $('floor-area');
+  if (!floor) return { x, y };
+  const floorRect = floor.getBoundingClientRect();
+  const minX = 28;
+  const maxX = Math.max(minX, floorRect.width - 28);
+  const minY = 42;
+  const maxY = Math.max(minY, floorRect.height - 28);
+  const obstacles = getFloorObstacleRects();
+
+  let safeX = clamp(x, minX, maxX);
+  let safeY = clamp(y, minY, maxY);
+
+  for (let i = 0; i < 8; i++) {
+    const hit = obstacles.find((rect) => pointInRect(safeX, safeY, rect));
+    if (!hit) break;
+
+    const options = [
+      { x: hit.left - 10, y: safeY },
+      { x: hit.right + 10, y: safeY },
+      { x: safeX, y: hit.top - 10 },
+      { x: safeX, y: hit.bottom + 10 },
+    ].map((pos) => ({
+      x: clamp(pos.x, minX, maxX),
+      y: clamp(pos.y, minY, maxY),
+    }));
+
+    safeX = options[0].x;
+    safeY = options[0].y;
+
+    for (const option of options) {
+      if (!obstacles.some((rect) => pointInRect(option.x, option.y, rect))) {
+        safeX = option.x;
+        safeY = option.y;
+        break;
+      }
+    }
+  }
+
+  return { x: safeX, y: safeY };
 }
 
 // Spawn random mess in bathroom area (for rush hour chaos)
