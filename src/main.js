@@ -797,14 +797,14 @@ const CUSTOMER_VISUALS_MALE = [
 ];
 
 const CUSTOMER_VISUALS_FEMALE = [
-  { hair:'bun', accessory:'none', build:'average', face:'soft', headShape:'oval', skin:'#f2c39b', hairColor:'#5d4037' },
-  { hair:'bob', accessory:'none', build:'petite', face:'smile', headShape:'round', skin:'#d9a37c', hairColor:'#6d4c41' },
-  { hair:'pony', accessory:'none', build:'tall', face:'neutral', headShape:'oval', skin:'#b97a56', hairColor:'#3e2723' },
-  { hair:'visor', accessory:'none', build:'athletic', face:'stern', headShape:'square', skin:'#8d5a3c', hairColor:'#212121' },
-  { hair:'curl', accessory:'none', build:'average', face:'smile', headShape:'round', skin:'#f0d2b6', hairColor:'#4e342e' },
-  { hair:'bob', accessory:'none', build:'tall', face:'smirk', headShape:'square', skin:'#c98d66', hairColor:'#212121' },
-  { hair:'bun', accessory:'none', build:'petite', face:'soft', headShape:'round', skin:'#e0b18a', hairColor:'#8d6e63' },
-  { hair:'pony', accessory:'none', build:'athletic', face:'neutral', headShape:'oval', skin:'#7a4f35', hairColor:'#3e2723' },
+  { hair:'long', accessory:'none', build:'average', face:'soft', headShape:'oval', skin:'#f2c39b', hairColor:'#5d4037' },
+  { hair:'wave', accessory:'none', build:'petite', face:'smile', headShape:'round', skin:'#d9a37c', hairColor:'#6d4c41' },
+  { hair:'braid', accessory:'none', build:'tall', face:'neutral', headShape:'oval', skin:'#b97a56', hairColor:'#3e2723' },
+  { hair:'long', accessory:'none', build:'athletic', face:'stern', headShape:'square', skin:'#8d5a3c', hairColor:'#212121' },
+  { hair:'curl-long', accessory:'none', build:'average', face:'smile', headShape:'round', skin:'#f0d2b6', hairColor:'#4e342e' },
+  { hair:'wave', accessory:'none', build:'tall', face:'smirk', headShape:'square', skin:'#c98d66', hairColor:'#212121' },
+  { hair:'braid', accessory:'none', build:'petite', face:'soft', headShape:'round', skin:'#e0b18a', hairColor:'#8d6e63' },
+  { hair:'curl-long', accessory:'none', build:'athletic', face:'neutral', headShape:'oval', skin:'#7a4f35', hairColor:'#3e2723' },
 ];
 
 // Named special characters that create memorable moments
@@ -857,10 +857,10 @@ function getCustomerVisualProfile(gender, specialName) {
       'Business Bob': { hair:'part', accessory:'none', build:'tall', face:'stern', headShape:'oval', skin:'#b97a56', hairColor:'#212121' },
       'Weekend Warrior': { hair:'visor', accessory:'none', build:'athletic', face:'soft', headShape:'round', skin:'#e0b18a', hairColor:'#6d4c41' },
       'Trucker Tom': { hair:'beanie', accessory:'none', build:'stocky', face:'neutral', headShape:'square', skin:'#8d5a3c', hairColor:'#3e2723' },
-      'Soccer Mom': { hair:'pony', accessory:'none', build:'athletic', face:'neutral', headShape:'oval', skin:'#d9a37c', hairColor:'#5d4037' },
-      'Tourist Tina': { hair:'visor', accessory:'none', build:'petite', face:'smile', headShape:'round', skin:'#f2c39b', hairColor:'#8d6e63' },
-      'Snack Sally': { hair:'bob', accessory:'none', build:'average', face:'smile', headShape:'round', skin:'#f0d2b6', hairColor:'#6d4c41' },
-      'Road Queen': { hair:'curl', accessory:'none', build:'tall', face:'smirk', headShape:'square', skin:'#b97a56', hairColor:'#212121' },
+      'Soccer Mom': { hair:'long', accessory:'none', build:'athletic', face:'neutral', headShape:'oval', skin:'#d9a37c', hairColor:'#5d4037' },
+      'Tourist Tina': { hair:'wave', accessory:'none', build:'petite', face:'smile', headShape:'round', skin:'#f2c39b', hairColor:'#8d6e63' },
+      'Snack Sally': { hair:'braid', accessory:'none', build:'average', face:'smile', headShape:'round', skin:'#f0d2b6', hairColor:'#6d4c41' },
+      'Road Queen': { hair:'curl-long', accessory:'none', build:'tall', face:'smirk', headShape:'square', skin:'#b97a56', hairColor:'#212121' },
     };
     if (specials[specialName]) return specials[specialName];
   }
@@ -4609,6 +4609,7 @@ function spawnCustomer() {
   game.people.push({
     id: ++game.personId,
     icon: icon,
+    gender: genderFilter,
     x: exitDoor.left - rect.left + 15,
     y: exitDoor.top - rect.top + 20,
     phase: 'enter',
@@ -6044,6 +6045,8 @@ function renderPeople() {
     const isWalking = p.phase !== 'washing' && p.phase !== 'entering';
     el.classList.toggle('walking', isWalking);
     el.classList.toggle('entering', p.phase === 'entering');
+    el.classList.toggle('female', p.gender === 'female');
+    el.classList.toggle('male', p.gender !== 'female');
     el.classList.toggle('urgent', p.urgent);
     el.classList.toggle('vip', p.vip);
     el.classList.toggle('distracted', p.distracted);

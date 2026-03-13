@@ -770,6 +770,22 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .hair-curl::before{left:2px}
 .hair-curl::after{right:2px}
 .hair-spike{top:2px;left:7px;width:24px;height:10px;clip-path:polygon(0 100%,12% 35%,24% 88%,38% 16%,54% 82%,70% 12%,84% 78%,100% 28%,100% 100%)}
+.hair-long{top:1px;left:6px;width:28px;height:16px;border-radius:14px 14px 8px 8px}
+.hair-long::before,.hair-long::after{content:'';position:absolute;top:8px;width:8px;height:20px;background:var(--hair-color);border-radius:0 0 8px 8px}
+.hair-long::before{left:0}
+.hair-long::after{right:0}
+.hair-wave{top:1px;left:5px;width:30px;height:15px;border-radius:14px 14px 9px 9px}
+.hair-wave::before,.hair-wave::after{content:'';position:absolute;top:9px;width:9px;height:19px;background:var(--hair-color);border-radius:0 0 9px 9px}
+.hair-wave::before{left:1px;transform:rotate(6deg)}
+.hair-wave::after{right:1px;transform:rotate(-6deg)}
+.hair-braid{top:1px;left:6px;width:28px;height:14px;border-radius:14px 14px 7px 7px}
+.hair-braid::before,.hair-braid::after{content:'';position:absolute;top:10px;width:6px;height:20px;background:repeating-linear-gradient(180deg,var(--hair-color) 0 4px,color-mix(in srgb,var(--hair-color) 72%, #111) 4px 8px);border-radius:0 0 6px 6px}
+.hair-braid::before{left:2px}
+.hair-braid::after{right:2px}
+.hair-curl-long{top:1px;left:5px;width:30px;height:16px;border-radius:15px 15px 9px 9px}
+.hair-curl-long::before,.hair-curl-long::after{content:'';position:absolute;top:10px;width:10px;height:18px;background:var(--hair-color);border-radius:0 0 10px 10px}
+.hair-curl-long::before{left:0;clip-path:polygon(15% 0,100% 0,88% 100%,0 100%)}
+.hair-curl-long::after{right:0;clip-path:polygon(0 0,85% 0,100% 100%,12% 100%)}
 .person-headgear{display:none}
 .accessory-none{display:none}
 .accessory-glasses{top:13px;left:7px;width:22px;height:8px;border-top:2px solid #263238}
@@ -792,13 +808,28 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .person-arm.right{right:0;transform:rotate(-18deg)}
 .person-torso{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:26px;height:24px;background:linear-gradient(180deg,var(--shirt-top) 0%,var(--shirt-bot) 100%);border-radius:10px 10px 6px 6px;z-index:2;border:2px solid var(--shirt-border);box-shadow:inset 0 2px 0 rgba(255,255,255,0.18),0 2px 4px rgba(0,0,0,0.28)}
 .person-torso::after{content:'';position:absolute;top:3px;left:50%;transform:translateX(-50%);width:10px;height:3px;border-radius:3px;background:rgba(255,255,255,0.18)}
+.person.female .person-head-wrap{height:50px}
+.person.female .person-head{top:6px;z-index:4}
+.person.female .person-hair{z-index:3}
+.person.male .person-torso{border-radius:10px 10px 6px 6px}
+.person.female .person-torso{width:22px;height:22px;border-radius:10px 10px 4px 4px;clip-path:polygon(18% 0,82% 0,100% 100%,0 100%)}
+.person.female .person-torso::before{content:'';position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);width:30px;height:13px;background:linear-gradient(180deg,color-mix(in srgb,var(--shirt-top) 92%, #ffffff),var(--shirt-bot));border:2px solid var(--shirt-border);border-top:none;border-radius:0 0 12px 12px;clip-path:polygon(10% 0,90% 0,100% 100%,0 100%)}
+.person.female .person-arms{width:32px}
+.person.female .person-arm.left{left:1px}
+.person.female .person-arm.right{right:1px}
 .person-torso.build-broad{width:30px}
 .person-torso.build-stocky{width:32px;height:23px}
 .person-torso.build-tall{height:28px}
 .person-torso.build-petite{width:22px;height:21px}
 .person-torso.build-athletic{width:27px;height:25px;clip-path:polygon(12% 0,88% 0,100% 100%,0 100%)}
+.person.female .person-torso.build-broad{width:24px}
+.person.female .person-torso.build-stocky{width:26px;height:22px}
+.person.female .person-torso.build-tall{height:25px}
+.person.female .person-torso.build-petite{width:20px;height:20px}
+.person.female .person-torso.build-athletic{width:23px;height:23px}
 .person-legs{position:absolute;bottom:0;width:22px;height:12px;display:flex;gap:4px;z-index:0}
 .person-leg{flex:1;background:linear-gradient(180deg,#4a4a4a,#333);border-radius:0 0 3px 3px;transition:transform 0.1s}
+.person.female .person-legs{width:18px;gap:3px}
 .person.walking{animation:none}
 .person.walking .person-head-wrap{animation:head-bob-centered 0.25s infinite}
 .person.walking .person-arm.left{animation:arm-swing-l 0.25s infinite}
