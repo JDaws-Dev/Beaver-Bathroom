@@ -1,6 +1,7 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:system-ui,sans-serif;background:#2d1f0f;color:#eee;overflow:hidden;height:100vh;height:100dvh;display:flex;justify-content:center;align-items:center;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
 button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-card{touch-action:manipulation;-webkit-touch-callout:none}
+#game-container,#play-area,#bathroom,#floor-area{touch-action:manipulation}
 #game-container{width:100%;max-width:800px;height:100vh;height:100dvh;max-height:900px;display:flex;flex-direction:column;position:relative}
 .screen{display:none;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;position:absolute;inset:0;padding:20px;text-align:center;opacity:0;transition:opacity 0.25s ease-out}
 .screen.active{display:flex;opacity:1}
@@ -607,6 +608,8 @@ linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.16) 46%,rgba(255,255,255
 repeating-linear-gradient(90deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08) 39px,rgba(0,0,0,0.08) 41px),
 repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08) 39px,rgba(0,0,0,0.08) 41px);pointer-events:none}
 #floor-area::after{content:'';position:absolute;bottom:0;left:0;right:0;height:8px;background:linear-gradient(180deg,#5d4037 0%,#3e2723 100%);box-shadow:inset 0 2px 0 rgba(255,255,255,0.1),0 -2px 4px rgba(0,0,0,0.2);pointer-events:none}
+#fixture-lane{position:absolute;left:12px;right:12px;bottom:0;height:104px;border-radius:18px 18px 0 0;background:linear-gradient(180deg,rgba(109,80,55,0.06) 0%,rgba(109,80,55,0.16) 58%,rgba(74,52,35,0.22) 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,0.2),inset 0 -10px 18px rgba(0,0,0,0.08);pointer-events:none;z-index:1}
+#fixture-lane::before{content:'';position:absolute;left:18px;right:18px;top:16px;height:2px;background:linear-gradient(90deg,transparent,rgba(255,248,220,0.45),transparent);opacity:0.75}
 /* Floor mascot beaver for Beaver Walk power-up */
 #mascot-walk{position:absolute;z-index:200;font-size:5em;background:#FFD700;padding:15px;border-radius:50%;border:5px solid #8b6342;box-shadow:0 8px 25px rgba(0,0,0,0.6)}
 #mascot-walk.hidden{display:none!important}
@@ -631,7 +634,6 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .floor-beaver .beaver-cheek.left{left:6px}
 .floor-beaver .beaver-cheek.right{right:6px}
 .person.distracted{animation:person-photo 0.6s ease-in-out infinite}
-.person.distracted .thought{display:block!important}
 /* When distracted AND walking (orbiting beaver), keep walking animations on legs/head */
 .person.walking.distracted{animation:person-photo 0.6s ease-in-out infinite}
 .person.walking.distracted .person-head-wrap{animation:head-bob-centered 0.25s infinite}
@@ -658,7 +660,13 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 @keyframes puddle-clean{to{transform:scale(0);opacity:0}}
 #sink-towel-area{position:absolute;bottom:0;left:50%;transform:translateX(-50%);display:flex;align-items:flex-end;gap:0;z-index:5}
 #sink-towel-area::before{content:'';position:absolute;left:50%;bottom:-2px;transform:translateX(-50%);width:176px;height:22px;background:linear-gradient(180deg,#8a6a4c,#5d4037);border:2px solid #4a2f24;border-bottom:none;border-radius:14px 14px 0 0;box-shadow:0 -2px 10px rgba(0,0,0,0.18),inset 0 2px 0 rgba(255,255,255,0.08);z-index:-1}
-#sinks-area{display:flex;gap:12px;padding:8px 15px;background:linear-gradient(#5a4a38,#4a3a28);border-radius:10px 0 0 0;border:2px solid #6a5a48;border-bottom:none;border-right:none}
+#sink-towel-area[data-sinks="3"]{transform:translateX(calc(-50% - 24px))}
+#sink-towel-area[data-sinks="4"]{transform:translateX(calc(-50% - 48px))}
+#sink-towel-area[data-sinks="3"]::before{width:214px}
+#sink-towel-area[data-sinks="4"]::before{width:248px}
+#sinks-area{display:flex;gap:12px;padding:8px 15px;background:linear-gradient(#5a4a38,#4a3a28);border-radius:10px 0 0 0;border:2px solid #6a5a48;border-bottom:none;border-right:none;box-shadow:0 -5px 12px rgba(0,0,0,0.12)}
+#sinks-area[data-sinks="3"]{gap:10px;padding:8px 13px}
+#sinks-area[data-sinks="4"]{gap:8px;padding:8px 11px}
 .sink{width:48px;height:42px;background:linear-gradient(#e8e8e8,#c0c0c0);border:3px solid #888;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:transform 0.15s cubic-bezier(0.34,1.56,0.64,1)}
 .sink:hover{transform:scale(1.1)}
 .sink:active{transform:scale(0.95)}
@@ -666,8 +674,9 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .sink.dirty .sink-bowl{background:#ffcc80;animation:pulse-dirty 0.5s infinite alternate}
 .sink.cleaning .sink-bowl{background:#81d4fa}
 .sink-label{font-size:0.45em;color:#333;font-weight:bold;margin-top:2px}
-#exit-door{position:absolute;bottom:0;right:10px;width:84px;height:110px;pointer-events:none;z-index:7}
-#exit-door::before{content:'';position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);width:98px;height:18px;background:linear-gradient(180deg,#7a6149,#4a3426);border:2px solid #3b2418;border-bottom:none;border-radius:14px 14px 0 0;box-shadow:0 -2px 8px rgba(0,0,0,0.16);z-index:0}
+#exit-door{position:absolute;bottom:0;right:10px;width:92px;height:116px;pointer-events:none;z-index:7}
+#exit-door::before{content:'';position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);width:108px;height:18px;background:linear-gradient(180deg,#7a6149,#4a3426);border:2px solid #3b2418;border-bottom:none;border-radius:14px 14px 0 0;box-shadow:0 -2px 8px rgba(0,0,0,0.16);z-index:0}
+#floor-area[data-sinks="4"] #exit-door{right:8px}
 .exit-door-frame{position:absolute;inset:0;background:linear-gradient(180deg,#5d4636,#332114);border:4px solid #241409;border-bottom:none;border-radius:12px 12px 0 0;box-shadow:0 -3px 12px rgba(0,0,0,0.22),inset 0 2px 0 rgba(255,255,255,0.06);overflow:visible}
 .exit-door-panel{position:absolute;inset:6px 8px 0 8px;background:repeating-linear-gradient(90deg,#cfb07a 0,#d9bd88 3px,#bd975b 6px,#cfb07a 9px),linear-gradient(180deg,#d4b87a 0%,#a67c52 55%,#825936 100%);background-blend-mode:overlay;border:3px solid #573823;border-bottom:none;border-radius:8px 8px 0 0;transform-origin:right center;transition:transform 0.36s cubic-bezier(0.34,1.2,0.64,1),filter 0.2s ease;box-shadow:inset 2px 0 7px rgba(0,0,0,0.24),inset -2px 0 5px rgba(255,255,255,0.15)}
 .exit-door-panel::before{content:'';position:absolute;left:50%;top:14px;transform:translateX(-50%);width:28px;height:8px;border-radius:4px;background:linear-gradient(180deg,#4e342e,#2f2018);box-shadow:0 2px 4px rgba(0,0,0,0.3)}
@@ -879,15 +888,6 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .person.entering{opacity:0;transform:scale(0.5)}
 .person .patience-bar{position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);width:32px;height:6px;background:#222;border-radius:4px;overflow:hidden;border:2px solid #111;box-shadow:inset 0 1px 2px rgba(0,0,0,0.5)}
 .person .patience-fill{height:100%;transition:width 0.1s,background 0.3s;border-radius:2px}
-.person .thought{position:absolute;top:-42px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#fff,#f0f0f0);color:#333;padding:5px 10px;border-radius:12px;font-size:0.6em;font-weight:600;white-space:nowrap;opacity:0;transition:opacity 0.2s,transform 0.2s;box-shadow:0 3px 8px rgba(0,0,0,0.35);border:2px solid #ddd;z-index:20}
-.person .thought::after{content:'';position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:#f0f0f0}
-.person .thought.mood-urgent{background:linear-gradient(180deg,#ffcdd2,#ef9a9a);border-color:#e53935;color:#b71c1c}
-.person .thought.mood-urgent::after{border-top-color:#ef9a9a}
-.person .thought.mood-bad{background:linear-gradient(180deg,#fff3e0,#ffe0b2);border-color:#e65100;color:#bf360c}
-.person .thought.mood-bad::after{border-top-color:#ffe0b2}
-.person .thought.mood-good{background:linear-gradient(180deg,#e8f5e9,#c8e6c9);border-color:#43a047;color:#1b5e20}
-.person .thought.mood-good::after{border-top-color:#c8e6c9}
-.person.impatient .thought{opacity:1;animation:thought-bounce 0.3s ease-out}
 .person.urgent .person-body{animation:urgent-shake 0.15s infinite}
 .person.urgent .person-face{filter:drop-shadow(0 0 4px rgba(229,57,53,0.35))}
 .person.urgent .person-eyes span{background:#7a2e2e;transform:scaleY(0.8)}
@@ -925,7 +925,6 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 @keyframes greet-bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-2px)}}
 @keyframes interaction-pop{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
 @keyframes interaction-head{0%{transform:translateX(-50%) scale(1)}40%{transform:translateX(-50%) scale(1.08)}100%{transform:translateX(-50%) scale(1)}}
-@keyframes thought-bounce{0%{transform:translateX(-50%) scale(0.8)}50%{transform:translateX(-50%) scale(1.1)}100%{transform:translateX(-50%) scale(1)}}
 @keyframes happy-bounce{0%{transform:scale(1)}30%{transform:scale(1.15)}60%{transform:scale(0.95)}100%{transform:scale(1)}}
 @keyframes disgust-recoil{0%{transform:translateX(0)}30%{transform:translateX(-5px)}100%{transform:translateX(0)}}
 /* Task panel - Clipboard/Work Order aesthetic */
@@ -1133,10 +1132,17 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .stall-body{width:48px;height:68px}
 .stall-light{width:14px;height:14px}
 .stall-num{font-size:0.6em}
+#fixture-lane{left:8px;right:8px;height:92px}
 #sinks-area{gap:8px;padding:6px 10px}
+#sinks-area[data-sinks="3"]{gap:7px;padding:6px 8px}
+#sinks-area[data-sinks="4"]{gap:5px;padding:6px 7px}
+#sink-towel-area[data-sinks="3"]{transform:translateX(calc(-50% - 16px))}
+#sink-towel-area[data-sinks="4"]{transform:translateX(calc(-50% - 28px))}
+#sink-towel-area[data-sinks="3"]::before{width:196px}
+#sink-towel-area[data-sinks="4"]::before{width:214px}
 .sink{width:52px;height:46px;min-width:44px;min-height:44px}
 #towels{width:52px;height:64px;min-width:44px}.towel-sheet{width:22px;height:9px}.towel-sheet:first-child{width:24px}
-#exit-door{width:66px;height:86px}
+#exit-door{width:74px;height:92px}
 .exit-door-panel::after{top:44px;height:20px}
 .exit-door-marquee{top:-14px;min-width:46px;font-size:0.52em;padding:2px 6px}
 #task-panel{padding:12px 14px;max-width:90%}
@@ -1229,11 +1235,18 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .stall-num{font-size:0.55em}
 .stall-door::after{width:6px;height:20px;right:4px}
 #floor-area{background-size:32px 32px}
+#fixture-lane{left:6px;right:6px;height:78px}
 #sinks-area{gap:4px;padding:4px 6px}
+#sinks-area[data-sinks="3"]{gap:4px;padding:4px 5px}
+#sinks-area[data-sinks="4"]{gap:3px;padding:4px 4px}
+#sink-towel-area[data-sinks="3"]{transform:translateX(calc(-50% - 10px))}
+#sink-towel-area[data-sinks="4"]{transform:translateX(calc(-50% - 18px))}
+#sink-towel-area[data-sinks="3"]::before{width:176px}
+#sink-towel-area[data-sinks="4"]::before{width:188px}
 .sink{width:44px;height:38px}
 .sink-bowl{width:26px;height:10px}
 #towels{width:42px;height:48px}.towel-sheet{width:18px;height:8px}.towel-sheet:first-child{width:20px}
-#exit-door{width:58px;height:70px}
+#exit-door{width:66px;height:78px}
 .exit-door-panel{inset:5px 6px 0 6px}
 .exit-door-panel::before{top:10px;width:20px;height:6px}
 .exit-door-panel::after{top:34px;left:7px;width:7px;height:16px}
@@ -1254,7 +1267,6 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .person-torso{width:18px;height:14px}
 .person-legs{width:14px;height:8px}
 .person .patience-bar{width:24px;height:4px;bottom:-10px}
-.person .thought{font-size:0.45em;padding:3px 6px;top:-32px}
 .person.special .special-name{bottom:-22px;font-size:0.28em;padding:1px 4px}
 .float-msg{font-size:1em}
 .stats-grid{gap:8px;max-width:280px}

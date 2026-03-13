@@ -356,8 +356,8 @@ const CONFIG = {
   ],
   patience: 10000,
   walkSpeed: 120,
-  baseTaskTime: 1200,  // Base time per task (ms worth of progress needed)
-  clickBoost: 50,      // Each mash tap reduces time by this much
+  baseTaskTime: 980,   // Base time per task (ms worth of progress needed)
+  clickBoost: 68,      // Each mash tap reduces time by this much
   sinkCleanTime: 400,
   rushChance: 0.15,    // Chance of rush hour per shift
   inspectorChance: 0.25,  // Chance of inspector visit per shift
@@ -377,13 +377,13 @@ const CONFIG = {
   towelSkipChance: 0.3,  // 30% of customers skip towel drying
   // Mess spawn chances per source (base values, scaled by shift)
   messChance: {
-    sinkSplash: 0.03,    // Water puddle after sink use
-    stallAccident: 0.08, // Pee puddle on angry leave
-    walkwayRandom: 0.008, // Random mess during rush
-    vomitSick: 0.10,     // Vomit from sick customers
+    sinkSplash: 0.018,   // Water puddle after sink use
+    stallAccident: 0.045, // Pee puddle on angry leave
+    walkwayRandom: 0.0045, // Random mess during rush
+    vomitSick: 0.06,     // Vomit from sick customers
   },
   // Mess frequency scales up per shift: shift 0 = 0, shift 1 = 0.3, ... shift 5 = 1.0
-  messScaleByShift: [0, 0.3, 0.5, 0.7, 0.85, 1.0],
+  messScaleByShift: [0, 0.18, 0.3, 0.45, 0.62, 0.78],
 };
 
 // MESS_TYPES: Different mess varieties with severity and cleanup time
@@ -3335,6 +3335,30 @@ function init() {
   updateExitDoorDOM();
 }
 
+function setupGameTouchGuards() {
+  if (setupGameTouchGuards.initialized) return;
+  setupGameTouchGuards.initialized = true;
+
+  let lastTouchEnd = 0;
+  const guardedSelectors = ['#play-area', '#floor-area', '#bathroom', '#game-container'];
+
+  const preventDoubleTapZoom = (e) => {
+    const target = e.target;
+    const tappedGameSurface = target instanceof Element && guardedSelectors.some((selector) => target.closest(selector));
+    if (!tappedGameSurface) return;
+
+    const now = Date.now();
+    if (now - lastTouchEnd < 320) {
+      e.preventDefault();
+    }
+    lastTouchEnd = now;
+  };
+
+  document.addEventListener('touchend', preventDoubleTapZoom, { passive: false });
+  document.addEventListener('gesturestart', (e) => e.preventDefault(), { passive: false });
+}
+setupGameTouchGuards.initialized = false;
+
 function getCustomers() {
   return game.gender === 'male' ? CUSTOMERS_MALE : CUSTOMERS_FEMALE;
 }
@@ -3657,9 +3681,15 @@ function buildStalls() {
 
 function buildSinks() {
   const container = $('sinks-area');
+  const platform = $('sink-towel-area');
+  const floorArea = $('floor-area');
   container.innerHTML = '';
   const cfg = getShiftConfig();
   game.sinks = [];
+
+  if (platform) platform.dataset.sinks = String(cfg.sinks);
+  if (container) container.dataset.sinks = String(cfg.sinks);
+  if (floorArea) floorArea.dataset.sinks = String(cfg.sinks);
 
   for (let i = 0; i < cfg.sinks; i++) {
     game.sinks.push({dirty: false, cleaning: false, progress: 0});
@@ -3879,6 +3909,7 @@ function startEndlessMode() {
     return;
   }
 
+  setupGameTouchGuards();
   init();
   game.mode = 'endless';
   game.shift = 5; // Use Shift 6 config (hardest)
@@ -4255,6 +4286,7 @@ function startShift() {
 
   buildStalls();
   buildSinks();
+  setupGameTouchGuards();
   hideTaskPanel();
   updateHUD();
   showScreen('game-screen');
@@ -4496,7 +4528,7 @@ function update(dt) {
       hideTaskPanel();
     } else {
       const speed = game.effects.speed > 0 ? 2 : 1;
-      game.taskProgress += dt * 0.3 * speed; // Slow auto-progress
+      game.taskProgress += dt * 0.4 * speed; // Modest auto-progress so stalls feel less click-heavy
 
       if (game.taskProgress >= getEffectiveTaskTime()) {
         completeTask();
@@ -4712,15 +4744,15 @@ function spawnCustomer() {
   if (floor && mScale > 0) {
     const floorRect = floor.getBoundingClientRect();
     // Muddy boots on entry (messy customers or random chance)
-    if (rand() < (messiness === 1 ? 0.2 : 0.03) * mScale) {
+    if (rand() < (messiness === 1 ? 0.11 : 0.018) * mScale) {
       spawnPuddle(p.x + rnd(-20, 20), floorRect.height - rnd(10, floorRect.height * 0.6), 'muddy');
     }
     // Urgent customers might have a pee accident on entry
-    if (isUrgent && rand() < 0.05 * mScale) {
+    if (isUrgent && rand() < 0.028 * mScale) {
       spawnPuddle(p.x + rnd(-25, 25), floorRect.height - rnd(20, floorRect.height * 0.6), 'pee');
     }
     // Small chance of vomit on arrival (sick travelers)
-    if (rand() < (messiness === 1 ? 0.03 : 0.01) * mScale) {
+    if (rand() < (messiness === 1 ? CONFIG.messChance.vomitSick * 0.3 : CONFIG.messChance.vomitSick * 0.12) * mScale) {
       spawnPuddle(p.x + rnd(-20, 20), floorRect.height - rnd(15, floorRect.height * 0.6), 'vomit');
     }
   }
@@ -5347,7 +5379,7 @@ function customerLeaves(stallIdx) {
   // Average customers (0): normal behavior
   // Messy customers (1): higher chance of each task, likely 3-4 tasks
   const messiness = stall.messiness || 0;
-  const chanceModifier = messiness === -1 ? 0.4 : (messiness === 1 ? 1.5 : 1);
+  const chanceModifier = messiness === -1 ? 0.35 : (messiness === 1 ? 1.15 : 0.92);
 
   // Occasional comedy sound (8% chance for fart, higher for messy customers)
   if (rand() < (messiness === 1 ? 0.15 : 0.08)) {
@@ -5357,10 +5389,10 @@ function customerLeaves(stallIdx) {
   stall.tasks = TASKS.filter(t => rand() < (t.chance * chanceModifier)).map(t => ({...t, done: false}));
 
   // Ensure minimum tasks based on messiness
-  if (messiness === 1 && stall.tasks.length < 3) {
-    // Messy customers: guarantee at least 3 tasks
+  if (messiness === 1 && stall.tasks.length < 2) {
+    // Messy customers still create more work, but no longer force 3-click marathons
     const remaining = TASKS.filter(t => !stall.tasks.find(st => st.id === t.id));
-    while (stall.tasks.length < 3 && remaining.length > 0) {
+    while (stall.tasks.length < 2 && remaining.length > 0) {
       const idx = Math.floor(rand() * remaining.length);
       stall.tasks.push({...remaining.splice(idx, 1)[0], done: false});
     }
@@ -5384,7 +5416,7 @@ function customerLeaves(stallIdx) {
     person.phase = 'exitStall';
 
     // Chance of floor mess when exiting - messy customers more likely, scaled by shift
-    const baseMessChance = person.messiness === 1 ? 0.14 : (person.messiness === -1 ? 0.02 : 0.06);
+    const baseMessChance = person.messiness === 1 ? 0.08 : (person.messiness === -1 ? 0.015 : 0.035);
     if (rand() < baseMessChance * getMessScale()) {
       const messRoll = rand();
       const messType = messRoll < 0.4 ? 'pee' : (messRoll < 0.75 ? 'vomit' : 'muddy');
@@ -5488,9 +5520,9 @@ function spawnRandomMess() {
   // Random mess type weighted by frequency
   const roll = rand();
   let type = 'water';
-  if (roll < 0.15) type = 'muddy';
-  else if (roll < 0.35) type = 'vomit';
-  else if (roll < 0.65) type = 'pee';
+  if (roll < 0.22) type = 'muddy';
+  else if (roll < 0.36) type = 'vomit';
+  else if (roll < 0.52) type = 'pee';
   spawnPuddle(x, y, type);
 }
 
@@ -5552,7 +5584,7 @@ function clickPuddle(id) {
   }
 
   // Add progress on each click
-  const boost = game.effects.speed > 0 ? 80 : 50;
+  const boost = game.effects.speed > 0 ? 96 : 64;
   puddle.cleanProgress += boost;
   playMop();
   haptic('light');
@@ -6142,7 +6174,7 @@ function renderPeople() {
           <div class="person-legs"><div class="person-leg"></div><div class="person-leg"></div></div>
         </div>
         <div class="patience-bar"><div class="patience-fill"></div></div>
-        <div class="thought"></div>`;
+      `;
       el.addEventListener('click', (e) => {
         e.stopPropagation();
         interactWithCustomer(parseInt(el.dataset.id, 10));
@@ -6223,9 +6255,8 @@ function renderPeople() {
       el.appendChild(nameEl);
     }
 
-    // Hide special name when thought bubble is active (avoid clutter)
     const nameEl = el.querySelector('.special-name');
-    if (nameEl) nameEl.style.display = p.thoughtTimer > 0 ? 'none' : '';
+    if (nameEl) nameEl.style.display = '';
 
     // Mood states based on thoughts
     const isHappy = p.thought && (THOUGHTS.happy.includes(p.thought) ||
@@ -6235,17 +6266,7 @@ function renderPeople() {
     el.classList.toggle('disgusted', isDisgusted && p.thoughtTimer > 0);
 
     const patienceRatio = p.patience / p.maxPatience;
-    el.classList.toggle('impatient', p.thoughtTimer > 0);
-
-    // Thought bubble with mood color
-    const thoughtEl = el.querySelector('.thought');
-    if (p.thoughtTimer > 0) {
-      thoughtEl.textContent = p.thought;
-      thoughtEl.className = 'thought mood-' + (p.thoughtMood || 'neutral');
-    } else {
-      thoughtEl.textContent = '';
-      thoughtEl.className = 'thought';
-    }
+    el.classList.toggle('impatient', false);
 
     // Only show patience bar when patience is draining
     const patienceBar = el.querySelector('.patience-bar');
@@ -8374,6 +8395,7 @@ function updateReadyUI() {
 
 // Start multiplayer game
 function startMPGame() {
+  setupGameTouchGuards();
   init();
   game.mode = 'multiplayer';
   game.isMultiplayer = true;
