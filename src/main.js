@@ -4715,6 +4715,8 @@ function getLocalObstacleRect(el, floorRect, padX = 0, padTop = 0, padBottom = 0
 
 const CUSTOMER_BODY_HEIGHT = 64;
 const CUSTOMER_BODY_WIDTH = 50;
+const SINK_STAND_OFFSET = 34;
+const TOWEL_STAND_OFFSET = 32;
 
 function pushCustomerOutOfRect(p, obstacle) {
   if (!obstacle) return;
@@ -5155,7 +5157,7 @@ function updatePeople(dt) {
 
       const sinkRect = sinkEl.getBoundingClientRect();
       const tx = sinkRect.left - floorRect.left + sinkRect.width/2 - 12;
-      const ty = getFixtureStandY(sinkEl, floorRect, 48);
+      const ty = getFixtureStandY(sinkEl, floorRect, SINK_STAND_OFFSET);
       const dx = tx - p.x, dy = ty - p.y;
       const dist = Math.sqrt(dx*dx + dy*dy);
 
@@ -5203,7 +5205,7 @@ function updatePeople(dt) {
           playCustomerHappy();
           p.thoughtTimer = 1500;
           const sinkEl = $('sinks-area').children[p.sinkIdx];
-          p.y = Math.min(p.y, getFixtureStandY(sinkEl, floorRect, 48));
+          p.y = Math.min(p.y, getFixtureStandY(sinkEl, floorRect, SINK_STAND_OFFSET));
           p.phase = 'exit';
         } else {
           // Walk to towel dispenser
@@ -5215,7 +5217,7 @@ function updatePeople(dt) {
       const towelEl = $('towels');
       const towelRect = towelEl.getBoundingClientRect();
       const tx = towelRect.left - floorRect.left + towelRect.width/2;
-      const ty = getFixtureStandY(towelEl, floorRect, 48);
+      const ty = getFixtureStandY(towelEl, floorRect, TOWEL_STAND_OFFSET);
       const dx = tx - p.x, dy = ty - p.y;
       const dist = Math.sqrt(dx*dx + dy*dy);
 
