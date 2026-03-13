@@ -1694,6 +1694,6 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .pow-timer{position:absolute;bottom:-2px;right:-2px;background:#e53935;color:#fff;font-size:0.6em;font-weight:bold;padding:1px 4px;border-radius:6px;min-width:18px;text-align:center;line-height:1.3;z-index:3}
 /* Floating coin particle */
 .float-coin{position:absolute;width:18px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:999px;background:radial-gradient(circle at 35% 35%,#fff2a6 0%,#ffd54f 38%,#f4b400 72%,#c68400 100%);border:2px solid #8c5a00;color:#6a4300;font-size:0.7em;font-weight:900;line-height:1;box-shadow:0 2px 5px rgba(0,0,0,0.28),inset 0 1px 0 rgba(255,255,255,0.45);animation:coin-float 0.8s ease-out forwards;pointer-events:none;z-index:100}
-@keyframes coin-float{0%{transform:translateY(0) scale(1);opacity:1}50%{transform:translateY(-25px) scale(1.2);opacity:0.9}100%{transform:translateY(-50px) scale(0.6);opacity:0}}
+@keyframes coin-float{0%{transform:translate(0,0) scale(1);opacity:1}50%{transform:translate(6px,-22px) scale(1.15);opacity:0.95}100%{transform:translate(12px,-48px) scale(0.7);opacity:0}}
 /* Combo scale transition */
 #combo{transition:transform 0.15s ease-out,color 0.2s;transform-origin:center}

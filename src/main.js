@@ -3553,8 +3553,8 @@ function floatCoin(x, y) {
   const el = document.createElement('div');
   el.className = 'float-coin';
   el.textContent = '$';
-  el.style.left = (x + rnd(-15, 15)) + 'px';
-  el.style.top = y + 'px';
+  el.style.left = (x + rnd(-6, 6)) + 'px';
+  el.style.top = (y - 22) + 'px';
   $('play-area').appendChild(el);
   setTimeout(() => el.remove(), 800);
 }
