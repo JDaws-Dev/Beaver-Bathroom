@@ -3553,8 +3553,8 @@ function floatCoin(x, y) {
   const el = document.createElement('div');
   el.className = 'float-coin';
   el.textContent = '$';
-  el.style.left = (x + rnd(-6, 6)) + 'px';
-  el.style.top = (y - 22) + 'px';
+  el.style.left = (x + 14 + rnd(-4, 4)) + 'px';
+  el.style.top = (y + 2) + 'px';
   $('play-area').appendChild(el);
   setTimeout(() => el.remove(), 800);
 }
@@ -5328,7 +5328,10 @@ function updatePeople(dt) {
 
       if (dist < 20 && !p.frozen && game.exitDoorOpen) {
         // Tip only when the customer is actually leaving through the door.
-        if (!p.tipped && !p.angry && !p.steppedInPuddle) {
+        const dirtyStalls = getDirtyCount();
+        const dirtySinks = game.sinks ? game.sinks.filter(s => s.dirty).length : 0;
+        const bathroomCleanEnoughForTips = dirtyStalls === 0 && dirtySinks === 0;
+        if (!p.tipped && !p.angry && !p.steppedInPuddle && bathroomCleanEnoughForTips) {
           p.tipped = true;
           const baseTip = p.vip ? 3 : 1;
           const tipAmount = Math.floor(baseTip * getCoinBonus());
