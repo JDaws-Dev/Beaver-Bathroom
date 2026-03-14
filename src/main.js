@@ -3420,6 +3420,7 @@ function init() {
     spotlessChain: 0,
     spotlessRecoveries: 0,
     eventStats: createEmptyEventStats(),
+    rushCleanCount: 0,
     wasBathroomSpotless: true,
   };
 
@@ -3894,6 +3895,21 @@ function boostCustomerPatience(amount) {
     if (!p || typeof p.patience !== 'number' || typeof p.maxPatience !== 'number') return;
     p.patience = Math.min(p.maxPatience, p.patience + amount);
   });
+}
+
+function recordRushClean(x = 400, y = 180) {
+  if (!game.rushMode) return;
+  game.rushCleanCount = (game.rushCleanCount || 0) + 1;
+  if (game.rushCleanCount === 2) {
+    addScore(40);
+    game.rating = clamp(game.rating + 0.05, 0, 5);
+    floatMessage('RUSH SAVE! +40', x, y, 'combo');
+  } else if (game.rushCleanCount === 4) {
+    addScore(60);
+    game.rating = clamp(game.rating + 0.06, 0, 5);
+    floatMessage('WAVE CONTROL! +60', x, y, 'combo');
+    setBeaverMood('excited', 1200);
+  }
 }
 
 function checkSpotlessRecovery() {
@@ -4408,6 +4424,7 @@ function startShift() {
   game.spotlessChain = 0;
   game.spotlessRecoveries = 0;
   game.eventStats = createEmptyEventStats();
+  game.rushCleanCount = 0;
   game.wasBathroomSpotless = true;
   document.querySelectorAll('.puddle').forEach(el => el.remove());
 
@@ -4568,6 +4585,7 @@ function update(dt) {
     if (game.rushTimer <= 0 && !game.rushMode) {
       game.rushMode = true;
       game.rushDuration = 8000;
+      game.rushCleanCount = 0;
       $('rush-warning').style.display = 'block';
       playRush();
       screenShake();
@@ -4589,6 +4607,10 @@ function update(dt) {
       addScore(35);
       game.rating = clamp(game.rating + 0.08, 0, 5);
       boostCustomerPatience(350);
+      if (game.rushCleanCount >= 4) {
+        addScore(50);
+        floatMessage('BONUS CROWD CONTROL! +50', 400, 138, 'combo');
+      }
       floatMessage('WAVE CLEARED! +35', 400, 165, 'good');
       $('rush-warning').style.display = 'none';
       $('rush-warning').textContent = '🚌 MOTORCOACH WAVE INCOMING! 🚌';
@@ -4716,6 +4738,7 @@ function update(dt) {
         addScore(25);
         playTaskComplete();
         floatMessage('+25', 400, 350, 'good');
+        recordRushClean(400, 330);
       }
       updateSinkDOM(i);
     }
@@ -5843,11 +5866,13 @@ function spawnInspector() {
   game.inspector = {
     x: exitDoor.left - rect.left + 15,
     y: exitDoor.top - rect.top + 20,
-    phase: 'enter',        // enter, inspect, counting, leave
-    currentStall: -1,      // Which stall is being checked
-    dirtyCount: 0,         // How many dirty stalls found
-    inspectTimer: 0,       // Time spent at current stall
-    countdownTimer: 0,     // Time before showing results
+    phase: 'enter',        // enter, inspect-stalls, inspect-sinks, counting, leave
+    currentStall: -1,
+    currentSink: -1,
+    dirtyStalls: 0,
+    dirtySinks: 0,
+    inspectTimer: 0,
+    countdownTimer: 0,
   };
 
   // Remove existing inspector element if any
@@ -5887,7 +5912,7 @@ function updateInspector(dt) {
     const dist = Math.sqrt(dx*dx + dy*dy);
 
     if (dist < 10) {
-      inspector.phase = 'inspect';
+      inspector.phase = 'inspect-stalls';
       inspector.currentStall = 0;
       inspector.inspectTimer = 0;
     } else {
@@ -5895,15 +5920,15 @@ function updateInspector(dt) {
       inspector.y += (dy / dist) * speed;
     }
   }
-  else if (inspector.phase === 'inspect') {
+  else if (inspector.phase === 'inspect-stalls') {
     // Move to current stall and check it
     const stallRow = $('stalls-row');
     const stallEl = stallRow.children[inspector.currentStall];
 
     if (!stallEl) {
-      // Done with all stalls, show results
-      inspector.phase = 'counting';
-      inspector.countdownTimer = 1500;
+      inspector.phase = 'inspect-sinks';
+      inspector.currentSink = 0;
+      inspector.inspectTimer = 0;
       return;
     }
 
@@ -5920,7 +5945,7 @@ function updateInspector(dt) {
       if (inspector.inspectTimer >= 600) {
         const stall = game.stalls[inspector.currentStall];
         if (stall.state === 'dirty') {
-          inspector.dirtyCount++;
+          inspector.dirtyStalls++;
           floatMessage('❌', inspector.x + 20, inspector.y - 10, 'bad');
           playBad();
         } else if (stall.state === 'empty') {
@@ -5928,6 +5953,41 @@ function updateInspector(dt) {
         }
         // Move to next stall
         inspector.currentStall++;
+        inspector.inspectTimer = 0;
+      }
+    } else {
+      inspector.x += (dx / dist) * speed;
+      inspector.y += (dy / dist) * speed;
+    }
+  }
+  else if (inspector.phase === 'inspect-sinks') {
+    const sinksArea = $('sinks-area');
+    const sinkEl = sinksArea?.children?.[inspector.currentSink];
+
+    if (!sinkEl) {
+      inspector.phase = 'counting';
+      inspector.countdownTimer = 1500;
+      return;
+    }
+
+    const sinkRect = sinkEl.getBoundingClientRect();
+    const tx = sinkRect.left - floorRect.left + sinkRect.width / 2 - 12;
+    const ty = getFixtureStandY(sinkEl, floorRect, SINK_STAND_OFFSET) - 18;
+    const dx = tx - inspector.x, dy = ty - inspector.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (dist < 10) {
+      inspector.inspectTimer += dt;
+      if (inspector.inspectTimer >= 500) {
+        const sink = game.sinks[inspector.currentSink];
+        if (sink?.dirty) {
+          inspector.dirtySinks++;
+          floatMessage('🧼', inspector.x + 18, inspector.y - 10, 'bad');
+          playBad();
+        } else {
+          floatMessage('✓', inspector.x + 18, inspector.y - 10, 'good');
+        }
+        inspector.currentSink++;
         inspector.inspectTimer = 0;
       }
     } else {
@@ -5971,8 +6031,7 @@ function finishInspection() {
   const inspector = game.inspector;
   if (!inspector) return;
 
-  const dirtyCount = inspector.dirtyCount;
-  const totalStalls = game.stalls.length;
+  const dirtyCount = inspector.dirtyStalls + inspector.dirtySinks;
 
   if (dirtyCount === 0) {
     // Perfect inspection!
@@ -5989,11 +6048,12 @@ function finishInspection() {
     saveAchievementData();
     checkAchievements();
   } else {
-    // Penalty based on dirty stalls
+    // Penalty based on dirty fixtures found
     game.eventStats.inspectionsFailed++;
     const ratingLoss = dirtyCount * CONFIG.inspectorPenalty;
     game.rating = clamp(game.rating - ratingLoss, 0, 5);
-    floatMessage('INSPECTION: -' + ratingLoss.toFixed(1) + '⭐ (' + dirtyCount + ' dirty)', 400, 200, 'bad');
+    const detail = `${inspector.dirtyStalls} stall${inspector.dirtyStalls === 1 ? '' : 's'}, ${inspector.dirtySinks} sink${inspector.dirtySinks === 1 ? '' : 's'}`;
+    floatMessage('INSPECTION: -' + ratingLoss.toFixed(1) + '⭐ (' + detail + ')', 400, 200, 'bad');
     playInspectorBad();
     screenShake();
     setBeaverMood('sad', 2000);
@@ -6617,6 +6677,7 @@ function completeTask() {
       const playRect = $('play-area').getBoundingClientRect();
       const x = rect.left - playRect.left + rect.width/2;
       const y = rect.top - playRect.top + 20;
+      recordRushClean(x, y);
 
       // Celebration animation on the stall
       stallEl.classList.remove('celebrate');
