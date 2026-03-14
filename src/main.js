@@ -6148,6 +6148,33 @@ function updateFightProgress(el) {
   if (pctEl) pctEl.textContent = pct + '%';
 }
 
+function updateFightZoneState(el, fight) {
+  if (!el || !fight) return;
+  el.classList.toggle('arguing', fight.phase === 'arguing');
+  el.classList.toggle('brawl', fight.phase === 'brawl');
+  el.classList.toggle('breakup', fight.phase === 'breakup');
+
+  const label = el.querySelector('.fight-label');
+  const subtitle = el.querySelector('.fight-subtitle');
+  const pctEl = el.querySelector('.fight-pct');
+  if (!label || !subtitle || !pctEl) return;
+
+  if (fight.phase === 'arguing') {
+    const secs = Math.max(1, Math.ceil(fight.argueTimer / 1000));
+    label.textContent = 'BREAK IT UP';
+    subtitle.textContent = `Stops the brawl in ${secs}s`;
+    pctEl.textContent = `${secs}s`;
+  } else if (fight.phase === 'brawl') {
+    const secs = Math.max(0, Math.ceil((fight.brawlMaxTime - fight.brawlTimer) / 1000));
+    label.textContent = 'BRAWL!';
+    subtitle.textContent = 'Rating is dropping';
+    pctEl.textContent = `${secs}s`;
+  } else if (fight.phase === 'breakup') {
+    label.textContent = 'SEPARATE THEM';
+    subtitle.textContent = fight.wasBrawl ? 'Recover the room' : 'Peacemaker bonus active';
+  }
+}
+
 function createFightZone() {
   const fight = game.fight;
   if (!fight) return;
@@ -6160,12 +6187,14 @@ function createFightZone() {
   const el = document.createElement('div');
   el.className = 'fight-zone';
   el.innerHTML = `
-    <div class="fight-label">👊 TAP HERE! 👊</div>
+    <div class="fight-label">BREAK IT UP</div>
+    <div class="fight-subtitle">Stop the brawl before it starts</div>
     <div class="fight-emojis"><span>😠</span><span>!?!</span><span>😠</span></div>
     <div class="fight-progress-bar"><div class="fight-progress-fill" style="width:0%"></div></div>
-    <div class="fight-pct">0%</div>`;
+    <div class="fight-pct">5s</div>`;
   el.style.left = (fight.x - 50) + 'px';
   el.style.top = (fight.y - 40) + 'px';
+  updateFightZoneState(el, fight);
 
   // Tap handler for breaking up the fight
   const onTap = (e) => {
@@ -6275,11 +6304,9 @@ function updateFight(dt) {
       fight.brawlTimer = 0;
       fight.wasBrawl = true;
       screenShake(1.5);
-
       if (emojis) emojis.innerHTML = '<span>🤜</span><span>💥</span><span>🤛</span>';
-      const label = el.querySelector('.fight-label');
-      if (label) label.textContent = '⚠️ BRAWL! TAP NOW!';
     }
+    updateFightZoneState(el, fight);
   }
 
   else if (fight.phase === 'brawl') {
@@ -6317,11 +6344,13 @@ function updateFight(dt) {
     // Slow auto-progress
     fight.breakupProgress += dt * 0.02;
     updateFightProgress(el);
+    updateFightZoneState(el, fight);
   }
 
   else if (fight.phase === 'breakup') {
     fight.breakupProgress += dt * 0.1;
     updateFightProgress(el);
+    updateFightZoneState(el, fight);
 
     if (fight.breakupProgress >= fight.breakupTarget) {
       finishFight(fight.wasBrawl || false);
@@ -6340,11 +6369,12 @@ function finishFight(wasBrawl) {
     game.eventStats.fightsStopped++;
     achievementStats.fightsWon = (achievementStats.fightsWon || 0) + 1;
     saveAchievementData();
-    addScore(CONFIG.fightBonus);
-    game.rating = clamp(game.rating + 0.2, 0, 5);
-    boostCustomerPatience(550);
-    floatMessage('FIGHT STOPPED! +' + CONFIG.fightBonus, fight.x, fight.y - 20, 'combo');
-    spawnConfetti(fight.x, fight.y, 8);
+    const peacemakerBonus = CONFIG.fightBonus + 35;
+    addScore(peacemakerBonus);
+    game.rating = clamp(game.rating + 0.25, 0, 5);
+    boostCustomerPatience(850);
+    floatMessage('PEACEMAKER! +' + peacemakerBonus, fight.x, fight.y - 20, 'combo');
+    spawnConfetti(fight.x, fight.y, 12);
     setBeaverMood('excited', 2000);
   } else {
     // Brawl happened - penalty

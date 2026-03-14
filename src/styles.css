@@ -1142,8 +1142,13 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .pause-btn{width:160px;padding:12px 16px;font-size:0.95em;border-radius:8px;cursor:pointer}
 .pause-btn.btn-help{background:linear-gradient(180deg,#5a4a38,#3d2814);border:2px solid #6d5a48;color:#c9a86c}
 #fight-warning{position:absolute;top:0;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#ff1744,#d50000);color:#fff;padding:10px 24px;border-radius:20px;font-size:1em;font-weight:bold;display:none;z-index:100;animation:announcement-pulse 0.4s infinite;border:2px solid #ff8a80;box-shadow:0 4px 12px rgba(0,0,0,0.4);pointer-events:none;white-space:nowrap}
-.fight-zone{position:absolute;z-index:200;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;animation:fight-pulse 0.6s ease-in-out infinite;filter:drop-shadow(0 0 16px rgba(255,23,68,0.9));width:140px;height:110px;padding:10px;background:rgba(255,23,68,0.2);border-radius:20px;border:3px solid rgba(255,23,68,0.7);touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,23,68,0.3)}
-.fight-zone .fight-label{font-size:0.9em;font-weight:bold;color:#fff;background:linear-gradient(180deg,#ff1744,#d50000);padding:5px 14px;border-radius:12px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.4)}
+.fight-zone{position:absolute;z-index:200;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;animation:fight-pulse 0.6s ease-in-out infinite;filter:drop-shadow(0 0 16px rgba(255,23,68,0.9));width:144px;height:118px;padding:10px;background:rgba(255,23,68,0.2);border-radius:20px;border:3px solid rgba(255,23,68,0.7);touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,23,68,0.3)}
+.fight-zone.arguing{background:rgba(255,167,38,0.18);border-color:rgba(255,167,38,0.75);filter:drop-shadow(0 0 16px rgba(255,167,38,0.8))}
+.fight-zone.breakup{background:rgba(76,175,80,0.18);border-color:rgba(76,175,80,0.7);filter:drop-shadow(0 0 16px rgba(76,175,80,0.75))}
+.fight-zone .fight-label{font-size:0.85em;font-weight:bold;color:#fff;background:linear-gradient(180deg,#ff1744,#d50000);padding:5px 14px;border-radius:12px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.4)}
+.fight-zone.arguing .fight-label{background:linear-gradient(180deg,#ffb74d,#ef6c00)}
+.fight-zone.breakup .fight-label{background:linear-gradient(180deg,#66bb6a,#2e7d32)}
+.fight-zone .fight-subtitle{font-size:0.58em;font-weight:700;color:#fff3d1;letter-spacing:0.2px;text-shadow:0 1px 2px rgba(0,0,0,0.55)}
 .fight-zone .fight-progress-bar{width:120px;height:14px;background:rgba(0,0,0,0.7);border-radius:7px;overflow:hidden;border:2px solid rgba(255,255,255,0.5);box-shadow:0 2px 6px rgba(0,0,0,0.4)}
 .fight-zone .fight-progress-fill{height:100%;background:linear-gradient(90deg,#4caf50,#8bc34a);border-radius:7px;transition:width 0.05s;box-shadow:0 0 8px rgba(76,175,80,0.6)}
 .fight-zone .fight-emojis{font-size:2em;display:flex;gap:6px}
