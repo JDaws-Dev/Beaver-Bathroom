@@ -2944,12 +2944,11 @@ function createFloorMascotMarkup() {
       </div>
       <div class="mascot-arm left"></div>
       <div class="mascot-arm right"></div>
-      <div class="mascot-badge">MASCOT</div>
     </div>
   `;
 }
 
-// Mascot Walk System - mascot emerges from the exit, does a short parade, then heads back out
+// Mascot Walk System - mascot emerges from the exit, loops through open floor space, then heads back out
 function startMascotWalk() {
   const floorArea = $('floor-area');
   const floorRect = floorArea.getBoundingClientRect();
@@ -2971,8 +2970,15 @@ function startMascotWalk() {
   const doorCenterX = exitRect.left - floorLeft + exitRect.width / 2;
   const doorCenterY = exitRect.top - floorTop + exitRect.height * 0.52;
   const hiddenX = Math.min(floorRect.width + 40, doorCenterX + 70);
-  const paradeX = Math.max(floorRect.width * 0.56, floorRect.width - 235);
-  const showcaseX = floorRect.width * 0.42;
+  const upperLaneY = Math.max(78, floorRect.height * 0.28);
+  const midLaneY = Math.max(118, floorRect.height * 0.44);
+  const route = [
+    { x: Math.max(floorRect.width * 0.66, floorRect.width - 230), y: laneY, phase: 'entering' },
+    { x: Math.max(floorRect.width * 0.62, floorRect.width - 255), y: upperLaneY, phase: 'parade' },
+    { x: Math.max(floorRect.width * 0.34, 170), y: midLaneY, phase: 'parade' },
+    { x: Math.max(floorRect.width * 0.2, 96), y: upperLaneY + 18, phase: 'parade' },
+    { x: Math.max(floorRect.width * 0.42, 220), y: Math.max(100, floorRect.height * 0.34), phase: 'pose', hold: 1400 },
+  ];
 
   mascotEl.style.left = hiddenX + 'px';
   mascotEl.style.top = laneY + 'px';
@@ -2984,14 +2990,11 @@ function startMascotWalk() {
     y: laneY,
     homeX: hiddenX,
     homeY: laneY,
-    doorX: doorCenterX - 28,
-    doorY: doorCenterY,
-    paradeX,
-    showcaseX,
+    route,
+    routeIndex: 0,
     phase: 'door',
     phaseTimer: 520,
     speed: 145,
-    announceTimer: 0,
   };
 
   floatMessage('MASCOT PARADE!', floorRect.width * 0.5, 150, 'combo');
@@ -3032,30 +3035,37 @@ function updateMascotWalk(dt) {
     m.phaseTimer -= dt;
     mascotEl.className = 'floor-mascot stage-door';
     if (m.phaseTimer <= 0) {
-      m.phase = 'entering';
+      m.phase = m.route[0]?.phase || 'entering';
       m.phaseTimer = 0;
     }
-  } else if (m.phase === 'entering') {
+  } else if (m.phase === 'entering' || m.phase === 'parade') {
     watchingActive = true;
-    mascotEl.className = 'floor-mascot stage-enter';
-    if (moveToward(m.paradeX, m.homeY, m.speed)) {
-      m.phase = 'pose';
-      m.phaseTimer = 1800;
+    mascotEl.className = m.phase === 'entering' ? 'floor-mascot stage-enter' : 'floor-mascot stage-parade';
+    const waypoint = m.route[m.routeIndex];
+    if (waypoint && moveToward(waypoint.x, waypoint.y, m.speed)) {
+      if (waypoint.hold) {
+        m.phase = 'pose';
+        m.phaseTimer = waypoint.hold;
+      } else if (m.routeIndex < m.route.length - 1) {
+        m.routeIndex++;
+        m.phase = m.route[m.routeIndex].phase || 'parade';
+      } else {
+        m.phase = 'returning';
+        openExitDoor(1200);
+      }
     }
   } else if (m.phase === 'pose') {
     watchingActive = true;
     mascotEl.className = 'floor-mascot stage-pose';
     m.phaseTimer -= dt;
     if (m.phaseTimer <= 0) {
-      m.phase = 'parade';
-    }
-  } else if (m.phase === 'parade') {
-    watchingActive = true;
-    mascotEl.className = 'floor-mascot stage-parade';
-    if (moveToward(m.showcaseX, m.homeY, m.speed * 0.9)) {
-      m.phase = 'returning';
-      m.phaseTimer = 0;
-      openExitDoor(1200);
+      if (m.routeIndex < m.route.length - 1) {
+        m.routeIndex++;
+        m.phase = m.route[m.routeIndex].phase || 'parade';
+      } else {
+        m.phase = 'returning';
+        openExitDoor(1200);
+      }
     }
   } else if (m.phase === 'returning') {
     mascotEl.className = 'floor-mascot stage-return';

@@ -649,7 +649,6 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .floor-mascot .mascot-cap{position:absolute;left:50%;top:2px;transform:translateX(-50%)}
 .floor-mascot .mascot-cap-top{width:42px;height:16px;background:linear-gradient(180deg,#f1d67a,#caa34c);border:3px solid #7b5a25;border-bottom:none;border-radius:18px 18px 8px 8px}
 .floor-mascot .mascot-cap-brim{width:48px;height:8px;margin-left:-3px;background:linear-gradient(180deg,#87602f,#5e3c1b);border:3px solid #42280f;border-top:none;border-radius:0 0 12px 12px}
-.floor-mascot .mascot-badge{position:absolute;right:-2px;top:50px;padding:3px 7px;background:linear-gradient(180deg,#ffe796,#f5bf50);border:2px solid #8f6427;border-radius:12px;font-size:0.44em;font-weight:900;letter-spacing:0.8px;color:#4c2d12;transform:rotate(8deg);box-shadow:0 2px 6px rgba(0,0,0,0.2)}
 .floor-mascot.stage-door{opacity:0}
 .floor-mascot.stage-enter,.floor-mascot.stage-parade,.floor-mascot.stage-return{animation:mascot-waddle 0.36s ease-in-out infinite}
 .floor-mascot.stage-pose{animation:mascot-pose 0.7s ease-in-out infinite}
