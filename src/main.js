@@ -3333,6 +3333,7 @@ function init() {
     exitDoorTimer: 0,
     spotlessChain: 0,
     spotlessRecoveries: 0,
+    eventStats: createEmptyEventStats(),
     wasBathroomSpotless: true,
   };
 
@@ -3790,6 +3791,23 @@ function getShiftScaledChance(type) {
   if (type === 'inspector') return CONFIG.inspectorChanceByShift?.[shiftIdx] ?? CONFIG.inspectorChance;
   if (type === 'fight') return CONFIG.fightChanceByShift?.[shiftIdx] ?? CONFIG.fightChance;
   return 0;
+}
+
+function createEmptyEventStats() {
+  return {
+    rushesHandled: 0,
+    inspectionsPassed: 0,
+    inspectionsFailed: 0,
+    fightsStopped: 0,
+    brawls: 0,
+  };
+}
+
+function boostCustomerPatience(amount) {
+  game.people.forEach((p) => {
+    if (!p || typeof p.patience !== 'number' || typeof p.maxPatience !== 'number') return;
+    p.patience = Math.min(p.maxPatience, p.patience + amount);
+  });
 }
 
 function checkSpotlessRecovery() {
@@ -4303,6 +4321,7 @@ function startShift() {
   game.puddles = [];
   game.spotlessChain = 0;
   game.spotlessRecoveries = 0;
+  game.eventStats = createEmptyEventStats();
   game.wasBathroomSpotless = true;
   document.querySelectorAll('.puddle').forEach(el => el.remove());
 
@@ -4480,6 +4499,11 @@ function update(dt) {
     $('rush-warning').textContent = `🚌 MOTORCOACH WAVE ${rushSec}s 🚌`;
     if (game.rushDuration <= 0) {
       game.rushMode = false;
+      game.eventStats.rushesHandled++;
+      addScore(35);
+      game.rating = clamp(game.rating + 0.08, 0, 5);
+      boostCustomerPatience(350);
+      floatMessage('WAVE CLEARED! +35', 400, 165, 'good');
       $('rush-warning').style.display = 'none';
       $('rush-warning').textContent = '🚌 MOTORCOACH WAVE INCOMING! 🚌';
       if (!game.inspector && !game.fight) setBeaverMood('idle', 0);
@@ -5866,8 +5890,10 @@ function finishInspection() {
 
   if (dirtyCount === 0) {
     // Perfect inspection!
+    game.eventStats.inspectionsPassed++;
     addScore(CONFIG.inspectorBonus);
     game.rating = clamp(game.rating + 0.3, 0, 5);
+    boostCustomerPatience(700);
     floatMessage('PERFECT INSPECTION! +' + CONFIG.inspectorBonus, 400, 200, 'combo');
     playInspectorGood();
     spawnConfetti(400, 200, 12);
@@ -5878,6 +5904,7 @@ function finishInspection() {
     checkAchievements();
   } else {
     // Penalty based on dirty stalls
+    game.eventStats.inspectionsFailed++;
     const ratingLoss = dirtyCount * CONFIG.inspectorPenalty;
     game.rating = clamp(game.rating - ratingLoss, 0, 5);
     floatMessage('INSPECTION: -' + ratingLoss.toFixed(1) + '⭐ (' + dirtyCount + ' dirty)', 400, 200, 'bad');
@@ -6138,15 +6165,18 @@ function finishFight(wasBrawl) {
 
   if (!wasBrawl) {
     // Quick breakup - bonus! Track for achievements
+    game.eventStats.fightsStopped++;
     achievementStats.fightsWon = (achievementStats.fightsWon || 0) + 1;
     saveAchievementData();
     addScore(CONFIG.fightBonus);
     game.rating = clamp(game.rating + 0.2, 0, 5);
+    boostCustomerPatience(550);
     floatMessage('FIGHT STOPPED! +' + CONFIG.fightBonus, fight.x, fight.y - 20, 'combo');
     spawnConfetti(fight.x, fight.y, 8);
     setBeaverMood('excited', 2000);
   } else {
     // Brawl happened - penalty
+    game.eventStats.brawls++;
     const ratingLoss = CONFIG.fightPenalty;
     game.rating = clamp(game.rating - ratingLoss, 0, 5);
     floatMessage('BRAWL! -' + ratingLoss.toFixed(1) + '⭐', fight.x, fight.y - 20, 'bad');
@@ -6688,9 +6718,19 @@ function getGrade() {
 
 function buildRunRecapHTML({ grade, won = false, isNewRecord = false } = {}) {
   const recap = [];
+  const eventStats = game.eventStats || createEmptyEventStats();
 
   if (game.spotlessRecoveries > 0) {
     recap.push({ icon: '✨', text: `${game.spotlessRecoveries} spotless reset${game.spotlessRecoveries === 1 ? '' : 's'}`, tone: 'good' });
+  }
+  if (eventStats.rushesHandled > 0) {
+    recap.push({ icon: '🚌', text: `${eventStats.rushesHandled} motorcoach wave${eventStats.rushesHandled === 1 ? '' : 's'} handled`, tone: 'info' });
+  }
+  if (eventStats.inspectionsPassed > 0) {
+    recap.push({ icon: '🔍', text: `${eventStats.inspectionsPassed} white-glove check${eventStats.inspectionsPassed === 1 ? '' : 's'} passed`, tone: 'good' });
+  }
+  if (eventStats.fightsStopped > 0) {
+    recap.push({ icon: '🛡️', text: `${eventStats.fightsStopped} snack-aisle scuffle${eventStats.fightsStopped === 1 ? '' : 's'} stopped`, tone: 'combo' });
   }
   if (game.tipsEarned > 0) {
     recap.push({ icon: '$', text: `${game.tipsEarned} in tips`, tone: 'combo' });
@@ -6703,6 +6743,12 @@ function buildRunRecapHTML({ grade, won = false, isNewRecord = false } = {}) {
   }
   if (game.stats.abandoned > 0) {
     recap.push({ icon: '⚠️', text: `${game.stats.abandoned} customer${game.stats.abandoned === 1 ? '' : 's'} lost`, tone: 'warning' });
+  }
+  if (eventStats.inspectionsFailed > 0) {
+    recap.push({ icon: '🧾', text: `${eventStats.inspectionsFailed} inspection ding${eventStats.inspectionsFailed === 1 ? '' : 's'}`, tone: 'warning' });
+  }
+  if (eventStats.brawls > 0) {
+    recap.push({ icon: '💥', text: `${eventStats.brawls} brawl${eventStats.brawls === 1 ? '' : 's'} got loose`, tone: 'warning' });
   }
   if (isNewRecord) {
     recap.push({ icon: '🏆', text: 'new record run', tone: 'combo' });
@@ -6720,6 +6766,36 @@ function buildRunRecapHTML({ grade, won = false, isNewRecord = false } = {}) {
       <span class="recap-text">${item.text}</span>
     </div>
   `).join('');
+}
+
+function buildShiftComment(grade, shiftsLeft, won = false) {
+  const eventStats = game.eventStats || createEmptyEventStats();
+  const abandoned = game.stats.abandoned || 0;
+  const handledEverything = abandoned === 0 && eventStats.inspectionsFailed === 0 && eventStats.brawls === 0;
+
+  if (won) {
+    if (grade === 'S') return 'You ran the cleanest stop on the highway. Golden Plunger earned.';
+    if (handledEverything) return 'You held the line through every wave and kept the room respectable.';
+    return 'Messy, but you closed it out. The shift is yours.';
+  }
+
+  if (grade === 'S') {
+    return shiftsLeft > 0 ? 'Showroom clean. Keep stacking shifts like that.' : 'Perfect finish. You made it look easy.';
+  }
+  if (handledEverything && eventStats.rushesHandled > 0) {
+    return 'You absorbed the chaos and never really lost the room.';
+  }
+  if (eventStats.inspectionsPassed > 0 && abandoned <= 1) {
+    return 'That white-glove check bought you some real credibility.';
+  }
+  if (eventStats.brawls > 0 || abandoned >= 3) {
+    return 'Too many fires broke loose at once. Prioritize the big threats earlier.';
+  }
+  if (grade === 'A') return shiftsLeft > 0 ? 'Strong shift. A little cleaner and it turns elite.' : 'Almost perfect. One more polish pass from greatness.';
+  if (grade === 'B') return shiftsLeft > 0 ? `Solid shift. ${shiftsLeft} more to go.` : 'Respectable finish. Not glamorous, but it worked.';
+  if (grade === 'C') return shiftsLeft > 0 ? 'You kept the doors open, but the room never felt fully under control.' : 'You survived it. That still counts.';
+  if (grade === 'D') return 'Room for improvement. Clean faster and stop the room from snowballing.';
+  return "That stop got away from you. Kill the dirtiest problems sooner.";
 }
 
 // XP rewards skill-based play: combos, grades, and speed matter more than raw output
@@ -6895,13 +6971,7 @@ function endShift() {
 
   const shiftsLeft = CONFIG.shifts.length - game.shift - 1;
   const grade = getGrade();
-  let comment;
-  if (grade === 'S') comment = shiftsLeft > 0 ? 'PERFECT! That Golden Plunger is calling your name!' : 'PERFECT! You earned it, rookie!';
-  else if (grade === 'A') comment = shiftsLeft > 0 ? 'Great work! Keep it up!' : 'Almost perfect! Well done!';
-  else if (grade === 'B') comment = shiftsLeft > 0 ? `Solid shift. ${shiftsLeft} more to go!` : 'Respectable finish, rookie!';
-  else if (grade === 'C') comment = shiftsLeft > 0 ? "The manager's watching... step it up!" : 'Made it... barely!';
-  else if (grade === 'D') comment = "Room for improvement. Keep pushing!";
-  else comment = "That was rough. Don't let it happen again!";
+  let comment = buildShiftComment(grade, shiftsLeft, false);
 
   $('result-grade').textContent = grade;
   $('result-grade').className = 'grade ' + grade;
@@ -7110,7 +7180,7 @@ function gameOver() {
 
   $('go-icon').textContent = won ? '🏆' : '📦';
   $('go-title').textContent = won ? 'GOLDEN PLUNGER EARNED!' : 'FIRED!';
-  $('go-msg').textContent = won ? pick(WIN_MESSAGES) : pick(GAME_OVER_MESSAGES);
+  $('go-msg').textContent = buildShiftComment(grade, 0, won) || (won ? pick(WIN_MESSAGES) : pick(GAME_OVER_MESSAGES));
   $('go-score').textContent = finalScore + (isNewRecord ? ' 🎉 NEW RECORD!' : '');
   $('go-high-score-val').textContent = highScore;
 
