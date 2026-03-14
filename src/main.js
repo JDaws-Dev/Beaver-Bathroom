@@ -3313,7 +3313,7 @@ const BEAVER_SPEECH_TIPS = {
   dirtyStall: "Dirty stalls first. That's the whole reputation.",
   taskMash: "Mash the buttons faster!",
   dirtySink: "Don't forget the sinks. People notice that.",
-  powerupReady: "Use your items! (🥩🧊🍿🦫)",
+  powerupReady: "Use your items: brisket speeds up, Icee slows arrivals, nuggets insta-clean, Beaver distracts.",
   comboStart: "Keep the place rolling. Combos are your breathing room.",
   lowTime: "Clock's burning. Prioritize the messiest problems.",
   vipCustomer: "VIP customer. Showroom clean gets paid.",
@@ -3353,6 +3353,32 @@ function rand() {
 }
 function pick(arr) { return arr[Math.floor(rand() * arr.length)]; }
 function rnd(min, max) { return min + rand() * (max - min); }
+
+function setupPowerupTooltips() {
+  ['pow-speed', 'pow-slow', 'pow-auto', 'pow-mascot'].forEach((id) => {
+    const el = $(id);
+    if (!el) return;
+    let hideTimer = null;
+    const showTip = () => {
+      clearTimeout(hideTimer);
+      el.classList.add('show-tip');
+      hideTimer = setTimeout(() => el.classList.remove('show-tip'), 1400);
+    };
+    el.addEventListener('pointerenter', () => {
+      if (window.matchMedia('(hover: hover)').matches) showTip();
+    });
+    el.addEventListener('pointerleave', () => {
+      clearTimeout(hideTimer);
+      el.classList.remove('show-tip');
+    });
+    el.addEventListener('touchstart', () => showTip(), { passive: true });
+    el.addEventListener('focus', () => showTip());
+    el.addEventListener('blur', () => {
+      clearTimeout(hideTimer);
+      el.classList.remove('show-tip');
+    });
+  });
+}
 function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
 
 function screenShake(intensity = 1) {
@@ -7463,6 +7489,7 @@ updateRankDisplay();
 updateOvertimeButton();
 updateDailyButton();
 updatePremiumUI();
+setupPowerupTooltips();
 applyCosmeticsToBeaver();
 try { checkCosmeticUnlocks(); } catch(e) { /* safe to skip on init */ }
 updateOutfitterBadge();

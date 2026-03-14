@@ -183,6 +183,7 @@
         <div class="tutorial-item"><span class="tutorial-icon">🚽</span><span>Click dirty stalls, then MASH tasks to clean faster!</span></div>
         <div class="tutorial-item"><span class="tutorial-icon">🚿</span><span>Scrub those sinks - travelers notice everything!</span></div>
         <div class="tutorial-item"><span class="tutorial-icon">⭐</span><span>Keep 5 stars or get fired! Each angry customer hurts your rating.</span></div>
+        <div class="tutorial-item"><span class="tutorial-icon">⚡</span><span><b>Power-Ups:</b> 🥩 speeds cleaning, 🧊 slows arrivals, 🍿 insta-cleans one stall, and 🦫 distracts floor customers for a short parade.</span></div>
       </div>
       <button class="btn" id="tutorial-got-it">Got it!</button>
     </div>
@@ -548,10 +549,10 @@
       </div>
     </div>
     <div id="powerups">
-      <div class="powerup disabled" id="pow-speed">🥩<span class="powerup-text"> Brisket</span> <span class="count" id="cnt-speed">0</span></div>
-      <div class="powerup disabled" id="pow-slow">🧊<span class="powerup-text"> Icee</span> <span class="count" id="cnt-slow">0</span></div>
-      <div class="powerup disabled" id="pow-auto">🍿<span class="powerup-text"> Nuggets</span> <span class="count" id="cnt-auto">0</span></div>
-      <div class="powerup disabled" id="pow-mascot">🦫<span class="powerup-text"> Beaver</span> <span class="count" id="cnt-mascot">0</span></div>
+      <div class="powerup disabled" id="pow-speed" data-tip="Brisket: 2x cleaning speed for a short burst.">🥩<span class="powerup-text"> Brisket</span> <span class="count" id="cnt-speed">0</span></div>
+      <div class="powerup disabled" id="pow-slow" data-tip="Icee: slows customer arrivals so the room calms down.">🧊<span class="powerup-text"> Icee</span> <span class="count" id="cnt-slow">0</span></div>
+      <div class="powerup disabled" id="pow-auto" data-tip="Nuggets: instantly cleans one dirty stall.">🍿<span class="powerup-text"> Nuggets</span> <span class="count" id="cnt-auto">0</span></div>
+      <div class="powerup disabled" id="pow-mascot" data-tip="Beaver: mascot parade distracts customers on the floor for a moment.">🦫<span class="powerup-text"> Beaver</span> <span class="count" id="cnt-mascot">0</span></div>
     </div>
     <div id="mp-opponent-hud" class="mp-opponent-hud hidden">
       <img id="mp-opp-hud-beaver" class="mp-opp-beaver" src="" alt="" style="width:32px;height:32px;image-rendering:pixelated;">
