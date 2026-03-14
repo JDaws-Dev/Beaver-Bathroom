@@ -2917,53 +2917,84 @@ function playPowerup() {
   setTimeout(() => playTone(700, 0.1, 'triangle', 0.12), 120);
 }
 
-// Mascot Walk System - Beaver WALKS IN from the exit door, customers freak out and swarm
+function createFloorMascotMarkup() {
+  return `
+    <div class="mascot-shadow"></div>
+    <div class="floor-beaver mascot-shell">
+      <div class="mascot-tail"></div>
+      <div class="mascot-shirt"><span class="mascot-letter">B</span></div>
+      <div class="mascot-leg left"></div>
+      <div class="mascot-leg right"></div>
+      <div class="mascot-foot left"></div>
+      <div class="mascot-foot right"></div>
+      <div class="beaver-body"></div>
+      <div class="beaver-face">
+        <div class="beaver-ear left"></div>
+        <div class="beaver-ear right"></div>
+        <div class="beaver-eye left"><div class="beaver-pupil"></div></div>
+        <div class="beaver-eye right"><div class="beaver-pupil"></div></div>
+        <div class="beaver-cheek left"></div>
+        <div class="beaver-cheek right"></div>
+        <div class="beaver-nose"></div>
+        <div class="beaver-teeth"><div class="beaver-tooth"></div><div class="beaver-tooth"></div></div>
+      </div>
+      <div class="mascot-cap">
+        <div class="mascot-cap-top"></div>
+        <div class="mascot-cap-brim"></div>
+      </div>
+      <div class="mascot-arm left"></div>
+      <div class="mascot-arm right"></div>
+      <div class="mascot-badge">MASCOT</div>
+    </div>
+  `;
+}
+
+// Mascot Walk System - mascot emerges from the exit, does a short parade, then heads back out
 function startMascotWalk() {
   const floorArea = $('floor-area');
   const floorRect = floorArea.getBoundingClientRect();
+  const exitDoor = $('exit-door');
+  const exitRect = exitDoor.getBoundingClientRect();
 
   // Remove any existing mascot
   const oldMascot = document.getElementById('floor-beaver');
   if (oldMascot) oldMascot.remove();
-
-  // Get exit door position (beaver enters/exits through the door)
-  const exitDoor = $('exit-door');
-  const exitRect = exitDoor.getBoundingClientRect();
-  const floorLeft = floorRect.left;
-  const startX = exitRect.left - floorLeft + exitRect.width / 2 - 25;
-  // Start inside the door (negative Y, above visible area) so beaver emerges FROM door
-  const doorY = exitRect.top - floorRect.top + exitRect.height / 2;
-  const startY = doorY - 60;  // Start hidden above door
-
-  // Create beaver character - just the emoji, no background
   const mascotEl = document.createElement('div');
   mascotEl.id = 'floor-beaver';
-  mascotEl.innerHTML = '🦫';
-  mascotEl.style.cssText = `
-    position: absolute;
-    left: ${startX}px;
-    top: ${startY}px;
-    z-index: 150;
-    font-size: 3.5em;
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
-    transition: none;
-  `;
+  mascotEl.className = 'floor-mascot stage-door';
+  mascotEl.innerHTML = createFloorMascotMarkup();
   floorArea.appendChild(mascotEl);
 
-  // Walk from exit door toward center, then across, then back to door
+  const floorLeft = floorRect.left;
+  const floorTop = floorRect.top;
+  const laneY = floorRect.height - Math.max(122, floorRect.height * 0.24);
+  const doorCenterX = exitRect.left - floorLeft + exitRect.width / 2;
+  const doorCenterY = exitRect.top - floorTop + exitRect.height * 0.52;
+  const hiddenX = Math.min(floorRect.width + 40, doorCenterX + 70);
+  const paradeX = Math.max(floorRect.width * 0.56, floorRect.width - 235);
+  const showcaseX = floorRect.width * 0.42;
+
+  mascotEl.style.left = hiddenX + 'px';
+  mascotEl.style.top = laneY + 'px';
+
+  openExitDoor(1500);
   game.mascotWalk = {
     el: mascotEl,
-    x: startX,
-    y: startY,
-    startX: startX,  // Remember start position for exit
-    startY: startY,
-    phase: 'entering',  // 'entering' -> 'walking' -> 'exiting'
-    targetY: floorRect.height * 0.45,  // Walk down into the floor
-    targetX: floorRect.width * 0.7,    // Then walk to the right
-    speed: 80
+    x: hiddenX,
+    y: laneY,
+    homeX: hiddenX,
+    homeY: laneY,
+    doorX: doorCenterX - 28,
+    doorY: doorCenterY,
+    paradeX,
+    showcaseX,
+    phase: 'door',
+    phaseTimer: 520,
+    speed: 145,
+    announceTimer: 0,
   };
 
-  floatMessage('🦫 BEAVER ON THE FLOOR!', 400, 150, 'combo');
+  floatMessage('MASCOT PARADE!', floorRect.width * 0.5, 150, 'combo');
 }
 
 // Initialize a customer for crowding behavior
@@ -2980,81 +3011,110 @@ function updateMascotWalk(dt) {
 
   const mascotEl = game.mascotWalk.el;
   const m = game.mascotWalk;
-  const dtSec = dt / 1000;  // Convert ms to seconds
+  const dtSec = dt / 1000;
+  let watchingActive = false;
 
-  // Phase 1: Walk down from exit door into the floor
-  if (m.phase === 'entering') {
-    m.y += m.speed * dtSec;
-    if (m.y >= m.targetY) {
-      m.y = m.targetY;
-      m.phase = 'walking';
-    }
-  }
-  // Phase 2: Walk across the floor
-  else if (m.phase === 'walking') {
-    m.x += m.speed * dtSec;
-    if (m.x >= m.targetX) {
-      m.phase = 'exiting';
-    }
-  }
-  // Phase 3: Walk back to exit door
-  else if (m.phase === 'exiting') {
-    const dx = m.startX - m.x;
-    const dy = m.startY - m.y;
+  const moveToward = (tx, ty, speed = m.speed) => {
+    const dx = tx - m.x;
+    const dy = ty - m.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < 6) {
+      m.x = tx;
+      m.y = ty;
+      return true;
+    }
+    m.x += (dx / dist) * speed * dtSec;
+    m.y += (dy / dist) * speed * dtSec;
+    return false;
+  };
 
-    if (dist < 10) {
+  if (m.phase === 'door') {
+    m.phaseTimer -= dt;
+    mascotEl.className = 'floor-mascot stage-door';
+    if (m.phaseTimer <= 0) {
+      m.phase = 'entering';
+      m.phaseTimer = 0;
+    }
+  } else if (m.phase === 'entering') {
+    watchingActive = true;
+    mascotEl.className = 'floor-mascot stage-enter';
+    if (moveToward(m.paradeX, m.homeY, m.speed)) {
+      m.phase = 'pose';
+      m.phaseTimer = 1800;
+    }
+  } else if (m.phase === 'pose') {
+    watchingActive = true;
+    mascotEl.className = 'floor-mascot stage-pose';
+    m.phaseTimer -= dt;
+    if (m.phaseTimer <= 0) {
+      m.phase = 'parade';
+    }
+  } else if (m.phase === 'parade') {
+    watchingActive = true;
+    mascotEl.className = 'floor-mascot stage-parade';
+    if (moveToward(m.showcaseX, m.homeY, m.speed * 0.9)) {
+      m.phase = 'returning';
+      m.phaseTimer = 0;
+      openExitDoor(1200);
+    }
+  } else if (m.phase === 'returning') {
+    mascotEl.className = 'floor-mascot stage-return';
+    if (moveToward(m.homeX, m.homeY, m.speed * 1.05)) {
       endMascotWalk();
       return;
     }
-
-    // Walk toward the exit door
-    m.x += (dx / dist) * m.speed * dtSec;
-    m.y += (dy / dist) * m.speed * dtSec;
   }
 
   mascotEl.style.left = m.x + 'px';
   mascotEl.style.top = m.y + 'px';
 
-  // Beaver center position for customer attraction
-  const beaverX = m.x + 40;
-  const beaverY = m.y + 40;
+  const beaverX = m.x + 54;
+  const beaverY = m.y + 82;
 
-  // Distract customers - they stop what they're doing and crowd toward beaver
   for (const p of game.people) {
-    // Only distract customers who are walking around (not in stalls or washing)
-    if (p.phase === 'enter' || p.phase === 'findStall' || p.phase === 'toStall') {
+    const canBeDistracted = watchingActive && (
+      p.phase === 'enter' ||
+      p.phase === 'findStall' ||
+      p.phase === 'toStall' ||
+      p.phase === 'entering' ||
+      p.phase === 'exitStall' ||
+      p.phase === 'toSink' ||
+      p.phase === 'toTowels' ||
+      p.phase === 'exit'
+    );
+    if (canBeDistracted) {
       if (!p.distracted) {
         p.distracted = true;
-        p.savedPhase = p.phase;  // Remember what they were doing
-        p.crowdOffset = (Math.random() - 0.5) * 3;
-        p.crowdOffsetY = (Math.random() - 0.5) * 2;
-        // Show excited thought
-        p.thought = ['Photo op!', 'Is that Beaver?!', 'OMG!', 'No way!', 'WOW!'][Math.floor(Math.random() * 5)];
+        p.savedPhase = p.phase;
+        p.crowdSlot = p.id % 6;
+        p.crowdRow = Math.floor((p.id % 12) / 6);
+        p.thought = ['Photo op!', 'Mascot!', 'No way!', 'Look at that!', 'Roadside royalty!'][Math.floor(rand() * 5)];
         p.thoughtMood = 'neutral';
         p.thoughtTimer = 5000;
       }
 
-      // Crowd toward beaver (but don't teleport - walk naturally)
-      const targetX = beaverX + p.crowdOffset * 30;
-      const targetY = beaverY + p.crowdOffsetY * 25;
+      const targetX = beaverX - 92 + p.crowdSlot * 34;
+      const targetY = beaverY - 74 - p.crowdRow * 24;
       const dx = targetX - p.x;
       const dy = targetY - p.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      if (dist > 15) {
-        // Walk toward beaver at normal speed
-        const speed = CONFIG.walkSpeed * dtSec;
+      if (dist > 12) {
+        const speed = CONFIG.walkSpeed * dtSec * 1.05;
         p.x += (dx / dist) * speed;
         p.y += (dy / dist) * speed;
       }
 
-      // Show excited thought
       if (!p.thought || p.thoughtTimer <= 0) {
-        p.thought = ['Photo op!', 'Is that Beaver?!', 'OMG!', 'No way!', 'WOW!'][Math.floor(Math.random() * 5)];
+        p.thought = ['Photo op!', 'Mascot!', 'No way!', 'Look at that!', 'Roadside royalty!'][Math.floor(rand() * 5)];
         p.thoughtMood = 'neutral';
         p.thoughtTimer = 2000;
       }
+    } else if (p.distracted) {
+      p.distracted = false;
+      p.distractedThought = false;
+      delete p.crowdSlot;
+      delete p.crowdRow;
     }
   }
 }
@@ -3074,8 +3134,8 @@ function endMascotWalk() {
   for (const p of game.people) {
     p.distracted = false;
     p.distractedThought = false;
-    delete p.crowdOffset;
-    delete p.crowdOffsetY;
+    delete p.crowdSlot;
+    delete p.crowdRow;
   }
 }
 

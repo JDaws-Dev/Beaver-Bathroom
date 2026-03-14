@@ -615,29 +615,48 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 #fixture-lane{position:absolute;left:12px;right:12px;bottom:0;height:104px;border-radius:18px 18px 0 0;background:linear-gradient(180deg,rgba(109,80,55,0.06) 0%,rgba(109,80,55,0.16) 58%,rgba(74,52,35,0.22) 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,0.2),inset 0 -10px 18px rgba(0,0,0,0.08);pointer-events:none;z-index:1}
 #fixture-lane::before{content:'';position:absolute;left:18px;right:18px;top:16px;height:2px;background:linear-gradient(90deg,transparent,rgba(255,248,220,0.45),transparent);opacity:0.75}
 #fixture-lane::after{content:'WASH  •  DRY  •  EXIT';position:absolute;right:20px;bottom:10px;color:rgba(80,56,36,0.5);font-size:0.52em;font-weight:800;letter-spacing:1.8px;text-shadow:0 1px 0 rgba(255,255,255,0.18)}
-/* Floor mascot beaver for Beaver Walk power-up */
-#mascot-walk{position:absolute;z-index:200;font-size:5em;background:#FFD700;padding:15px;border-radius:50%;border:5px solid #8b6342;box-shadow:0 8px 25px rgba(0,0,0,0.6)}
-#mascot-walk.hidden{display:none!important}
-#mascot-walk.walking{display:block!important;animation:mascot-waddle 0.3s ease-in-out infinite}
-@keyframes mascot-waddle{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
-/* Floor beaver body structure */
-.floor-beaver{width:100%;height:100%;position:relative}
-.floor-beaver .beaver-body{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:50px;height:35px;background:linear-gradient(180deg,#b5803a 0%,#8b6342 100%);border-radius:50% 50% 40% 40%;border:3px solid #5d4037}
-.floor-beaver .beaver-tail{position:absolute;bottom:5px;left:-12px;width:20px;height:12px;background:linear-gradient(90deg,#5d4037,#3e2723);border-radius:8px 2px 2px 8px;border:2px solid #3e2723;transform:rotate(-15deg)}
-.floor-beaver .beaver-face{width:55px;height:50px;background:linear-gradient(180deg,#c9a86c 0%,#a67c52 60%,#8b6342 100%);border-radius:50% 50% 45% 45%;position:absolute;left:50%;top:8px;transform:translateX(-50%);border:3px solid #5d4037;box-shadow:inset 0 -4px 8px rgba(0,0,0,0.2),0 3px 6px rgba(0,0,0,0.3)}
-.floor-beaver .beaver-ear{width:14px;height:14px;background:linear-gradient(180deg,#8b6342,#6d4c2a);border-radius:50%;position:absolute;top:2px;border:2px solid #5d4037}
-.floor-beaver .beaver-ear.left{left:6px}
-.floor-beaver .beaver-ear.right{right:6px}
-.floor-beaver .beaver-eye{width:12px;height:12px;background:#fff;border-radius:50%;position:absolute;top:16px;border:2px solid #333;overflow:hidden}
-.floor-beaver .beaver-eye.left{left:12px}
-.floor-beaver .beaver-eye.right{right:12px}
+/* Floor mascot power-up */
+.floor-mascot{position:absolute;z-index:160;width:108px;height:122px;pointer-events:none;transform-origin:50% 100%;filter:drop-shadow(0 8px 16px rgba(0,0,0,0.35))}
+.floor-mascot .mascot-shadow{position:absolute;left:18px;right:18px;bottom:4px;height:16px;border-radius:50%;background:radial-gradient(ellipse,rgba(40,24,14,0.4) 0%,rgba(40,24,14,0.08) 70%,transparent 100%)}
+.floor-beaver.mascot-shell{width:100%;height:100%;position:relative}
+.floor-beaver .beaver-body{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);width:60px;height:42px;background:linear-gradient(180deg,#b5803a 0%,#8b6342 100%);border-radius:48% 48% 40% 40%;border:3px solid #5d4037;box-shadow:inset 0 -4px 8px rgba(0,0,0,0.22)}
+.floor-beaver .beaver-face{width:64px;height:58px;background:linear-gradient(180deg,#d3b27c 0%,#b2875a 62%,#8b6342 100%);border-radius:48% 48% 45% 45%;position:absolute;left:50%;top:16px;transform:translateX(-50%);border:3px solid #5d4037;box-shadow:inset 0 -4px 8px rgba(0,0,0,0.2),0 3px 6px rgba(0,0,0,0.28)}
+.floor-beaver .beaver-ear{width:16px;height:16px;background:linear-gradient(180deg,#8b6342,#6d4c2a);border-radius:50%;position:absolute;top:5px;border:2px solid #5d4037}
+.floor-beaver .beaver-ear.left{left:7px}
+.floor-beaver .beaver-ear.right{right:7px}
+.floor-beaver .beaver-eye{width:12px;height:12px;background:#fff;border-radius:50%;position:absolute;top:18px;border:2px solid #333;overflow:hidden}
+.floor-beaver .beaver-eye.left{left:13px}
+.floor-beaver .beaver-eye.right{right:13px}
 .floor-beaver .beaver-pupil{width:6px;height:6px;background:#333;border-radius:50%;position:absolute;top:2px;left:2px}
-.floor-beaver .beaver-nose{width:14px;height:10px;background:linear-gradient(180deg,#2d1810,#1a0f0a);border-radius:40% 40% 50% 50%;position:absolute;top:26px;left:50%;transform:translateX(-50%);border:1px solid #000}
-.floor-beaver .beaver-teeth{position:absolute;top:36px;left:50%;transform:translateX(-50%);display:flex;gap:1px}
+.floor-beaver .beaver-nose{width:14px;height:10px;background:linear-gradient(180deg,#2d1810,#1a0f0a);border-radius:40% 40% 50% 50%;position:absolute;top:29px;left:50%;transform:translateX(-50%);border:1px solid #000}
+.floor-beaver .beaver-teeth{position:absolute;top:39px;left:50%;transform:translateX(-50%);display:flex;gap:1px}
 .floor-beaver .beaver-tooth{width:7px;height:10px;background:linear-gradient(180deg,#fff,#f5f0e0);border-radius:0 0 3px 3px;border:1px solid #ccc}
-.floor-beaver .beaver-cheek{width:10px;height:8px;background:rgba(255,150,150,0.4);border-radius:50%;position:absolute;top:28px}
-.floor-beaver .beaver-cheek.left{left:6px}
-.floor-beaver .beaver-cheek.right{right:6px}
+.floor-beaver .beaver-cheek{width:10px;height:8px;background:rgba(255,150,150,0.38);border-radius:50%;position:absolute;top:31px}
+.floor-beaver .beaver-cheek.left{left:7px}
+.floor-beaver .beaver-cheek.right{right:7px}
+.floor-mascot .mascot-tail{position:absolute;left:10px;bottom:38px;width:24px;height:16px;background:linear-gradient(90deg,#65452e,#3f291a);border:2px solid #3c2618;border-radius:12px 4px 4px 12px;transform:rotate(-22deg)}
+.floor-mascot .mascot-shirt{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);width:52px;height:34px;background:linear-gradient(180deg,#d53d3d,#8f1f22);border:3px solid #5e1112;border-radius:16px 16px 14px 14px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 2px 0 rgba(255,255,255,0.18)}
+.floor-mascot .mascot-letter{font-size:1.05em;font-weight:900;color:#ffe89d;text-shadow:0 1px 2px rgba(0,0,0,0.4)}
+.floor-mascot .mascot-arm{position:absolute;top:54px;width:18px;height:12px;background:linear-gradient(180deg,#b2875a,#8b6342);border:3px solid #5d4037;border-radius:12px}
+.floor-mascot .mascot-arm.left{left:10px;transform:rotate(26deg)}
+.floor-mascot .mascot-arm.right{right:8px;transform:rotate(-18deg);transform-origin:20% 50%}
+.floor-mascot .mascot-leg{position:absolute;bottom:18px;width:14px;height:20px;background:linear-gradient(180deg,#7a4d2c,#5a3925);border:3px solid #4a301d;border-top:none;border-radius:0 0 8px 8px}
+.floor-mascot .mascot-leg.left{left:37px}
+.floor-mascot .mascot-leg.right{right:37px}
+.floor-mascot .mascot-foot{position:absolute;bottom:10px;width:20px;height:10px;background:linear-gradient(180deg,#5d4037,#3e2723);border:2px solid #2d1c12;border-radius:12px 12px 8px 8px}
+.floor-mascot .mascot-foot.left{left:31px}
+.floor-mascot .mascot-foot.right{right:31px}
+.floor-mascot .mascot-cap{position:absolute;left:50%;top:2px;transform:translateX(-50%)}
+.floor-mascot .mascot-cap-top{width:42px;height:16px;background:linear-gradient(180deg,#f1d67a,#caa34c);border:3px solid #7b5a25;border-bottom:none;border-radius:18px 18px 8px 8px}
+.floor-mascot .mascot-cap-brim{width:48px;height:8px;margin-left:-3px;background:linear-gradient(180deg,#87602f,#5e3c1b);border:3px solid #42280f;border-top:none;border-radius:0 0 12px 12px}
+.floor-mascot .mascot-badge{position:absolute;right:-2px;top:50px;padding:3px 7px;background:linear-gradient(180deg,#ffe796,#f5bf50);border:2px solid #8f6427;border-radius:12px;font-size:0.44em;font-weight:900;letter-spacing:0.8px;color:#4c2d12;transform:rotate(8deg);box-shadow:0 2px 6px rgba(0,0,0,0.2)}
+.floor-mascot.stage-door{opacity:0}
+.floor-mascot.stage-enter,.floor-mascot.stage-parade,.floor-mascot.stage-return{animation:mascot-waddle 0.36s ease-in-out infinite}
+.floor-mascot.stage-pose{animation:mascot-pose 0.7s ease-in-out infinite}
+.floor-mascot.stage-pose .mascot-arm.right{animation:mascot-wave 0.4s ease-in-out infinite}
+@keyframes mascot-waddle{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-2px) rotate(2deg)}}
+@keyframes mascot-pose{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-4px) scale(1.02)}}
+@keyframes mascot-wave{0%,100%{transform:rotate(-18deg)}50%{transform:rotate(-52deg)}}
 .person.distracted{animation:person-photo 0.6s ease-in-out infinite}
 /* When distracted AND walking (orbiting beaver), keep walking animations on legs/head */
 .person.walking.distracted{animation:person-photo 0.6s ease-in-out infinite}
