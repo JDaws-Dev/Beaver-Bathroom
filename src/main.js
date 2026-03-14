@@ -347,20 +347,20 @@ const BEAVER_TIPS = [
 
 const CONFIG = {
   shifts: [
-    {stalls:5, sinks:2, spawnMin:4300, spawnMax:6400, occMin:2000, occMax:4000, duration:60},
-    {stalls:6, sinks:2, spawnMin:2500, spawnMax:4000, occMin:1800, occMax:3500, duration:65},
-    {stalls:7, sinks:3, spawnMin:2200, spawnMax:3500, occMin:1600, occMax:3200, duration:70},
-    {stalls:8, sinks:3, spawnMin:1800, spawnMax:3000, occMin:1400, occMax:2800, duration:75},
-    {stalls:9, sinks:3, spawnMin:1500, spawnMax:2500, occMin:1200, occMax:2500, duration:80},
-    {stalls:10, sinks:4, spawnMin:1200, spawnMax:2000, occMin:1000, occMax:2200, duration:90},
+    {stalls:5, sinks:2, spawnMin:4600, spawnMax:6800, occMin:2100, occMax:4100, duration:60},
+    {stalls:6, sinks:2, spawnMin:3000, spawnMax:4500, occMin:1900, occMax:3600, duration:66},
+    {stalls:7, sinks:3, spawnMin:2450, spawnMax:3800, occMin:1700, occMax:3300, duration:72},
+    {stalls:8, sinks:3, spawnMin:2050, spawnMax:3250, occMin:1500, occMax:2900, duration:78},
+    {stalls:9, sinks:3, spawnMin:1725, spawnMax:2725, occMin:1300, occMax:2550, duration:84},
+    {stalls:10, sinks:4, spawnMin:1450, spawnMax:2250, occMin:1100, occMax:2250, duration:92},
   ],
   patience: 10000,
   walkSpeed: 120,
   baseTaskTime: 980,   // Base time per task (ms worth of progress needed)
   clickBoost: 68,      // Each mash tap reduces time by this much
   sinkCleanTime: 400,
-  rushChance: 0.15,    // Chance of rush hour per shift
-  inspectorChance: 0.25,  // Chance of inspector visit per shift
+  rushChance: 0.15,    // Base chance of rush hour per shift
+  inspectorChance: 0.25,  // Base chance of inspector visit per shift
   inspectorPenalty: 0.5,  // Rating loss per dirty stall
   inspectorBonus: 100,    // Points for clean inspection
   // Combo milestones: [combo level, speed boost duration (ms), rating recovery, bonus points]
@@ -369,11 +369,14 @@ const CONFIG = {
     { level: 5, speedBoost: 4000, rating: 0.1, points: 100, msg: '⚡ UNSTOPPABLE!' },
     { level: 10, speedBoost: 5000, rating: 0.3, points: 250, msg: '🌟 LEGENDARY!' },
   ],
-  fightChance: 0.2,       // Chance per shift (after shift 1)
+  fightChance: 0.2,       // Base chance per shift (after shift 1)
   fightPenalty: 0.4,       // Rating loss if brawl not stopped
   fightBonus: 75,          // Points for quick breakup
   fightArgueTime: 5000,    // ms before arguing becomes brawl
   fightBrawlDrain: 2,      // Patience drain multiplier on nearby customers
+  rushChanceByShift: [0, 0.08, 0.11, 0.14, 0.18, 0.22],
+  inspectorChanceByShift: [0, 0.08, 0.12, 0.16, 0.2, 0.24],
+  fightChanceByShift: [0, 0.04, 0.08, 0.12, 0.16, 0.19],
   towelSkipChance: 0.3,  // 30% of customers skip towel drying
   // Mess spawn chances per source (base values, scaled by shift)
   messChance: {
@@ -3329,6 +3332,7 @@ function init() {
     exitDoorOpen: false,
     exitDoorTimer: 0,
     spotlessChain: 0,
+    spotlessRecoveries: 0,
     wasBathroomSpotless: true,
   };
 
@@ -3780,12 +3784,21 @@ function getDirtySinkCount() {
   return game.sinks ? game.sinks.filter(s => s.dirty).length : 0;
 }
 
+function getShiftScaledChance(type) {
+  const shiftIdx = Math.min(game.shift, CONFIG.shifts.length - 1);
+  if (type === 'rush') return CONFIG.rushChanceByShift?.[shiftIdx] ?? CONFIG.rushChance;
+  if (type === 'inspector') return CONFIG.inspectorChanceByShift?.[shiftIdx] ?? CONFIG.inspectorChance;
+  if (type === 'fight') return CONFIG.fightChanceByShift?.[shiftIdx] ?? CONFIG.fightChance;
+  return 0;
+}
+
 function checkSpotlessRecovery() {
   const totalDirty = getDirtyCount() + getDirtySinkCount();
   const isSpotless = totalDirty === 0;
 
   if (isSpotless && !game.wasBathroomSpotless) {
     game.spotlessChain++;
+    game.spotlessRecoveries++;
     const bonus = 20 + Math.min(30, game.spotlessChain * 5);
     addScore(bonus);
     game.rating = clamp(game.rating + 0.05, 0, 5);
@@ -4289,6 +4302,7 @@ function startShift() {
   game.fightWarning = 0;
   game.puddles = [];
   game.spotlessChain = 0;
+  game.spotlessRecoveries = 0;
   game.wasBathroomSpotless = true;
   document.querySelectorAll('.puddle').forEach(el => el.remove());
 
@@ -4301,19 +4315,28 @@ function startShift() {
 
   // No random events in multiplayer — pure head-to-head cleaning
   if (game.mode !== 'multiplayer') {
+    const rushChance = getShiftScaledChance('rush');
+    const inspectorChance = getShiftScaledChance('inspector');
+    const fightChance = getShiftScaledChance('fight');
+
+    // Keep early shifts readable by limiting stacked event scheduling.
+    const eventBudget = game.shift <= 1 ? 1 : (game.shift <= 3 ? 2 : 3);
+    let scheduledEvents = 0;
+
+    if (rand() < rushChance && game.shift > 0) {
+      game.rushTimer = rnd(17000, 32000);
+      scheduledEvents++;
+    }
+
     // Maybe trigger inspector visit (not on first shift, or always in daily)
-    if (rand() < CONFIG.inspectorChance && game.shift > 0) {
+    if (scheduledEvents < eventBudget && rand() < inspectorChance && game.shift > 0) {
       game.inspectorTimer = rnd(20000, 40000);
+      scheduledEvents++;
     }
 
     // Maybe trigger fight (not on first shift)
-    if (rand() < CONFIG.fightChance && game.shift > 0) {
+    if (scheduledEvents < eventBudget && rand() < fightChance && game.shift > 0) {
       game.fightTimer = rnd(25000, 50000);
-    }
-
-    // Maybe trigger rush hour
-    if (rand() < CONFIG.rushChance && game.shift > 0) {
-      game.rushTimer = rnd(15000, 30000);
     }
   }
 
@@ -6663,6 +6686,42 @@ function getGrade() {
   return 'F';
 }
 
+function buildRunRecapHTML({ grade, won = false, isNewRecord = false } = {}) {
+  const recap = [];
+
+  if (game.spotlessRecoveries > 0) {
+    recap.push({ icon: '✨', text: `${game.spotlessRecoveries} spotless reset${game.spotlessRecoveries === 1 ? '' : 's'}`, tone: 'good' });
+  }
+  if (game.tipsEarned > 0) {
+    recap.push({ icon: '$', text: `${game.tipsEarned} in tips`, tone: 'combo' });
+  }
+  if (game.stats.saves > 0) {
+    recap.push({ icon: '🪠', text: `${game.stats.saves} just-in-time save${game.stats.saves === 1 ? '' : 's'}`, tone: 'info' });
+  }
+  if (game.maxCombo >= 5) {
+    recap.push({ icon: '🔥', text: `${game.maxCombo}x best combo`, tone: 'combo' });
+  }
+  if (game.stats.abandoned > 0) {
+    recap.push({ icon: '⚠️', text: `${game.stats.abandoned} customer${game.stats.abandoned === 1 ? '' : 's'} lost`, tone: 'warning' });
+  }
+  if (isNewRecord) {
+    recap.push({ icon: '🏆', text: 'new record run', tone: 'combo' });
+  } else if (won && grade === 'S') {
+    recap.push({ icon: '⭐', text: 'top-tier finish', tone: 'combo' });
+  }
+
+  if (recap.length === 0) {
+    recap.push({ icon: '🧹', text: 'steady shift', tone: 'info' });
+  }
+
+  return recap.map(item => `
+    <div class="recap-chip ${item.tone}">
+      <span class="recap-icon">${item.icon}</span>
+      <span class="recap-text">${item.text}</span>
+    </div>
+  `).join('');
+}
+
 // XP rewards skill-based play: combos, grades, and speed matter more than raw output
 function calculateXP(score, grade) {
   let xp = Math.floor(score / 15); // Lower base than coins
@@ -6868,6 +6927,7 @@ function endShift() {
   }
   $('result-comment').textContent = comment;
   $('result-comment').classList.remove('ai-review');
+  $('result-recap').innerHTML = buildRunRecapHTML({ grade });
 
   // Track shift completion
   trackEvent('shift_complete', {
@@ -7060,6 +7120,7 @@ function gameOver() {
     <div class="stat"><div class="num">${game.stats.served}</div><div class="lbl">Served</div></div>
     <div class="stat"><div class="num">${game.maxCombo}x</div><div class="lbl">Best Combo</div></div>
   `;
+  $('go-recap').innerHTML = buildRunRecapHTML({ grade, won, isNewRecord });
 
   // Show name input for leaderboard (premium only)
   const nameSection = $('go-name-section');
