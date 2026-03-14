@@ -581,13 +581,17 @@ button,.stall,.sink,#towels,.powerup,.task-btn,.gender-opt,.pick-item,.upgrade-c
 .stall.empty .stall-body{background:linear-gradient(180deg,#e8f5e9 0%,#c8e6c9 100%)}
 .stall.occupied .stall-light{background:radial-gradient(circle at 30% 30%,#ef5350,#c62828);box-shadow:0 0 12px #e53935,inset 0 2px 4px rgba(255,255,255,0.3)}
 .stall.occupied .stall-body{background:linear-gradient(180deg,#ffebee 0%,#ffcdd2 100%)}
-.stall.dirty{transform:translateY(-3px);filter:drop-shadow(0 6px 10px rgba(249,168,37,0.22))}
-.stall.dirty .stall-light{background:radial-gradient(circle at 30% 30%,#ffee58,#f9a825);box-shadow:0 0 18px #fdd835,inset 0 2px 4px rgba(255,255,255,0.4);animation:blink 0.4s infinite alternate}
-.stall.dirty .stall-body{background:linear-gradient(180deg,#e0d4b8 0%,#d4c4a0 40%,#c9b48c 100%);animation:shake 0.15s infinite;box-shadow:0 0 0 3px rgba(255,214,79,0.55),0 0 18px rgba(249,168,37,0.32),inset 0 0 25px rgba(120,80,30,0.35),0 4px 8px rgba(0,0,0,0.25)}
+.stall.dirty{transform:translateY(-4px) scale(1.02);filter:drop-shadow(0 8px 12px rgba(249,168,37,0.26))}
+.stall.dirty .stall-light{background:radial-gradient(circle at 30% 30%,#ffee58,#f9a825);box-shadow:0 0 24px #fdd835,inset 0 2px 4px rgba(255,255,255,0.4);animation:blink 0.35s infinite alternate}
+.stall.dirty .stall-body{background:linear-gradient(180deg,#e0d4b8 0%,#d4c4a0 40%,#c9b48c 100%);animation:shake 0.15s infinite;box-shadow:0 0 0 4px rgba(255,214,79,0.6),0 0 24px rgba(249,168,37,0.38),inset 0 0 25px rgba(120,80,30,0.35),0 4px 8px rgba(0,0,0,0.25)}
 .stall.dirty .stall-body::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 20% 30%,rgba(139,90,43,0.25) 0%,transparent 30%),radial-gradient(circle at 70% 60%,rgba(139,90,43,0.2) 0%,transparent 25%),radial-gradient(circle at 45% 80%,rgba(120,80,30,0.3) 0%,transparent 20%);pointer-events:none;border-radius:10px 10px 0 0}
 .stall.dirty .stall-label{color:#fff8cf;text-shadow:0 0 8px rgba(255,213,79,0.75),0 1px 2px rgba(0,0,0,0.6)}
 .stall.dirty .stall-num{color:#fff3b0;text-shadow:0 0 8px rgba(255,213,79,0.8),0 1px 2px rgba(0,0,0,0.6)}
-.stall.dirty::after{content:'';position:absolute;bottom:6px;left:50%;transform:translateX(-50%);width:54px;height:10px;border-radius:999px;background:radial-gradient(ellipse,rgba(255,214,79,0.55) 0%,rgba(249,168,37,0.28) 55%,transparent 100%);pointer-events:none;filter:blur(1px)}
+.stall.dirty::after{content:'';position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:62px;height:13px;border-radius:999px;background:radial-gradient(ellipse,rgba(255,214,79,0.7) 0%,rgba(249,168,37,0.34) 55%,transparent 100%);pointer-events:none;filter:blur(1px)}
+.stall.cleaning{transform:translateY(-3px) scale(1.015);z-index:3}
+.stall.cleaning .stall-body{box-shadow:0 0 0 4px rgba(100,181,246,0.45),0 0 22px rgba(30,136,229,0.28),inset 0 0 20px rgba(21,101,192,0.16),0 4px 8px rgba(0,0,0,0.25)}
+.stall.cleaning .stall-num{color:#d9efff;text-shadow:0 0 6px rgba(100,181,246,0.7),0 1px 2px rgba(0,0,0,0.5)}
+.stall.cleaning::after{content:'';position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:60px;height:12px;border-radius:999px;background:radial-gradient(ellipse,rgba(100,181,246,0.65) 0%,rgba(30,136,229,0.24) 58%,transparent 100%);pointer-events:none;filter:blur(1px)}
 /* Stink lines emanating from dirty stalls */
 .stall.dirty .stink-lines{display:flex}
 .stink-lines{display:none;position:absolute;top:-12px;left:50%;transform:translateX(-50%);width:44px;height:28px;pointer-events:none;z-index:10;justify-content:space-between;padding:0 4px}
@@ -695,8 +699,10 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .sink:active{transform:scale(0.95)}
 .sink-bowl{width:30px;height:12px;background:#fff;border:2px solid #999;border-radius:0 0 10px 10px}
 .sink.dirty .sink-bowl{background:#ffcc80;animation:pulse-dirty 0.5s infinite alternate}
-.sink.dirty{box-shadow:0 0 0 2px rgba(255,204,128,0.65),0 0 14px rgba(255,167,38,0.28);transform:translateY(-2px)}
-.sink.dirty .sink-label{color:#7a3e00;text-shadow:0 0 6px rgba(255,204,128,0.5)}
+.sink.dirty{box-shadow:0 0 0 3px rgba(255,204,128,0.72),0 0 20px rgba(255,167,38,0.34);transform:translateY(-3px) scale(1.04)}
+.sink.dirty .sink-label{color:#7a3e00;text-shadow:0 0 8px rgba(255,204,128,0.62)}
+.sink.cleaning{box-shadow:0 0 0 3px rgba(100,181,246,0.55),0 0 18px rgba(30,136,229,0.3);transform:translateY(-2px)}
+.sink.cleaning .sink-label{color:#0d47a1;text-shadow:0 0 6px rgba(100,181,246,0.52)}
 .sink.cleaning .sink-bowl{background:#81d4fa}
 .sink-label{font-size:0.45em;color:#333;font-weight:bold;margin-top:2px}
 #exit-door{position:absolute;bottom:0;right:10px;width:92px;height:116px;pointer-events:none;z-index:7;filter:drop-shadow(0 -2px 10px rgba(86,56,24,0.16))}
