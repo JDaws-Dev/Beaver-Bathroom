@@ -6945,6 +6945,53 @@ function buildShiftComment(grade, shiftsLeft, won = false) {
   return "That stop got away from you. Kill the dirtiest problems sooner.";
 }
 
+function buildResultNextHTML({ xpEarned = 0 } = {}) {
+  const nextShift = SHIFT_NARRATIVES[game.shift + 1];
+  const currentRank = getCurrentRank();
+  const nextRank = getNextRank();
+  const prevXP = Math.max(0, employeeXP - xpEarned);
+  const rankStartXP = currentRank.xp;
+  const progressBase = nextRank ? Math.max(0, prevXP - rankStartXP) : 0;
+  const xpNeeded = nextRank ? Math.max(0, nextRank.xp - employeeXP) : 0;
+  const progressPct = nextRank ? Math.min(100, (getRankProgress() * 100)) : 100;
+
+  const cards = [];
+
+  if (nextShift) {
+    cards.push(`
+      <div class="result-next-card shift">
+        <div class="result-next-label">Next Shift</div>
+        <div class="result-next-title">${nextShift.name}</div>
+        <div class="result-next-text">${nextShift.desc}</div>
+      </div>
+    `);
+  }
+
+  if (nextRank) {
+    cards.push(`
+      <div class="result-next-card rank">
+        <div class="result-next-label">Promotion Track</div>
+        <div class="result-next-rankline">
+          <span>${currentRank.icon} ${currentRank.name}</span>
+          <span>${xpEarned > 0 ? `+${xpEarned} XP` : `${progressBase.toLocaleString()} XP`}</span>
+        </div>
+        <div class="result-next-text">Next rank: ${nextRank.icon} ${nextRank.name} in ${xpNeeded.toLocaleString()} XP</div>
+        <div class="result-next-progress"><div class="result-next-progress-fill" style="width:${progressPct}%"></div></div>
+      </div>
+    `);
+  } else {
+    cards.push(`
+      <div class="result-next-card rank">
+        <div class="result-next-label">Promotion Track</div>
+        <div class="result-next-title">${currentRank.icon} ${currentRank.name}</div>
+        <div class="result-next-text">Max rank reached. Keep stacking spotless shifts and high-score runs.</div>
+      </div>
+    `);
+  }
+
+  return cards.join('');
+}
+
 // XP rewards skill-based play: combos, grades, and speed matter more than raw output
 function calculateXP(score, grade) {
   let xp = Math.floor(score / 15); // Lower base than coins
@@ -7212,6 +7259,8 @@ function endShift() {
   // Award XP for rank progression (skill-weighted, not same as coins)
   const xpEarned = calculateXP(game.score, grade);
   addEmployeeXP(xpEarned);
+  $('result-next').classList.remove('hidden');
+  $('result-next').innerHTML = buildResultNextHTML({ xpEarned });
 
   // Unlock next skill based on completed shift
   const unlockedSkill = unlockNextSkill();
@@ -7249,6 +7298,7 @@ function endShift() {
     $('pick-row').innerHTML = rewardsHtml;
     $('next-btn').textContent = 'Supply Shop →';
   } else {
+    $('result-next').classList.remove('hidden');
     $('pick-section').style.display = 'block';
     $('pick-row').innerHTML = `
       <div class="rewards-row">
