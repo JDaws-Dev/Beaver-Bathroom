@@ -287,12 +287,12 @@ fetchLeaderboard();
 trackPageVisit();
 
 const SHIFT_NARRATIVES = [
-  {name: 'Training Day', desc: "Welcome to Beaver's Travel Stop, rookie! Show us what you've got.", progress: "Day 1 of 6"},
-  {name: 'The Lunch Rush', desc: "You survived training! But hungry travelers are coming...", progress: "Day 2 of 6"},
-  {name: 'Tour Bus Season', desc: "Three buses just pulled in. The Golden Plunger awaits!", progress: "Day 3 of 6"},
-  {name: 'Health Inspector', desc: "Word is the inspector might visit. Keep it spotless!", progress: "Day 4 of 6"},
-  {name: 'Festival Weekend', desc: "BBQ fest crowd incoming! You're so close to that trophy...", progress: "Day 5 of 6"},
-  {name: 'Championship Sunday', desc: "FINAL SHIFT! Earn the Golden Plunger and become a legend!", progress: "Final Day"},
+  {name: 'Training Day', desc: "Welcome to the travel center, rookie. Learn the mop, the mash, and the restroom code.", progress: "Day 1 of 6"},
+  {name: 'Lunch Stampede', desc: "Coffee cups, brisket trays, and road-weary travelers are stacking up fast.", progress: "Day 2 of 6"},
+  {name: 'Motorcoach Mayhem', desc: "The bus lane is full and the restroom line is curling past the snack wall.", progress: "Day 3 of 6"},
+  {name: 'White-Glove Visit', desc: "Corporate wants polished tile, clean sinks, and zero excuses.", progress: "Day 4 of 6"},
+  {name: 'Festival Weekend', desc: "Jerky bags, fudge boxes, and festival crowds are hammering the stop.", progress: "Day 5 of 6"},
+  {name: 'Championship Sunday', desc: "Final shift. Hold the line, keep it spotless, and earn the Golden Plunger.", progress: "Final Day"},
 ];
 
 // Visual themes per shift — applied to bathroom area
@@ -309,33 +309,33 @@ const SHIFT_THEMES = [
 const BEAVER_TIPS = [
   // Shift 1 (Training Day) tips - basics
   [
-    "Mash those task buttons fast! Speed is everything in this business.",
-    "Watch the patience bars - red means trouble!",
-    "VIP customers have gold badges. They tip big but expect the best!",
+    "Mash those task buttons fast. This place runs on hustle.",
+    "Watch the patience bars. Red means somebody's about to lose religion.",
+    "VIP customers expect showroom-clean tile and quick service.",
   ],
   // Shift 2 (Lunch Rush) tips - combo focus
   [
-    "Chain your cleans for combo streaks. 3x combos give speed boosts!",
-    "Don't forget the sinks! Travelers notice dirty sinks too.",
-    "Urgent customers move fast - help 'em quick or they'll leave mad!",
+    "Chain your cleans for combo streaks. Momentum matters here.",
+    "Don't forget the sinks. Travelers judge the whole stop by the wash-up area.",
+    "Urgent customers move like they skipped the last exit. Keep them moving.",
   ],
   // Shift 3 (Tour Bus) tips - volume handling
   [
-    "Use your items wisely - 🥩 Brisket and 🍿 Nuggets are lifesavers!",
-    "When it gets busy, prioritize VIPs and urgent customers.",
-    "Watch for puddles on the floor - click 'em to mop 'em up!",
+    "Use your items wisely. Brisket energy and nuggets can save a bad run.",
+    "When it gets busy, prioritize the customers who can blow up your rating.",
+    "Watch the floor. One bad puddle can turn a clean stop into chaos.",
   ],
   // Shift 4 (Health Inspector) tips - cleanliness
   [
-    "Health inspector might visit! Keep ALL stalls clean, not just busy ones.",
-    "A perfect inspection gives bonus points AND rating!",
-    "Clean stalls glow green. Any yellow means the inspector will notice!",
+    "Corporate checks the details. Clean every stall, not just the loud ones.",
+    "A perfect inspection is worth more than speed alone.",
+    "Green means good. Yellow means somebody important will notice.",
   ],
   // Shift 5 (Festival Weekend) tips - endurance
   [
-    "Almost there! Spend coins on perks between shifts.",
-    "Quick Scrub perk makes a HUGE difference late game.",
-    "Rush hour is chaos - stay calm and keep clicking!",
+    "Almost there. Spend your cash where it buys breathing room.",
+    "Quick Scrub pays off hard once the whole place starts surging.",
+    "Festival crowds smell weakness. Stay calm and keep clearing targets.",
   ],
   // Shift 6 (Championship) tips - final push
   [
@@ -779,10 +779,10 @@ const TASKS = [
 ];
 
 const THOUGHTS = {
-  impatient: ['Hurry up!', 'Come ON!', 'Ugh...', 'NEED TO GO!', 'Waiting...', 'Tick tock!'],
-  desperate: ['EMERGENCY!', 'HURRY!!!', 'CAN\'T WAIT!', 'PLEASE!', 'NOW!!!'],
-  happy: ['Ahh, nice!', 'Nice & clean!', 'Perfect!', 'Spotless!', 'Thanks!'],
-  disgusted: ['Gross!', 'Ewww!', 'Nasty...', 'Yuck!', 'Really?!'],
+  impatient: ['Move it!', 'Come ON!', 'Line is backing up!', 'Need a stall!', 'Tick tock!', 'Not ideal!'],
+  desperate: ['Emergency!', 'Wrong exit to gamble on!', 'NOW!', 'Please!', 'Can\'t wait!', 'Bad timing!'],
+  happy: ['Ahh, nice!', 'Road-trip saved!', 'Perfect!', 'Spotless!', 'Worth the stop!'],
+  disgusted: ['Gross!', 'Nope!', 'Travel-center foul!', 'Yuck!', 'Not like this!'],
 };
 
 const CUSTOMERS_MALE = ['👨','👴','👦','🧔','👨‍🦰','👨‍🦱','👨‍🦳','👱‍♂️','🧑‍🦰','👨‍🦲'];
@@ -816,40 +816,40 @@ const SPECIAL_CUSTOMERS = [
   {name:'Big Rig Bill', icon:'🧔', badge:'🚚', gender:'male', chance:0.06,
    shirt:{top:'#8b4513',bot:'#5d3a1a',border:'#3d2510'}, // Brown trucker
    patience:1.3, messiness:1, // Patient but messy
-   thoughts:{enter:'Long haul!',happy:'Now THAT\'S a clean restroom!',impatient:'Seen worse...'}},
+   thoughts:{enter:'Long haul day.',happy:'Now THAT is highway-grade clean.',impatient:'Seen worse, but not by much.'}},
   {name:'Road Trip Randy', icon:'👨‍🦰', badge:'🚗', gender:'male', chance:0.05,
    shirt:{top:'#ff6b6b',bot:'#ee5a5a',border:'#d43d3d'}, // Red vacation shirt
    patience:0.5, messiness:0, // Super urgent, been driving 8 hours
-   thoughts:{enter:'8 HOURS!',happy:'Finally!',impatient:'CAN\'T WAIT!'}},
+   thoughts:{enter:'Eight hours, no mercy.',happy:'Finally. Bless this stop.',impatient:'I cannot wait.'}},
   {name:'Business Bob', icon:'👨', badge:'💼', gender:'male', chance:0.05,
    shirt:{top:'#2c3e50',bot:'#1a252f',border:'#0d1318'}, // Suit
    patience:0.7, messiness:-1, // Tight schedule but clean
-   thoughts:{enter:'Quick stop.',happy:'Efficient!',impatient:'Time is money!'}},
+   thoughts:{enter:'Quick in, quick out.',happy:'Efficient stop.',impatient:'Clock is ticking.'}},
   {name:'Weekend Warrior', icon:'👱‍♂️', badge:'🎣', gender:'male', chance:0.05,
    shirt:{top:'#27ae60',bot:'#1e8449',border:'#145a32'}, // Outdoor green
    patience:1.4, messiness:0, // Relaxed, headed to the lake
-   thoughts:{enter:'Lake time!',happy:'Great pit stop!',impatient:'No rush...'}},
+   thoughts:{enter:'Cooler\'s melting.',happy:'Great pit stop.',impatient:'Thought this would be faster.'}},
   {name:'Trucker Tom', icon:'🧔', badge:'⛽', gender:'male', chance:0.04,
    shirt:{top:'#34495e',bot:'#2c3e50',border:'#1a252f'}, // Gray work shirt
    patience:1.5, messiness:1, // Bill's buddy, very patient
-   thoughts:{enter:'Bill here?',happy:'Top notch!',impatient:'Eh, it happens.'}},
+   thoughts:{enter:'Need coffee and a miracle.',happy:'Top notch stop.',impatient:'C\'mon now.'}},
   // Female bathroom characters
   {name:'Soccer Mom', icon:'👩', badge:'⚽', gender:'female', chance:0.06,
    shirt:{top:'#9b59b6',bot:'#8e44ad',border:'#6c3483'}, // Purple athleisure
    patience:0.6, messiness:-1, // Rushed but clean
-   thoughts:{enter:'Practice in 20!',happy:'Perfect!',impatient:'Kids are waiting!'}},
+   thoughts:{enter:'Kickoff in twenty!',happy:'Perfect stop.',impatient:'The whole van is waiting!'}},
   {name:'Tourist Tina', icon:'👩‍🦰', badge:'📸', gender:'female', chance:0.05,
    shirt:{top:'#f39c12',bot:'#d68910',border:'#b9770e'}, // Bright tourist
    patience:1.2, messiness:-1, // Taking photos, distracted but clean
-   thoughts:{enter:'THE famous restrooms?!',happy:'Instagram perfect!',impatient:'One more pic...'}},
+   thoughts:{enter:'This place better live up to the hype.',happy:'Postcard clean!',impatient:'I parked way out there...'}},
   {name:'Snack Sally', icon:'👱‍♀️', badge:'🍫', gender:'female', chance:0.05,
    shirt:{top:'#e74c3c',bot:'#c0392b',border:'#922b21'}, // Red
    patience:1.0, messiness:-1, // Here for snacks, distracted
-   thoughts:{enter:'Snack time!',happy:'Clean AND they have fudge!',impatient:'Where\'s the jerky aisle?'}},
+   thoughts:{enter:'Snack run and restroom stop.',happy:'Clean AND the fudge counter is open!',impatient:'Where\'s the jerky wall?'}},
   {name:'Road Queen', icon:'👩‍🦱', badge:'👑', gender:'female', chance:0.04,
    shirt:{top:'#e91e63',bot:'#c2185b',border:'#880e4f'}, // Pink
    patience:0.8, messiness:0, // Standards, but fair
-   thoughts:{enter:'Pit stop, y\'all!',happy:'LOVE this place!',impatient:'Hmm...'}}
+   thoughts:{enter:'Pit stop, y\'all.',happy:'Love this stop.',impatient:'This line is not regal.'}}
 ];
 
 function getCustomerVisualProfile(gender, specialName) {
@@ -887,24 +887,24 @@ function getCustomerVisualStyle(p) {
 
 const CLEAN_MESSAGES = [
   'Sparkling! ✨', 'Spotless!', 'Super clean!', 'Fresh!', 'Pristine!',
-  'Squeaky clean!', 'Like new!', 'Beaver-approved!', 'Road-trip ready!',
-  'Rest stop royalty!', 'Travel stop quality!', 'Tail-slapping clean!'
+  'Squeaky clean!', 'Road-trip ready!', 'Travel-center sharp!',
+  'Snack-wall worthy!', 'White-glove ready!', 'Tail-slapping clean!', 'Highway royalty!'
 ];
 
 const GAME_OVER_MESSAGES = [
-  "The manager's taking your badge back...",
-  "Maybe bathroom work isn't for you...",
-  "Beaver looks disappointed. Real disappointed.",
-  "Time to update your resume...",
-  "The Golden Plunger slips away...",
+  "The line broke you before the mop could save you.",
+  "The snack wall survived. The restroom did not.",
+  "That stop got away from you in a hurry.",
+  "Corporate is going to have notes.",
+  "The Golden Plunger just rolled out of reach.",
 ];
 
 const WIN_MESSAGES = [
-  "You did it, rookie! The Golden Plunger is yours!",
-  "From new hire to bathroom legend in 6 shifts!",
-  "Beaver would be proud. Actually, Beaver IS proud!",
-  "The cleanest restrooms this side of Texas!",
-  "You've earned your place at Beaver's Travel Stop!",
+  "You did it, rookie. The Golden Plunger is yours.",
+  "From mop rookie to roadside legend in six shifts.",
+  "That restroom was cleaner than the gift aisle was crowded.",
+  "You just ran the cleanest stop on the highway.",
+  "Your name belongs on the employee wall and the brisket board.",
 ];
 
 // ACHIEVEMENTS: Badges earned for milestones
@@ -3224,15 +3224,15 @@ function setBeaverMood(mood, duration = 1000) {
 
 // Beaver speech bubble tips - shown at relevant moments during first shift
 const BEAVER_SPEECH_TIPS = {
-  dirtyStall: "Click dirty stalls to clean!",
+  dirtyStall: "Dirty stalls first. That's the whole reputation.",
   taskMash: "Mash the buttons faster!",
-  dirtySink: "Don't forget the sinks!",
+  dirtySink: "Don't forget the sinks. People notice that.",
   powerupReady: "Use your items! (🥩🧊🍿🦫)",
-  comboStart: "Keep cleaning for combos!",
-  lowTime: "Hurry! Time's running out!",
-  vipCustomer: "VIP customer! Clean fast for 2x bonus!",
-  inspectorComing: "Keep stalls clean for inspection!",
-  fightBreaking: "Break up that fight! Tap fast!"
+  comboStart: "Keep the place rolling. Combos are your breathing room.",
+  lowTime: "Clock's burning. Prioritize the messiest problems.",
+  vipCustomer: "VIP customer. Showroom clean gets paid.",
+  inspectorComing: "White-glove check incoming. No yellow lights.",
+  fightBreaking: "Snack aisle scuffle. Shut it down fast."
 };
 let tipTimeout = null;
 let shownTips = {};
@@ -4477,11 +4477,11 @@ function update(dt) {
     }
     // Show countdown in rush warning
     const rushSec = Math.max(0, Math.ceil(game.rushDuration / 1000));
-    $('rush-warning').textContent = `🚌 TOUR BUS! ${rushSec}s 🚌`;
+    $('rush-warning').textContent = `🚌 MOTORCOACH WAVE ${rushSec}s 🚌`;
     if (game.rushDuration <= 0) {
       game.rushMode = false;
       $('rush-warning').style.display = 'none';
-      $('rush-warning').textContent = '🚌 TOUR BUS ARRIVING! 🚌';
+      $('rush-warning').textContent = '🚌 MOTORCOACH WAVE INCOMING! 🚌';
       if (!game.inspector && !game.fight) setBeaverMood('idle', 0);
     }
   }
