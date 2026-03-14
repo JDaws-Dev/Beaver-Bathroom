@@ -2990,6 +2990,8 @@ function startMascotWalk() {
     y: laneY,
     homeX: hiddenX,
     homeY: laneY,
+    exitX: hiddenX + 62,
+    exitY: laneY,
     route,
     routeIndex: 0,
     phase: 'door',
@@ -3070,6 +3072,20 @@ function updateMascotWalk(dt) {
   } else if (m.phase === 'returning') {
     mascotEl.className = 'floor-mascot stage-return';
     if (moveToward(m.homeX, m.homeY, m.speed * 1.05)) {
+      m.phase = 'exit-door';
+      m.phaseTimer = 240;
+      openExitDoor(900);
+    }
+  } else if (m.phase === 'exit-door') {
+    mascotEl.className = 'floor-mascot stage-return';
+    if (moveToward(m.exitX, m.exitY, m.speed * 1.1)) {
+      m.phase = 'exit-hide';
+      m.phaseTimer = 180;
+    }
+  } else if (m.phase === 'exit-hide') {
+    mascotEl.className = 'floor-mascot stage-door';
+    m.phaseTimer -= dt;
+    if (m.phaseTimer <= 0) {
       endMascotWalk();
       return;
     }
