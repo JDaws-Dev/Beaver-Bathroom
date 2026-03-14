@@ -6889,7 +6889,7 @@ function getGrade() {
   return 'F';
 }
 
-function buildRunRecapHTML({ grade, won = false, isNewRecord = false } = {}) {
+function buildRunRecapHTML({ grade, won = false, isNewRecord = false, maxItems = Infinity } = {}) {
   const recap = [];
   const eventStats = game.eventStats || createEmptyEventStats();
 
@@ -6933,7 +6933,7 @@ function buildRunRecapHTML({ grade, won = false, isNewRecord = false } = {}) {
     recap.push({ icon: '🧹', text: 'steady shift', tone: 'info' });
   }
 
-  return recap.map(item => `
+  return recap.slice(0, maxItems).map(item => `
     <div class="recap-chip ${item.tone}">
       <span class="recap-icon">${item.icon}</span>
       <span class="recap-text">${item.text}</span>
@@ -6975,47 +6975,44 @@ function buildResultNextHTML({ xpEarned = 0 } = {}) {
   const nextShift = SHIFT_NARRATIVES[game.shift + 1];
   const currentRank = getCurrentRank();
   const nextRank = getNextRank();
-  const prevXP = Math.max(0, employeeXP - xpEarned);
-  const rankStartXP = currentRank.xp;
-  const progressBase = nextRank ? Math.max(0, prevXP - rankStartXP) : 0;
   const xpNeeded = nextRank ? Math.max(0, nextRank.xp - employeeXP) : 0;
   const progressPct = nextRank ? Math.min(100, (getRankProgress() * 100)) : 100;
-
-  const cards = [];
-
-  if (nextShift) {
-    cards.push(`
-      <div class="result-next-card shift">
-        <div class="result-next-label">Next Shift</div>
-        <div class="result-next-title">${nextShift.name}</div>
-        <div class="result-next-text">${nextShift.desc}</div>
-      </div>
-    `);
-  }
-
-  if (nextRank) {
-    cards.push(`
-      <div class="result-next-card rank">
-        <div class="result-next-label">Promotion Track</div>
-        <div class="result-next-rankline">
-          <span>${currentRank.icon} ${currentRank.name}</span>
-          <span>${xpEarned > 0 ? `+${xpEarned} XP` : `${progressBase.toLocaleString()} XP`}</span>
+  const shiftHtml = nextShift
+    ? `
+        <div class="result-next-section">
+          <div class="result-next-label">Next Shift</div>
+          <div class="result-next-title">${nextShift.name}</div>
+          <div class="result-next-text">${nextShift.desc}</div>
         </div>
-        <div class="result-next-text">Next rank: ${nextRank.icon} ${nextRank.name} in ${xpNeeded.toLocaleString()} XP</div>
-        <div class="result-next-progress"><div class="result-next-progress-fill" style="width:${progressPct}%"></div></div>
-      </div>
-    `);
-  } else {
-    cards.push(`
-      <div class="result-next-card rank">
-        <div class="result-next-label">Promotion Track</div>
-        <div class="result-next-title">${currentRank.icon} ${currentRank.name}</div>
-        <div class="result-next-text">Max rank reached. Keep stacking spotless shifts and high-score runs.</div>
-      </div>
-    `);
-  }
+      `
+    : '';
+  const rankHtml = nextRank
+    ? `
+        <div class="result-next-section rank">
+          <div class="result-next-rankline">
+            <span>${currentRank.icon} ${currentRank.name}</span>
+            <span>+${xpEarned} XP</span>
+          </div>
+          <div class="result-next-text">Next: ${nextRank.icon} ${nextRank.name} in ${xpNeeded.toLocaleString()} XP</div>
+          <div class="result-next-progress"><div class="result-next-progress-fill" style="width:${progressPct}%"></div></div>
+        </div>
+      `
+    : `
+        <div class="result-next-section rank">
+          <div class="result-next-rankline">
+            <span>${currentRank.icon} ${currentRank.name}</span>
+            <span>MAX</span>
+          </div>
+          <div class="result-next-text">Top rank reached. Keep stacking spotless shifts and high-score runs.</div>
+        </div>
+      `;
 
-  return cards.join('');
+  return `
+    <div class="result-next-card">
+      ${shiftHtml}
+      ${rankHtml}
+    </div>
+  `;
 }
 
 // XP rewards skill-based play: combos, grades, and speed matter more than raw output
@@ -7217,7 +7214,7 @@ function endShift() {
   }
   $('result-comment').textContent = comment;
   $('result-comment').classList.remove('ai-review');
-  $('result-recap').innerHTML = buildRunRecapHTML({ grade });
+  $('result-recap').innerHTML = buildRunRecapHTML({ grade, maxItems: 2 });
 
   // Track shift completion
   trackEvent('shift_complete', {
