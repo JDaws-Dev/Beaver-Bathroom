@@ -2968,8 +2968,8 @@ function startMascotWalk() {
   const floorTop = floorRect.top;
   const laneY = floorRect.height - Math.max(122, floorRect.height * 0.24);
   const doorCenterX = exitRect.left - floorLeft + exitRect.width / 2;
-  const doorCenterY = exitRect.top - floorTop + exitRect.height * 0.52;
-  const hiddenX = Math.min(floorRect.width + 40, doorCenterX + 70);
+  const doorMouthX = doorCenterX - 54;
+  const hiddenX = doorMouthX;
   const upperLaneY = Math.max(78, floorRect.height * 0.28);
   const midLaneY = Math.max(118, floorRect.height * 0.44);
   const route = [
