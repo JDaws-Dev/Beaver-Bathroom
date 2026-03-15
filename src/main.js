@@ -6605,55 +6605,68 @@ function showTaskPanel(stallIdx) {
   const btns = $('task-buttons');
   btns.innerHTML = stall.tasks.map((t, ti) => {
     const progress = getTaskProgressPercent(ti);
-    return `<div class="task-btn ${t.done ? 'done' : ''} ${game.activeTask === ti ? 'active' : ''}" data-idx="${ti}">
+    return `<button type="button" class="task-btn ${t.done ? 'done' : ''} ${game.activeTask === ti ? 'active' : ''}" data-idx="${ti}">
       <div class="progress" style="transform:scaleX(${progress / 100})"></div>
       <span class="task-btn-label">${t.icon} ${t.label}</span>
-    </div>`;
+    </button>`;
   }).join('');
 
   btns.querySelectorAll('.task-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+    const handleTaskTap = (e) => {
+      e.preventDefault();
       e.stopPropagation();
-      const ti = parseInt(btn.dataset.idx);
-      if (!stall.tasks[ti].done) {
-        // Anti-auto-clicker: track click rate
-        const now = Date.now();
-        game._clickTimestamps.push(now);
-        if (game._clickTimestamps.length > 5) game._clickTimestamps = game._clickTimestamps.slice(-5);
-        if (game._clickTimestamps.length >= 5) {
-          const span = game._clickTimestamps[4] - game._clickTimestamps[0];
-          if (span / 4 < 30) return; // avg interval < 30ms = inhuman, ignore
-        }
 
-        btn.classList.remove('clicked');
-        void btn.offsetWidth;
-        btn.classList.add('clicked');
-        haptic('light');
+      const ti = parseInt(btn.dataset.idx, 10);
+      if (stall.tasks[ti].done) return;
 
-        if (game.activeTask === ti) {
-          const boost = game.effects.speed > 0 ? CONFIG.clickBoost * 2 : CONFIG.clickBoost;
-          game.taskProgress += boost;
-          playTaskSound(stall.tasks[ti].id);
-          if (game.taskProgress >= getEffectiveTaskTime()) {
-            completeTask();
-          } else {
-            updateTaskPanel();
-          }
+      // Ignore the synthetic click that follows a touch/pointer tap on mobile.
+      if (e.type === 'click') {
+        const lastPointerTapAt = Number(btn.dataset.lastPointerTapAt || 0);
+        if (Date.now() - lastPointerTapAt < 450) return;
+      } else if (e.type === 'pointerup') {
+        btn.dataset.lastPointerTapAt = String(Date.now());
+      }
+
+      // Anti-auto-clicker: track click rate
+      const now = Date.now();
+      game._clickTimestamps.push(now);
+      if (game._clickTimestamps.length > 5) game._clickTimestamps = game._clickTimestamps.slice(-5);
+      if (game._clickTimestamps.length >= 5) {
+        const span = game._clickTimestamps[4] - game._clickTimestamps[0];
+        if (span / 4 < 30) return; // avg interval < 30ms = inhuman, ignore
+      }
+
+      btn.classList.remove('clicked');
+      void btn.offsetWidth;
+      btn.classList.add('clicked');
+      haptic('light');
+
+      if (game.activeTask === ti) {
+        const boost = game.effects.speed > 0 ? CONFIG.clickBoost * 2 : CONFIG.clickBoost;
+        game.taskProgress += boost;
+        playTaskSound(stall.tasks[ti].id);
+        if (game.taskProgress >= getEffectiveTaskTime()) {
+          completeTask();
         } else {
-          game.activeTask = ti;
-          game.taskProgress = 0;
-          game._clickTimestamps = []; // Reset on task switch
-          const boost = game.effects.speed > 0 ? CONFIG.clickBoost * 2 : CONFIG.clickBoost;
-          game.taskProgress += boost;
-          playTaskSound(stall.tasks[ti].id);
-          if (game.taskProgress >= getEffectiveTaskTime()) {
-            completeTask();
-          } else {
-            showTaskPanel(stallIdx);
-          }
+          updateTaskPanel();
+        }
+      } else {
+        game.activeTask = ti;
+        game.taskProgress = 0;
+        game._clickTimestamps = []; // Reset on task switch
+        const boost = game.effects.speed > 0 ? CONFIG.clickBoost * 2 : CONFIG.clickBoost;
+        game.taskProgress += boost;
+        playTaskSound(stall.tasks[ti].id);
+        if (game.taskProgress >= getEffectiveTaskTime()) {
+          completeTask();
+        } else {
+          showTaskPanel(stallIdx);
         }
       }
-    });
+    };
+
+    btn.addEventListener('pointerup', handleTaskTap);
+    btn.addEventListener('click', handleTaskTap);
   });
 
   $('task-panel').classList.add('show');
