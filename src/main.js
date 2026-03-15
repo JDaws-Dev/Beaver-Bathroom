@@ -482,6 +482,8 @@ const ITEMS = [
     name: 'Brisket Sandwich',
     icon: '🥩',
     desc: 'Texas BBQ energy! 2x cleaning speed',
+    effect: '2x task speed',
+    detail: 'Burn through stall jobs twice as fast.',
     duration: 10000,  // 10s
     cost: 30,
   },
@@ -490,6 +492,8 @@ const ITEMS = [
     name: 'Icee Freeze',
     icon: '🧊',
     desc: 'Brain freeze! Slower spawns',
+    effect: 'Slows arrivals',
+    detail: 'Buys breathing room when the room is filling up.',
     duration: 12000,
     cost: 30,
   },
@@ -498,6 +502,8 @@ const ITEMS = [
     name: 'Beaver Nuggets',
     icon: '🍿',
     desc: 'Instant clean one stall',
+    effect: '1 instant stall clean',
+    detail: 'Erases one dirty stall on demand.',
     cost: 75,
   },
   {
@@ -505,6 +511,8 @@ const ITEMS = [
     name: 'Beaver Walk',
     icon: '🦫',
     desc: 'Beaver distracts customers!',
+    effect: 'Mascot distraction',
+    detail: 'Draws floor customers off their paths for a short parade.',
     duration: 8000,  // 8s
     cost: 60,
   },
@@ -7109,16 +7117,19 @@ function renderSupplyShop() {
   const grid = $('upgrades-grid');
   grid.innerHTML = '';
   $('coins').textContent = game.coins;
+  const lastPurchase = game.shopFeedback?.itemId || '';
+  const boughtAt = game.shopFeedback?.at || 0;
+  const recentlyBought = Date.now() - boughtAt < 1800 ? lastPurchase : '';
 
   // Show current powerup counts
   const inventoryHtml = `
     <div class="shop-inventory">
-      <div class="inv-label">Your Items:</div>
+      <div class="inv-label">Current Loadout</div>
       <div class="inv-row">
-        <span class="inv-item">🥩 ${game.powerups.speed}</span>
-        <span class="inv-item">🧊 ${game.powerups.slow}</span>
-        <span class="inv-item">🍿 ${game.powerups.auto}</span>
-        <span class="inv-item">🦫 ${game.powerups.mascot}</span>
+        <span class="inv-item"><span class="inv-emoji">🥩</span><span class="inv-count">${game.powerups.speed}</span><span class="inv-name">Brisket</span></span>
+        <span class="inv-item"><span class="inv-emoji">🧊</span><span class="inv-count">${game.powerups.slow}</span><span class="inv-name">Icee</span></span>
+        <span class="inv-item"><span class="inv-emoji">🍿</span><span class="inv-count">${game.powerups.auto}</span><span class="inv-name">Nuggets</span></span>
+        <span class="inv-item"><span class="inv-emoji">🦫</span><span class="inv-count">${game.powerups.mascot}</span><span class="inv-name">Mascot</span></span>
       </div>
     </div>
   `;
@@ -7130,12 +7141,30 @@ function renderSupplyShop() {
       ${ITEMS.map(item => {
         const cost = getItemCost(item);
         const canAfford = game.coins >= cost;
+        const owned = game.powerups[item.id] || 0;
+        const durationText = item.duration ? `${Math.round(item.duration / 1000)}s` : 'Instant';
+        const boughtClass = recentlyBought === item.id ? 'just-bought' : '';
         return `
-          <button class="shop-item ${canAfford ? '' : 'cant-afford'}" data-id="${item.id}">
-            <span class="shop-icon">${item.icon}</span>
-            <span class="shop-name">${item.name}</span>
-            <span class="shop-desc">${item.desc}</span>
-            <span class="shop-cost">$ ${cost}</span>
+          <button class="shop-item ${canAfford ? '' : 'cant-afford'} ${boughtClass}" data-id="${item.id}">
+            <span class="shop-icon-wrap">
+              <span class="shop-icon">${item.icon}</span>
+            </span>
+            <span class="shop-main">
+              <span class="shop-topline">
+                <span class="shop-name">${item.name}</span>
+                <span class="shop-stock">In bag ${owned}</span>
+              </span>
+              <span class="shop-effect-row">
+                <span class="shop-effect">${item.effect}</span>
+                <span class="shop-duration">${durationText}</span>
+              </span>
+              <span class="shop-desc">${item.detail}</span>
+            </span>
+            <span class="shop-buycol">
+              <span class="shop-cost">$ ${cost}</span>
+              <span class="shop-buyhint">${canAfford ? '+1 item' : 'Need more'}</span>
+            </span>
+            ${recentlyBought === item.id ? '<span class="shop-bought-badge">Bought!</span>' : ''}
           </button>
         `;
       }).join('')}
@@ -7166,6 +7195,7 @@ function purchaseItem(itemId) {
 
   game.coins -= cost;
   game.powerups[itemId]++;
+  game.shopFeedback = { itemId, at: Date.now() };
   playTaskComplete();
   renderSupplyShop();
 }
