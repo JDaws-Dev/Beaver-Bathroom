@@ -2459,6 +2459,11 @@ const DIFFICULTY_MODIFIERS = {
   hard:   { spawn: 0.7, patience: 0.7, occupy: 0.85, score: 1.5 },
   insane: { spawn: 0.5, patience: 0.5, occupy: 0.7, score: 2.0 },
 };
+const SOLO_BALANCE = {
+  taskTime: 0.88,
+  messScale: 0.8,
+  oldMessPenalty: 0.1,
+};
 let highScore = parseInt(localStorage.getItem('beaverHighScore')) || 0;
 let endlessHighScore = parseInt(localStorage.getItem('beaverEndlessHighScore')) || 0;
 let endlessUnlocked = localStorage.getItem('beaverEndlessUnlocked') === 'true';
@@ -3558,6 +3563,7 @@ function getEffectiveTaskTime() {
   // Quick Scrub skill reduces task time
   const scrubBonus = getSkillEffect('scrub');
   let time = CONFIG.baseTaskTime * (1 - scrubBonus);
+  if (!game.isMultiplayer) time *= SOLO_BALANCE.taskTime;
   // Combo milestone speed boost (30% faster)
   if (game.comboBoost > 0) time *= 0.7;
   return time;
@@ -4888,7 +4894,7 @@ function update(dt) {
     p.age = (p.age || 0) + dt;
     if (p.age > 8000 && !p.penalized) {
       p.penalized = true;
-      game.rating = Math.max(0, game.rating - 0.15);
+      game.rating = Math.max(0, game.rating - (game.isMultiplayer ? 0.15 : SOLO_BALANCE.oldMessPenalty));
       floatMessage('-⭐ Messy floor!', p.x, p.y - 20, 'bad');
     }
   });
@@ -5049,7 +5055,8 @@ function spawnCustomer() {
 // Get mess scale factor for the current shift (0 on shift 1, ramps to 1.0)
 function getMessScale() {
   const idx = Math.min(game.shift, CONFIG.messScaleByShift.length - 1);
-  return CONFIG.messScaleByShift[idx];
+  const scale = CONFIG.messScaleByShift[idx];
+  return game.isMultiplayer ? scale : scale * SOLO_BALANCE.messScale;
 }
 
 function getLocalObstacleRect(el, floorRect, padX = 0, padTop = 0, padBottom = 0) {
@@ -8768,6 +8775,7 @@ const MP_LOADOUT_ITEMS = [
   { id: 'speed', icon: '⚡', name: 'Speed Boost', desc: '2x cleaning speed for 12s' },
   { id: 'slow', icon: '🐢', name: 'Slow Down', desc: '2x slower arrivals for 12s' },
   { id: 'auto', icon: '✨', name: 'Auto Clean', desc: 'Instantly clean one dirty stall' },
+  { id: 'mascot', icon: '🦫', name: 'Mascot Parade', desc: 'Distracts customers across the floor for 8s' },
 ];
 
 function getMPGamesPlayed() {
@@ -8816,6 +8824,9 @@ const multiplayerPregameController = createMultiplayerPregameController({
   showOutfitter,
   getComboSpriteSrc,
   getOpponentSpriteSrc,
+  initLoadoutUI,
+  renderOpponentLoadout,
+  updateReadyUI,
   showScreen,
   startMPGame,
 });
@@ -8824,6 +8835,7 @@ multiplayerPregameController.bindEvents();
 
 // Loadout UI
 function initLoadoutUI() {
+  mpState.loadout = [null, null, null];
   // Reset slots
   for (let i = 0; i < 3; i++) {
     const slot = $('loadout-slot-' + i);
@@ -8853,6 +8865,26 @@ function initLoadoutUI() {
   // Hide opponent loadout
   const oppSection = $('mp-opponent-loadout');
   if (oppSection) oppSection.classList.add('hidden');
+  renderOpponentLoadout([]);
+}
+
+function renderOpponentLoadout(loadout = []) {
+  const oppSection = $('mp-opponent-loadout');
+  const oppSlots = $('mp-opponent-loadout-slots');
+  if (!oppSection || !oppSlots) return;
+  const items = Array.isArray(loadout) ? loadout.filter(Boolean) : [];
+  if (!items.length) {
+    oppSection.classList.add('hidden');
+    oppSlots.innerHTML = '';
+    return;
+  }
+  oppSection.classList.remove('hidden');
+  oppSlots.innerHTML = items.map((itemId) => {
+    const item = MP_LOADOUT_ITEMS.find((candidate) => candidate.id === itemId);
+    const icon = item?.icon || '•';
+    const name = item?.name || itemId;
+    return `<div class="mp-loadout-slot filled opponent">${icon} ${name}</div>`;
+  }).join('');
 }
 
 function addToLoadout(itemId, icon, name) {
@@ -8922,12 +8954,21 @@ $('mp-ready-btn')?.addEventListener('click', async () => {
 function updateReadyUI() {
   const btn = $('mp-ready-btn');
   if (!btn) return;
+  const myStatusEl = mpState.isHost ? $('mp-host-status') : $('mp-guest-status');
   if (mpState.myReady) {
     btn.textContent = '✅ Ready!';
     btn.classList.add('mp-ready-active');
+    if (myStatusEl) {
+      myStatusEl.textContent = 'Ready';
+      myStatusEl.classList.add('mp-ready');
+    }
   } else {
     btn.textContent = 'Ready!';
     btn.classList.remove('mp-ready-active');
+    if (myStatusEl) {
+      myStatusEl.textContent = 'Choosing Loadout';
+      myStatusEl.classList.remove('mp-ready');
+    }
   }
 }
 

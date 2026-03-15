@@ -7,7 +7,7 @@ const VALID_CHAT_IDS = [
 ];
 
 // Valid loadout item IDs
-const VALID_LOADOUT_ITEMS = ["speed", "slow", "auto"];
+const VALID_LOADOUT_ITEMS = ["speed", "slow", "auto", "mascot"];
 const QUEUE_STALE_MS = 20000;
 
 function isQueueEntryActive(entry: { status: string; queuedAt: number; lastSeenAt?: number }) {

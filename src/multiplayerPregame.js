@@ -46,6 +46,9 @@ export function createMultiplayerPregameController({
   showOutfitter,
   getComboSpriteSrc,
   getOpponentSpriteSrc,
+  initLoadoutUI,
+  renderOpponentLoadout,
+  updateReadyUI,
   showScreen,
   startMPGame,
 }) {
@@ -487,15 +490,19 @@ export function createMultiplayerPregameController({
       $('mp-guest-slot').classList.remove('mp-player-ready');
       $('mp-guest-status').textContent = '--';
       $('mp-guest-status').classList.remove('mp-ready');
+      $('mp-host-status').textContent = 'Choosing Loadout';
+      $('mp-host-status').classList.remove('mp-ready');
       $('mp-start-btn').disabled = true;
       $('mp-start-btn').textContent = 'Waiting for opponent...';
     } else {
       $('mp-guest-name').textContent = myName;
       $('mp-guest-slot').classList.add('mp-player-ready');
-      $('mp-guest-status').textContent = 'Ready';
-      $('mp-guest-status').classList.add('mp-ready');
+      $('mp-guest-status').textContent = 'Choosing Loadout';
+      $('mp-guest-status').classList.remove('mp-ready');
+      $('mp-host-status').textContent = 'Choosing Loadout';
+      $('mp-host-status').classList.remove('mp-ready');
       $('mp-start-btn').disabled = true;
-      $('mp-start-btn').textContent = 'Waiting for host to start...';
+      $('mp-start-btn').textContent = 'Waiting for both players...';
     }
 
     if (isHost) {
@@ -518,6 +525,8 @@ export function createMultiplayerPregameController({
     }
 
     mpState.myReady = false;
+    initLoadoutUI();
+    updateReadyUI();
     const codeSection = document.querySelector('.mp-lobby-code-section');
     if (codeSection) codeSection.style.display = mpState.isRandomMatch ? 'none' : '';
 
@@ -556,10 +565,15 @@ export function createMultiplayerPregameController({
       }
 
       if (mpState.isHost) {
+        const hostReady = !!room.hostReady;
+        const guestReady = !!room.guestReady;
+        $('mp-host-status').textContent = hostReady ? 'Ready' : 'Choosing Loadout';
+        $('mp-host-status').classList.toggle('mp-ready', hostReady);
         if (room.guestName) {
           $('mp-guest-name').textContent = room.guestName;
           $('mp-guest-slot').classList.add('mp-player-ready');
-          $('mp-guest-status').textContent = 'Joined';
+          $('mp-guest-status').textContent = guestReady ? 'Ready' : 'Choosing Loadout';
+          $('mp-guest-status').classList.toggle('mp-ready', guestReady);
           mpState.opponentName = room.guestName;
           mpState.opponentCosmetics = room.guestCosmetics || null;
           const guestEl = $('mp-lobby-guest-beaver');
@@ -567,17 +581,29 @@ export function createMultiplayerPregameController({
             guestEl.style.display = '';
             guestEl.src = getOpponentSpriteSrc();
           }
-          $('mp-start-btn').disabled = false;
-          $('mp-start-btn').textContent = 'Start Battle!';
+          renderOpponentLoadout(room.guestLoadout || []);
+          $('mp-start-btn').disabled = !(hostReady && guestReady);
+          $('mp-start-btn').textContent = hostReady && guestReady ? 'Start Battle!' : 'Waiting for Ready...';
         } else {
           $('mp-guest-name').textContent = 'Waiting...';
           $('mp-guest-slot').classList.remove('mp-player-ready');
           $('mp-guest-status').textContent = '--';
+          $('mp-guest-status').classList.remove('mp-ready');
+          renderOpponentLoadout([]);
           $('mp-start-btn').disabled = true;
           $('mp-start-btn').textContent = 'Waiting for opponent...';
         }
       } else {
         $('mp-host-name').textContent = room.hostName;
+        const hostReady = !!room.hostReady;
+        const guestReady = !!room.guestReady;
+        $('mp-host-status').textContent = hostReady ? 'Ready' : 'Choosing Loadout';
+        $('mp-host-status').classList.toggle('mp-ready', hostReady);
+        $('mp-guest-status').textContent = guestReady ? 'Ready' : 'Choosing Loadout';
+        $('mp-guest-status').classList.toggle('mp-ready', guestReady);
+        $('mp-start-btn').disabled = true;
+        $('mp-start-btn').textContent = hostReady && guestReady ? 'Host can start...' : 'Waiting for both players...';
+        renderOpponentLoadout(room.hostLoadout || []);
         if (room.status === 'playing') {
           stopLobbyPolling();
           startMPGame();

@@ -987,7 +987,7 @@
         <div class="mp-lobby-player mp-player-ready">
           <img id="mp-lobby-host-beaver" class="mp-lobby-beaver-sprite" src="" alt="" style="width:48px;height:48px;image-rendering:pixelated;">
           <span class="mp-player-name" id="mp-host-name">Host</span>
-          <span class="mp-player-status mp-ready">Ready</span>
+          <span class="mp-player-status" id="mp-host-status">Choosing Loadout</span>
         </div>
         <div class="mp-lobby-vs">VS</div>
         <div class="mp-lobby-player" id="mp-guest-slot">
@@ -1001,7 +1001,28 @@
         <span class="mp-lobby-gender" id="mp-lobby-gender">Women's</span>
         <span class="mp-lobby-difficulty" id="mp-lobby-difficulty">Normal</span>
       </div>
-      <button class="btn btn-play mp-start-btn" id="mp-start-btn" disabled>Waiting for opponent...</button>
+      <div class="mp-loadout-section">
+        <div class="mp-loadout-header">
+          <span>Your Loadout</span>
+          <span class="mp-loadout-sub">Pick 3 powerups</span>
+        </div>
+        <div class="mp-loadout-slots">
+          <button class="mp-loadout-slot" id="loadout-slot-0" type="button">Empty</button>
+          <button class="mp-loadout-slot" id="loadout-slot-1" type="button">Empty</button>
+          <button class="mp-loadout-slot" id="loadout-slot-2" type="button">Empty</button>
+        </div>
+        <div class="mp-loadout-items" id="loadout-items"></div>
+      </div>
+      <div class="mp-loadout-section mp-opponent-loadout hidden" id="mp-opponent-loadout">
+        <div class="mp-loadout-header">
+          <span>Opponent Loadout</span>
+        </div>
+        <div class="mp-loadout-slots mp-opponent-loadout-slots" id="mp-opponent-loadout-slots"></div>
+      </div>
+      <div class="mp-lobby-actions">
+        <button class="btn btn-play mp-ready-btn" id="mp-ready-btn">Ready!</button>
+        <button class="btn btn-play mp-start-btn" id="mp-start-btn" disabled>Waiting for opponent...</button>
+      </div>
       <button class="btn-help" id="mp-leave-btn">Leave Room</button>
     </div>
   </div>

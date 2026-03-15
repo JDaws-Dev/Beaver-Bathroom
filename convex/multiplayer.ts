@@ -153,6 +153,7 @@ export const startGame = mutation({
     if (room.hostDeviceId !== args.hostDeviceId) return { error: "Only the host can start the game." };
     if (!room.guestDeviceId) return { error: "Waiting for another player to join." };
     if (room.status !== "waiting") return { error: "Game already started." };
+    if (!room.hostReady || !room.guestReady) return { error: "Both players must be ready." };
 
     await ctx.db.patch(room._id, { status: "playing" });
     return { success: true };
