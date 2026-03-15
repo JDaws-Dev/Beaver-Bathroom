@@ -287,12 +287,12 @@ fetchLeaderboard();
 trackPageVisit();
 
 const SHIFT_NARRATIVES = [
-  {name: 'Training Day', desc: "Welcome to the travel center, rookie. Learn the mop, the mash, and the restroom code.", progress: "Day 1 of 6"},
-  {name: 'Lunch Stampede', desc: "Coffee cups, brisket trays, and road-weary travelers are stacking up fast.", progress: "Day 2 of 6"},
-  {name: 'Motorcoach Mayhem', desc: "The bus lane is full and the restroom line is curling past the snack wall.", progress: "Day 3 of 6"},
-  {name: 'White-Glove Visit', desc: "Corporate wants polished tile, clean sinks, and zero excuses.", progress: "Day 4 of 6"},
-  {name: 'Festival Weekend', desc: "Jerky bags, fudge boxes, and festival crowds are hammering the stop.", progress: "Day 5 of 6"},
-  {name: 'Championship Sunday', desc: "Final shift. Hold the line, keep it spotless, and earn the Golden Plunger.", progress: "Final Day"},
+  {name: 'Training Day', desc: "First shift at the roadside palace. Learn the mop, the mash, and the sacred art of panic-cleaning with dignity.", progress: "Day 1 of 6"},
+  {name: 'Lunch Stampede', desc: "The brisket crowd just hit. Coffee is sloshing, toddlers are sprinting, and somebody already missed the trash can.", progress: "Day 2 of 6"},
+  {name: 'Motorcoach Mayhem', desc: "A full bus unloads at once and the restroom line curls past the jerky wall like a rodeo queue.", progress: "Day 3 of 6"},
+  {name: 'White-Glove Visit', desc: "Corporate sent a smiley assassin with a clipboard. They want shining tile, dry sinks, and zero excuses.", progress: "Day 4 of 6"},
+  {name: 'Festival Weekend', desc: "Festival traffic is hammering the stop. Boots, barbecue sauce, fudge sugar, and bad decisions are everywhere.", progress: "Day 5 of 6"},
+  {name: 'Championship Sunday', desc: "Final shift. Hold the line through pure highway madness and earn the Golden Plunger like a legend.", progress: "Final Day"},
 ];
 
 // Visual themes per shift — applied to bathroom area
@@ -309,39 +309,39 @@ const SHIFT_THEMES = [
 const BEAVER_TIPS = [
   // Shift 1 (Training Day) tips - basics
   [
-    "Mash those task buttons fast. This place runs on hustle.",
-    "Watch the patience bars. Red means somebody's about to lose religion.",
-    "VIP customers expect showroom-clean tile and quick service.",
+    "Mash those task buttons like you're trying to save the family reputation.",
+    "Watch the patience bars. Red means somebody is one inconvenience from a sermon.",
+    "VIP customers expect tile so clean they can see their poor choices in it.",
   ],
   // Shift 2 (Lunch Rush) tips - combo focus
   [
-    "Chain your cleans for combo streaks. Momentum matters here.",
-    "Don't forget the sinks. Travelers judge the whole stop by the wash-up area.",
-    "Urgent customers move like they skipped the last exit. Keep them moving.",
+    "Chain your cleans. A hot streak is cheaper than fixing a full meltdown.",
+    "Don't forget the sinks. Folks judge the whole stop in about two seconds at the wash-up area.",
+    "Urgent customers skipped the last decent exit. Treat them like lit fireworks.",
   ],
   // Shift 3 (Tour Bus) tips - volume handling
   [
-    "Use your items wisely. Brisket energy and nuggets can save a bad run.",
-    "When it gets busy, prioritize the customers who can blow up your rating.",
-    "Watch the floor. One bad puddle can turn a clean stop into chaos.",
+    "Use your items like a professional cheater. Save them for the moment the room tilts sideways.",
+    "When it gets ugly, handle the customers who can tank your rating first.",
+    "Watch the floor. One foul puddle can turn this place into a cautionary tale.",
   ],
   // Shift 4 (Health Inspector) tips - cleanliness
   [
-    "Corporate checks the details. Clean every stall, not just the loud ones.",
-    "A perfect inspection is worth more than speed alone.",
-    "Green means good. Yellow means somebody important will notice.",
+    "Corporate checks corners, sinks, and your soul. Clean everything, not just the obvious disasters.",
+    "A perfect inspection buys real breathing room. Sloppy speed does not.",
+    "Green is peace. Yellow is paperwork.",
   ],
   // Shift 5 (Festival Weekend) tips - endurance
   [
-    "Almost there. Spend your cash where it buys breathing room.",
-    "Quick Scrub pays off hard once the whole place starts surging.",
-    "Festival crowds smell weakness. Stay calm and keep clearing targets.",
+    "Almost there. Spend your cash on relief, not optimism.",
+    "Quick Scrub earns its keep when the whole room starts multiplying problems.",
+    "Festival crowds smell weakness like pitmasters smell smoke. Stay calm and keep clearing targets.",
   ],
   // Shift 6 (Championship) tips - final push
   [
-    "This is it! Everything you've learned comes together now.",
-    "Legendary 10x combos give massive bonuses - go for glory!",
-    "You got this, rookie. Make Beaver's Travel Stop proud!",
+    "This is it. Everything you've learned comes together under fluorescent pressure.",
+    "Legendary 10x combos pay huge. If you're going to be dramatic, be profitable.",
+    "Make this stop so clean the beaver starts strutting.",
   ],
 ];
 
@@ -787,10 +787,10 @@ const TASKS = [
 ];
 
 const THOUGHTS = {
-  impatient: ['Move it!', 'Come ON!', 'Line is backing up!', 'Need a stall!', 'Tick tock!', 'Not ideal!'],
-  desperate: ['Emergency!', 'Wrong exit to gamble on!', 'NOW!', 'Please!', 'Can\'t wait!', 'Bad timing!'],
-  happy: ['Ahh, nice!', 'Road-trip saved!', 'Perfect!', 'Spotless!', 'Worth the stop!'],
-  disgusted: ['Gross!', 'Nope!', 'Travel-center foul!', 'Yuck!', 'Not like this!'],
+  impatient: ['Move it!', 'This line is becoming folklore.', 'Need a stall!', 'Tick tock!', 'This is getting dangerous.', 'Come ON!'],
+  desperate: ['Emergency!', 'I trusted the wrong exit!', 'NOW!', 'Please!', 'This is not a drill!', 'Bad timing!'],
+  happy: ['Road-trip saved!', 'Worth the stop!', 'That is CLEAN.', 'Bless this restroom.', 'Highway miracle!', 'Now that is professional.'],
+  disgusted: ['Gross!', 'Travel-center foul!', 'Nope!', 'This is criminal.', 'Not like this!', 'Absolutely vile.'],
 };
 
 const CUSTOMERS_MALE = ['👨','👴','👦','🧔','👨‍🦰','👨‍🦱','👨‍🦳','👱‍♂️','🧑‍🦰','👨‍🦲'];
@@ -824,40 +824,40 @@ const SPECIAL_CUSTOMERS = [
   {name:'Big Rig Bill', icon:'🧔', badge:'🚚', gender:'male', chance:0.06,
    shirt:{top:'#8b4513',bot:'#5d3a1a',border:'#3d2510'}, // Brown trucker
    patience:1.3, messiness:1, // Patient but messy
-   thoughts:{enter:'Long haul day.',happy:'Now THAT is highway-grade clean.',impatient:'Seen worse, but not by much.'}},
+   thoughts:{enter:'Nine hundred miles and bad coffee.',happy:'Now THAT is fleet-grade clean.',impatient:'Seen worse, but not by enough.'}},
   {name:'Road Trip Randy', icon:'👨‍🦰', badge:'🚗', gender:'male', chance:0.05,
    shirt:{top:'#ff6b6b',bot:'#ee5a5a',border:'#d43d3d'}, // Red vacation shirt
    patience:0.5, messiness:0, // Super urgent, been driving 8 hours
-   thoughts:{enter:'Eight hours, no mercy.',happy:'Finally. Bless this stop.',impatient:'I cannot wait.'}},
+   thoughts:{enter:'Eight hours. Zero mercy.',happy:'Finally. Put this stop in the scrapbook.',impatient:'I absolutely cannot wait.'}},
   {name:'Business Bob', icon:'👨', badge:'💼', gender:'male', chance:0.05,
    shirt:{top:'#2c3e50',bot:'#1a252f',border:'#0d1318'}, // Suit
    patience:0.7, messiness:-1, // Tight schedule but clean
-   thoughts:{enter:'Quick in, quick out.',happy:'Efficient stop.',impatient:'Clock is ticking.'}},
+   thoughts:{enter:'Quick in. Quick out. No incidents.',happy:'Efficient. Respectable. Rare.',impatient:'I have a calendar invite for this frustration.'}},
   {name:'Weekend Warrior', icon:'👱‍♂️', badge:'🎣', gender:'male', chance:0.05,
    shirt:{top:'#27ae60',bot:'#1e8449',border:'#145a32'}, // Outdoor green
    patience:1.4, messiness:0, // Relaxed, headed to the lake
-   thoughts:{enter:'Cooler\'s melting.',happy:'Great pit stop.',impatient:'Thought this would be faster.'}},
+   thoughts:{enter:'Cooler is melting and so am I.',happy:'That is a championship pit stop.',impatient:'Thought this would be a quick splash-and-go.'}},
   {name:'Trucker Tom', icon:'🧔', badge:'⛽', gender:'male', chance:0.04,
    shirt:{top:'#34495e',bot:'#2c3e50',border:'#1a252f'}, // Gray work shirt
    patience:1.5, messiness:1, // Bill's buddy, very patient
-   thoughts:{enter:'Need coffee and a miracle.',happy:'Top notch stop.',impatient:'C\'mon now.'}},
+   thoughts:{enter:'Need coffee, soap, and maybe a miracle.',happy:'Top-notch stop. Tell management I noticed.',impatient:'C\'mon now, I got freight and feelings.'}},
   // Female bathroom characters
   {name:'Soccer Mom', icon:'👩', badge:'⚽', gender:'female', chance:0.06,
    shirt:{top:'#9b59b6',bot:'#8e44ad',border:'#6c3483'}, // Purple athleisure
    patience:0.6, messiness:-1, // Rushed but clean
-   thoughts:{enter:'Kickoff in twenty!',happy:'Perfect stop.',impatient:'The whole van is waiting!'}},
+   thoughts:{enter:'Kickoff in twenty and nobody packed patience.',happy:'Perfect stop. Nobody touch anything.',impatient:'The whole van is waiting and they are all sticky!'}},
   {name:'Tourist Tina', icon:'👩‍🦰', badge:'📸', gender:'female', chance:0.05,
    shirt:{top:'#f39c12',bot:'#d68910',border:'#b9770e'}, // Bright tourist
    patience:1.2, messiness:-1, // Taking photos, distracted but clean
-   thoughts:{enter:'This place better live up to the hype.',happy:'Postcard clean!',impatient:'I parked way out there...'}},
+   thoughts:{enter:'This place better live up to the billboard gossip.',happy:'Postcard clean. I knew it.',impatient:'I parked in another zip code...'}},
   {name:'Snack Sally', icon:'👱‍♀️', badge:'🍫', gender:'female', chance:0.05,
    shirt:{top:'#e74c3c',bot:'#c0392b',border:'#922b21'}, // Red
    patience:1.0, messiness:-1, // Here for snacks, distracted
-   thoughts:{enter:'Snack run and restroom stop.',happy:'Clean AND the fudge counter is open!',impatient:'Where\'s the jerky wall?'}},
+   thoughts:{enter:'Snack run, restroom stop, zero shame.',happy:'Clean AND the fudge counter is still alive!',impatient:'If I miss the jerky wall for this...'}},
   {name:'Road Queen', icon:'👩‍🦱', badge:'👑', gender:'female', chance:0.04,
    shirt:{top:'#e91e63',bot:'#c2185b',border:'#880e4f'}, // Pink
    patience:0.8, messiness:0, // Standards, but fair
-   thoughts:{enter:'Pit stop, y\'all.',happy:'Love this stop.',impatient:'This line is not regal.'}}
+   thoughts:{enter:'Pit stop, y\'all. Make it worthy.',happy:'Love this stop. Very crown-approved.',impatient:'This line is beneath the throne.'}}
 ];
 
 function getCustomerVisualProfile(gender, specialName) {
@@ -900,19 +900,19 @@ const CLEAN_MESSAGES = [
 ];
 
 const GAME_OVER_MESSAGES = [
-  "The line broke you before the mop could save you.",
-  "The snack wall survived. The restroom did not.",
-  "That stop got away from you in a hurry.",
-  "Corporate is going to have notes.",
-  "The Golden Plunger just rolled out of reach.",
+  "The line broke you before the mop could save the day.",
+  "The snack wall survived. The restroom absolutely did not.",
+  "That stop got away from you like a runaway shopping cart.",
+  "Corporate is going to write a novella about this.",
+  "The Golden Plunger just fishtailed out of reach.",
 ];
 
 const WIN_MESSAGES = [
-  "You did it, rookie. The Golden Plunger is yours.",
-  "From mop rookie to roadside legend in six shifts.",
-  "That restroom was cleaner than the gift aisle was crowded.",
-  "You just ran the cleanest stop on the highway.",
-  "Your name belongs on the employee wall and the brisket board.",
+  "You did it, rookie. The Golden Plunger is yours and the tile is singing.",
+  "From mop rookie to roadside legend in six extremely weird shifts.",
+  "That restroom was cleaner than the snack aisle was chaotic.",
+  "You just ran the cleanest stop on the highway and maybe the state.",
+  "Your name belongs on the employee wall, the brisket board, and local folklore.",
 ];
 
 // ACHIEVEMENTS: Badges earned for milestones
@@ -3318,15 +3318,15 @@ function setBeaverMood(mood, duration = 1000) {
 
 // Beaver speech bubble tips - shown at relevant moments during first shift
 const BEAVER_SPEECH_TIPS = {
-  dirtyStall: "Dirty stalls first. That's the whole reputation.",
-  taskMash: "Mash the buttons faster!",
-  dirtySink: "Don't forget the sinks. People notice that.",
-  powerupReady: "Use your items: brisket speeds up, Icee slows arrivals, nuggets insta-clean, Beaver distracts.",
-  comboStart: "Keep the place rolling. Combos are your breathing room.",
-  lowTime: "Clock's burning. Prioritize the messiest problems.",
-  vipCustomer: "VIP customer. Showroom clean gets paid.",
-  inspectorComing: "White-glove check incoming. No yellow lights.",
-  fightBreaking: "Snack aisle scuffle. Shut it down fast."
+  dirtyStall: "Dirty stalls first. That is the entire legend of this place.",
+  taskMash: "Mash like the restroom family name depends on it.",
+  dirtySink: "Don't forget the sinks. People judge harder there.",
+  powerupReady: "Use your stash: brisket hustles, Icee stalls the crowd, nuggets erase a stall, Beaver causes a scene.",
+  comboStart: "Keep the room rolling. Combos are breathing room with interest.",
+  lowTime: "Clock's burning. Fix the ugliest problems first.",
+  vipCustomer: "VIP customer. Give them showroom tile and zero nonsense.",
+  inspectorComing: "White-glove check incoming. Hide your shame.",
+  fightBreaking: "Snack aisle scuffle. Shut it down before it becomes folklore."
 };
 let tipTimeout = null;
 let shownTips = {};
@@ -7020,28 +7020,28 @@ function buildShiftComment(grade, shiftsLeft, won = false) {
   const handledEverything = abandoned === 0 && eventStats.inspectionsFailed === 0 && eventStats.brawls === 0;
 
   if (won) {
-    if (grade === 'S') return 'You ran the cleanest stop on the highway. Golden Plunger earned.';
-    if (handledEverything) return 'You held the line through every wave and kept the room respectable.';
-    return 'Messy, but you closed it out. The shift is yours.';
+    if (grade === 'S') return 'You ran the cleanest stop on the highway. Golden Plunger earned, legend secured.';
+    if (handledEverything) return 'You held the line through every wave and kept the whole roadside circus respectable.';
+    return 'Messy, loud, a little shameful, but you closed it out. The shift is yours.';
   }
 
   if (grade === 'S') {
-    return shiftsLeft > 0 ? 'Showroom clean. Keep stacking shifts like that.' : 'Perfect finish. You made it look easy.';
+    return shiftsLeft > 0 ? 'Showroom clean. Keep stacking shifts like that and they will name a mop after you.' : 'Perfect finish. You made restroom heroics look casual.';
   }
   if (handledEverything && eventStats.rushesHandled > 0) {
-    return 'You absorbed the chaos and never really lost the room.';
+    return 'You absorbed the chaos and never really lost the room. That is professional nonsense-management.';
   }
   if (eventStats.inspectionsPassed > 0 && abandoned <= 1) {
-    return 'That white-glove check bought you some real credibility.';
+    return 'That white-glove check bought you real credibility and fewer suspicious emails.';
   }
   if (eventStats.brawls > 0 || abandoned >= 3) {
-    return 'Too many fires broke loose at once. Prioritize the big threats earlier.';
+    return 'Too many fires broke loose at once. Next time, kill the loud disasters before they breed cousins.';
   }
-  if (grade === 'A') return shiftsLeft > 0 ? 'Strong shift. A little cleaner and it turns elite.' : 'Almost perfect. One more polish pass from greatness.';
-  if (grade === 'B') return shiftsLeft > 0 ? `Solid shift. ${shiftsLeft} more to go.` : 'Respectable finish. Not glamorous, but it worked.';
-  if (grade === 'C') return shiftsLeft > 0 ? 'You kept the doors open, but the room never felt fully under control.' : 'You survived it. That still counts.';
-  if (grade === 'D') return 'Room for improvement. Clean faster and stop the room from snowballing.';
-  return "That stop got away from you. Kill the dirtiest problems sooner.";
+  if (grade === 'A') return shiftsLeft > 0 ? 'Strong shift. A little cleaner and this turns into legend material.' : 'Almost perfect. One more polish pass from greatness.';
+  if (grade === 'B') return shiftsLeft > 0 ? `Solid shift. ${shiftsLeft} more to go before they put your photo by the jerky wall.` : 'Respectable finish. Not glamorous, but the room stayed standing.';
+  if (grade === 'C') return shiftsLeft > 0 ? 'You kept the doors open, but the room felt one bad puddle away from public hearings.' : 'You survived it. That still counts in roadside history.';
+  if (grade === 'D') return 'Room for improvement. Clean faster and stop the room from snowballing into a spectacle.';
+  return "That stop got away from you. Kill the dirtiest problems sooner and leave less drama on the floor.";
 }
 
 function buildResultNextHTML({ xpEarned = 0 } = {}) {
