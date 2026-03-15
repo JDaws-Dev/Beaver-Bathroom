@@ -3687,6 +3687,15 @@ function floatCoin(x, y) {
   setTimeout(() => el.remove(), 800);
 }
 
+function spawnBurstRing(x, y, tone = 'gold') {
+  const el = document.createElement('div');
+  el.className = `burst-ring ${tone}`;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  $('play-area').appendChild(el);
+  setTimeout(() => el.remove(), 520);
+}
+
 function interactWithCustomer(personId) {
   const p = game.people.find(person => person.id === personId);
   if (!p || p.greeted || p.frozen) return;
@@ -5843,6 +5852,7 @@ function clickPuddle(id) {
     const el = document.querySelector(`.puddle[data-puddle-id="${puddle.id}"]`);
     if (el) el.classList.add('cleaning');
 
+    spawnBurstRing(puddle.x + 20, puddle.y + 14, puddle.type === 'water' ? 'blue' : 'green');
     spawnSparkles(puddle.x + 20, puddle.y + 14, 6);
 
     setTimeout(() => {
@@ -7176,7 +7186,7 @@ function renderSupplyShop() {
   grid.querySelectorAll('.shop-item').forEach(btn => {
     btn.addEventListener('click', () => {
       const itemId = btn.dataset.id;
-      purchaseItem(itemId);
+      purchaseItem(itemId, btn);
     });
   });
 }
@@ -7186,7 +7196,7 @@ function getItemCost(item) {
   return Math.floor(item.cost * Math.pow(1.15, owned));
 }
 
-function purchaseItem(itemId) {
+function purchaseItem(itemId, sourceEl = null) {
   const item = ITEMS.find(i => i.id === itemId);
   if (!item) return;
 
@@ -7197,6 +7207,15 @@ function purchaseItem(itemId) {
   game.powerups[itemId]++;
   game.shopFeedback = { itemId, at: Date.now() };
   playTaskComplete();
+  if (sourceEl) {
+    const rect = sourceEl.getBoundingClientRect();
+    const playRect = $('game-container').getBoundingClientRect();
+    const x = rect.left - playRect.left + rect.width * 0.5;
+    const y = rect.top - playRect.top + rect.height * 0.5;
+    spawnBurstRing(x, y, 'gold');
+    spawnSparkles(x, y, 8);
+    floatMessage(`+1 ${item.icon}`, x - 18, y - 24, 'combo');
+  }
   renderSupplyShop();
 }
 
