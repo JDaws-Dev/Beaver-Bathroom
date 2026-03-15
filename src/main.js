@@ -5780,7 +5780,19 @@ function renderPuddles() {
       const pct = Math.min(100, (puddle.cleanProgress / messType.cleanTime) * 100);
       el.innerHTML += `<div class="puddle-progress"><div class="puddle-progress-fill" style="width:${pct}%"></div></div>`;
     }
-    el.addEventListener('click', () => clickPuddle(puddle.id));
+    const onPuddleTap = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.type === 'click') {
+        const lastPointerTapAt = Number(el.dataset.lastPointerTapAt || 0);
+        if (Date.now() - lastPointerTapAt < 450) return;
+      } else if (e.type === 'pointerdown') {
+        el.dataset.lastPointerTapAt = String(Date.now());
+      }
+      clickPuddle(puddle.id);
+    };
+    el.addEventListener('pointerdown', onPuddleTap);
+    el.addEventListener('click', onPuddleTap);
     floor.appendChild(el);
   });
 }
