@@ -7299,7 +7299,7 @@ function endShift() {
   }
   $('result-comment').textContent = comment;
   $('result-comment').classList.remove('ai-review');
-  $('result-recap').innerHTML = buildRunRecapHTML({ grade, maxItems: 2 });
+  $('result-recap').innerHTML = buildRunRecapHTML({ grade, maxItems: 1 });
 
   // Track shift completion
   trackEvent('shift_complete', {
@@ -7495,7 +7495,7 @@ function gameOver() {
     <div class="stat"><div class="num">${game.stats.served}</div><div class="lbl">Served</div></div>
     <div class="stat"><div class="num">${game.maxCombo}x</div><div class="lbl">Best Combo</div></div>
   `;
-  $('go-recap').innerHTML = buildRunRecapHTML({ grade, won, isNewRecord });
+  $('go-recap').innerHTML = buildRunRecapHTML({ grade, won, isNewRecord, maxItems: 1 });
 
   // Show name input for leaderboard (premium only)
   const nameSection = $('go-name-section');
