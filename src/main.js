@@ -437,6 +437,49 @@ const MESS_TYPES = {
   },
 };
 
+const RUSH_VARIANTS = [
+  {
+    id: 'motorcoach',
+    incoming: '🚌 MOTORCOACH WAVE INCOMING! 🚌',
+    active: secs => `🚌 MOTORCOACH WAVE ${secs}s 🚌`,
+    cleared: 'WAVE CLEARED! +35',
+    bonus: 'BONUS CROWD CONTROL! +50',
+    messBias: ['water', 'muddy'],
+    patienceBoost: 350,
+    ratingBoost: 0.08,
+  },
+  {
+    id: 'sample',
+    incoming: '🍬 SAMPLE STAMPEDE INBOUND! 🍬',
+    active: secs => `🍬 SAMPLE STAMPEDE ${secs}s 🍬`,
+    cleared: 'STAMPED EGO SAVED! +35',
+    bonus: 'TRAY TRAFFIC TAMED! +50',
+    messBias: ['muddy', 'water'],
+    patienceBoost: 300,
+    ratingBoost: 0.08,
+  },
+  {
+    id: 'brisket',
+    incoming: '🥩 BRISKET LINE SPILLOVER! 🥩',
+    active: secs => `🥩 BRISKET SPILLOVER ${secs}s 🥩`,
+    cleared: 'LUNCH RUSH SURVIVED! +35',
+    bonus: 'COUNTER CHAOS CONTROL! +50',
+    messBias: ['muddy', 'pee'],
+    patienceBoost: 420,
+    ratingBoost: 0.1,
+  },
+  {
+    id: 'church-van',
+    incoming: '⛪ CHURCH VAN SURGE! ⛪',
+    active: secs => `⛪ VAN SURGE ${secs}s ⛪`,
+    cleared: 'SUNDAY WAVE CLEARED! +35',
+    bonus: 'PARKING LOT PANIC HANDLED! +50',
+    messBias: ['water', 'muddy'],
+    patienceBoost: 380,
+    ratingBoost: 0.09,
+  },
+];
+
 // SKILLS: Earned automatically as you complete shifts (not purchased)
 // Each shift unlocks/upgrades a skill in order
 const SKILLS = [
@@ -3433,6 +3476,7 @@ function init() {
     gender: selectedGender,
     difficulty: selectedDifficulty,
     rushMode: false,
+    rushVariant: null,
     rushTimer: 0,
     lastUrgentBeep: 0,
     inspector: null,          // Inspector object when active
@@ -4629,7 +4673,9 @@ function update(dt) {
       game.rushMode = true;
       game.rushDuration = 8000;
       game.rushCleanCount = 0;
+      game.rushVariant = pick(RUSH_VARIANTS);
       $('rush-warning').style.display = 'block';
+      $('rush-warning').textContent = game.rushVariant.incoming;
       playRush();
       screenShake();
       setBeaverMood('worried', 0); // Stay worried during rush
@@ -4639,24 +4685,32 @@ function update(dt) {
     game.rushDuration -= dt;
     // Random mess spawn during rush (chaos!) - scaled by shift
     if (rand() < CONFIG.messChance.walkwayRandom * getMessScale() * (dt / 1000)) {
-      spawnRandomMess();
+      const rushMess = game.rushVariant?.messBias?.length ? pick(game.rushVariant.messBias) : null;
+      if (rushMess && rand() < 0.7) {
+        const floorRect = $('floor-area').getBoundingClientRect();
+        spawnPuddle(rnd(40, floorRect.width - 70), rnd(85, Math.max(110, floorRect.height - 85)), rushMess);
+      } else {
+        spawnRandomMess();
+      }
     }
     // Show countdown in rush warning
     const rushSec = Math.max(0, Math.ceil(game.rushDuration / 1000));
-    $('rush-warning').textContent = `🚌 MOTORCOACH WAVE ${rushSec}s 🚌`;
+    const rushVariant = game.rushVariant || RUSH_VARIANTS[0];
+    $('rush-warning').textContent = rushVariant.active(rushSec);
     if (game.rushDuration <= 0) {
       game.rushMode = false;
       game.eventStats.rushesHandled++;
       addScore(35);
-      game.rating = clamp(game.rating + 0.08, 0, 5);
-      boostCustomerPatience(350);
+      game.rating = clamp(game.rating + (rushVariant.ratingBoost || 0.08), 0, 5);
+      boostCustomerPatience(rushVariant.patienceBoost || 350);
       if (game.rushCleanCount >= 4) {
         addScore(50);
-        floatMessage('BONUS CROWD CONTROL! +50', 400, 138, 'combo');
+        floatMessage(rushVariant.bonus || 'BONUS CROWD CONTROL! +50', 400, 138, 'combo');
       }
-      floatMessage('WAVE CLEARED! +35', 400, 165, 'good');
+      floatMessage(rushVariant.cleared || 'WAVE CLEARED! +35', 400, 165, 'good');
       $('rush-warning').style.display = 'none';
       $('rush-warning').textContent = '🚌 MOTORCOACH WAVE INCOMING! 🚌';
+      game.rushVariant = null;
       if (!game.inspector && !game.fight) setBeaverMood('idle', 0);
     }
   }
