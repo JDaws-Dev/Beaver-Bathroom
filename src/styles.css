@@ -1836,6 +1836,33 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .mp-loadout-inventory-opponent .mp-loadout-pill:hover{transform:none;border-color:rgba(255,255,255,0.08)}
 .mp-opponent-loadout.hidden{display:none}
 
+@media(max-width:600px){
+.mp-lobby-card{padding:16px 12px;max-width:100%;border-width:3px;border-radius:14px;gap:12px}
+.mp-lobby-title{font-size:1.25em}
+.mp-lobby-code{font-size:2.2em;letter-spacing:8px;padding:10px 14px}
+.mp-lobby-info{gap:8px;flex-wrap:wrap}
+.mp-lobby-shift,.mp-lobby-gender,.mp-lobby-difficulty{font-size:0.72em;padding:4px 9px}
+.mp-loadout-section{padding:10px 10px 12px}
+.mp-loadout-header{align-items:flex-start;flex-direction:column;gap:4px}
+.mp-loadout-sub{font-size:0.68em}
+.mp-loadout-inventory{padding:9px 10px}
+.mp-loadout-summary .inv-row,.mp-opponent-loadout .inv-row{justify-content:flex-start}
+.mp-loadout-pill{padding:5px 8px}
+.mp-loadout-pill .inv-name{font-size:0.58em}
+.mp-loadout-help{font-size:0.6em}
+}
+
+@media(max-width:420px){
+.mp-lobby-code{font-size:1.85em;letter-spacing:6px}
+.mp-lobby-player{padding:10px 12px}
+.mp-player-name{font-size:0.82em}
+.mp-player-status{font-size:0.66em}
+.mp-loadout-pill{gap:5px;padding:5px 7px}
+.mp-loadout-pill .inv-count{min-width:12px}
+.mp-loadout-pill .inv-name{font-size:0.54em}
+.mp-loadout-help{font-size:0.58em}
+}
+
 /* Ready system */
 .mp-lobby-actions{display:flex;flex-direction:column;gap:10px;width:100%}
 .mp-ready-btn{background:linear-gradient(180deg,#5a4a38,#3d2814)!important;border-color:#8b7355!important;animation:none!important}

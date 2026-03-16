@@ -9,10 +9,10 @@ const VALID_CHAT_IDS = [
 // Valid loadout item IDs
 const VALID_LOADOUT_ITEMS = ["speed", "slow", "auto", "mascot"];
 const LOADOUT_ITEM_COSTS: Record<string, number> = {
-  speed: 25,
-  slow: 25,
-  auto: 40,
-  mascot: 50,
+  speed: 30,
+  slow: 30,
+  auto: 75,
+  mascot: 60,
 };
 const LOADOUT_BUDGET = 100;
 const QUEUE_STALE_MS = 20000;

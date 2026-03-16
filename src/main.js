@@ -8771,12 +8771,23 @@ const MP_CHAT_MESSAGES = {
   flex: "Easy money 💰",
 };
 
-const MP_LOADOUT_ITEMS = [
-  { id: 'speed', icon: '⚡', name: 'Speed Boost', desc: '2x cleaning speed for 12s', cost: 25 },
-  { id: 'slow', icon: '🐢', name: 'Slow Down', desc: '2x slower arrivals for 12s', cost: 25 },
-  { id: 'auto', icon: '✨', name: 'Auto Clean', desc: 'Instantly clean one dirty stall', cost: 40 },
-  { id: 'mascot', icon: '🦫', name: 'Mascot Parade', desc: 'Distracts customers across the floor for 8s', cost: 50 },
-];
+const MP_LOADOUT_ITEMS = ITEMS.map((item) => ({
+  id: item.id,
+  icon: item.icon,
+  name: item.name,
+  desc: item.desc,
+  effect: item.effect,
+  detail: item.detail,
+  duration: item.duration || 0,
+  cost: item.cost,
+  shortName: item.id === 'speed'
+    ? 'Brisket'
+    : item.id === 'slow'
+      ? 'Icee'
+      : item.id === 'auto'
+        ? 'Nuggets'
+        : 'Mascot',
+}));
 const MP_LOADOUT_BUDGET = 100;
 
 function getMPGamesPlayed() {
@@ -8875,11 +8886,11 @@ function renderLoadoutUI() {
           <button type="button" class="inv-item mp-loadout-pill ${counts[item.id] ? 'filled' : ''}" data-remove-id="${item.id}">
             <span class="inv-emoji">${item.icon}</span>
             <span class="inv-count">${counts[item.id] || 0}</span>
-            <span class="inv-name">${item.name}</span>
+            <span class="inv-name">${item.shortName}</span>
           </button>
         `).join('')}
       </div>
-      <div class="mp-loadout-help">${currentLoadout.length ? 'Tap a pill to remove one from your loadout.' : 'Spend your budget on any mix of the 4 powerups.'}</div>
+      <div class="mp-loadout-help">${currentLoadout.length ? 'Tap a pill to remove one from your loadout.' : 'Buy the same 4 powerups from single-player with your match budget.'}</div>
     </div>
   `;
 
@@ -8909,10 +8920,10 @@ function renderLoadoutUI() {
             <span class="shop-stock">In bag ${owned}</span>
           </span>
           <span class="shop-effect-row">
-            <span class="shop-effect">${item.id === 'auto' ? 'Instant clean' : item.id === 'mascot' ? 'Floor distraction' : item.id === 'speed' ? '2x cleaning' : '2x slower arrivals'}</span>
-            <span class="shop-duration">${item.id === 'auto' ? 'Instant' : item.id === 'mascot' ? '8s' : '12s'}</span>
+            <span class="shop-effect">${item.effect}</span>
+            <span class="shop-duration">${item.duration ? `${Math.round(item.duration / 1000)}s` : 'Instant'}</span>
           </span>
-          <span class="shop-desc">${item.desc}</span>
+          <span class="shop-desc">${item.detail}</span>
         </span>
         <span class="shop-buycol">
           <span class="shop-cost">$ ${item.cost}</span>
@@ -8952,7 +8963,7 @@ function renderOpponentLoadout(loadout = []) {
           <span class="inv-item mp-loadout-pill filled ${counts[item.id] ? 'filled' : 'empty'}">
             <span class="inv-emoji">${item.icon}</span>
             <span class="inv-count">${counts[item.id] || 0}</span>
-            <span class="inv-name">${item.name}</span>
+            <span class="inv-name">${item.shortName}</span>
           </span>
         `).join('')}
       </div>
