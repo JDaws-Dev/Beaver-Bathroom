@@ -8879,9 +8879,10 @@ function renderLoadoutUI() {
   const budgetEl = $('loadout-budget');
   const summaryEl = $('loadout-summary');
   const lobbySummaryEl = $('lobby-loadout-summary');
+  const lobbyLineEl = $('lobby-loadout-line');
   const shopBudgetLeftEl = $('mp-shop-budget-left');
   const shopBudgetSpentEl = $('mp-shop-budget-spent');
-  if (!container || !budgetEl || !summaryEl || !lobbySummaryEl || !shopBudgetLeftEl || !shopBudgetSpentEl) return;
+  if (!container || !budgetEl || !summaryEl || !lobbySummaryEl || !lobbyLineEl || !shopBudgetLeftEl || !shopBudgetSpentEl) return;
 
   const currentLoadout = Array.isArray(mpState.loadout) ? mpState.loadout : [];
   const spent = getLoadoutCost(currentLoadout);
@@ -8892,6 +8893,13 @@ function renderLoadoutUI() {
 
   const counts = {};
   for (const itemId of currentLoadout) counts[itemId] = (counts[itemId] || 0) + 1;
+  const loadoutLine = Object.entries(counts).length
+    ? MP_LOADOUT_ITEMS
+        .filter((item) => counts[item.id])
+        .map((item) => `${counts[item.id]} ${item.shortName}`)
+        .join(', ')
+    : 'No items selected yet.';
+  lobbyLineEl.textContent = loadoutLine;
   const inventoryHtml = `
     <div class="shop-inventory mp-loadout-inventory">
       <div class="inv-label">Current Loadout</div>

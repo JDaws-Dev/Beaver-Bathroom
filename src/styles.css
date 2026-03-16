@@ -1836,6 +1836,7 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .mp-loadout-inventory-opponent .mp-loadout-pill:hover{transform:none;border-color:rgba(255,255,255,0.08)}
 .mp-opponent-loadout.hidden{display:none}
 .mp-loadout-overview{gap:12px}
+.mp-loadout-line{font-size:0.72em;line-height:1.35;color:#e8d5b5;background:rgba(0,0,0,0.22);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:8px 10px;text-align:left}
 .mp-open-shop-btn{width:100%}
 .mp-shop-content{max-width:420px;width:min(92vw,420px);max-height:min(88vh,760px);display:flex;flex-direction:column}
 .mp-shop-body{display:flex;flex-direction:column;gap:12px;overflow-y:auto;padding-right:2px}
@@ -1880,6 +1881,7 @@ margin:0 auto;
 .mp-loadout-pill{padding:5px 8px}
 .mp-loadout-pill .inv-name{font-size:0.58em}
 .mp-loadout-help{font-size:0.6em}
+.mp-loadout-line{font-size:0.66em;padding:7px 8px}
 .mp-shop-content{width:min(96vw,420px);max-height:min(92vh,760px);padding:16px 14px}
 .mp-shop-banner{padding:10px 12px}
 .mp-shop-budget-row{grid-template-columns:1fr}
