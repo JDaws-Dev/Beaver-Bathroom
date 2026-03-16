@@ -2478,6 +2478,7 @@ const perf = {
   frameTimes: [],
   lastHudUpdate: 0,
   hudUpdateInterval: 50, // Update HUD every 50ms instead of every frame
+  lastPeopleRender: 0,
   lowPerfMode: false,
   lowPerfThreshold: 18, // Only drop to lite mode on clearly poor sustained FPS
   autoLiteNotified: false, // Prevent repeated auto-enable notifications
@@ -4514,12 +4515,16 @@ function startShift() {
   game.fightTimer = 0;
   game.fightWarning = 0;
   game.puddles = [];
+  game.personEls = new Map();
+  game.puddleEls = new Map();
   game.spotlessChain = 0;
   game.spotlessRecoveries = 0;
   game.eventStats = createEmptyEventStats();
   game.rushCleanCount = 0;
   game.wasBathroomSpotless = true;
   document.querySelectorAll('.puddle').forEach(el => el.remove());
+  $('floor-area')?.querySelectorAll('.person').forEach(el => el.remove());
+  perf.lastPeopleRender = 0;
 
   // Set starting item counts based on item upgrades
   // Powerups: start with 1 of each basic item
@@ -4629,7 +4634,11 @@ function gameLoop(now) {
       updateHUD();
       perf.lastHudUpdate = now;
     }
-    renderPeople();
+    const peopleRenderInterval = perf.lowPerfMode ? 48 : ((isMobile && game.people.length >= 8) ? 32 : 16);
+    if (now - perf.lastPeopleRender >= peopleRenderInterval) {
+      renderPeople();
+      perf.lastPeopleRender = now;
+    }
   } catch(e) { console.error('render error:', e); }
 
   requestAnimationFrame(gameLoop);
@@ -5836,42 +5845,57 @@ function spawnSinkSplash() {
 }
 
 function renderPuddles() {
-  // Remove old puddle elements
-  document.querySelectorAll('.puddle').forEach(el => el.remove());
-
   const floor = $('floor-area');
+  if (!floor) return;
+  if (!game.puddleEls) game.puddleEls = new Map();
+
+  const activeIds = new Set(game.puddles.map((puddle) => String(puddle.id)));
+  for (const [id, el] of game.puddleEls.entries()) {
+    if (!activeIds.has(id)) {
+      el.remove();
+      game.puddleEls.delete(id);
+    }
+  }
+
   game.puddles.forEach(puddle => {
     const messType = MESS_TYPES[puddle.type] || MESS_TYPES.water;
-    const el = document.createElement('div');
+    const puddleId = String(puddle.id);
+    let el = game.puddleEls.get(puddleId);
+    if (!el) {
+      el = document.createElement('div');
+      el.dataset.puddleId = puddle.id;
+      const onPuddleTap = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === 'click') {
+          const lastPointerTapAt = Number(el.dataset.lastPointerTapAt || 0);
+          if (Date.now() - lastPointerTapAt < 450) return;
+        } else if (e.type === 'pointerdown') {
+          el.dataset.lastPointerTapAt = String(Date.now());
+        }
+        clickPuddle(puddle.id);
+      };
+      el.addEventListener('pointerdown', onPuddleTap);
+      el.addEventListener('click', onPuddleTap);
+      floor.appendChild(el);
+      game.puddleEls.set(puddleId, el);
+    }
+
     el.className = 'puddle ' + puddle.type + (puddle.cleaning ? ' mopping' : '');
-    el.dataset.puddleId = puddle.id;
     el.style.left = puddle.x + 'px';
     el.style.top = puddle.y + 'px';
-    // Add icon for muddy footprints
+
+    let innerHtml = '';
     if (puddle.type === 'muddy') {
-      el.innerHTML = '<span class="puddle-icon">👣</span>';
+      innerHtml = '<span class="puddle-icon">👣</span>';
     } else if (messType.stinkLines) {
-      el.innerHTML = `<div class="puddle-stink"><div class="stink-line"></div><div class="stink-line"></div><div class="stink-line"></div></div>`;
+      innerHtml = `<div class="puddle-stink"><div class="stink-line"></div><div class="stink-line"></div><div class="stink-line"></div></div>`;
     }
-    // Progress bar for cleaning
     if (puddle.cleaning) {
       const pct = Math.min(100, (puddle.cleanProgress / messType.cleanTime) * 100);
-      el.innerHTML += `<div class="puddle-progress"><div class="puddle-progress-fill" style="width:${pct}%"></div></div>`;
+      innerHtml += `<div class="puddle-progress"><div class="puddle-progress-fill" style="width:${pct}%"></div></div>`;
     }
-    const onPuddleTap = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (e.type === 'click') {
-        const lastPointerTapAt = Number(el.dataset.lastPointerTapAt || 0);
-        if (Date.now() - lastPointerTapAt < 450) return;
-      } else if (e.type === 'pointerdown') {
-        el.dataset.lastPointerTapAt = String(Date.now());
-      }
-      clickPuddle(puddle.id);
-    };
-    el.addEventListener('pointerdown', onPuddleTap);
-    el.addEventListener('click', onPuddleTap);
-    floor.appendChild(el);
+    if (el.innerHTML !== innerHtml) el.innerHTML = innerHtml;
   });
 }
 
@@ -6520,20 +6544,30 @@ function cleanupFight() {
 
 function renderPeople() {
   const floor = $('floor-area');
+  if (!floor) return;
+  if (!game.personEls) game.personEls = new Map();
 
-  floor.querySelectorAll('.person').forEach(el => {
-    const id = parseInt(el.dataset.id);
-    if (!game.people.find(p => p.id === id)) el.remove();
-  });
+  const activeIds = new Set();
+  for (const p of game.people) {
+    if (p.phase !== 'inStall') activeIds.add(String(p.id));
+  }
+  for (const [id, el] of game.personEls.entries()) {
+    if (!activeIds.has(id)) {
+      el.remove();
+      game.personEls.delete(id);
+    }
+  }
 
   game.people.forEach(p => {
+    const personId = String(p.id);
     if (p.phase === 'inStall') {
-      const el = floor.querySelector(`.person[data-id="${p.id}"]`);
+      const el = game.personEls.get(personId);
       if (el) el.remove();
+      game.personEls.delete(personId);
       return;
     }
 
-    let el = floor.querySelector(`.person[data-id="${p.id}"]`);
+    let el = game.personEls.get(personId);
     if (!el) {
       el = document.createElement('div');
       el.className = 'person walking';
@@ -6562,24 +6596,34 @@ function renderPeople() {
         e.stopPropagation();
         interactWithCustomer(parseInt(el.dataset.id, 10));
       });
+      el._refs = {
+        body: el.querySelector('.person-body'),
+        hairEl: el.querySelector('.person-hair'),
+        gearEl: el.querySelector('.person-headgear'),
+        accessoryEl: el.querySelector('.person-accessory'),
+        torsoEl: el.querySelector('.person-torso'),
+        headEl: el.querySelector('.person-head'),
+        faceEl: el.querySelector('.person-face'),
+        patienceBar: el.querySelector('.patience-bar'),
+        patienceFill: el.querySelector('.patience-fill'),
+      };
       floor.appendChild(el);
+      game.personEls.set(personId, el);
     }
 
     const visual = p.visual || {};
-    const body = el.querySelector('.person-body');
-    if (body) body.style.cssText = getCustomerVisualStyle(p);
-    const hairEl = el.querySelector('.person-hair');
-    const gearEl = el.querySelector('.person-headgear');
-    const accessoryEl = el.querySelector('.person-accessory');
-    const torsoEl = el.querySelector('.person-torso');
-    const headEl = el.querySelector('.person-head');
-    const faceEl = el.querySelector('.person-face');
-    if (hairEl) hairEl.className = `person-hair hair-${visual.hair || 'short'}`;
-    if (gearEl) gearEl.className = `person-headgear gear-${visual.hair || 'short'}`;
-    if (accessoryEl) accessoryEl.className = `person-accessory accessory-${visual.accessory || 'none'}`;
-    if (torsoEl) torsoEl.className = `person-torso build-${visual.build || 'average'}`;
-    if (headEl) headEl.className = `person-head head-${visual.headShape || 'oval'}`;
-    if (faceEl) faceEl.className = `person-face face-${visual.face || 'neutral'}`;
+    const refs = el._refs || {};
+    const visualKey = `${p.gender}|${visual.hair || 'short'}|${visual.accessory || 'none'}|${visual.build || 'average'}|${visual.headShape || 'oval'}|${visual.face || 'neutral'}`;
+    if (el.dataset.visualKey !== visualKey) {
+      el.dataset.visualKey = visualKey;
+      if (refs.body) refs.body.style.cssText = getCustomerVisualStyle(p);
+      if (refs.hairEl) refs.hairEl.className = `person-hair hair-${visual.hair || 'short'}`;
+      if (refs.gearEl) refs.gearEl.className = `person-headgear gear-${visual.hair || 'short'}`;
+      if (refs.accessoryEl) refs.accessoryEl.className = `person-accessory accessory-${visual.accessory || 'none'}`;
+      if (refs.torsoEl) refs.torsoEl.className = `person-torso build-${visual.build || 'average'}`;
+      if (refs.headEl) refs.headEl.className = `person-head head-${visual.headShape || 'oval'}`;
+      if (refs.faceEl) refs.faceEl.className = `person-face face-${visual.face || 'neutral'}`;
+    }
 
     el.style.left = p.x + 'px';
     el.style.top = p.y + 'px';
@@ -6643,15 +6687,15 @@ function renderPeople() {
     el.classList.toggle('impatient', false);
 
     // Only show patience bar when patience is draining
-    const patienceBar = el.querySelector('.patience-bar');
     const pct = patienceRatio * 100;
     if (pct < 95) {
-      patienceBar.style.display = '';
-      const fill = el.querySelector('.patience-fill');
-      fill.style.width = pct + '%';
-      fill.style.background = pct > 50 ? '#43a047' : (pct > 25 ? '#fdd835' : '#e53935');
+      if (refs.patienceBar) refs.patienceBar.style.display = '';
+      if (refs.patienceFill) {
+        refs.patienceFill.style.width = pct + '%';
+        refs.patienceFill.style.background = pct > 50 ? '#43a047' : (pct > 25 ? '#fdd835' : '#e53935');
+      }
     } else {
-      patienceBar.style.display = 'none';
+      if (refs.patienceBar) refs.patienceBar.style.display = 'none';
     }
   });
 }
