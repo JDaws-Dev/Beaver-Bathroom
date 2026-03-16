@@ -8837,6 +8837,7 @@ multiplayerPregameController.bindEvents();
 // Loadout UI
 function initLoadoutUI() {
   mpState.loadout = [];
+  mpState.loadoutFeedback = null;
   const container = $('loadout-items');
   if (!container) return;
   renderLoadoutUI();
@@ -8862,43 +8863,67 @@ function renderLoadoutUI() {
   const currentLoadout = Array.isArray(mpState.loadout) ? mpState.loadout : [];
   const spent = getLoadoutCost(currentLoadout);
   const remaining = Math.max(0, MP_LOADOUT_BUDGET - spent);
-  budgetEl.textContent = `$${remaining} left`;
+  budgetEl.textContent = `$${remaining} left of $${MP_LOADOUT_BUDGET}`;
 
   const counts = {};
   for (const itemId of currentLoadout) counts[itemId] = (counts[itemId] || 0) + 1;
-  summaryEl.innerHTML = currentLoadout.length
-    ? Object.entries(counts).map(([itemId, count]) => {
-        const item = MP_LOADOUT_ITEMS.find((candidate) => candidate.id === itemId);
-        return `<button type="button" class="mp-loadout-chip" data-remove-id="${itemId}">${item?.icon || '•'} ${item?.name || itemId} x${count}</button>`;
-      }).join('')
-    : '<div class="mp-loadout-empty">Spend your budget on any mix of the 4 powerups.</div>';
+  summaryEl.innerHTML = `
+    <div class="shop-inventory mp-loadout-inventory">
+      <div class="inv-label">Current Loadout</div>
+      <div class="inv-row">
+        ${MP_LOADOUT_ITEMS.map((item) => `
+          <button type="button" class="inv-item mp-loadout-pill ${counts[item.id] ? 'filled' : ''}" data-remove-id="${item.id}">
+            <span class="inv-emoji">${item.icon}</span>
+            <span class="inv-count">${counts[item.id] || 0}</span>
+            <span class="inv-name">${item.name}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div class="mp-loadout-help">${currentLoadout.length ? 'Tap a pill to remove one from your loadout.' : 'Spend your budget on any mix of the 4 powerups.'}</div>
+    </div>
+  `;
 
-  summaryEl.querySelectorAll('.mp-loadout-chip').forEach((chip) => {
+  summaryEl.querySelectorAll('.mp-loadout-pill').forEach((chip) => {
     chip.addEventListener('click', () => {
+      if (!counts[chip.dataset.removeId]) return;
       playClick();
       removeFromLoadout(chip.dataset.removeId);
     });
   });
 
+  const lastPurchase = mpState.loadoutFeedback?.itemId || '';
+  const boughtAt = mpState.loadoutFeedback?.at || 0;
+  const recentlyBought = Date.now() - boughtAt < 1800 ? lastPurchase : '';
   container.innerHTML = MP_LOADOUT_ITEMS.map((item) => {
     const owned = counts[item.id] || 0;
     const canAfford = remaining >= item.cost;
+    const boughtClass = recentlyBought === item.id ? 'just-bought' : '';
     return `
-      <button type="button" class="mp-loadout-item-btn ${canAfford ? '' : 'disabled'}" data-item-id="${item.id}" ${canAfford ? '' : 'disabled'}>
-        <span class="mp-loadout-item-icon">${item.icon}</span>
-        <span class="mp-loadout-item-copy">
-          <span class="mp-loadout-item-name">${item.name}</span>
-          <span class="mp-loadout-item-desc">${item.desc}</span>
+      <button type="button" class="shop-item mp-loadout-shop-item ${canAfford ? '' : 'cant-afford'} ${boughtClass}" data-item-id="${item.id}" ${canAfford ? '' : 'disabled'}>
+        <span class="shop-icon-wrap">
+          <span class="shop-icon">${item.icon}</span>
         </span>
-        <span class="mp-loadout-item-meta">
-          <span class="mp-loadout-item-cost">$${item.cost}</span>
-          <span class="mp-loadout-item-owned">${owned ? `x${owned}` : '+1'}</span>
+        <span class="shop-main">
+          <span class="shop-topline">
+            <span class="shop-name">${item.name}</span>
+            <span class="shop-stock">In bag ${owned}</span>
+          </span>
+          <span class="shop-effect-row">
+            <span class="shop-effect">${item.id === 'auto' ? 'Instant clean' : item.id === 'mascot' ? 'Floor distraction' : item.id === 'speed' ? '2x cleaning' : '2x slower arrivals'}</span>
+            <span class="shop-duration">${item.id === 'auto' ? 'Instant' : item.id === 'mascot' ? '8s' : '12s'}</span>
+          </span>
+          <span class="shop-desc">${item.desc}</span>
         </span>
+        <span class="shop-buycol">
+          <span class="shop-cost">$ ${item.cost}</span>
+          <span class="shop-buyhint">${canAfford ? '+1 item' : 'Budget spent'}</span>
+        </span>
+        ${recentlyBought === item.id ? '<span class="shop-bought-badge">Bought!</span>' : ''}
       </button>
     `;
   }).join('');
 
-  container.querySelectorAll('.mp-loadout-item-btn').forEach((btn) => {
+  container.querySelectorAll('.mp-loadout-shop-item').forEach((btn) => {
     btn.addEventListener('click', () => {
       if (btn.disabled) return;
       playClick();
@@ -8920,12 +8945,19 @@ function renderOpponentLoadout(loadout = []) {
   oppSection.classList.remove('hidden');
   const counts = {};
   for (const itemId of items) counts[itemId] = (counts[itemId] || 0) + 1;
-  oppSlots.innerHTML = Object.entries(counts).map(([itemId, count]) => {
-    const item = MP_LOADOUT_ITEMS.find((candidate) => candidate.id === itemId);
-    const icon = item?.icon || '•';
-    const name = item?.name || itemId;
-    return `<div class="mp-loadout-slot filled opponent">${icon} ${name} x${count}</div>`;
-  }).join('');
+  oppSlots.innerHTML = `
+    <div class="shop-inventory mp-loadout-inventory mp-loadout-inventory-opponent">
+      <div class="inv-row">
+        ${MP_LOADOUT_ITEMS.map((item) => `
+          <span class="inv-item mp-loadout-pill filled ${counts[item.id] ? 'filled' : 'empty'}">
+            <span class="inv-emoji">${item.icon}</span>
+            <span class="inv-count">${counts[item.id] || 0}</span>
+            <span class="inv-name">${item.name}</span>
+          </span>
+        `).join('')}
+      </div>
+    </div>
+  `;
 }
 
 function addToLoadout(itemId) {
@@ -8935,6 +8967,7 @@ function addToLoadout(itemId) {
   const spent = getLoadoutCost(mpState.loadout);
   if (spent + item.cost > MP_LOADOUT_BUDGET) return;
   mpState.loadout.push(itemId);
+  mpState.loadoutFeedback = { itemId, at: Date.now() };
   renderLoadoutUI();
   syncLoadout();
 }
