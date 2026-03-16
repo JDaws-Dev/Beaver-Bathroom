@@ -1837,10 +1837,20 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .mp-opponent-loadout.hidden{display:none}
 
 #mp-waiting,#mp-lobby,#mp-result{
-justify-content:flex-start;
+display:none;
 overflow-y:auto;
 padding-top:max(14px,env(safe-area-inset-top));
 padding-bottom:max(18px,env(safe-area-inset-bottom));
+text-align:center;
+}
+
+#mp-waiting.active,#mp-lobby.active,#mp-result.active{
+display:block;
+opacity:1;
+}
+
+.mp-lobby-card,.mp-result-card{
+margin:0 auto;
 }
 
 @media(max-width:600px){
