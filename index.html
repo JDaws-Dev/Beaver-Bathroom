@@ -1001,13 +1001,13 @@
         <span class="mp-lobby-gender" id="mp-lobby-gender">Women's</span>
         <span class="mp-lobby-difficulty" id="mp-lobby-difficulty">Normal</span>
       </div>
-      <div class="mp-loadout-section">
+      <div class="mp-loadout-section mp-loadout-overview">
         <div class="mp-loadout-header">
-          <span>Supply Shop</span>
-          <span class="mp-loadout-sub" id="loadout-budget">$100 left</span>
+          <span>Loadout</span>
+          <span class="mp-loadout-sub" id="loadout-budget">$500 left</span>
         </div>
-        <div class="mp-loadout-summary" id="loadout-summary"></div>
-        <div class="mp-loadout-items" id="loadout-items"></div>
+        <div class="mp-loadout-summary" id="lobby-loadout-summary"></div>
+        <button class="btn-help mp-open-shop-btn" id="mp-open-shop-btn">Open Supply Shop</button>
       </div>
       <div class="mp-loadout-section mp-opponent-loadout hidden" id="mp-opponent-loadout">
         <div class="mp-loadout-header">
@@ -1050,6 +1050,19 @@
         </div>
       </div>
       <button class="btn btn-play" id="mp-result-done">Back to Menu</button>
+    </div>
+  </div>
+
+  <div id="mp-shop-modal" class="modal">
+    <div class="modal-content mp-shop-content">
+      <div class="modal-header">
+        <span class="modal-title">Supply Shop</span>
+        <button class="modal-close" id="close-mp-shop">&times;</button>
+      </div>
+      <div class="mp-shop-body">
+        <div class="mp-loadout-summary" id="loadout-summary"></div>
+        <div class="mp-loadout-items" id="loadout-items"></div>
+      </div>
     </div>
   </div>
 

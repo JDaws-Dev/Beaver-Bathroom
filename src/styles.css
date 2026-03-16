@@ -1835,6 +1835,10 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .mp-loadout-inventory-opponent .mp-loadout-pill{cursor:default}
 .mp-loadout-inventory-opponent .mp-loadout-pill:hover{transform:none;border-color:rgba(255,255,255,0.08)}
 .mp-opponent-loadout.hidden{display:none}
+.mp-loadout-overview{gap:12px}
+.mp-open-shop-btn{width:100%}
+.mp-shop-content{max-width:420px;width:min(92vw,420px);max-height:min(88vh,760px);display:flex;flex-direction:column}
+.mp-shop-body{display:flex;flex-direction:column;gap:12px;overflow-y:auto;padding-right:2px}
 
 #mp-waiting,#mp-lobby,#mp-result{
 display:none;
@@ -1867,6 +1871,7 @@ margin:0 auto;
 .mp-loadout-pill{padding:5px 8px}
 .mp-loadout-pill .inv-name{font-size:0.58em}
 .mp-loadout-help{font-size:0.6em}
+.mp-shop-content{width:min(96vw,420px);max-height:min(92vh,760px);padding:16px 14px}
 }
 
 @media(max-width:420px){

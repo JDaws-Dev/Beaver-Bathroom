@@ -8850,12 +8850,21 @@ function initLoadoutUI() {
   mpState.loadout = [];
   mpState.loadoutFeedback = null;
   const container = $('loadout-items');
-  if (!container) return;
+  const lobbySummary = $('lobby-loadout-summary');
+  if (!container || !lobbySummary) return;
   renderLoadoutUI();
   // Hide opponent loadout
   const oppSection = $('mp-opponent-loadout');
   if (oppSection) oppSection.classList.add('hidden');
   renderOpponentLoadout([]);
+}
+
+function openMPShop() {
+  $('mp-shop-modal')?.classList.add('active');
+}
+
+function closeMPShop() {
+  $('mp-shop-modal')?.classList.remove('active');
 }
 
 function getLoadoutCost(loadout = []) {
@@ -8869,7 +8878,8 @@ function renderLoadoutUI() {
   const container = $('loadout-items');
   const budgetEl = $('loadout-budget');
   const summaryEl = $('loadout-summary');
-  if (!container || !budgetEl || !summaryEl) return;
+  const lobbySummaryEl = $('lobby-loadout-summary');
+  if (!container || !budgetEl || !summaryEl || !lobbySummaryEl) return;
 
   const currentLoadout = Array.isArray(mpState.loadout) ? mpState.loadout : [];
   const spent = getLoadoutCost(currentLoadout);
@@ -8878,7 +8888,7 @@ function renderLoadoutUI() {
 
   const counts = {};
   for (const itemId of currentLoadout) counts[itemId] = (counts[itemId] || 0) + 1;
-  summaryEl.innerHTML = `
+  const inventoryHtml = `
     <div class="shop-inventory mp-loadout-inventory">
       <div class="inv-label">Current Loadout</div>
       <div class="inv-row">
@@ -8893,12 +8903,15 @@ function renderLoadoutUI() {
       <div class="mp-loadout-help">${currentLoadout.length ? 'Tap a pill to remove one from your loadout.' : 'Buy the same 4 powerups from single-player with your match budget.'}</div>
     </div>
   `;
+  summaryEl.innerHTML = inventoryHtml;
+  lobbySummaryEl.innerHTML = inventoryHtml;
 
-  summaryEl.querySelectorAll('.mp-loadout-pill').forEach((chip) => {
+  document.querySelectorAll('#loadout-summary .mp-loadout-pill, #lobby-loadout-summary .mp-loadout-pill').forEach((chip) => {
     chip.addEventListener('click', () => {
       if (!counts[chip.dataset.removeId]) return;
       playClick();
       removeFromLoadout(chip.dataset.removeId);
+      openMPShop();
     });
   });
 
@@ -9020,6 +9033,22 @@ $('mp-ready-btn')?.addEventListener('click', async () => {
     });
   } catch (e) {
     console.log('Ready sync failed:', e);
+  }
+});
+
+$('mp-open-shop-btn')?.addEventListener('click', () => {
+  playClick();
+  openMPShop();
+});
+
+$('close-mp-shop')?.addEventListener('click', () => {
+  playClick();
+  closeMPShop();
+});
+
+$('mp-shop-modal')?.addEventListener('click', (event) => {
+  if (event.target === $('mp-shop-modal')) {
+    closeMPShop();
   }
 });
 
