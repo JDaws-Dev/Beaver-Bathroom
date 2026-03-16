@@ -1836,6 +1836,13 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .mp-loadout-inventory-opponent .mp-loadout-pill:hover{transform:none;border-color:rgba(255,255,255,0.08)}
 .mp-opponent-loadout.hidden{display:none}
 
+#mp-waiting,#mp-lobby,#mp-result{
+justify-content:flex-start;
+overflow-y:auto;
+padding-top:max(14px,env(safe-area-inset-top));
+padding-bottom:max(18px,env(safe-area-inset-bottom));
+}
+
 @media(max-width:600px){
 .mp-lobby-card{padding:16px 12px;max-width:100%;border-width:3px;border-radius:14px;gap:12px}
 .mp-lobby-title{font-size:1.25em}
