@@ -8879,12 +8879,16 @@ function renderLoadoutUI() {
   const budgetEl = $('loadout-budget');
   const summaryEl = $('loadout-summary');
   const lobbySummaryEl = $('lobby-loadout-summary');
-  if (!container || !budgetEl || !summaryEl || !lobbySummaryEl) return;
+  const shopBudgetLeftEl = $('mp-shop-budget-left');
+  const shopBudgetSpentEl = $('mp-shop-budget-spent');
+  if (!container || !budgetEl || !summaryEl || !lobbySummaryEl || !shopBudgetLeftEl || !shopBudgetSpentEl) return;
 
   const currentLoadout = Array.isArray(mpState.loadout) ? mpState.loadout : [];
   const spent = getLoadoutCost(currentLoadout);
   const remaining = Math.max(0, MP_LOADOUT_BUDGET - spent);
   budgetEl.textContent = `$${remaining} left of $${MP_LOADOUT_BUDGET}`;
+  shopBudgetLeftEl.textContent = `$${remaining}`;
+  shopBudgetSpentEl.textContent = `$${spent}`;
 
   const counts = {};
   for (const itemId of currentLoadout) counts[itemId] = (counts[itemId] || 0) + 1;
@@ -9042,6 +9046,11 @@ $('mp-open-shop-btn')?.addEventListener('click', () => {
 });
 
 $('close-mp-shop')?.addEventListener('click', () => {
+  playClick();
+  closeMPShop();
+});
+
+$('mp-shop-done-btn')?.addEventListener('click', () => {
   playClick();
   closeMPShop();
 });

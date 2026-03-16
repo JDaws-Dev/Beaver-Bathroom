@@ -1839,6 +1839,15 @@ repeating-linear-gradient(0deg,transparent 0px,transparent 39px,rgba(0,0,0,0.08)
 .mp-open-shop-btn{width:100%}
 .mp-shop-content{max-width:420px;width:min(92vw,420px);max-height:min(88vh,760px);display:flex;flex-direction:column}
 .mp-shop-body{display:flex;flex-direction:column;gap:12px;overflow-y:auto;padding-right:2px}
+.mp-shop-banner{display:grid;gap:10px;padding:12px 14px;border-radius:14px;background:linear-gradient(180deg,rgba(254,241,23,0.1),rgba(139,115,85,0.08));border:1px solid rgba(254,241,23,0.2);text-align:left}
+.mp-shop-kicker{font-size:0.68em;color:#c9a86c;letter-spacing:1px;text-transform:uppercase;font-weight:800}
+.mp-shop-budget-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mp-shop-budget-chip{display:grid;gap:2px;padding:10px 12px;border-radius:12px;background:rgba(0,0,0,0.26);border:1px solid rgba(255,255,255,0.08)}
+.mp-shop-budget-chip-spent{border-color:rgba(245,166,35,0.24)}
+.mp-shop-budget-label{font-size:0.62em;color:#bca98a;text-transform:uppercase;letter-spacing:0.7px}
+.mp-shop-budget-value{font-size:1.2em;font-weight:900;color:#fef117}
+.mp-shop-copy{font-size:0.72em;line-height:1.35;color:#e8d5b5}
+.mp-shop-done-btn{width:100%;margin-top:2px;animation:none !important;font-size:1.05em}
 
 #mp-waiting,#mp-lobby,#mp-result{
 display:none;
@@ -1872,6 +1881,9 @@ margin:0 auto;
 .mp-loadout-pill .inv-name{font-size:0.58em}
 .mp-loadout-help{font-size:0.6em}
 .mp-shop-content{width:min(96vw,420px);max-height:min(92vh,760px);padding:16px 14px}
+.mp-shop-banner{padding:10px 12px}
+.mp-shop-budget-row{grid-template-columns:1fr}
+.mp-shop-budget-value{font-size:1.05em}
 }
 
 @media(max-width:420px){

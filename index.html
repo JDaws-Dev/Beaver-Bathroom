@@ -1060,8 +1060,23 @@
         <button class="modal-close" id="close-mp-shop">&times;</button>
       </div>
       <div class="mp-shop-body">
+        <div class="mp-shop-banner">
+          <div class="mp-shop-kicker">Pre-Match Loadout</div>
+          <div class="mp-shop-budget-row">
+            <div class="mp-shop-budget-chip">
+              <span class="mp-shop-budget-label">Budget Left</span>
+              <span class="mp-shop-budget-value" id="mp-shop-budget-left">$500</span>
+            </div>
+            <div class="mp-shop-budget-chip mp-shop-budget-chip-spent">
+              <span class="mp-shop-budget-label">Spent</span>
+              <span class="mp-shop-budget-value" id="mp-shop-budget-spent">$0</span>
+            </div>
+          </div>
+          <div class="mp-shop-copy">Build your match loadout, then close the shop when you are ready.</div>
+        </div>
         <div class="mp-loadout-summary" id="loadout-summary"></div>
         <div class="mp-loadout-items" id="loadout-items"></div>
+        <button class="btn btn-play mp-shop-done-btn" id="mp-shop-done-btn">Done Shopping</button>
       </div>
     </div>
   </div>
