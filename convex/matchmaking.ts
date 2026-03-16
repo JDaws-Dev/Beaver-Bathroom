@@ -8,6 +8,13 @@ const VALID_CHAT_IDS = [
 
 // Valid loadout item IDs
 const VALID_LOADOUT_ITEMS = ["speed", "slow", "auto", "mascot"];
+const LOADOUT_ITEM_COSTS: Record<string, number> = {
+  speed: 25,
+  slow: 25,
+  auto: 40,
+  mascot: 50,
+};
+const LOADOUT_BUDGET = 100;
 const QUEUE_STALE_MS = 20000;
 
 function isQueueEntryActive(entry: { status: string; queuedAt: number; lastSeenAt?: number }) {
@@ -425,11 +432,13 @@ export const setLoadout = mutation({
     loadout: v.array(v.string()),
   },
   handler: async (ctx, args) => {
-    // Validate loadout items
-    if (args.loadout.length > 3) return { error: "Max 3 items" };
+    // Validate loadout items and budget
+    let totalCost = 0;
     for (const item of args.loadout) {
       if (!VALID_LOADOUT_ITEMS.includes(item)) return { error: "Invalid item: " + item };
+      totalCost += LOADOUT_ITEM_COSTS[item] || 0;
     }
+    if (totalCost > LOADOUT_BUDGET) return { error: "Loadout is over budget" };
 
     const room = await ctx.db
       .query("rooms")

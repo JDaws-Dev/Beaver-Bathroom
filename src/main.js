@@ -8772,11 +8772,12 @@ const MP_CHAT_MESSAGES = {
 };
 
 const MP_LOADOUT_ITEMS = [
-  { id: 'speed', icon: '⚡', name: 'Speed Boost', desc: '2x cleaning speed for 12s' },
-  { id: 'slow', icon: '🐢', name: 'Slow Down', desc: '2x slower arrivals for 12s' },
-  { id: 'auto', icon: '✨', name: 'Auto Clean', desc: 'Instantly clean one dirty stall' },
-  { id: 'mascot', icon: '🦫', name: 'Mascot Parade', desc: 'Distracts customers across the floor for 8s' },
+  { id: 'speed', icon: '⚡', name: 'Speed Boost', desc: '2x cleaning speed for 12s', cost: 25 },
+  { id: 'slow', icon: '🐢', name: 'Slow Down', desc: '2x slower arrivals for 12s', cost: 25 },
+  { id: 'auto', icon: '✨', name: 'Auto Clean', desc: 'Instantly clean one dirty stall', cost: 40 },
+  { id: 'mascot', icon: '🦫', name: 'Mascot Parade', desc: 'Distracts customers across the floor for 8s', cost: 50 },
 ];
+const MP_LOADOUT_BUDGET = 100;
 
 function getMPGamesPlayed() {
   return parseInt(localStorage.getItem('beaverMPGamesPlayed') || '0');
@@ -8835,37 +8836,75 @@ multiplayerPregameController.bindEvents();
 
 // Loadout UI
 function initLoadoutUI() {
-  mpState.loadout = [null, null, null];
-  // Reset slots
-  for (let i = 0; i < 3; i++) {
-    const slot = $('loadout-slot-' + i);
-    if (slot) {
-      slot.textContent = 'Empty';
-      slot.className = 'mp-loadout-slot';
-    }
-  }
-
-  // Build item picker
+  mpState.loadout = [];
   const container = $('loadout-items');
   if (!container) return;
-  container.innerHTML = '';
-
-  MP_LOADOUT_ITEMS.forEach(item => {
-    const btn = document.createElement('button');
-    btn.className = 'mp-loadout-item-btn';
-    btn.innerHTML = `<span class="mp-loadout-item-icon">${item.icon}</span><span class="mp-loadout-item-name">${item.name}</span>`;
-    btn.title = item.desc;
-    btn.addEventListener('click', () => {
-      playClick();
-      addToLoadout(item.id, item.icon, item.name);
-    });
-    container.appendChild(btn);
-  });
-
+  renderLoadoutUI();
   // Hide opponent loadout
   const oppSection = $('mp-opponent-loadout');
   if (oppSection) oppSection.classList.add('hidden');
   renderOpponentLoadout([]);
+}
+
+function getLoadoutCost(loadout = []) {
+  return (Array.isArray(loadout) ? loadout : []).reduce((sum, itemId) => {
+    const item = MP_LOADOUT_ITEMS.find((candidate) => candidate.id === itemId);
+    return sum + (item?.cost || 0);
+  }, 0);
+}
+
+function renderLoadoutUI() {
+  const container = $('loadout-items');
+  const budgetEl = $('loadout-budget');
+  const summaryEl = $('loadout-summary');
+  if (!container || !budgetEl || !summaryEl) return;
+
+  const currentLoadout = Array.isArray(mpState.loadout) ? mpState.loadout : [];
+  const spent = getLoadoutCost(currentLoadout);
+  const remaining = Math.max(0, MP_LOADOUT_BUDGET - spent);
+  budgetEl.textContent = `$${remaining} left`;
+
+  const counts = {};
+  for (const itemId of currentLoadout) counts[itemId] = (counts[itemId] || 0) + 1;
+  summaryEl.innerHTML = currentLoadout.length
+    ? Object.entries(counts).map(([itemId, count]) => {
+        const item = MP_LOADOUT_ITEMS.find((candidate) => candidate.id === itemId);
+        return `<button type="button" class="mp-loadout-chip" data-remove-id="${itemId}">${item?.icon || '•'} ${item?.name || itemId} x${count}</button>`;
+      }).join('')
+    : '<div class="mp-loadout-empty">Spend your budget on any mix of the 4 powerups.</div>';
+
+  summaryEl.querySelectorAll('.mp-loadout-chip').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      playClick();
+      removeFromLoadout(chip.dataset.removeId);
+    });
+  });
+
+  container.innerHTML = MP_LOADOUT_ITEMS.map((item) => {
+    const owned = counts[item.id] || 0;
+    const canAfford = remaining >= item.cost;
+    return `
+      <button type="button" class="mp-loadout-item-btn ${canAfford ? '' : 'disabled'}" data-item-id="${item.id}" ${canAfford ? '' : 'disabled'}>
+        <span class="mp-loadout-item-icon">${item.icon}</span>
+        <span class="mp-loadout-item-copy">
+          <span class="mp-loadout-item-name">${item.name}</span>
+          <span class="mp-loadout-item-desc">${item.desc}</span>
+        </span>
+        <span class="mp-loadout-item-meta">
+          <span class="mp-loadout-item-cost">$${item.cost}</span>
+          <span class="mp-loadout-item-owned">${owned ? `x${owned}` : '+1'}</span>
+        </span>
+      </button>
+    `;
+  }).join('');
+
+  container.querySelectorAll('.mp-loadout-item-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      playClick();
+      addToLoadout(btn.dataset.itemId);
+    });
+  });
 }
 
 function renderOpponentLoadout(loadout = []) {
@@ -8879,50 +8918,39 @@ function renderOpponentLoadout(loadout = []) {
     return;
   }
   oppSection.classList.remove('hidden');
-  oppSlots.innerHTML = items.map((itemId) => {
+  const counts = {};
+  for (const itemId of items) counts[itemId] = (counts[itemId] || 0) + 1;
+  oppSlots.innerHTML = Object.entries(counts).map(([itemId, count]) => {
     const item = MP_LOADOUT_ITEMS.find((candidate) => candidate.id === itemId);
     const icon = item?.icon || '•';
     const name = item?.name || itemId;
-    return `<div class="mp-loadout-slot filled opponent">${icon} ${name}</div>`;
+    return `<div class="mp-loadout-slot filled opponent">${icon} ${name} x${count}</div>`;
   }).join('');
 }
 
-function addToLoadout(itemId, icon, name) {
-  if (!Array.isArray(mpState.loadout)) {
-    mpState.loadout = [null, null, null];
-  }
-  // Find first empty slot
-  const emptyIdx = mpState.loadout.indexOf(null);
-  if (emptyIdx === -1) return; // All slots full
-
-  mpState.loadout[emptyIdx] = itemId;
-  const slot = $('loadout-slot-' + emptyIdx);
-  if (slot) {
-    slot.textContent = icon + ' ' + name;
-    slot.className = 'mp-loadout-slot filled';
-  }
-
+function addToLoadout(itemId) {
+  if (!Array.isArray(mpState.loadout)) mpState.loadout = [];
+  const item = MP_LOADOUT_ITEMS.find((candidate) => candidate.id === itemId);
+  if (!item) return;
+  const spent = getLoadoutCost(mpState.loadout);
+  if (spent + item.cost > MP_LOADOUT_BUDGET) return;
+  mpState.loadout.push(itemId);
+  renderLoadoutUI();
   syncLoadout();
 }
 
-// Click slot to remove item
-for (let i = 0; i < 3; i++) {
-  $('loadout-slot-' + i)?.addEventListener('click', () => {
-    if (mpState.loadout[i] === null) return;
-    playClick();
-    mpState.loadout[i] = null;
-    const slot = $('loadout-slot-' + i);
-    if (slot) {
-      slot.textContent = 'Empty';
-      slot.className = 'mp-loadout-slot';
-    }
-    syncLoadout();
-  });
+function removeFromLoadout(itemId) {
+  if (!Array.isArray(mpState.loadout)) return;
+  const idx = mpState.loadout.lastIndexOf(itemId);
+  if (idx === -1) return;
+  mpState.loadout.splice(idx, 1);
+  renderLoadoutUI();
+  syncLoadout();
 }
 
 async function syncLoadout() {
   if (!mpState.roomCode) return;
-  const loadout = Array.isArray(mpState.loadout) ? mpState.loadout.filter(x => x !== null) : [];
+  const loadout = Array.isArray(mpState.loadout) ? mpState.loadout : [];
   try {
     await convex.mutation(api.matchmaking.setLoadout, {
       code: mpState.roomCode,
