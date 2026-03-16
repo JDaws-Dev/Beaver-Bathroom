@@ -8788,7 +8788,7 @@ const MP_LOADOUT_ITEMS = ITEMS.map((item) => ({
         ? 'Nuggets'
         : 'Mascot',
 }));
-const MP_LOADOUT_BUDGET = 100;
+const MP_LOADOUT_BUDGET = 500;
 
 function getMPGamesPlayed() {
   return parseInt(localStorage.getItem('beaverMPGamesPlayed') || '0');

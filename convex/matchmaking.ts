@@ -14,7 +14,7 @@ const LOADOUT_ITEM_COSTS: Record<string, number> = {
   auto: 75,
   mascot: 60,
 };
-const LOADOUT_BUDGET = 100;
+const LOADOUT_BUDGET = 500;
 const QUEUE_STALE_MS = 20000;
 
 function isQueueEntryActive(entry: { status: string; queuedAt: number; lastSeenAt?: number }) {
